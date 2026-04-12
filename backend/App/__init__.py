@@ -2,7 +2,7 @@ import logging
 import os
 from flask import Flask
 from flask_cors import CORS
-from config import get_config
+from ..config import get_config
 
 
 # Import Database initialization logic
@@ -40,7 +40,7 @@ def create_app():
         # Keep app running or raise depending on your preference
 
     # 5. Blueprint Registration (API Routes)
-    from app.routes import bp as main_bp
+    from routes import Api as main_bp
     app.register_blueprint(main_bp, url_prefix='/api')
 
     # 6. Signal Registration (For automated tasks like Skill Sync)
