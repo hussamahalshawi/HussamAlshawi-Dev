@@ -3,6 +3,7 @@ import os
 from flask import Flask
 from flask_cors import CORS
 from config import get_config
+from App.models.database import init_db
 
 
 # Import Database initialization logic
@@ -30,6 +31,9 @@ def create_app():
 
     # 3. Logging System Setup (Recording every step in hussam_dev.log)
     setup_app_logging(app, current_config)
+
+    # 4. Database Connection
+    init_db(app)
 
     # 4. Database Connection (MongoDB Atlas)
     try:
