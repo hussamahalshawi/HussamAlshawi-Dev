@@ -2,7 +2,7 @@ import logging
 import os
 from flask import Flask
 from flask_cors import CORS
-from ..config import get_config
+from config import get_config
 
 
 # Import Database initialization logic
