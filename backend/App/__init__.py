@@ -40,7 +40,7 @@ def create_app():
         # Keep app running or raise depending on your preference
 
     # 5. Blueprint Registration (API Routes)
-    from routes import Api as main_bp
+    from App.routes import Api as main_bp
     app.register_blueprint(main_bp, url_prefix='/api')
 
     # 6. Signal Registration (For automated tasks like Skill Sync)
