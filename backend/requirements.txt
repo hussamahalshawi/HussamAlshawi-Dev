@@ -1,0 +1,25 @@
+# --- Core Backend Framework ---
+# English Comment: Core Flask framework and essential extensions for API & Security
+Flask==3.0.3
+Flask-Cors==3.0.10
+Flask-Admin==2.0.2
+python-dotenv==1.0.1
+Werkzeug==3.0.3
+gunicorn==23.0.0
+
+# --- Database (MongoDB & Atlas) ---
+# English Comment: MongoEngine for ODM and srv support for MongoDB Atlas clusters
+mongoengine==0.29.1
+pymongo[srv]>=4.6.1
+dnspython>=2.4.2
+certifi>=2024.2.2
+
+# --- File Management & Utilities ---
+# English Comment: Handling media uploads via Cloudinary and environment validation
+cloudinary==1.44.1
+email-validator==2.3.0
+
+# --- Text Processing (Optional for Arabic support in PDF/Logs) ---
+# English Comment: Required if your blog or CV generator handles Arabic text
+arabic-reshaper==3.0.0
+python-bidi==0.6.3
