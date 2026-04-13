@@ -24,7 +24,11 @@ def create_app():
     HussamAlshawi-Dev Application Factory.
     Integrates professional logging, API security, database connectivity, and Admin UI.
     """
-    app = Flask(__name__)
+    # Get the absolute path to the templates folder
+    # This ensures Flask knows exactly where to look
+    template_dir = os.path.abspath('App/templates')
+
+    app = Flask(__name__, template_folder=template_dir)
 
     # 1. Configuration Loading & Validation
     try:

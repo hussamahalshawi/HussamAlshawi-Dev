@@ -1,0 +1,134 @@
+{% extends 'admin/base.html' %}
+
+{% block body %}
+<div class="container-fluid px-4">
+    <div class="d-flex justify-content-between align-items-center mb-5">
+        <div>
+            <h2 class="font-weight-bold" id="pageMainTitle" style="color: #0f172a;">Media Assets</h2>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb bg-transparent p-0 small" id="driveBreadcrumbs">
+                    <li class="breadcrumb-item"><a href="javascript:void(0)" onclick="backToRoot()">Hussam_Dev</a></li>
+                    <li class="breadcrumb-item active" id="basePath">my_media</li>
+                </ol>
+            </nav>
+        </div>
+        <div id="actionButtons" class="d-flex align-items-center">
+            <a href="{{ url_for('.create_view', url=return_url) }}" class="btn btn-primary px-4 py-2 shadow-sm rounded-pill font-weight-bold">
+                <i class="fas fa-plus mr-2"></i> New Collection
+            </a>
+        </div>
+    </div>
+
+    <div id="driveContent">
+        <div id="foldersGrid" class="row">
+            {% for model in data %}
+            <div class="col-xl-2 col-lg-3 col-md-4 col-sm-6 mb-4">
+                <div class="card h-100 border-0 shadow-sm folder-card"
+                     onclick='openFolder("{{ model.vault_name }}", {{ model.media_links | tojson | safe }}, "{{ model.id }}")'>
+
+                    <div class="card-header bg-transparent border-0 d-flex justify-content-between pt-3">
+                        <i class="fas fa-folder fa-4x" style="color: #fbbf24;"></i>
+                        <div class="dropdown" onclick="event.stopPropagation();">
+                            <button class="btn btn-link p-0 text-muted" data-toggle="dropdown"><i class="fas fa-ellipsis-v"></i></button>
+                            <div class="dropdown-menu border-0 shadow-lg">
+                                <a class="dropdown-item py-2" href="{{ url_for('.edit_view', id=model.id, url=return_url) }}">
+                                    <i class="fas fa-edit mr-2 text-primary"></i> Edit Design
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body py-2">
+                        <p class="mb-0 font-weight-bold text-truncate">{{ model.vault_name }}</p>
+                        <small class="text-muted">{{ model.media_links|length }} Files</small>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <div id="filesView" class="d-none">
+            <div class="row" id="filesGrid"></div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .folder-card { cursor: pointer; border-radius: 16px; transition: 0.3s; background: #fff; }
+    .folder-card:hover { transform: translateY(-5px); border-color: #2563eb !important; box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important; }
+    .file-item-card { border-radius: 12px; overflow: hidden; transition: 0.2s; }
+    .file-item-card:hover { transform: scale(1.02); }
+    .breadcrumb-item a { color: #64748b; text-decoration: none; }
+    .breadcrumb-item.active { color: #2563eb; font-weight: bold; }
+</style>
+
+<script>
+    const foldersGrid = document.getElementById('foldersGrid');
+    const filesView = document.getElementById('filesView');
+    const filesGrid = document.getElementById('filesGrid');
+    const driveBreadcrumbs = document.getElementById('driveBreadcrumbs');
+    const basePath = document.getElementById('basePath');
+    const actionButtons = document.getElementById('actionButtons');
+
+    // English Comment: Capture the initial state of the New button
+    const originalNewBtn = actionButtons.innerHTML;
+
+    function openFolder(name, links, id) {
+        foldersGrid.classList.add('d-none');
+        filesView.classList.remove('d-none');
+
+        // Update Breadcrumbs
+        basePath.classList.remove('active');
+        basePath.innerHTML = `<a href="javascript:void(0)" onclick="backToRoot()">my_media</a>`;
+
+        const existingLevel = document.getElementById('folderLevel');
+        if (existingLevel) existingLevel.remove();
+
+        const newLevel = document.createElement('li');
+        newLevel.id = 'folderLevel';
+        newLevel.className = 'breadcrumb-item active';
+        newLevel.innerText = name;
+        driveBreadcrumbs.appendChild(newLevel);
+
+        // English Comment: Update Header Buttons - Swap New for Delete and Edit
+        // We use relative paths to trigger Admin Model Views correctly
+        actionButtons.innerHTML = `
+            <a href="./edit/?id=${id}" class="btn btn-outline-primary px-4 py-2 rounded-pill font-weight-bold mr-2">
+                <i class="fas fa-edit mr-1"></i> Edit
+            </a>
+            <form action="./delete/" method="POST" style="display:inline;" onsubmit="return confirm('Are you sure you want to delete this collection?');">
+                <input type="hidden" name="id" value="${id}">
+                <button type="submit" class="btn btn-danger px-4 py-2 shadow-sm rounded-pill font-weight-bold">
+                    <i class="fas fa-trash-alt mr-1"></i> Delete
+                </button>
+            </form>
+        `;
+
+        // Render Files
+        filesGrid.innerHTML = '';
+        if (!links || links.length === 0) {
+            filesGrid.innerHTML = `<div class="col-12 text-center py-5 text-muted">Folder is empty.</div>`;
+        } else {
+            links.forEach(url => {
+                filesGrid.innerHTML += `
+                    <div class="col-xl-2 col-lg-3 col-md-4 col-6 mb-4">
+                        <div class="card file-item-card border-0 shadow-sm">
+                            <img src="${url}" class="img-fluid" style="height:160px; width:100%; object-fit:cover; cursor:pointer;" onclick="window.open('${url}', '_blank')">
+                        </div>
+                    </div>`;
+            });
+        }
+    }
+
+    function backToRoot() {
+        filesView.classList.add('d-none');
+        foldersGrid.classList.remove('d-none');
+        basePath.classList.add('active');
+        basePath.innerHTML = 'my_media';
+        const folderLevel = document.getElementById('folderLevel');
+        if (folderLevel) folderLevel.remove();
+
+        // Restore New button
+        actionButtons.innerHTML = originalNewBtn;
+    }
+</script>
+{% endblock %}

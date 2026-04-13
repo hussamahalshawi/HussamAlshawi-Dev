@@ -8,6 +8,9 @@ class ProfessionalModelView(ModelView):
     Customized ModelView to provide a consistent look and feel.
     Includes pagination, search, and detailed view by default.
     """
+    extra_css = [
+        'https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css'
+    ]
     # English Comment: Display 20 items per page
     page_size = 20
 
