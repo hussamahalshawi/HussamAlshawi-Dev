@@ -2,18 +2,27 @@ import logging
 import os
 from flask import Flask
 from flask_cors import CORS
+from flask_admin import Admin
+from flask_admin.contrib.mongoengine import ModelView
+
+# English Comment: Core application components
 from config import get_config
 from App.models.database import init_db
 
+# 1. External Imports
+from flask_admin import Admin
 
-# Import Database initialization logic
-# Note: We will create the database handler in the next step
-# from app.models.database import init_db
+# 2. Local Imports from your new structure
+# Import the Model from: backend/App/models/my_media.py
+from App.models.my_media import MediaVault
+
+# Import the View from: backend/admin_view/my_media_views.py
+from admin_views.my_media_views import MediaVaultAdminView
 
 def create_app():
     """
     HussamAlshawi-Dev Application Factory.
-    Integrates professional logging, API security, and database connectivity.
+    Integrates professional logging, API security, database connectivity, and Admin UI.
     """
     app = Flask(__name__)
 
@@ -32,22 +41,28 @@ def create_app():
     # 3. Logging System Setup (Recording every step in hussam_dev.log)
     setup_app_logging(app, current_config)
 
-    # 4. Database Connection
-    init_db(app)
-
-    # 4. Database Connection (MongoDB Atlas)
+    # 4. Database Connection (MongoDB Atlas via MongoEngine)
     try:
-        # init_db(app) # We will implement this in models/database.py
+        init_db(app)
         app.logger.info("[+] MongoDB Atlas connection established.")
     except Exception as db_err:
         app.logger.critical(f"[-] Database Initialization Failed: {db_err}")
-        # Keep app running or raise depending on your preference
+        raise db_err
 
-    # 5. Blueprint Registration (API Routes)
+    # 5. Flask-Admin Setup
+    # Initialize the Admin interface with a professional bootstrap4 theme
+    admin = Admin(app, name='HussamDev Admin')
+
+    # Register the MediaVault view instead of Profile
+    # This connects the Model with the specialized View we created
+    admin.add_view(MediaVaultAdminView(MediaVault, name='Media Library', category='Content'))
+
+    # 6. Blueprint Registration (API Routes)
+    # English Comment: Ensure the import matches your specific variable name 'Api'
     from App.routes import Api as main_bp
     app.register_blueprint(main_bp, url_prefix='/api')
 
-    # 6. Signal Registration (For automated tasks like Skill Sync)
+    # 7. Signal Registration (For automated tasks like Skill Sync)
     register_signals(app)
 
     app.logger.info(f"🚀 {current_config.PROJECT_NAME} Factory started successfully.")
@@ -59,6 +74,10 @@ def setup_app_logging(app, config_obj):
     """
     Configures local file logging to ensure every action is tracked.
     """
+    # English Comment: Ensure the log directory exists before creating the file
+    if not os.path.exists(config_obj.LOG_DIR):
+        os.makedirs(config_obj.LOG_DIR)
+
     log_file = os.path.join(config_obj.LOG_DIR, 'hussam_dev.log')
 
     file_handler = logging.FileHandler(log_file)
@@ -78,8 +97,8 @@ def register_signals(app):
     """
     with app.app_context():
         try:
-            # We will create signals.py later to handle automated tasks
-            # import app.signals
+            # English Comment: Placeholder for signals implementation
+            # import App.signals
             app.logger.info("[+] System signals synchronized.")
         except Exception as e:
             app.logger.error(f"[-] Signal Synchronization Error: {e}")
