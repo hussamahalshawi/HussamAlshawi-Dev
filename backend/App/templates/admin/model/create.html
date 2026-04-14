@@ -4,24 +4,28 @@
 <div class="container py-5">
     <nav aria-label="breadcrumb" class="mb-4">
         <ol class="breadcrumb bg-transparent p-0 small">
-            <li class="breadcrumb-item"><a href="{{ url_for('mediavault.index_view') }}">Media Vault</a></li>
-            <li class="breadcrumb-item active">{% if 'edit' in request.path %}Edit Collection{% else %}New Collection{% endif %}</li>
+            <li class="breadcrumb-item"><a href="{{ admin_view.get_url('.index_view') }}">{{ admin_view.name }}</a></li>
+            <li class="breadcrumb-item active">
+                {% if 'edit' in request.path %}Update{% else %}Create New{% endif %} {{ admin_view.name }}
+            </li>
         </ol>
     </nav>
 
     <div class="row justify-content-center">
         <div class="col-lg-10">
             <div class="card border-0 shadow-lg" style="border-radius: 20px; overflow: hidden;">
+
                 <div class="card-header border-0 bg-white pt-4 px-4 pb-0">
                     <div class="d-flex align-items-center">
-                        <div class="icon-box bg-soft-primary rounded-circle mr-3 d-flex align-items-center justify-content-center" style="width: 50px; height: 50px; background: rgba(37, 99, 235, 0.1);">
-                            <i class="fas fa-images text-primary"></i>
+                        <div class="icon-box rounded-circle mr-3 d-flex align-items-center justify-content-center"
+                             style="width: 50px; height: 50px; background: rgba(37, 99, 235, 0.1);">
+                            <i class="fas {{ 'fa-user-circle' if 'profile' in admin_view.endpoint else 'fa-cube' }} text-primary"></i>
                         </div>
                         <div>
                             <h4 class="font-weight-bold mb-0 text-dark">
-                                {% if 'edit' in request.path %}Update Collection Design{% else %}Create New Collection{% endif %}
+                                {{ admin_view.name }} Hub
                             </h4>
-                            <p class="text-muted small mb-0">Manage collection details and media gallery.</p>
+                            <p class="text-muted small mb-0">System identified dynamic schema for <strong>{{ admin_view.name }}</strong>.</p>
                         </div>
                     </div>
                 </div>
@@ -32,52 +36,64 @@
 
                         {% for field in form if field.type != 'CSRFTokenField' %}
                         <div class="form-group mb-4">
-                            <label class="font-weight-600 mb-2" style="font-size: 0.9rem; color: #475569;">
+                            <label class="font-weight-600 mb-2" style="font-size: 0.85rem; color: #475569; text-transform: uppercase; letter-spacing: 0.5px;">
                                 {{ field.label.text }}
                             </label>
 
-                            {% if field.id == 'media_links' %}
+                            {# --- LOGIC 1: SMART INLINE FIELDS (Like Media Gallery or Lessons) --- #}
+                            {# We check if it's a list (FieldList) or has nested subfields #}
+                            {% if field.type in ['FieldList', 'InlineFormFieldList'] or field.id == 'media_links' %}
                                 <div class="inline-field-container p-3 border rounded" style="background: #f8fafc; border-radius: 15px;">
-                                    <div class="inline-field-list row" id="media_links">
-                                        {% for subfield in field %}
-                                        <div class="col-xl-3 col-lg-4 col-md-6 mb-3 inline-field-item">
-                                            <div class="card h-100 border-0 shadow-sm preview-card">
-                                                <div class="position-relative">
-                                                    <img src="{{ subfield.data }}" class="card-img-top preview-img" onerror="this.src='https://placehold.co/300x200?text=No+Preview'">
-                                                    <button type="button" class="btn btn-danger btn-sm rounded-circle remove-btn" onclick="$(this).closest('.inline-field-item').remove();">
-                                                        <i class="fas fa-times"></i>
-                                                    </button>
-                                                </div>
-                                                <div class="card-footer bg-white border-0 p-2">
-                                                    {{ subfield(class="form-control form-control-sm text-muted x-small-input", placeholder="Image URL") }}
+                                    <div class="inline-field-list row" id="{{ field.id }}">
+                                        {% if field is iterable %}
+                                            {% for subfield in field %}
+                                            <div class="col-xl-3 col-lg-4 col-md-6 mb-3 inline-field-item">
+                                                <div class="card h-100 border-0 shadow-sm preview-card">
+                                                    <div class="position-relative">
+                                                        {# Show image if it looks like a URL #}
+                                                        <img src="{{ subfield.data if subfield.data else '' }}" class="card-img-top preview-img" onerror="this.src='https://placehold.co/300x200?text=Object+Data'">
+                                                        <button type="button" class="btn btn-danger btn-sm rounded-circle remove-btn" onclick="$(this).closest('.inline-field-item').remove();">
+                                                            <i class="fas fa-times"></i>
+                                                        </button>
+                                                    </div>
+                                                    <div class="card-footer bg-white border-0 p-2">
+                                                        {{ subfield(class="form-control form-control-sm text-muted x-small-input") }}
+                                                    </div>
                                                 </div>
                                             </div>
-                                        </div>
-                                        {% endfor %}
+                                            {% endfor %}
+                                        {% endif %}
                                     </div>
                                     <div class="mt-3">
-                                        <button type="button" class="btn btn-outline-primary btn-sm rounded-pill px-3" onclick="faForm.addInlineField(this, 'media_links');">
-                                            <i class="fas fa-plus mr-1"></i> Add Manual Image Link
+                                        <button type="button" class="btn btn-outline-primary btn-sm rounded-pill px-3" onclick="if(window.faForm) faForm.addInlineField(this, '{{ field.id }}');">
+                                            <i class="fas fa-plus mr-1"></i> Add Item to {{ field.label.text }}
                                         </button>
                                     </div>
                                 </div>
 
-                            {% elif field.id == 'file_upload' %}
+                            {# --- LOGIC 2: SMART FILE UPLOADS --- #}
+                            {# Handles any field that is a FileField or has "upload" in its ID #}
+                            {% elif field.type == 'FileField' or 'upload' in field.id or 'avatar' in field.id %}
                                 <div class="custom-upload-wrapper">
-                                    {{ field(class="d-none", id="real-file-input") }}
-                                    <label for="real-file-input" class="modern-upload-btn">
+                                    {{ field(class="d-none dynamic-file-input", id=field.id) }}
+                                    <label for="{{ field.id }}" class="modern-upload-btn">
                                         <div class="d-flex align-items-center">
                                             <div class="upload-icon-wrapper shadow-sm">
                                                 <i class="fas fa-cloud-upload-alt"></i>
                                             </div>
                                             <div class="ml-3">
-                                                <span class="d-block font-weight-bold text-dark" id="file-count-display">Click to upload assets</span>
-                                                <small class="text-muted">Supports Images and Videos</small>
+                                                <span class="d-block font-weight-bold text-dark file-status-text">Select Asset</span>
+                                                <small class="text-muted">Cloud-ready upload for {{ field.label.text }}</small>
                                             </div>
                                         </div>
                                     </label>
                                 </div>
 
+                            {# --- LOGIC 3: SMART TEXTAREA --- #}
+                            {% elif field.type == 'TextAreaField' or 'bio' in field.id or 'description' in field.id %}
+                                {{ field(class="form-control custom-input", rows="4", placeholder="Write details here...") }}
+
+                            {# --- LOGIC 4: ALL OTHER FIELDS (Text, Email, URL, Select) --- #}
                             {% else %}
                                 {% set field_class = "form-control custom-input " + ("is-invalid" if field.errors else "") %}
                                 {{ field(class=field_class, placeholder="Enter " + field.label.text|lower) }}
@@ -96,11 +112,11 @@
                         <hr class="my-5 border-light">
 
                         <div class="d-flex align-items-center justify-content-between">
-                            <a href="{{ url_for('.index_view') }}" class="btn btn-link text-muted font-weight-bold text-decoration-none">
-                                <i class="fas fa-times mr-2"></i> Discard Changes
+                            <a href="{{ admin_view.get_url('.index_view') }}" class="btn btn-link text-muted font-weight-bold text-decoration-none">
+                                <i class="fas fa-times mr-2"></i> Discard
                             </a>
                             <button type="submit" class="btn btn-primary px-5 py-3 shadow font-weight-bold rounded-pill">
-                                <i class="fas fa-save mr-2"></i> Save & Sync to Cloud
+                                <i class="fas fa-save mr-2"></i> Save & Deploy
                             </button>
                         </div>
                     </form>
@@ -111,76 +127,29 @@
 </div>
 
 <style>
-    /* Global Styling */
+    /* CSS logic remains the same to maintain the branding */
     .custom-input { border-radius: 12px; padding: 1.2rem 1rem; border: 1px solid #e2e8f0; background: #f8fafc; transition: 0.3s; }
     .custom-input:focus { background: #fff !important; border-color: #2563eb !important; box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1) !important; outline: none; }
-    .font-weight-600 { font-weight: 600; }
 
-    /* Modern Upload Button Styling */
-    .modern-upload-btn {
-        display: block;
-        padding: 1.5rem;
-        background: #ffffff;
-        border: 2px dashed #cbd5e1;
-        border-radius: 16px;
-        cursor: pointer;
-        transition: all 0.3s ease;
-    }
-    .modern-upload-btn:hover {
-        border-color: #2563eb;
-        background: #f1f5f9;
-        transform: translateY(-2px);
-    }
-    .upload-icon-wrapper {
-        width: 50px;
-        height: 50px;
-        background: #2563eb;
-        color: white;
-        border-radius: 12px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 1.2rem;
-    }
+    .modern-upload-btn { display: block; padding: 1.5rem; background: #ffffff; border: 2px dashed #cbd5e1; border-radius: 16px; cursor: pointer; transition: 0.3s; }
+    .modern-upload-btn:hover { border-color: #2563eb; background: #f1f5f9; transform: translateY(-2px); }
+    .upload-icon-wrapper { width: 45px; height: 45px; background: #2563eb; color: white; border-radius: 10px; display: flex; align-items: center; justify-content: center; }
 
-    /* Gallery Grid Styling */
-    .preview-card { border-radius: 12px; overflow: hidden; border: 1px solid #e2e8f0 !important; }
-    .preview-img { height: 120px; width: 100%; object-fit: cover; background: #edeff2; }
-    .remove-btn { position: absolute; top: 5px; right: 5px; width: 25px; height: 25px; display: flex; align-items: center; justify-content: center; opacity: 0.8; transition: 0.2s; }
-    .remove-btn:hover { opacity: 1; transform: scale(1.1); }
-    .x-small-input { font-size: 10px !important; border: none; background: transparent; padding: 0; }
-
-    /* Animation */
-    .card { animation: slideUp 0.5s ease-out; }
-    @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+    .preview-card { border-radius: 12px; border: 1px solid #e2e8f0 !important; }
+    .preview-img { height: 110px; object-fit: cover; }
+    .remove-btn { position: absolute; top: 5px; right: 5px; width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; font-size: 10px; }
+    .x-small-input { font-size: 11px !important; border: none; background: transparent; }
 </style>
 
 {% block tail_js %}
 <script>
-    // English Comment: Update upload button text when files are selected
-    const fileInput = document.getElementById('real-file-input');
-    if(fileInput) {
-        fileInput.addEventListener('change', function(e) {
-            const display = document.getElementById('file-count-display');
-            const count = e.target.files.length;
-            display.innerText = count > 0 ? `${count} Files Selected` : "Click to upload assets";
-            if(count > 0) display.classList.add('text-primary');
-        });
-    }
-
-    // English Comment: Real-time preview update when URL is changed manually
-    $(document).on('input', 'input[name^="media_links-"]', function() {
-        const url = $(this).val();
-        const img = $(this).closest('.preview-card').find('img');
-        if (url) {
-            img.attr('src', url);
-        }
+    // Universal File Handler
+    $(document).on('change', '.dynamic-file-input', function(e) {
+        const container = $(this).closest('.custom-upload-wrapper');
+        const statusText = container.find('.file-status-text');
+        const count = e.target.files.length;
+        statusText.text(count > 0 ? count + " Files Selected" : "Select Asset").toggleClass('text-primary', count > 0);
     });
-
-    const originalAddInlineField = window.faForm.addInlineField;
-    window.faForm.addInlineField = function(el, id) {
-        originalAddInlineField.apply(this, arguments);
-    };
 </script>
 {% endblock %}
 {% endblock %}

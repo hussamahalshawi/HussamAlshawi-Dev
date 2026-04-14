@@ -21,7 +21,7 @@ class MediaVaultAdminView(ProfessionalModelView):
     # English Comment: Use the custom Google Drive-like HTML template
     list_template = 'admin/media_drive.html'
     create_template = 'admin/model/create.html'
-    edit_template = 'admin/model/edit.html'
+    edit_template = 'admin/model/create.html'
 
     # English Comment: Define columns for search and filters
     column_list = ('vault_name', 'content_type', 'media_preview', 'last_updated')

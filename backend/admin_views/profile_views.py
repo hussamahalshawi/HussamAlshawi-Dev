@@ -20,7 +20,9 @@ class ProfileAdminView(ProfessionalModelView):
     # --- 1. Templates & Basic Settings ---
     # نستخدم القوالب الاحترافية التي صممناها سابقاً لتوحيد التصميم
     create_template = 'admin/model/create.html'
-    edit_template = 'admin/model/edit.html'
+    edit_template = 'admin/model/create.html'
+    create_modal = False
+    edit_modal = False
 
     column_list = ('avatar_preview', 'full_name', 'title', 'experience_years', 'overall_score', 'last_updated')
     column_labels = {
@@ -83,6 +85,7 @@ class ProfileAdminView(ProfessionalModelView):
     # --- 5. Custom Form Logic ---
     # ترتيب الحقول ليكون مريحاً للمستخدم
     form_columns = (
-        'full_name', 'title', 'bio', 'avatar_upload', 'email', 'phone', 'address',
-        'github_url', 'linkedin_url', 'medium_url', 'facebook_url', 'instagram_url'
+        'full_name', 'title', 'bio', 'email', 'phone',
+        'address', 'avatar_upload', 'github_url',
+        'linkedin_url', 'medium_url'
     )
