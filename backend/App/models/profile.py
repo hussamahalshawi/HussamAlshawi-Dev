@@ -4,7 +4,7 @@ from datetime import datetime, timezone
 
 class Profile(Document):
     """
-    HussamAlshawi-Portfolio: The Central Identity Hub.
+    HussamAlshawi-Dev: The Central Identity Hub.
     Manages personal data and orchestrates complex global metric calculations.
     """
 
