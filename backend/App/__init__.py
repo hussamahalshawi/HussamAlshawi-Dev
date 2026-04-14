@@ -2,8 +2,6 @@ import logging
 import os
 from flask import Flask
 from flask_cors import CORS
-from flask_admin import Admin
-from flask_admin.contrib.mongoengine import ModelView
 
 # English Comment: Core application components
 from config import get_config
@@ -16,8 +14,17 @@ from flask_admin import Admin
 # Import the Model from: backend/App/models/my_media.py
 from App.models.my_media import MediaVault
 
-# Import the View from: backend/admin_view/my_media_views.py
+# Import the Model from: backend/App/models/my_media.py
+from App.models.profile import Profile
+
+# Import the View from: backend/admin_views/my_media_views.py
 from admin_views.my_media_views import MediaVaultAdminView
+
+# Import the View from: backend/admin_views/profile_views.py
+from admin_views.profile_views import ProfileAdminView
+
+
+
 
 def create_app():
     """
@@ -60,6 +67,7 @@ def create_app():
     # Register the MediaVault view instead of Profile
     # This connects the Model with the specialized View we created
     admin.add_view(MediaVaultAdminView(MediaVault, name='Media Library', category='Content'))
+    admin.add_view(ProfileAdminView(Profile, name='Personal Profile', category='Identity'))
 
     # 6. Blueprint Registration (API Routes)
     # English Comment: Ensure the import matches your specific variable name 'Api'
