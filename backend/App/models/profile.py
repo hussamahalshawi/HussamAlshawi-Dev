@@ -20,11 +20,11 @@ class Profile(Document):
     primary_avatar = StringField(help_text="Primary Cloudinary URL for navigation and hero sections")
 
     # --- SOCIAL ECOSYSTEM ---
-    github_url = URLField()
-    linkedin_url = URLField()
-    facebook_url = URLField()
-    instagram_url = URLField()
-    medium_url = URLField()  # English Comment: Added for your technical articles
+    github_url = URLField(required=False, null=True, default=None)
+    linkedin_url = URLField(required=False, null=True, default=None)
+    facebook_url = URLField(required=False, null=True, default=None)
+    instagram_url = URLField(required=False, null=True, default=None)
+    medium_url = URLField(required=False, null=True, default=None)  # English Comment: Added for your technical articles
 
     # --- ASSETS & GALLERY ---
     # English Comment: Additional images for the 'About Me' gallery
