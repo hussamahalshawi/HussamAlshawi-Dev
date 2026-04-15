@@ -17,11 +17,14 @@ from App.models.my_media import MediaVault
 # Import the Model from: backend/App/models/my_media.py
 from App.models.profile import Profile
 
-# Import the View from: backend/admin_views/my_media_views.py
-from admin_views.my_media_views import MediaVaultAdminView
+# Import the View from: backend/admin_views/my_media_view.py
+from admin_views.my_media_view import MediaVaultAdminView
 
-# Import the View from: backend/admin_views/profile_views.py
-from admin_views.profile_views import ProfileAdminView
+# Import the View from: backend/admin_views/profile_view.py
+from admin_views.profile_view import ProfileAdminView
+
+from admin_views.education_view import EducationAdminView
+from App.models.education import Education
 
 
 
@@ -68,6 +71,7 @@ def create_app():
     # This connects the Model with the specialized View we created
     admin.add_view(MediaVaultAdminView(MediaVault, name='Media Library', category='Content'))
     admin.add_view(ProfileAdminView(Profile, name='Personal Profile', category='Identity'))
+    admin.add_view(EducationAdminView(Education, name='Education'))
 
     # 6. Blueprint Registration (API Routes)
     # English Comment: Ensure the import matches your specific variable name 'Api'

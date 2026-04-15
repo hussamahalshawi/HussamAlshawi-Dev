@@ -1,4 +1,4 @@
-# backend/admin_views/my_media_views.py
+# backend/admin_views/my_media_view.py
 
 try:
     from markupsafe import Markup

@@ -53,6 +53,8 @@ class ProfileAdminView(ProfessionalModelView):
     # English Comment: Explicitly define the order and visibility of all fields including social links
     form_columns = (
         'full_name', 'title', 'bio', 'email', 'phone', 'address',
+        'is_available_for_hire',
+        'remote_preference',
         'avatar_upload',  # Custom field for single upload
         'gallery_upload',  # Custom field for multiple uploads
         'github_url', 'linkedin_url', 'facebook_url',
