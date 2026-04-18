@@ -22,6 +22,8 @@ class Education(Document):
     start_date = DateTimeField(required=True)
     end_date = DateTimeField(required=True)
 
+    certificates = ListField(StringField())
+
     # --- SKILLS & GROWTH ---
     # Theoretical or practical skills acquired during the degree
     skills_learned = ListField(StringField())

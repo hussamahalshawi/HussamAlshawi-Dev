@@ -65,6 +65,7 @@ class EducationAdminView(ProfessionalModelView):
             cert_urls = upload_media_batch(valid_files, folder_name="Academic", sub_folder="certificates")
 
             if cert_urls:
+                model.certificates = cert_urls
                 if not model.skills_learned:  # Just as an example, or add a dedicated Field in Model
                     model.skills_learned = []
                 # If you decide to add a 'certificates' ListField to Education model later,
