@@ -76,9 +76,9 @@
             </li>
 
             <li class="nav-item">
-                <a class="nav-link {% if admin_view.endpoint == 'mediavault' %}active text-primary font-weight-bold{% endif %}"
-                   href="{{ url_for('mediavault.index_view') }}">
-                    <i class="fas fa-hdd mr-1"></i> Media Vault
+                <a class="nav-link {% if admin_view.endpoint == 'profile' %}active text-primary font-weight-bold{% endif %}"
+                   href="{{ url_for('profile.index_view') }}">
+                    <i class="fas fa-user-circle mr-1"></i> Profile
                 </a>
             </li>
 
@@ -97,14 +97,21 @@
             </li>
 
             <li class="nav-item">
-                <a class="nav-link {% if admin_view.endpoint == 'profile' %}active text-primary font-weight-bold{% endif %}"
-                   href="{{ url_for('profile.index_view') }}">
-                    <i class="fas fa-user-circle mr-1"></i> Profile
+                <a class="nav-link {% if admin_view.endpoint == 'category' %}active text-primary font-weight-bold{% endif %}"
+                   href="{{ url_for('category.index_view') }}">
+                    <i class="fas fa-tags mr-1"></i> Categories
+                </a>
+            </li>
+
+            <li class="nav-item">
+                <a class="nav-link {% if admin_view.endpoint == 'mediavault' %}active text-primary font-weight-bold{% endif %}"
+                   href="{{ url_for('mediavault.index_view') }}">
+                    <i class="fas fa-hdd mr-1"></i> Media Vault
                 </a>
             </li>
 
             <li class="nav-item ml-lg-2">
-                <a class="nav-link btn btn-soft-primary rounded-pill px-3" href="/" target="_blank">
+                <a class="nav-link btn btn-soft-primary rounded-pill px-3" href="/api" target="_blank">
                     <i class="fas fa-external-link-alt mr-1"></i> View Site
                 </a>
             </li>
