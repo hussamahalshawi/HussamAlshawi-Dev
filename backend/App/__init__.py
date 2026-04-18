@@ -15,7 +15,10 @@ from App.models.education import Education                          # Model for 
 from App.models.achievement import Achievement                      # Model for professional awards
 from App.models.category import Category                            # Model for category awards
 from App.models.course import Course                                # Model for Course awards
-from App.models.experience import Experience                                # Model for Experience awards
+from App.models.experience import Experience                        # Model for Experience awards
+from App.models.skills import Skill, SkillType                      # Models for technical skill architecture
+from admin_views.skill_view import SkillAdminView, SkillTypeAdminView # Custom views for Skills and Types
+
 
 # --- ADMIN VIEW IMPORTS ---
 from admin_views.my_media_view import MediaVaultAdminView            # Custom view for Media
@@ -61,17 +64,29 @@ def create_app():
         raise db_err                                                # Stop app if DB is down
 
     # 5. FLASK-ADMIN REGISTRATION
-    # English Comment: Organizing the dashboard into logical categories
-    admin = Admin(app, name='HussamDev Admin') # Create Admin UI
+    # English Comment: Initializing the dashboard with a professional identity
+    admin = Admin(app, name='HussamDev Admin')
 
-    # Adding Model Views to Dashboard
-    admin.add_view(ProfileAdminView(Profile, name='Personal Profile', category='Identity')) # Identity Tab
-    admin.add_view(EducationAdminView(Education, name='Academic Path', category='Identity')) # Education under Identity
-    admin.add_view(AchievementAdminView(Achievement, name='Achievements', category='Professional')) # Professional Tab
-    admin.add_view(CategoryAdminView(Category, name='Categories', category='General'))
-    admin.add_view(CourseAdminView(Course, name='Course', category='Content')) # Content Tab
-    admin.add_view(ExperienceAdminView(Experience, name='Experience', category='Content')) # Content Tab
-    admin.add_view(MediaVaultAdminView(MediaVault, name='Media Vault', category='Content')) # Content Tab
+    # --- REGISTERING VIEWS TO DASHBOARD ---
+
+    # Identity & Profile Section
+    admin.add_view(ProfileAdminView(Profile, name='Personal Profile', category='Identity'))
+    admin.add_view(EducationAdminView(Education, name='Education', category='Identity'))
+
+    # Career & Professional Section
+    admin.add_view(ExperienceAdminView(Experience, name='Experience', category='Professional'))
+    admin.add_view(AchievementAdminView(Achievement, name='Achievements', category='Professional'))
+    admin.add_view(CourseAdminView(Course, name='Courses', category='Professional'))
+
+    # Technical Skills Section
+    admin.add_view(SkillTypeAdminView(SkillType, name='Skill Types', category='Skills'))
+    admin.add_view(SkillAdminView(Skill, name='Technical Skills', category='Skills'))
+
+    # Content & System Section
+    admin.add_view(MediaVaultAdminView(MediaVault, name='Media Vault', category='System'))
+    admin.add_view(CategoryAdminView(Category, name='Global Categories', category='System'))
+
+
 
     # 6. API ROUTES (BLUEPRINTS)
     from App.routes import Api as main_bp                           # Import API blueprint
