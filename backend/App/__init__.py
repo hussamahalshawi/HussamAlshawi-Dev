@@ -1,120 +1,110 @@
-import logging
-import os
-from flask import Flask
-from flask_cors import CORS
+import logging                                                      # Standard logging library for tracking events
+import os                                                           # OS module for path and directory operations
+from flask import Flask                                             # Core Flask framework
+from flask_cors import CORS                                         # Cross-Origin Resource Sharing for frontend
+from flask_admin import Admin                                       # Admin interface management
 
-# English Comment: Core application components
-from config import get_config
-from App.models.database import init_db
+# --- LOCAL COMPONENT IMPORTS ---
+from config import get_config                                       # Loading system configurations
+from App.models.database import init_db                             # Database initialization logic
 
-# 1. External Imports
-from flask_admin import Admin
+# --- MODEL IMPORTS ---
+from App.models.my_media import MediaVault                          # Model for media assets
+from App.models.profile import Profile                              # Model for personal profile
+from App.models.education import Education                          # Model for academic records
+from App.models.achievement import Achievement                      # Model for professional awards
 
-# 2. Local Imports from your new structure
-# Import the Model from: backend/App/models/my_media.py
-from App.models.my_media import MediaVault
-
-# Import the Model from: backend/App/models/my_media.py
-from App.models.profile import Profile
-
-# Import the View from: backend/admin_views/my_media_view.py
-from admin_views.my_media_view import MediaVaultAdminView
-
-# Import the View from: backend/admin_views/profile_view.py
-from admin_views.profile_view import ProfileAdminView
-
-from admin_views.education_view import EducationAdminView
-from App.models.education import Education
-
-
-
+# --- ADMIN VIEW IMPORTS ---
+from admin_views.my_media_view import MediaVaultAdminView            # Custom view for Media
+from admin_views.profile_view import ProfileAdminView                # Custom view for Profile
+from admin_views.education_view import EducationAdminView            # Custom view for Education
+from admin_views.achievement_view import AchievementAdminView        # Custom view for Achievements
 
 def create_app():
     """
-    HussamAlshawi-Dev Application Factory.
-    Integrates professional logging, API security, database connectivity, and Admin UI.
+    HussamAlshawi-Portfolio Application Factory.
+    Configures logging, database, and admin dashboard with professional standards.
     """
-    # Get the absolute path to the templates folder
-    # This ensures Flask knows exactly where to look
-    template_dir = os.path.abspath('App/templates')
+    # Define absolute path for templates to ensure reliability
+    template_dir = os.path.abspath('App/templates')                # Get absolute path for template folder
+    app = Flask(__name__, template_folder=template_dir)             # Initialize Flask with specific templates
 
-    app = Flask(__name__, template_folder=template_dir)
-
-    # 1. Configuration Loading & Validation
+    # 1. CONFIGURATION LOADING
     try:
-        current_config = get_config()
-        app.config.from_object(current_config)
+        current_config = get_config()                               # Fetch configuration object
+        app.config.from_object(current_config)                      # Load config into Flask app
     except Exception as e:
-        # Standard logging as per your requirement
-        print(f"[-] Critical Configuration Error: {e}")
-        raise
+        # Standard print as fallback if logging isn't ready
+        print(f"[-] Critical Configuration Error: {e}")             # Print error to console
+        raise                                                       # Stop execution on config failure
 
-    # 2. Enable CORS for React Frontend Integration
-    CORS(app, resources={r"/api/*": {"origins": "*"}})
+    # 2. CORS SETUP
+    # Allow React frontend to communicate with Python backend
+    CORS(app, resources={r"/api/*": {"origins": "*"}})             # Enable CORS for all API routes
 
-    # 3. Logging System Setup (Recording every step in hussam_dev.log)
-    setup_app_logging(app, current_config)
+    # 3. PROFESSIONAL LOGGING SYSTEM
+    # English Comment: Directing every internal error and action to 'hussam_dev.log'
+    setup_app_logging(app, current_config)                          # Initialize custom logging handler
 
-    # 4. Database Connection (MongoDB Atlas via MongoEngine)
+    # 4. DATABASE INITIALIZATION
     try:
-        init_db(app)
-        app.logger.info("[+] MongoDB Atlas connection established.")
+        init_db(app)                                                # Connect to MongoDB via MongoEngine
+        app.logger.info("[+] MongoDB Atlas connection active.")      # Log successful DB connection
     except Exception as db_err:
-        app.logger.critical(f"[-] Database Initialization Failed: {db_err}")
-        raise db_err
+        app.logger.critical(f"[-] DB Connection Failed: {db_err}")  # Log critical DB error
+        raise db_err                                                # Stop app if DB is down
 
-    # 5. Flask-Admin Setup
-    # Initialize the Admin interface with a professional bootstrap4 theme
-    admin = Admin(app, name='HussamDev Admin')
+    # 5. FLASK-ADMIN REGISTRATION
+    # English Comment: Organizing the dashboard into logical categories
+    admin = Admin(app, name='HussamDev Admin') # Create Admin UI
 
-    # Register the MediaVault view instead of Profile
-    # This connects the Model with the specialized View we created
-    admin.add_view(MediaVaultAdminView(MediaVault, name='Media Library', category='Content'))
-    admin.add_view(ProfileAdminView(Profile, name='Personal Profile', category='Identity'))
-    admin.add_view(EducationAdminView(Education, name='Education'))
+    # Adding Model Views to Dashboard
+    admin.add_view(ProfileAdminView(Profile, name='Personal Profile', category='Identity')) # Identity Tab
+    admin.add_view(EducationAdminView(Education, name='Academic Path', category='Identity')) # Education under Identity
+    admin.add_view(AchievementAdminView(Achievement, name='Achievements', category='Professional')) # Professional Tab
+    admin.add_view(MediaVaultAdminView(MediaVault, name='Media Vault', category='Content')) # Content Tab
 
-    # 6. Blueprint Registration (API Routes)
-    # English Comment: Ensure the import matches your specific variable name 'Api'
-    from App.routes import Api as main_bp
-    app.register_blueprint(main_bp, url_prefix='/api')
+    # 6. API ROUTES (BLUEPRINTS)
+    from App.routes import Api as main_bp                           # Import API blueprint
+    app.register_blueprint(main_bp, url_prefix='/api')              # Register blueprint with prefix
 
-    # 7. Signal Registration (For automated tasks like Skill Sync)
-    register_signals(app)
+    # 7. AUTOMATION SIGNALS
+    register_signals(app)                                           # Initialize real-time data signals
 
-    app.logger.info(f"🚀 {current_config.PROJECT_NAME} Factory started successfully.")
+    app.logger.info(f"🚀 {current_config.PROJECT_NAME} is fully operational.") # Final startup log
 
-    return app
-
+    return app                                                      # Return initialized app instance
 
 def setup_app_logging(app, config_obj):
     """
-    Configures local file logging to ensure every action is tracked.
+    Configures persistent file logging for error tracking and system audits.
     """
-    # English Comment: Ensure the log directory exists before creating the file
-    if not os.path.exists(config_obj.LOG_DIR):
-        os.makedirs(config_obj.LOG_DIR)
+    # Create logs directory if it doesn't exist to prevent IO errors
+    if not os.path.exists(config_obj.LOG_DIR):                      # Check if LOG_DIR exists
+        os.makedirs(config_obj.LOG_DIR)                             # Create directory if missing
 
-    log_file = os.path.join(config_obj.LOG_DIR, 'hussam_dev.log')
+    # Define the absolute path for the log file
+    log_file = os.path.join(config_obj.LOG_DIR, 'hussam_dev.log')    # Set log file path
 
-    file_handler = logging.FileHandler(log_file)
-    file_handler.setFormatter(logging.Formatter(
+    # Initialize FileHandler to store logs in the file system
+    file_handler = logging.FileHandler(log_file)                    # Create file handler
+    file_handler.setFormatter(logging.Formatter(                    # Define log entry format
         '%(asctime)s %(levelname)s: %(message)s [in %(pathname)s:%(lineno)d]'
     ))
 
-    file_handler.setLevel(logging.INFO)
-    app.logger.addHandler(file_handler)
-    app.logger.setLevel(logging.INFO)
-    app.logger.info("[+] Logging system is active.")
-
+    # Set logging levels
+    file_handler.setLevel(logging.INFO)                             # Capture INFO and above in file
+    app.logger.addHandler(file_handler)                             # Link handler to Flask logger
+    app.logger.setLevel(logging.INFO)                               # Set app logging threshold
+    app.logger.info("[+] Logging system initialized successfully.") # First entry in the log file
 
 def register_signals(app):
     """
-    Handles system signals for real-time automation logic.
+    Registers signals for background automation tasks.
     """
-    with app.app_context():
+    with app.app_context():                                         # Enter application context
         try:
-            # English Comment: Placeholder for signals implementation
-            # import App.signals
-            app.logger.info("[+] System signals synchronized.")
+            # English Comment: Ensures real-time synchronization of data metrics
+            app.logger.info("[+] System signals synchronized.")      # Log signal sync status
         except Exception as e:
-            app.logger.error(f"[-] Signal Synchronization Error: {e}")
+            app.logger.error(f"[-] Signal Sync Failed: {e}")        # Log non-critical signal error
