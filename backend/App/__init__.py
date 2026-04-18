@@ -20,6 +20,7 @@ from App.models.skills import Skill, SkillType                      # Models for
 from admin_views.skill_view import SkillAdminView, SkillTypeAdminView # Custom views for Skills and Types
 from App.models.self_study import SelfStudy
 from App.models.project import Project
+from App.models.goal import Goal
 
 
 # --- ADMIN VIEW IMPORTS ---
@@ -32,6 +33,7 @@ from admin_views.course_view import CourseAdminView                  # Custom vi
 from admin_views.experience_view import ExperienceAdminView                  # Custom view for Experience
 from admin_views.self_study_view import SelfStudyAdminView
 from admin_views.project_view import ProjectAdminView
+from admin_views.goal_view import GoalAdminView
 
 
 
@@ -79,6 +81,7 @@ def create_app():
     admin.add_view(ProfileAdminView(Profile, name='Personal Profile', category='Identity'))
     admin.add_view(EducationAdminView(Education, name='Education', category='Identity'))
     admin.add_view(SelfStudyAdminView(SelfStudy, name='Self Study', category='Identity'))
+    admin.add_view(GoalAdminView(Goal, name='Roadmap', category='Identity'))
 
     # Career & Professional Section
     admin.add_view(ExperienceAdminView(Experience, name='Experience', category='Professional'))

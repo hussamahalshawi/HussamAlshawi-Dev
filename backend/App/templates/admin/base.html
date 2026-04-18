@@ -148,6 +148,13 @@
                 </a>
             </li>
 
+            <li class="nav-item">
+                <a class="nav-link {% if admin_view.endpoint == 'goal' %}active text-primary font-weight-bold{% endif %}"
+                   href="{{ url_for('goal.index_view') }}">
+                    <i class="fas fa-map-signs mr-1"></i> Career Roadmap
+                </a>
+            </li>
+
 
             <li class="nav-item">
                 <a class="nav-link {% if admin_view.endpoint == 'mediavault' %}active text-primary font-weight-bold{% endif %}"
