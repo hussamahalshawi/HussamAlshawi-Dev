@@ -64,14 +64,18 @@ class AchievementAdminView(ProfessionalModelView):
         valid_files = [f for f in files if f and f.filename != '']  # Filter empty inputs
 
         if valid_files:
-            # English Comment: Store files in a specific Cloudinary hierarchy
+            # 2. Upload to Cloudinary
+            # English Comment: Upload files to a specific folder in the cloud
             uploaded_urls = upload_media_batch(valid_files, folder_name="Achievements", sub_folder="evidence")
 
             if uploaded_urls:
-                # English Comment: Map the first uploaded URL to evidence_url if it's empty
-                if not model.evidence_url:
-                    model.evidence_url = uploaded_urls[0]  # Auto-fill for convenience
+                # 3. Save URLs to the model field
+                # English Comment: Sync the returned Cloudinary URLs with the database field
+                model.evidence_photos = uploaded_urls
 
+                # English Comment: Also update the single evidence_url for quick access if empty
+                if not model.evidence_url:
+                    model.evidence_url = uploaded_urls[0]
         # B. Audit Metadata
         # English Comment: Update the last modified timestamp on every save
         from datetime import datetime, timezone

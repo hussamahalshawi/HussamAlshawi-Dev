@@ -10,7 +10,11 @@ class Achievement(Document):
     # --- RECOGNITION IDENTITY ---
     title = StringField(required=True)  # Name of the award or recognition
     issuing_organization = StringField()  # Entity that granted the award
-    category = StringField()  # e.g., Professional, Academic, Competition
+    # category = StringField()  # e.g., Professional, Academic, Competition
+
+    # --- ADDED: Field to store multiple image/file URLs from Cloudinary ---
+    # English Comment: List to store URLs of uploaded certificates or photos
+    evidence_photos = ListField(StringField())
 
     # --- VALIDATION & EVIDENCE ---
     # URL to the digital certificate or official announcement
