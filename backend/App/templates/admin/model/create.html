@@ -2,32 +2,22 @@
 
 {% block body %}
 <div class="container py-5">
+    {# English Comment: Breadcrumb Navigation #}
     <nav aria-label="breadcrumb" class="mb-4">
         <ol class="breadcrumb bg-transparent p-0 small">
             <li class="breadcrumb-item"><a href="{{ admin_view.get_url('.index_view') }}">{{ admin_view.name }}</a></li>
-            <li class="breadcrumb-item active">
-                {% if 'edit' in request.path %}Update{% else %}Create New{% endif %} {{ admin_view.name }}
-            </li>
+            <li class="breadcrumb-item active">Management</li>
         </ol>
     </nav>
 
     <div class="row justify-content-center">
-        <div class="col-lg-10">
+        <div class="col-lg-11">
             <div class="card border-0 shadow-lg" style="border-radius: 20px; overflow: hidden;">
-
                 <div class="card-header border-0 bg-white pt-4 px-4 pb-0">
-                    <div class="d-flex align-items-center">
-                        <div class="icon-box rounded-circle mr-3 d-flex align-items-center justify-content-center"
-                             style="width: 50px; height: 50px; background: rgba(37, 99, 235, 0.1);">
-                            <i class="fas {{ 'fa-user-circle' if 'profile' in admin_view.endpoint else 'fa-cube' }} text-primary"></i>
-                        </div>
-                        <div>
-                            <h4 class="font-weight-bold mb-0 text-dark">
-                                {{ admin_view.name }} Hub
-                            </h4>
-                            <p class="text-muted small mb-0">System identified dynamic schema for <strong>{{ admin_view.name }}</strong>.</p>
-                        </div>
-                    </div>
+                    <h4 class="font-weight-bold mb-0 text-dark">
+                        <i class="fas {{ 'fa-images' if 'media' in admin_view.endpoint else 'fa-layer-group' }} text-primary mr-2"></i>
+                        {{ admin_view.name }} Hub
+                    </h4>
                 </div>
 
                 <div class="card-body p-4">
@@ -36,86 +26,129 @@
 
                         {% for field in form if field.type != 'CSRFTokenField' %}
                         <div class="form-group mb-4">
-                            <label class="font-weight-600 mb-2" style="font-size: 0.85rem; color: #475569; text-transform: uppercase; letter-spacing: 0.5px;">
+                            <label class="font-weight-bold text-muted small text-uppercase mb-2 d-block">
                                 {{ field.label.text }}
                             </label>
 
-                            {# --- LOGIC 1: SMART INLINE FIELDS (Like Media Gallery or Lessons) --- #}
-                            {# We check if it's a list (FieldList) or has nested subfields #}
-                            {% if field.type in ['FieldList', 'InlineFormFieldList'] or field.id == 'media_links' %}
-                                <div class="inline-field-container p-3 border rounded" style="background: #f8fafc; border-radius: 15px;">
-                                    <div class="inline-field-list row" id="{{ field.id }}">
-                                        {% if field is iterable %}
-                                            {% for subfield in field %}
-                                            <div class="col-xl-3 col-lg-4 col-md-6 mb-3 inline-field-item">
-                                                <div class="card h-100 border-0 shadow-sm preview-card">
-                                                    <div class="position-relative">
-                                                        {# Show image if it looks like a URL #}
-                                                        <img src="{{ subfield.data if subfield.data else '' }}" class="card-img-top preview-img" onerror="this.src='https://placehold.co/300x200?text=Object+Data'">
-                                                        <button type="button" class="btn btn-danger btn-sm rounded-circle remove-btn" onclick="$(this).closest('.inline-field-item').remove();">
-                                                            <i class="fas fa-times"></i>
-                                                        </button>
-                                                    </div>
-                                                    <div class="card-footer bg-white border-0 p-2">
-                                                        {{ subfield(class="form-control form-control-sm text-muted x-small-input") }}
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            {% endfor %}
-                                        {% endif %}
-                                    </div>
-                                    <div class="mt-3">
-                                        <button type="button" class="btn btn-outline-primary btn-sm rounded-pill px-3" onclick="if(window.faForm) faForm.addInlineField(this, '{{ field.id }}');">
-                                            <i class="fas fa-plus mr-1"></i> Add Item to {{ field.label.text }}
-                                        </button>
-                                    </div>
-                                </div>
+                            {# --- LOGIC 1: DATE PICKER (Start Date, End Date, etc.) --- #}
+                            {# English Comment: Automatically detect date fields by ID and inject native date picker #}
+                            {% if 'date' in field.id|lower %}
+                            <div class="position-relative">
+                                {{ field(class="form-control custom-input", type="date") }}
+                            </div>
 
-                            {# --- LOGIC 2: SMART FILE UPLOADS --- #}
-                            {# Handles any field that is a FileField or has "upload" in its ID #}
-                            {% elif field.type == 'FileField' or 'upload' in field.id or 'avatar' in field.id %}
-                                <div class="custom-upload-wrapper">
-                                    {{ field(class="d-none dynamic-file-input", id=field.id) }}
-                                    <label for="{{ field.id }}" class="modern-upload-btn">
-                                        <div class="d-flex align-items-center">
-                                            <div class="upload-icon-wrapper shadow-sm">
-                                                <i class="fas fa-cloud-upload-alt"></i>
+                            {# --- LOGIC 2: SMART FILE UPLOAD --- #}
+                            {# English Comment: Modern upload interface for files and avatars #}
+                            {% elif field.type in ['FileField', 'MultipleFileField'] or 'upload' in field.id %}
+                            <div class="custom-upload-wrapper">
+                                {{ field(class="d-none dynamic-file-input", id=field.id) }}
+                                <label for="{{ field.id }}" class="modern-upload-btn">
+                                    <div class="d-flex align-items-center">
+                                        <div class="upload-icon-wrapper shadow-sm">
+                                            <i class="fas fa-cloud-upload-alt"></i>
+                                        </div>
+                                        <div class="ml-3">
+                                            <span class="d-block font-weight-bold text-dark file-status-text">Select Assets</span>
+                                        </div>
+                                    </div>
+                                </label>
+                            </div>
+
+                            {# --- LOGIC 3: DYNAMIC LISTS (MEDIA GALLERY & SKILLS) --- #}
+                            {# English Comment: Grid system for dynamic lists with preview for media links #}
+                            {% elif field.type in ['FieldList', 'InlineFormFieldList', 'ListField'] or field.id in
+                            ['media_links', 'skills_learned'] %}
+                            <div class="universal-list-container p-4 border rounded shadow-sm"
+                                 style="background: #f8fafc; border-radius: 15px;">
+                                <div class="row" id="container-{{ field.id }}">
+                                    {% for subfield in field %}
+                                    <div class="col-xl-3 col-lg-4 col-md-6 mb-3 dynamic-item">
+                                        <div class="card h-100 border-0 shadow-sm item-card"
+                                             style="border-radius: 12px; overflow: hidden;">
+
+                                            {# English Comment: Render image preview only for media links #}
+                                            {% if field.id == 'media_links' %}
+                                            <div class="position-relative">
+                                                <img src="{{ subfield.data }}" class="card-img-top preview-img"
+                                                     style="height: 120px; object-fit: cover;"
+                                                     onerror="this.src='https://placehold.co/300x200?text=No+Preview'">
+                                                <button type="button"
+                                                        class="btn btn-danger btn-sm rounded-circle position-absolute remove-item-btn"
+                                                        style="top: 5px; right: 5px; z-index: 5;">
+                                                    <i class="fas fa-times"></i>
+                                                </button>
                                             </div>
-                                            <div class="ml-3">
-                                                <span class="d-block font-weight-bold text-dark file-status-text">Select Asset</span>
-                                                <small class="text-muted">Cloud-ready upload for {{ field.label.text }}</small>
+                                            {% else %}
+                                            <div class="p-2 bg-light border-bottom d-flex justify-content-between align-items-center">
+                                                <small class="text-muted font-weight-bold">Entry</small>
+                                                <button type="button"
+                                                        class="btn btn-link text-danger btn-sm p-0 remove-item-btn">
+                                                    <i class="fas fa-trash-alt"></i>
+                                                </button>
+                                            </div>
+                                            {% endif %}
+
+                                            <div class="card-footer bg-white border-0 p-2">
+                                                {{ subfield(class="form-control form-control-sm x-small-input",
+                                                placeholder="Value...") }}
                                             </div>
                                         </div>
-                                    </label>
+                                    </div>
+                                    {% endfor %}
                                 </div>
+                                <div class="mt-3 text-center">
+                                    <button type="button"
+                                            class="btn btn-primary btn-sm rounded-pill px-4 add-item-trigger shadow"
+                                            data-field-id="{{ field.id }}">
+                                        <i class="fas fa-plus-circle mr-1"></i> Add {{ field.label.text }}
+                                    </button>
+                                </div>
+                            </div>
 
-                            {# --- LOGIC 3: SMART TEXTAREA --- #}
-                            {% elif field.type == 'TextAreaField' or 'bio' in field.id or 'description' in field.id %}
-                                {{ field(class="form-control custom-input", rows="4", placeholder="Write details here...") }}
+                            {# --- LOGIC 5: ULTRA PREMIUM SELECT --- #}
+{% elif field.type == 'SelectField' or field.id == 'content_type' %}
+    <div class="custom-select-wrapper" id="wrapper-{{ field.id }}">
+        {# القائمة الأصلية مخفية ولكنها موجودة لإرسال البيانات #}
+        {{ field(class="d-none actual-select") }}
 
-                            {# --- LOGIC 4: ALL OTHER FIELDS (Text, Email, URL, Select) --- #}
+        {# القائمة الوهمية التي نتحكم بشكلها #}
+        <div class="select-styled">
+            <span class="selected-text">Select {{ field.label.text }}</span>
+            <i class="fas fa-chevron-down select-icon"></i>
+        </div>
+
+        <ul class="select-options">
+            {% for value, label in field.choices %}
+                <li data-value="{{ value }}">{{ label }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+
+                            {# --- LOGIC 4: STANDARD INPUTS --- #}
+                            {# English Comment: Dynamic placeholder that includes the field label name #}
                             {% else %}
-                                {% set field_class = "form-control custom-input " + ("is-invalid" if field.errors else "") %}
-                                {{ field(class=field_class, placeholder="Enter " + field.label.text|lower) }}
+                            {{ field(class="form-control custom-input", placeholder="Enter " ~ field.label.text|lower)
+                            }}
                             {% endif %}
 
+
+                            {# English Comment: Display field validation errors below each input #}
                             {% if field.errors %}
-                                {% for error in field.errors %}
-                                    <div class="invalid-feedback d-block mt-2 ml-1">
-                                        <i class="fas fa-exclamation-triangle mr-1"></i> {{ error }}
-                                    </div>
-                                {% endfor %}
+                            {% for error in field.errors %}
+                            <div class="text-danger small mt-2 ml-2">
+                                <i class="fas fa-exclamation-circle mr-1"></i> {{ error }}
+                            </div>
+                            {% endfor %}
                             {% endif %}
                         </div>
                         {% endfor %}
 
-                        <hr class="my-5 border-light">
-
-                        <div class="d-flex align-items-center justify-content-between">
-                            <a href="{{ admin_view.get_url('.index_view') }}" class="btn btn-link text-muted font-weight-bold text-decoration-none">
-                                <i class="fas fa-times mr-2"></i> Discard
-                            </a>
-                            <button type="submit" class="btn btn-primary px-5 py-3 shadow font-weight-bold rounded-pill">
+                        {# English Comment: Form Action Buttons #}
+                        <div class="d-flex align-items-center justify-content-between mt-5">
+                            <a href="{{ admin_view.get_url('.index_view') }}"
+                               class="btn btn-link text-muted">Discard</a>
+                            <button type="submit"
+                                    class="btn btn-primary px-5 py-3 shadow font-weight-bold rounded-pill">
                                 <i class="fas fa-save mr-2"></i> Save & Deploy
                             </button>
                         </div>
@@ -127,28 +160,216 @@
 </div>
 
 <style>
-    /* CSS logic remains the same to maintain the branding */
-    .custom-input { border-radius: 12px; padding: 1.2rem 1rem; border: 1px solid #e2e8f0; background: #f8fafc; transition: 0.3s; }
-    .custom-input:focus { background: #fff !important; border-color: #2563eb !important; box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1) !important; outline: none; }
+    .custom-select-wrapper {
+        position: relative;
+        cursor: pointer;
+        user-select: none;
+    }
 
-    .modern-upload-btn { display: block; padding: 1.5rem; background: #ffffff; border: 2px dashed #cbd5e1; border-radius: 16px; cursor: pointer; transition: 0.3s; }
-    .modern-upload-btn:hover { border-color: #2563eb; background: #f1f5f9; transform: translateY(-2px); }
+    .select-styled {
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        padding: 1.1rem 1.5rem;
+        color: #1e293b;
+        font-weight: 500;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        transition: 0.3s;
+    }
+
+    .select-styled:hover { border-color: #2563eb; background: #fff; }
+
+    .select-options {
+        position: absolute;
+        top: 110%;
+        left: 0;
+        right: 0;
+        z-index: 999;
+        background: #ffffff;
+        border-radius: 12px;
+        border: 1px solid #e2e8f0;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        padding: 8px;
+        display: none; /* مخفية افتراضياً */
+        list-style: none;
+        margin: 0;
+    }
+
+    .select-options li {
+        padding: 12px 15px;
+        border-radius: 8px;
+        transition: 0.2s;
+        color: #475569;
+        font-size: 14px;
+    }
+
+    .select-options li:hover {
+        background: #f1f5f9;
+        color: #2563eb;
+        padding-left: 20px;
+    }
+
+    .custom-select-wrapper.active .select-options { display: block; }
+    .custom-select-wrapper.active .select-icon { transform: rotate(180deg); }
+    /* English Comment: Remove default select styling and add custom arrow */
+.custom-select-ui {
+    appearance: none !important;
+    -webkit-appearance: none !important;
+    -moz-appearance: none !important;
+    padding-right: 45px !important; /* مساحة للسهم */
+    cursor: pointer;
+}
+
+.select-chevron {
+    position: absolute;
+    right: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #2563eb; /* اللون الأزرق الخاص بمشروعك */
+    pointer-events: none; /* عشان ما يمنع الضغط على القائمة */
+    font-size: 0.85rem;
+    z-index: 5;
+}
+
+/* تحسين شكل الخيارات داخل القائمة */
+.custom-select-ui option {
+    background: #ffffff;
+    color: #1e293b;
+    padding: 10px;
+}
+    /* English Comment: Remove default select styling and add custom arrow */
+.custom-select-ui {
+    appearance: none !important;
+    -webkit-appearance: none !important;
+    -moz-appearance: none !important;
+    padding-right: 45px !important; /* مساحة للسهم */
+    cursor: pointer;
+}
+
+.select-chevron {
+    position: absolute;
+    right: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #2563eb; /* اللون الأزرق الخاص بمشروعك */
+    pointer-events: none; /* عشان ما يمنع الضغط على القائمة */
+    font-size: 0.85rem;
+    z-index: 5;
+}
+
+/* تحسين شكل الخيارات داخل القائمة */
+.custom-select-ui option {
+    background: #ffffff;
+    color: #1e293b;
+    padding: 10px;
+}
+    /* English Comment: Style the native date picker icon */
+input[type="date"]::-webkit-calendar-picker-indicator {
+    cursor: pointer;
+    border-radius: 4px;
+    margin-right: 2px;
+    opacity: 0.6;
+    filter: invert(30%) sepia(100%) saturate(2500%) hue-rotate(210deg); /* تلوين الأيقونة بالأزرق */
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator:hover {
+    opacity: 1;
+}
+    .custom-input { border-radius: 12px; padding: 1.1rem; border: 1px solid #e2e8f0; background: #f8fafc; transition: 0.3s; }
+    .modern-upload-btn { display: block; padding: 1.5rem; background: #ffffff; border: 2px dashed #cbd5e1; border-radius: 16px; cursor: pointer; }
     .upload-icon-wrapper { width: 45px; height: 45px; background: #2563eb; color: white; border-radius: 10px; display: flex; align-items: center; justify-content: center; }
-
-    .preview-card { border-radius: 12px; border: 1px solid #e2e8f0 !important; }
-    .preview-img { height: 110px; object-fit: cover; }
-    .remove-btn { position: absolute; top: 5px; right: 5px; width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; font-size: 10px; }
-    .x-small-input { font-size: 11px !important; border: none; background: transparent; }
+    .item-card { border: 1px solid #e2e8f0 !important; transition: 0.2s; }
+    .item-card:hover { transform: translateY(-3px); box-shadow: 0 5px 15px rgba(0,0,0,0.1) !important; }
+    .x-small-input { font-size: 11px !important; border: none; background: transparent; padding: 0; width: 100%; }
 </style>
 
 {% block tail_js %}
 <script>
-    // Universal File Handler
+    // English Comment: Toggle dropdown visibility
+    $(document).on('click', '.select-styled', function(e) {
+        $(this).parent().toggleClass('active');
+        e.stopPropagation();
+    });
+
+    // English Comment: Handle option selection
+    $(document).on('click', '.select-options li', function() {
+        const value = $(this).data('value');
+        const text = $(this).text();
+        const wrapper = $(this).closest('.custom-select-wrapper');
+
+        // Update the UI
+        wrapper.find('.selected-text').text(text);
+        wrapper.removeClass('active');
+
+        // Update the actual hidden Flask field
+        wrapper.find('.actual-select').val(value).trigger('change');
+    });
+
+    // Close when clicking outside
+    $(document).click(function() {
+        $('.custom-select-wrapper').removeClass('active');
+    });
+    // English Comment: Intelligent Adding Logic (Differentiates between Media and Skills)
+    $(document).on('click', '.add-item-trigger', function() {
+        const fieldId = $(this).data('field-id');
+        const container = $(`#container-${fieldId}`);
+        const nextIndex = container.find('.dynamic-item').length;
+
+        let contentHtml = "";
+
+        // English Comment: If it's Media, add the Image Preview UI
+        if (fieldId === 'media_links') {
+            contentHtml = `
+                <div class="position-relative">
+                    <img src="" class="card-img-top preview-img" style="height: 120px; object-fit: cover;" onerror="this.src='https://placehold.co/300x200?text=Paste+URL'">
+                    <button type="button" class="btn btn-danger btn-sm rounded-circle position-absolute remove-item-btn" style="top: 5px; right: 5px; z-index: 5;">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>`;
+        } else {
+            // English Comment: If it's Skills or anything else, add the Text Header UI
+            contentHtml = `
+                <div class="p-2 bg-light border-bottom d-flex justify-content-between align-items-center">
+                    <small class="text-muted font-weight-bold">New Skill</small>
+                    <button type="button" class="btn btn-link text-danger btn-sm p-0 remove-item-btn">
+                        <i class="fas fa-trash-alt"></i>
+                    </button>
+                </div>`;
+        }
+
+        const newHtml = `
+            <div class="col-xl-3 col-lg-4 col-md-6 mb-3 dynamic-item">
+                <div class="card h-100 border-0 shadow-sm item-card" style="border-radius: 12px; overflow: hidden;">
+                    ${contentHtml}
+                    <div class="card-footer bg-white border-0 p-2">
+                        <input class="form-control form-control-sm x-small-input list-input-field"
+                               id="${fieldId}-${nextIndex}" name="${fieldId}-${nextIndex}"
+                               type="text" placeholder="Enter value...">
+                    </div>
+                </div>
+            </div>`;
+
+        container.append(newHtml);
+    });
+
+    // English Comment: Live Preview for Image Links
+    $(document).on('input', '.list-input-field', function() {
+        const url = $(this).val();
+        const img = $(this).closest('.item-card').find('.preview-img');
+        if (img.length && (url.includes('http') || url.includes('.jpg') || url.includes('.png'))) {
+            img.attr('src', url);
+        }
+    });
+
+    $(document).on('click', '.remove-item-btn', function() {
+        $(this).closest('.dynamic-item').remove();
+    });
+
     $(document).on('change', '.dynamic-file-input', function(e) {
-        const container = $(this).closest('.custom-upload-wrapper');
-        const statusText = container.find('.file-status-text');
         const count = e.target.files.length;
-        statusText.text(count > 0 ? count + " Files Selected" : "Select Asset").toggleClass('text-primary', count > 0);
+        $(this).closest('.custom-upload-wrapper').find('.file-status-text').text(count + " Files Selected");
     });
 </script>
 {% endblock %}

@@ -35,6 +35,11 @@ class EducationAdminView(ProfessionalModelView):
     form_extra_fields = {
         'certificate_upload': MultipleFileField('Upload Certificates or Campus Photos')
     }
+    # English Comment: Ensure the form accepts the date format sent by the HTML5 input
+    form_args = {
+        'start_date': {'format': '%Y-%m-%d'},
+        'end_date': {'format': '%Y-%m-%d'}
+    }
 
     # English Comment: Define field order and exclude technical ID fields
     form_columns = (
