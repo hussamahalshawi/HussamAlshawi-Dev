@@ -18,6 +18,7 @@ from App.models.course import Course                                # Model for 
 from App.models.experience import Experience                        # Model for Experience awards
 from App.models.skills import Skill, SkillType                      # Models for technical skill architecture
 from admin_views.skill_view import SkillAdminView, SkillTypeAdminView # Custom views for Skills and Types
+from App.models.self_study import SelfStudy
 
 
 # --- ADMIN VIEW IMPORTS ---
@@ -28,6 +29,9 @@ from admin_views.achievement_view import AchievementAdminView        # Custom vi
 from admin_views.category_view import CategoryAdminView              # Custom view for Category
 from admin_views.course_view import CourseAdminView                  # Custom view for Course
 from admin_views.experience_view import ExperienceAdminView                  # Custom view for Experience
+from admin_views.self_study_view import SelfStudyAdminView
+
+
 
 def create_app():
     """
@@ -72,6 +76,7 @@ def create_app():
     # Identity & Profile Section
     admin.add_view(ProfileAdminView(Profile, name='Personal Profile', category='Identity'))
     admin.add_view(EducationAdminView(Education, name='Education', category='Identity'))
+    admin.add_view(SelfStudyAdminView(SelfStudy, name='Self Study', category='Identity'))
 
     # Career & Professional Section
     admin.add_view(ExperienceAdminView(Experience, name='Experience', category='Professional'))
