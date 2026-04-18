@@ -1,24 +1,61 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}{{ admin_view.name }} | HussamDev Admin{% endblock %}</title>
+    <meta charset="UTF-8">                                      <meta name="viewport" content="width=device-width, initial-scale=1.0"> <title>{% block title %}{{ admin_view.name }} | HussamDev Admin{% endblock %}</title>
 
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
 
     <style>
-        :root { --primary-color: #2563eb; --sidebar-bg: #1e293b; --main-bg: #f8fafc; }
-        body { background-color: var(--main-bg); font-family: 'Inter', sans-serif; }
-        .navbar-custom { background: #ffffff; border-bottom: 1px solid #e2e8f0; padding: 0.75rem 1.5rem; }
-        .navbar-brand { font-weight: 700; letter-spacing: -0.5px; color: #0f172a !important; }
-        .nav-link { color: #475569 !important; font-weight: 500; transition: 0.2s; }
-        .nav-link:hover { color: var(--primary-color) !important; }
+        /* --- DESIGN SYSTEM TOKENS --- */
+        :root {
+            --primary-color: #2563eb;                           /* Brand primary blue */
+            --sidebar-bg: #1e293b;                              /* Dark slate for depth */
+            --main-bg: #f8fafc;                                 /* Clean light background */
+        }
+
+        body {
+            background-color: var(--main-bg);
+            font-family: 'Inter', sans-serif;                   /* Global professional font */
+        }
+
+        /* --- NAVIGATION STYLING --- */
+        .navbar-custom {
+            background: #ffffff;
+            border-bottom: 1px solid #e2e8f0;
+            padding: 0.75rem 1.5rem;
+        }
+
+        .navbar-brand {
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            color: #0f172a !important;
+        }
+
+        .nav-link {
+            color: #475569 !important;
+            font-weight: 500;
+            transition: 0.2s;
+        }
+
+        .nav-link:hover {
+            color: var(--primary-color) !important;             /* Hover feedback */
+        }
+
+        /* Styling for the soft blue button */
+        .btn-soft-primary {
+            background-color: #eff6ff;
+            color: var(--primary-color) !important;
+            border: none;
+        }
+
+        .btn-soft-primary:hover {
+            background-color: var(--primary-color);
+            color: #ffffff !important;
+        }
     </style>
-    {% block head %}{% endblock %}
-</head>
+    {% block head %}{% endblock %}                              </head>
 <body>
 
 <nav class="navbar navbar-expand-lg navbar-light navbar-custom sticky-top shadow-sm">
@@ -53,6 +90,13 @@
             </li>
 
             <li class="nav-item">
+                <a class="nav-link {% if admin_view.endpoint == 'achievement' %}active text-primary font-weight-bold{% endif %}"
+                   href="{{ url_for('achievement.index_view') }}">
+                    <i class="fas fa-trophy mr-1"></i> Achievements
+                </a>
+            </li>
+
+            <li class="nav-item">
                 <a class="nav-link {% if admin_view.endpoint == 'profile' %}active text-primary font-weight-bold{% endif %}"
                    href="{{ url_for('profile.index_view') }}">
                     <i class="fas fa-user-circle mr-1"></i> Profile
@@ -69,11 +113,9 @@
 </nav>
 
 <main class="py-4">
-    {% block body %}{% endblock %}
-</main>
+    {% block body %}{% endblock %}                              </main>
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
-{% block tail_js %}{% endblock %}
-</body>
+{% block tail_js %}{% endblock %}                              </body>
 </html>
