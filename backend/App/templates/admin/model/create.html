@@ -54,56 +54,33 @@
                                 </label>
                             </div>
 
-                            {# --- LOGIC 3: DYNAMIC LISTS (MEDIA GALLERY & SKILLS) --- #}
-                            {# English Comment: Grid system for dynamic lists with preview for media links #}
-                            {% elif field.type in ['FieldList', 'InlineFormFieldList', 'ListField'] or field.id in
-                            ['media_links', 'skills_learned'] %}
-                            <div class="universal-list-container p-4 border rounded shadow-sm"
-                                 style="background: #f8fafc; border-radius: 15px;">
-                                <div class="row" id="container-{{ field.id }}">
-                                    {% for subfield in field %}
-                                    <div class="col-xl-3 col-lg-4 col-md-6 mb-3 dynamic-item">
-                                        <div class="card h-100 border-0 shadow-sm item-card"
-                                             style="border-radius: 12px; overflow: hidden;">
-
-                                            {# English Comment: Render image preview only for media links #}
-                                            {% if field.id == 'media_links' %}
-                                            <div class="position-relative">
-                                                <img src="{{ subfield.data }}" class="card-img-top preview-img"
-                                                     style="height: 120px; object-fit: cover;"
-                                                     onerror="this.src='https://placehold.co/300x200?text=No+Preview'">
-                                                <button type="button"
-                                                        class="btn btn-danger btn-sm rounded-circle position-absolute remove-item-btn"
-                                                        style="top: 5px; right: 5px; z-index: 5;">
-                                                    <i class="fas fa-times"></i>
-                                                </button>
-                                            </div>
-                                            {% else %}
-                                            <div class="p-2 bg-light border-bottom d-flex justify-content-between align-items-center">
-                                                <small class="text-muted font-weight-bold">Entry</small>
-                                                <button type="button"
-                                                        class="btn btn-link text-danger btn-sm p-0 remove-item-btn">
-                                                    <i class="fas fa-trash-alt"></i>
-                                                </button>
-                                            </div>
-                                            {% endif %}
-
-                                            <div class="card-footer bg-white border-0 p-2">
-                                                {{ subfield(class="form-control form-control-sm x-small-input",
-                                                placeholder="Value...") }}
-                                            </div>
-                                        </div>
-                                    </div>
-                                    {% endfor %}
-                                </div>
-                                <div class="mt-3 text-center">
-                                    <button type="button"
-                                            class="btn btn-primary btn-sm rounded-pill px-4 add-item-trigger shadow"
-                                            data-field-id="{{ field.id }}">
-                                        <i class="fas fa-plus-circle mr-1"></i> Add {{ field.label.text }}
-                                    </button>
-                                </div>
-                            </div>
+                            {# --- LOGIC 3: DYNAMIC LISTS (MEDIA GALLERY, SKILLS, & ACHIEVEMENTS) --- #}
+{# English Comment: Grid system for dynamic lists including the new skills_demonstrated field #}
+{% elif field.type in ['FieldList', 'InlineFormFieldList', 'ListField'] or field.id in ['media_links', 'skills_learned', 'skills_demonstrated'] %}
+<div class="universal-list-container p-4 border rounded shadow-sm" style="background: #f8fafc; border-radius: 15px;">
+    <div class="row" id="container-{{ field.id }}">
+        {% for subfield in field %}
+        <div class="col-xl-3 col-lg-4 col-md-6 mb-3 dynamic-item">
+            <div class="card h-100 border-0 shadow-sm item-card" style="border-radius: 12px; overflow: hidden;">
+                <div class="p-2 bg-light border-bottom d-flex justify-content-between align-items-center">
+                    <small class="text-muted font-weight-bold">Entry</small>
+                    <button type="button" class="btn btn-link text-danger btn-sm p-0 remove-item-btn">
+                        <i class="fas fa-trash-alt"></i>
+                    </button>
+                </div>
+                <div class="card-footer bg-white border-0 p-2">
+                    {{ subfield(class="form-control form-control-sm x-small-input", placeholder="Skill name...") }}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    <div class="mt-3 text-center">
+        <button type="button" class="btn btn-primary btn-sm rounded-pill px-4 add-item-trigger shadow" data-field-id="{{ field.id }}">
+            <i class="fas fa-plus-circle mr-1"></i> Add {{ field.label.text }}
+        </button>
+    </div>
+</div>
 
                             {# --- LOGIC 5: ULTRA PREMIUM SELECT --- #}
 {% elif field.type == 'SelectField' or field.id == 'content_type' %}
