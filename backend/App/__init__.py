@@ -13,14 +13,16 @@ from App.models.my_media import MediaVault                          # Model for 
 from App.models.profile import Profile                              # Model for personal profile
 from App.models.education import Education                          # Model for academic records
 from App.models.achievement import Achievement                      # Model for professional awards
-from App.models.category import Category                      # Model for professional awards
+from App.models.category import Category                            # Model for category awards
+from App.models.course import Course                                # Model for Course awards
 
 # --- ADMIN VIEW IMPORTS ---
 from admin_views.my_media_view import MediaVaultAdminView            # Custom view for Media
 from admin_views.profile_view import ProfileAdminView                # Custom view for Profile
 from admin_views.education_view import EducationAdminView            # Custom view for Education
 from admin_views.achievement_view import AchievementAdminView        # Custom view for Achievements
-from admin_views.category_view import CategoryAdminView        # Custom view for Achievements
+from admin_views.category_view import CategoryAdminView              # Custom view for Category
+from admin_views.course_view import CourseAdminView                  # Custom view for Course
 
 def create_app():
     """
@@ -65,6 +67,7 @@ def create_app():
     admin.add_view(EducationAdminView(Education, name='Academic Path', category='Identity')) # Education under Identity
     admin.add_view(AchievementAdminView(Achievement, name='Achievements', category='Professional')) # Professional Tab
     admin.add_view(CategoryAdminView(Category, name='Categories', category='General'))
+    admin.add_view(CourseAdminView(Course, name='Media Vault', category='Content')) # Content Tab
     admin.add_view(MediaVaultAdminView(MediaVault, name='Media Vault', category='Content')) # Content Tab
 
     # 6. API ROUTES (BLUEPRINTS)
