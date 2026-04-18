@@ -115,6 +115,13 @@
             </li>
 
             <li class="nav-item">
+                <a class="nav-link {% if admin_view.endpoint == 'experience' %}active text-primary font-weight-bold{% endif %}"
+                   href="{{ url_for('experience.index_view') }}">
+                    <i class="fas fa-briefcase mr-1"></i> Experience
+                </a>
+            </li>
+
+            <li class="nav-item">
                 <a class="nav-link {% if admin_view.endpoint == 'mediavault' %}active text-primary font-weight-bold{% endif %}"
                    href="{{ url_for('mediavault.index_view') }}">
                     <i class="fas fa-hdd mr-1"></i> Media Vault
