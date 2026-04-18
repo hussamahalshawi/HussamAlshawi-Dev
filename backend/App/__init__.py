@@ -15,6 +15,7 @@ from App.models.education import Education                          # Model for 
 from App.models.achievement import Achievement                      # Model for professional awards
 from App.models.category import Category                            # Model for category awards
 from App.models.course import Course                                # Model for Course awards
+from App.models.experience import Experience                                # Model for Experience awards
 
 # --- ADMIN VIEW IMPORTS ---
 from admin_views.my_media_view import MediaVaultAdminView            # Custom view for Media
@@ -23,6 +24,7 @@ from admin_views.education_view import EducationAdminView            # Custom vi
 from admin_views.achievement_view import AchievementAdminView        # Custom view for Achievements
 from admin_views.category_view import CategoryAdminView              # Custom view for Category
 from admin_views.course_view import CourseAdminView                  # Custom view for Course
+from admin_views.experience_view import ExperienceAdminView                  # Custom view for Experience
 
 def create_app():
     """
@@ -67,7 +69,8 @@ def create_app():
     admin.add_view(EducationAdminView(Education, name='Academic Path', category='Identity')) # Education under Identity
     admin.add_view(AchievementAdminView(Achievement, name='Achievements', category='Professional')) # Professional Tab
     admin.add_view(CategoryAdminView(Category, name='Categories', category='General'))
-    admin.add_view(CourseAdminView(Course, name='Media Vault', category='Content')) # Content Tab
+    admin.add_view(CourseAdminView(Course, name='Course', category='Content')) # Content Tab
+    admin.add_view(ExperienceAdminView(Experience, name='Experience', category='Content')) # Content Tab
     admin.add_view(MediaVaultAdminView(MediaVault, name='Media Vault', category='Content')) # Content Tab
 
     # 6. API ROUTES (BLUEPRINTS)
