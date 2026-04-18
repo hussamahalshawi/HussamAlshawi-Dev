@@ -43,8 +43,8 @@ class EducationAdminView(ProfessionalModelView):
 
     # English Comment: Define field order and exclude technical ID fields
     form_columns = (
-        'institution', 'degree', 'major', 'grade',
-        'start_date', 'end_date', 'description',
+        'institution', 'degree', 'major', 'grade','description',
+        'start_date', 'end_date',
         'certificate_upload', 'skills_learned'
     )
 
