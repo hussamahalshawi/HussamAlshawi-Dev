@@ -58,7 +58,7 @@
                             {# English Comment: Grid system for dynamic lists including the new skills_demonstrated
                             field #}
                             {% elif field.type in ['FieldList', 'InlineFormFieldList', 'ListField'] or field.id in
-                            ['media_links', 'skills_learned', 'skills_demonstrated', 'acquired_skills', 'skills_acquired', 'keywords'] %}
+                            ['media_links', 'skills_learned', 'skills_demonstrated', 'acquired_skills', 'skills_acquired', 'keywords', 'skills_used'] %}
                             <div class="universal-list-container p-4 border rounded shadow-sm"
                                  style="background: #f8fafc; border-radius: 15px;">
                                 <div class="row" id="container-{{ field.id }}">

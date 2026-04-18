@@ -19,6 +19,7 @@ from App.models.experience import Experience                        # Model for 
 from App.models.skills import Skill, SkillType                      # Models for technical skill architecture
 from admin_views.skill_view import SkillAdminView, SkillTypeAdminView # Custom views for Skills and Types
 from App.models.self_study import SelfStudy
+from App.models.project import Project
 
 
 # --- ADMIN VIEW IMPORTS ---
@@ -30,6 +31,7 @@ from admin_views.category_view import CategoryAdminView              # Custom vi
 from admin_views.course_view import CourseAdminView                  # Custom view for Course
 from admin_views.experience_view import ExperienceAdminView                  # Custom view for Experience
 from admin_views.self_study_view import SelfStudyAdminView
+from admin_views.project_view import ProjectAdminView
 
 
 
@@ -90,6 +92,7 @@ def create_app():
     # Content & System Section
     admin.add_view(MediaVaultAdminView(MediaVault, name='Media Vault', category='System'))
     admin.add_view(CategoryAdminView(Category, name='Global Categories', category='System'))
+    admin.add_view(ProjectAdminView(Project, name='Projects', category='Content'))
 
 
 
