@@ -1,4 +1,4 @@
-from mongoengine import Document, StringField, DateTimeField, IntField, ReferenceField, ListField
+from mongoengine import Document, StringField, DateTimeField, IntField, ReferenceField, ListField, DictField
 from datetime import datetime, timezone  # Standard utilities for time management
 
 
@@ -14,8 +14,16 @@ class SkillType(Document):
 
     # --- UI & SEO ---
     # English Comment: CSS class for Font Awesome icons (e.g., "fas fa-code")
-    icon_class = StringField()  # Visual representation for the category
-    keywords = ListField(StringField())  # SEO tags for AI-based skill matching
+    # keywords = ListField(StringField())  # SEO tags for AI-based skill matching
+    """
+        Stored as: 
+        [
+            {"name": "Python", "icon": "fab fa-python", "color": "#3776ab"},
+            {"name": "Flask", "icon": "fas fa-flask", "color": "#000000"}
+        ]
+        """
+    keywords = ListField(DictField())
+
 
     meta = {
         'collection': 'skill_types',  # Database collection name

@@ -3,6 +3,15 @@ from flask import flash, redirect, url_for                          # Core web u
 from flask_admin import expose                                      # Route exposure for custom actions
 from App.services.skill_service import SkillService                 # Importing the smart logic
 from datetime import datetime, timezone                             # Time management
+from wtforms import StringField, Form
+from flask_admin.model.fields import InlineFormField, InlineFieldList
+
+
+
+class KeywordForm(Form):
+    name = StringField('Name')
+    icon = StringField('Icon Class')
+    color = StringField('Color')
 
 class SkillTypeAdminView(ProfessionalModelView):
     """
@@ -10,12 +19,20 @@ class SkillTypeAdminView(ProfessionalModelView):
     Handles broad categories like Backend, Frontend, and Soft Skills.
     """
     # --- TEMPLATE CONFIGURATION ---
+    # English Comment: Essential for custom create.html templates to take full screen width
+    create_template = 'admin/model/create.html'  # Path to premium layout
+    edit_template = 'admin/model/create.html'  # Path to premium layout
+    # --- TEMPLATE CONFIGURATION ---
     # English Comment: Disable modals to ensure the custom grid layout renders properly
     create_modal = False  # Use full page for creation
     edit_modal = False  # Use full page for editing
 
-    column_list = ('name', 'icon_class')  # Fields visible in the table
-    form_columns = ('name', 'icon_class', 'keywords')  # Fields visible in the form
+    form_extra_fields = {
+        'keywords': InlineFieldList(InlineFormField(KeywordForm), min_entries=1)
+    }
+
+    column_list = ('name', 'keywords')  # Fields visible in the table
+    form_columns = ('name', 'keywords')  # Fields visible in the form
 
 
 class SkillAdminView(ProfessionalModelView):
