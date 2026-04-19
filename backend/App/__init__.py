@@ -21,7 +21,7 @@ from admin_views.skill_view import SkillAdminView, SkillTypeAdminView # Custom v
 from App.models.self_study import SelfStudy
 from App.models.project import Project
 from App.models.goal import Goal
-
+from App.utils.signals import register_signals as start_system_signals
 
 # --- ADMIN VIEW IMPORTS ---
 from admin_views.my_media_view import MediaVaultAdminView            # Custom view for Media
@@ -133,13 +133,17 @@ def setup_app_logging(app, config_obj):
     app.logger.setLevel(logging.INFO)                               # Set app logging threshold
     app.logger.info("[+] Logging system initialized successfully.") # First entry in the log file
 
+
 def register_signals(app):
     """
     Registers signals for background automation tasks.
     """
-    with app.app_context():                                         # Enter application context
+    with app.app_context():
         try:
-            # English Comment: Ensures real-time synchronization of data metrics
-            app.logger.info("[+] System signals synchronized.")      # Log signal sync status
+            # التعديل الجوهري هنا: مناداة دالة تسجيل الإشارات الفعلية
+            # English Comment: Connects all models to the Service Layer via MongoEngine signals
+            start_system_signals()
+
+            app.logger.info("[+] System signals synchronized and listeners active.")
         except Exception as e:
-            app.logger.error(f"[-] Signal Sync Failed: {e}")        # Log non-critical signal error
+            app.logger.error(f"[-] Signal Sync Failed: {e}")
