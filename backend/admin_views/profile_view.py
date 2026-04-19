@@ -8,7 +8,7 @@ from flask_admin.actions import action
 from wtforms import FileField, MultipleFileField
 from admin_views.admin_view import ProfessionalModelView
 from App.utils.cloudinary_handler import upload_media_batch
-
+from App.services.profile_service import ProfileService
 
 class ProfileAdminView(ProfessionalModelView):
     """
@@ -94,8 +94,11 @@ class ProfileAdminView(ProfessionalModelView):
             if new_gallery_urls:
                 if not model.profile_gallery:
                     model.profile_gallery = []
-                # English Comment: Append new URLs to the existing gallery list
                 model.profile_gallery.extend(new_gallery_urls)
+
+        # English Comment: Finalize and trigger metrics update
+        model.save()  # Save changes to apply cloud URLs
+        ProfileService.calculate_metrics(model.id)  # Perform heavy calculations via service
 
     # --- 5. UI Formatters ---
     def _avatar_preview(view, context, model, name):
@@ -117,14 +120,15 @@ class ProfileAdminView(ProfessionalModelView):
     @action('refresh_profile_metrics', 'Refresh Metrics', 'Synchronize experience and scores?')
     def action_refresh_metrics(self, ids):
         """
-        English Comment: Bulk trigger for the refresh_metrics method defined in the Profile Model.
+        English Comment: Bulk trigger for the ProfileService logic instead of model methods.
         """
         try:
             count = 0
             for profile_id in ids:
-                profile = self.model.objects.get(id=profile_id)
-                profile.refresh_metrics()
-                count += 1
+                # English Comment: Use the centralized service to maintain architectural consistency
+                success = ProfileService.calculate_metrics(profile_id)
+                if success:
+                    count += 1
             flash(f'Successfully updated metrics for {count} profile(s).', 'success')
         except Exception as e:
             flash(f'Sync Error: {str(e)}', 'error')
