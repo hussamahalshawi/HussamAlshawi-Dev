@@ -2,7 +2,7 @@ from flask import flash, redirect, url_for  # Core web utilities
 from flask_admin import expose  # Route exposure for custom actions
 from admin_views.admin_view import ProfessionalModelView  # Base UI configuration
 from datetime import datetime, timezone  # Time utilities
-
+from App.services.roadmap_service import RoadmapService             # Import the new centralized logic
 
 class GoalAdminView(ProfessionalModelView):
     """
@@ -38,22 +38,31 @@ class GoalAdminView(ProfessionalModelView):
         'required_skills'  # Using the dynamic card-based list
     )
 
+    # --- CUSTOM ADMIN ACTIONS ---
     @expose('/sync_all/')
     def sync_goals(self):
         """
-        English Comment: Custom admin action to trigger progress calculation for all goals.
+        English Comment: Manual trigger to recalculate all goals via the RoadmapService.
         """
-        goals = self.model.objects.all()
-        for goal in goals:
-            goal.sync_progress()
-            goal.save()
+        # English Comment: Call the centralized service instead of individual model methods
+        RoadmapService.sync_all_goals()  # Bulk update logic
 
-        flash("Successfully synchronized all goals with current skill levels.", "success")
+        flash("Successfully synchronized all goals using RoadmapService.", "success")
         return redirect(url_for('.index_view'))
 
+    # --- LOGIC HOOKS ---
     def on_model_change(self, form, model, is_created):
         """
-        English Comment: Trigger sync automatically when a goal is created or modified.
+        English Comment: Automated trigger before saving a goal.
+        Ensures the goal score is fresh based on the latest skills data.
         """
-        model.sync_progress()
-        model.last_updated = datetime.now(timezone.utc)
+        # 1. Audit Maintenance
+        model.last_updated = datetime.now(timezone.utc)  # Ensure timestamp is updated
+
+        # 2. Save Initial Model
+        # English Comment: We save first to ensure the object has an ID for the service to process
+        model.save()
+
+        # 3. Trigger Logic Service
+        # English Comment: Delegate the calculation to the service layer for a single goal
+        RoadmapService.calculate_goal_progress(model.id)  # Direct service call
