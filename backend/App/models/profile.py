@@ -52,11 +52,11 @@ class Profile(Document):
         """
         English Comment: Aggregates experience from various modules with importance weighting.
         """
-        # from App.models.experience import Experience
-        # from App.models.course import Course
+        from App.models.experience import Experience
+        from App.models.course import Course
         from App.models.education import Education
-        # from App.models.project import Project
-        # from App.models.self_study import SelfStudy
+        from App.models.project import Project
+        from App.models.self_study import SelfStudy
 
         total_weighted_days = 0
         now = datetime.now(timezone.utc)
@@ -71,11 +71,11 @@ class Profile(Document):
         }
 
         model_map = {
-            # 'Experience': Experience,
-            # 'Project': Project,
+            'Experience': Experience,
+            'Project': Project,
             'Education': Education,
-            # 'SelfStudy': SelfStudy,
-            # 'Course': Course
+            'SelfStudy': SelfStudy,
+            'Course': Course
         }
 
         for label, model in model_map.items():
@@ -100,12 +100,12 @@ class Profile(Document):
         """
         English Comment: Calculates overall progress based on goals completion rate.
         """
-        # from App.models.goal import Goal
-        # goals = Goal.objects.all()
-        # if not goals: return 0.0
+        from App.models.goal import Goal
+        goals = Goal.objects.all()
+        if not goals: return 0.0
 
-        # total_progress = sum([min((g.current_score / (g.target_score or 100)) * 100, 100) for g in goals])
-        # return round(total_progress / goals.count(), 1)
+        total_progress = sum([min((g.current_score / (g.target_score or 100)) * 100, 100) for g in goals])
+        return round(total_progress / goals.count(), 1)
 
     def refresh_metrics(self):
         """

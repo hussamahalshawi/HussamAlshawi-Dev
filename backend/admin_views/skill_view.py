@@ -1,5 +1,8 @@
 from admin_views.admin_view import ProfessionalModelView  # Base UI for consistency
-
+from flask import flash, redirect, url_for                          # Core web utilities
+from flask_admin import expose                                      # Route exposure for custom actions
+from App.services.skill_service import SkillService                 # Importing the smart logic
+from datetime import datetime, timezone                             # Time management
 
 class SkillTypeAdminView(ProfessionalModelView):
     """
@@ -52,3 +55,28 @@ class SkillAdminView(ProfessionalModelView):
     # --- INTERACTION ---
     column_filters = ['skill_type', 'level']  # Dashboard sidebar filters
     column_searchable_list = ['skill_name']  # Search bar integration
+
+    # --- CUSTOM ACTIONS ---
+    # English Comment: Button to trigger mass re-categorization from the UI
+    @expose('/reorganize/')
+    def reorganize_skills(self):
+        """Triggers the SkillService to update all skills at once."""
+        count = SkillService.bulk_update_categories()  # Call the service logic
+        flash(f"Successfully re-categorized {count} skills.", "success")
+        return redirect(url_for('.index_view'))
+
+    # --- LOGIC HOOKS ---
+    def on_model_change(self, form, model, is_created):
+        """
+        English Comment: Triggered automatically before saving to MongoDB.
+        Uses SkillService to ensure the skill is assigned to the correct category.
+        """
+        # 1. Audit Timestamp
+        model.last_updated = datetime.now(timezone.utc)  # Refresh modification time
+
+        # 2. Auto-Categorization Logic
+        # English Comment: Temporary save to ensure the service can read the latest name if needed
+        # but here we apply the logic directly to the current model instance.
+
+        # We call a modified version of the service logic for a single object
+        SkillService.bulk_update_categories()  # Refresh all to maintain consistency
