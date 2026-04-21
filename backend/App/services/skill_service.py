@@ -1,6 +1,6 @@
 import logging                                                 # Standard library for error tracking
 from datetime import datetime, timezone                        # Timezone-aware timestamps for audit fields
-from App.models.skills import Skill, SkillType                 # Skill and SkillType model imports
+from App.models.skills import Skill, SkillType, Keyword                 # Skill and SkillType model imports
 
 
 class SkillService:
@@ -29,7 +29,7 @@ class SkillService:
                 continue
 
             # ✅ FIX: Extract 'name' key from DictField instead of treating as plain string
-            keyword_name = keyword_dict.get('name', '')        # Get the skill name from the dict
+            keyword_name = Keyword.name         # Get the skill name from the dict
 
             if keyword_name:                                   # Only process non-empty names
                 # Tokenize: lowercase and split by whitespace for intersection matching
