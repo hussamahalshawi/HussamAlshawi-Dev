@@ -128,9 +128,10 @@ def setup_app_logging(app, config_obj):
     ))
 
     # Set logging levels
-    file_handler.setLevel(logging.INFO)                             # Capture INFO and above in file
+    logging.basicConfig(level=logging.INFO)                           # Capture INFO and above in file
     app.logger.addHandler(file_handler)                             # Link handler to Flask logger
     app.logger.setLevel(logging.INFO)                               # Set app logging threshold
+    logging.basicConfig(level=logging.INFO)
     app.logger.info("[+] Logging system initialized successfully.") # First entry in the log file
 
 
