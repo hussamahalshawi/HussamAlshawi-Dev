@@ -1,6 +1,6 @@
 from flask import flash, redirect, url_for, request        # Core Flask utilities
 from flask_admin import expose                              # Custom route decorator
-from wtforms import StringField, Form                      # WTForms for inline form schema
+from wtforms import StringField, Form, HiddenField         # ✅ Added HiddenField
 from admin_views.admin_view import ProfessionalModelView   # Base view for consistent UI
 from App.services.skill_service import SkillService        # Auto-categorization service
 from App.models.skills import Keyword                      # EmbeddedDocument for keyword construction
@@ -11,8 +11,10 @@ class SkillTypeAdminView(ProfessionalModelView):
     """
     SkillType Management View:
     Manages skill categories (Backend, Frontend, DevOps, etc.).
-    Keywords are rendered and submitted via the custom HTML template —
-    NOT via Flask-Admin's InlineFieldList to avoid populate_obj conflicts.
+    - 'name' is handled normally by Flask-Admin.
+    - 'keywords' is injected as a HiddenField placeholder so the template
+      can detect it in the form loop and render the custom keyword cards UI.
+      The actual data is parsed manually in on_model_change from raw POST data.
     """
 
     # --- Template Configuration ---
@@ -23,57 +25,62 @@ class SkillTypeAdminView(ProfessionalModelView):
 
     # --- List View ---
     column_list = ('name', 'keywords')                     # Visible columns in table
-
     column_labels = {
         'name'    : 'Category Name',                       # Human-readable label
         'keywords': 'Skill Keywords'                       # Human-readable label
     }
 
-    # ✅ FIX: No form_extra_fields for keywords
-    # Keywords are handled entirely by the custom HTML template
-    # Flask-Admin's populate_obj conflicts with EmbeddedDocumentField in InlineFieldList
-    form_columns = ('name',)                               # Only 'name' goes through Flask-Admin form
+    # ✅ KEY FIX: Inject 'keywords' as a dummy HiddenField
+    # Purpose: makes 'keywords' visible in the Jinja2 form loop
+    # The template detects field.id == 'keywords' and renders the custom card UI
+    # Flask-Admin never touches its value — on_model_change handles it manually
+    form_extra_fields = {
+        'keywords': HiddenField('Keywords')                # Placeholder — value ignored by Flask-Admin
+    }
+
+    # Both fields now visible in the form loop
+    form_columns = ('name', 'keywords')                    # 'name' = real, 'keywords' = placeholder
 
     # --- Lifecycle Hook ---
     def on_model_change(self, form, model, is_created):
         """
         Triggered before saving the SkillType to MongoDB.
-        Manually parses keyword entries from raw POST data and builds
-        a list of Keyword EmbeddedDocuments — bypassing populate_obj entirely.
+        Parses keyword entries from raw POST data and builds Keyword EmbeddedDocument list.
+        The HiddenField value is ignored — we read directly from request.form instead.
         """
 
         # Step 1: Read raw POST form data
         form_data = request.form
 
-        # Step 2: Discover submitted keyword indices
-        # Template sends: keywords-0-name, keywords-0-icon, keywords-0-color
+        # Step 2: Discover all submitted keyword indices
+        # Template sends fields named: keywords-0-name, keywords-0-icon, keywords-0-color
         entry_indices = set()
         for key in form_data.keys():
-            if key.startswith('keywords-') and key.endswith('-name'):  # Scan only name fields
-                parts = key.split('-')                     # ['keywords', '0', 'name']
-                if len(parts) == 3 and parts[1].isdigit(): # Validate middle part is a number
-                    entry_indices.add(int(parts[1]))       # Store the numeric index
+            if key.startswith('keywords-') and key.endswith('-name'):  # Identify name fields only
+                parts = key.split('-')                     # Split: ['keywords', '0', 'name']
+                if len(parts) == 3 and parts[1].isdigit(): # Ensure middle segment is a valid index
+                    entry_indices.add(int(parts[1]))       # Collect the numeric index
 
-        # Step 3: Build Keyword EmbeddedDocument list
+        # Step 3: Build Keyword EmbeddedDocument list from collected indices
         keywords_list = []
 
-        for i in sorted(entry_indices):                    # Process in ascending order
-            name  = form_data.get(f'keywords-{i}-name',  '').strip()
-            icon  = form_data.get(f'keywords-{i}-icon',  '').strip()
-            color = form_data.get(f'keywords-{i}-color', '').strip()
+        for i in sorted(entry_indices):                    # Process in ascending order: 0, 1, 2...
+            name  = form_data.get(f'keywords-{i}-name',  '').strip()  # Required: keyword name
+            icon  = form_data.get(f'keywords-{i}-icon',  '').strip()  # Optional: FontAwesome class
+            color = form_data.get(f'keywords-{i}-color', '').strip()  # Optional: hex color
 
-            if not name:                                   # Skip empty rows
+            if not name:                                   # Skip empty rows (user left blank)
                 continue
 
-            # ✅ Construct EmbeddedDocument — not plain dict
+            # Build EmbeddedDocument — MongoEngine validates and serializes to BSON
             keywords_list.append(Keyword(
                 name  = name,
-                icon  = icon  if icon  else 'fas fa-code', # Fallback icon
-                color = color if color else '#000000'       # Fallback color
+                icon  = icon  if icon  else 'fas fa-code', # Default: generic code icon
+                color = color if color else '#000000'       # Default: black
             ))
 
-        # Step 4: Assign to model — MongoEngine serializes EmbeddedDocs to BSON
-        model.keywords = keywords_list
+        # Step 4: Assign validated list to model field
+        model.keywords = keywords_list                     # Replaces entire keywords list on every save
 
 
 class SkillAdminView(ProfessionalModelView):
