@@ -1,57 +1,54 @@
 from mongoengine import (
-    Document, EmbeddedDocument,           # Base classes for documents
-    StringField, IntField, DateTimeField,  # Primitive field types
-    ReferenceField, ListField,             # Relational and list field types
-    EmbeddedDocumentField                  # ✅ For structured nested objects
+    Document, EmbeddedDocument,
+    StringField, IntField, DateTimeField,
+    ReferenceField, ListField, EmbeddedDocumentField
 )
-from datetime import datetime, timezone   # Timezone-aware timestamp utilities
+from datetime import datetime, timezone
 
 
 # ============================================================
-# LAYER 1: EMBEDDED SCHEMA — Keyword Metadata
+# LAYER 1: EMBEDDED SCHEMA — Keyword Metadata (for SkillType UI)
 # ============================================================
 
 class Keyword(EmbeddedDocument):
     """
-    Embedded schema representing a single keyword entry within a SkillType.
-    Stores the display name, FontAwesome icon class, and brand color.
+    Embedded keyword entry inside a SkillType document.
+    Stores display name, FontAwesome icon class, and brand color.
+    Used for: token-based skill matching + frontend UI rendering.
 
-    Example document:
-        {"name": "Python", "icon": "fab fa-python", "color": "#3776ab"}
+    Example: {"name": "Python", "icon": "fab fa-python", "color": "#3776ab"}
     """
-
-    name = StringField(required=True)              # Keyword display name — used for token matching
-    icon = StringField(default="fas fa-code")      # FontAwesome icon class — used in UI rendering
-    color = StringField(default="#000000")          # Brand hex color — used in UI styling
+    name  = StringField(required=True)             # Keyword display name — used for token matching
+    icon  = StringField(default='fas fa-code')     # FontAwesome class — used in UI rendering
+    color = StringField(default='#000000')         # Hex brand color — used in UI styling
 
 
 # ============================================================
-# LAYER 2: CLASSIFICATION — SkillType
+# LAYER 2: CLASSIFICATION — SkillType (shared, global)
 # ============================================================
 
 class SkillType(Document):
     """
-    Represents a category that groups related skills together.
+    Represents a shared global category that groups related skills.
     Examples: 'Backend Development', 'DevOps', 'Soft Skills'.
 
-    Each SkillType contains a list of Keyword objects that serve two purposes:
-    1. AI/token-based matching to auto-assign skills to this type.
-    2. UI metadata (icon + color) for frontend rendering.
+    SkillType is NOT profile-specific — it is a global taxonomy shared
+    across all profiles. Each entry contains keyword metadata for
+    auto-categorization and frontend rendering.
     """
 
     # --- IDENTITY ---
     name = StringField(required=True, unique=True) # Category name — e.g., "Backend Development"
 
     # --- KEYWORD METADATA ---
-    # ✅ CORRECT: Use EmbeddedDocumentField for schema validation and dot-notation access
-    # Each keyword entry: {"name": "Python", "icon": "fab fa-python", "color": "#3776ab"}
+    # Each keyword: {"name": "Python", "icon": "fab fa-python", "color": "#3776ab"}
     keywords = ListField(
-        EmbeddedDocumentField(Keyword)             # Enforces Keyword schema on every list entry
+        EmbeddedDocumentField(Keyword)             # Enforces Keyword schema on every entry
     )
 
     meta = {
         'collection': 'skill_types',               # MongoDB collection name
-        'indexes': ['name']                        # Optimized index for category lookup
+        'indexes'   : ['name']                     # Optimized index for category lookup
     }
 
     def __str__(self):
@@ -60,30 +57,30 @@ class SkillType(Document):
 
 
 # ============================================================
-# LAYER 3: CORE SKILL — Individual Skill Document
+# LAYER 3: SKILL — Shared global skill dictionary (names only)
 # ============================================================
 
 class Skill(Document):
     """
-    Represents a single professional skill with its proficiency level.
-    Skills are auto-created from course/project acquired_skills lists via signals.
-    Icon and color are resolved at query time from the linked SkillType's keywords.
+    Represents a skill NAME in the global shared dictionary.
+    This document does NOT store any score or level.
+
+    The score/level is stored separately in ProfileSkill, scoped
+    to each profile. This ensures:
+    - Skill names are defined once (no duplication)
+    - Each profile has independent scores for the same skill
+    - Editing a course does NOT inflate anyone's score
+
+    Icon and color are resolved from the linked SkillType keywords.
     """
 
     # --- IDENTITY ---
     skill_name = StringField(required=True, unique=True)  # Official skill name — e.g., "Python"
-    skill_type = ReferenceField(SkillType)                # Link to parent category
-
-    # --- PROFICIENCY ---
-    level = IntField(
-        default=0,
-        min_value=0,
-        max_value=100                                     # 0–100 proficiency percentage for progress bars
-    )
+    skill_type = ReferenceField(SkillType)                # Link to parent category for grouping
 
     # --- UI OVERRIDE (Optional) ---
-    # If set, this overrides the icon from the matched SkillType keyword
-    skill_icon = StringField()                            # e.g., "fab fa-python" — optional manual override
+    # If set, overrides the icon resolved from the linked SkillType keyword
+    skill_icon = StringField()                            # e.g., "fab fa-python" — manual override
 
     # --- AUDIT ---
     last_updated = DateTimeField(
@@ -92,8 +89,8 @@ class Skill(Document):
 
     meta = {
         'collection': 'skills',                           # MongoDB collection name
-        'ordering': ['-level'],                           # Show strongest skills first in UI
-        'indexes': ['skill_name', 'level', 'skill_type']  # Optimized for filtering and grouping
+        'ordering'  : ['skill_name'],                     # Alphabetical order in admin
+        'indexes'   : ['skill_name', 'skill_type']        # Optimized for filtering and grouping
     }
 
     def get_display_meta(self):
@@ -106,28 +103,72 @@ class Skill(Document):
         """
         # Step 1: Use manual override if set directly on the skill
         if self.skill_icon:
-            return {
-                "icon": self.skill_icon,                  # Manual override icon
-                "color": "#2563eb"                        # Default brand color when manually set
-            }
+            return {'icon': self.skill_icon, 'color': '#2563eb'}
 
         # Step 2: Search parent SkillType keywords for a name match
         if self.skill_type and self.skill_type.keywords:
-            skill_lower = self.skill_name.lower()         # Normalize for case-insensitive comparison
+            skill_lower = self.skill_name.lower()
 
-            for keyword in self.skill_type.keywords:      # keyword is a Keyword EmbeddedDocument
-                if keyword.name.lower() == skill_lower:   # ✅ Dot-notation works with EmbeddedDocument
-                    return {
-                        "icon": keyword.icon,             # Icon from matched keyword
-                        "color": keyword.color            # Color from matched keyword
-                    }
+            for keyword in self.skill_type.keywords:
+                if keyword.name.lower() == skill_lower:
+                    return {'icon': keyword.icon, 'color': keyword.color}
 
-        # Step 3: Return safe defaults if nothing matched
-        return {
-            "icon": "fas fa-code",                        # Generic code icon as fallback
-            "color": "#64748b"                            # Neutral slate color as fallback
-        }
+        # Step 3: Safe defaults if nothing matched
+        return {'icon': 'fas fa-code', 'color': '#64748b'}
 
     def __str__(self):
-        """Returns skill name and proficiency level for admin and log display."""
-        return f"{self.skill_name} ({self.level}%)"
+        """Returns skill name for admin dropdowns and log display."""
+        return self.skill_name
+
+
+# ============================================================
+# LAYER 4: PROFILE SKILL — Per-profile score (the key addition)
+# ============================================================
+
+class ProfileSkill(Document):
+    """
+    Stores the calculated proficiency score for a specific skill
+    scoped to a specific profile.
+
+    This is the JOIN TABLE between Profile and Skill.
+    It replaces the old 'level' field that was stored directly on Skill.
+
+    Design principles:
+    - score is ALWAYS recalculated from scratch (never incremented)
+    - recalculation reads only the records belonging to THIS profile
+    - editing any record triggers a full recalculate, not an increment
+    - this prevents score inflation on every save
+
+    Example:
+        Profile(hussam) → ProfileSkill(Python, score=75)
+        Profile(other)  → ProfileSkill(Python, score=30)
+    """
+
+    # --- OWNERSHIP (the two sides of the join) ---
+    profile = ReferenceField('Profile', required=True)    # Which portfolio owner
+    skill   = ReferenceField(Skill,     required=True)    # Which skill (from global dictionary)
+
+    # --- SCORE ---
+    # Recalculated from scratch on every sync — never incremented directly
+    score = IntField(default=0, min_value=0, max_value=100)  # 0–100 proficiency percentage
+
+    # --- AUDIT ---
+    last_updated = DateTimeField(
+        default=lambda: datetime.now(timezone.utc)        # Timezone-aware UTC timestamp
+    )
+
+    meta = {
+        'collection': 'profile_skills',                   # MongoDB collection name
+        'ordering'  : ['-score'],                         # Show strongest skills first
+        'indexes'   : [
+            ('profile', 'skill'),                         # Compound index — fast per-profile skill lookup
+            'profile',                                    # For fetching all skills of a profile
+            'skill'                                       # For fetching all profiles that have a skill
+        ]
+    }
+
+    def __str__(self):
+        """Returns a readable representation for admin logs."""
+        profile_name = self.profile.full_name if self.profile else 'Unknown'
+        skill_name   = self.skill.skill_name  if self.skill   else 'Unknown'
+        return f"{profile_name} → {skill_name} ({self.score}%)"

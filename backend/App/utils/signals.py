@@ -1,55 +1,49 @@
-from mongoengine import signals                                # MongoEngine signal system
-import logging                                                 # Standard error tracking
-from App.models.project     import Project                     # Monitored model
-from App.models.course      import Course                      # Monitored model
-from App.models.experience  import Experience                  # Monitored model
-from App.models.education   import Education                   # Monitored model
-from App.models.self_study  import SelfStudy                   # Monitored model
-from App.models.achievement import Achievement                 # Monitored model
-from App.models.goal        import Goal                        # Monitored model
-from App.models.skills      import Skill                       # Monitored model
-from App.models.profile     import Profile                     # Used for profile injection + metrics refresh
+from mongoengine import signals
+import logging
+from App.models.project     import Project
+from App.models.course      import Course
+from App.models.experience  import Experience
+from App.models.education   import Education
+from App.models.self_study  import SelfStudy
+from App.models.achievement import Achievement
+from App.models.goal        import Goal
+from App.models.skills      import Skill
+from App.models.profile     import Profile
 
-from App.services.skill_service   import SkillService          # Skill creation + categorization
-from App.services.roadmap_service import RoadmapService        # Goal progress calculation
-from App.services.profile_service import ProfileService        # Profile metrics refresh
+from App.services.skill_service   import SkillService
+from App.services.roadmap_service import RoadmapService
+from App.services.profile_service import ProfileService
 
 
 # -------------------------------------------------------------------------
-# SKILL FIELD MAPPING
-# Maps each model class → the field name that holds its skill name strings
+# MODELS THAT CARRY A profile REFERENCE (ownership-enabled)
 # -------------------------------------------------------------------------
-SKILL_FIELD_MAP = {
-    Course     : 'acquired_skills',        # Course.acquired_skills
-    Project    : 'skills_used',            # Project.skills_used
-    Education  : 'skills_learned',         # Education.skills_learned
-    SelfStudy  : 'skills_learned',         # SelfStudy.skills_learned
-    Achievement: 'skills_demonstrated',    # Achievement.skills_demonstrated
-    Experience : 'skills_acquired',        # Experience.skills_acquired
-}
-
-# Models that support the 'profile' ownership field
 PROFILE_OWNED_MODELS = (
     Course, Project, Education, SelfStudy,
     Achievement, Experience, Goal
 )
 
 
-def _inject_profile_if_missing(document):
+def master_pre_save_signal(sender, document, **kwargs):
     """
-    Ensures every new document is assigned to the active portfolio profile.
-    Called from pre_save to guarantee the profile reference exists before the record is written.
+    Triggered before any monitored document is saved to MongoDB.
+    Automatically assigns the active portfolio profile to new documents
+    that have a 'profile' field but haven't been assigned one yet.
+
+    This ensures every new record is owned by a profile without
+    requiring the admin user to select one manually in the form.
 
     Args:
-        document: Any MongoEngine document being saved.
+        sender: The model class that triggered the signal.
+        document: The MongoEngine document about to be saved.
     """
-    # Check: does this document support profile ownership?
+    # Only handle models that support profile ownership
     if not isinstance(document, PROFILE_OWNED_MODELS):
-        return                                                 # Skip models that don't have a profile field
+        return
 
-    # Check: profile already assigned (edit scenario — don't overwrite)
+    # Skip if profile is already assigned (edit scenario — don't overwrite)
     if document.profile is not None:
-        return                                                 # Profile already set — do nothing
+        return
 
     # Fetch the single active portfolio profile
     profile = Profile.objects.first()
@@ -57,90 +51,102 @@ def _inject_profile_if_missing(document):
     if profile:
         document.profile = profile                             # Assign ownership before save
         logging.info(
-            f"[SIGNAL] Auto-assigned profile to new {type(document).__name__} document."
+            f"[SIGNAL pre_save] Auto-assigned profile to new "
+            f"{type(document).__name__} document."
         )
 
 
 def master_sync_signal(sender, document, **kwargs):
     """
-    Central post-save coordinator.
-    Triggered after any monitored model is saved to MongoDB.
-    Runs: skill sync → goal progress → profile metrics.
+    Triggered after any monitored document is saved to MongoDB.
+
+    Runs a full recalculation pipeline for the profile that owns this document:
+    1. Recalculate all ProfileSkill scores from scratch (NEVER increment).
+    2. Recalculate all goal progress scores.
+    3. Refresh profile-level metrics (experience_years, overall_score).
+
+    Because scores are recalculated from scratch on every trigger,
+    editing any field without changing skill lists produces the same scores.
+    No score inflation occurs on repeated saves.
 
     Args:
         sender: The model class that triggered the signal.
         document: The saved MongoEngine document instance.
     """
     try:
-        # ------------------------------------------------------------------
-        # STEP 1: SKILL SYNCHRONIZATION
-        # ------------------------------------------------------------------
-        skill_field = SKILL_FIELD_MAP.get(sender)              # Find the skill field name for this model
+        # Step 1: Determine the owning profile for this document
+        profile = _resolve_profile(document)
 
-        if skill_field:
-            skill_names = getattr(document, skill_field, [])   # Read skill list from saved document
+        if not profile:
+            logging.warning(
+                f"[SIGNAL post_save] {sender.__name__}: no profile found — sync skipped."
+            )
+            return
 
-            if skill_names:
-                # Create or increment skill levels based on source model weight
-                SkillService.sync_skills_from_source(
-                    skill_names,
-                    source_model_name=sender.__name__           # e.g., 'Course' → weight=15
-                )
-            else:
-                SkillService.bulk_update_categories()           # No skills — just re-categorize existing
-        else:
-            SkillService.bulk_update_categories()               # Goal/Skill — just re-categorize
+        # Step 2: Recalculate all ProfileSkill scores for this profile from scratch
+        SkillService.recalculate_profile_scores(profile)
 
-        # ------------------------------------------------------------------
-        # STEP 2: GOAL PROGRESS RECALCULATION
-        # ------------------------------------------------------------------
-        RoadmapService.sync_all_goals()                         # Recalculate all goal scores
+        # Step 3: Recalculate all goal progress scores scoped to this profile
+        RoadmapService.sync_all_goals(profile=profile)
 
-        # ------------------------------------------------------------------
-        # STEP 3: PROFILE METRICS REFRESH
-        # ------------------------------------------------------------------
-        profile = Profile.objects.first()                       # Fetch the active portfolio profile
+        # Step 4: Refresh profile-level metrics (experience_years, overall_score)
+        ProfileService.calculate_metrics(profile.id)
 
-        if profile:
-            ProfileService.calculate_metrics(profile.id)       # Refresh experience_years + overall_score
-
-        logging.info(f"[SIGNAL] {sender.__name__} sync completed successfully.")
+        logging.info(
+            f"[SIGNAL post_save] {sender.__name__} sync completed "
+            f"for profile [{profile.id}]."
+        )
 
     except Exception as e:
         logging.error(
-            f"[SIGNAL ERROR] {sender.__name__} sync failed: {str(e)}",
-            exc_info=True                                       # Full traceback in logs
+            f"[SIGNAL ERROR] {sender.__name__} post_save failed: {str(e)}",
+            exc_info=True
         )
-
-
-def master_pre_save_signal(sender, document, **kwargs):
-    """
-    Central pre-save coordinator.
-    Ensures every new document is linked to the active profile before being written.
-
-    Args:
-        sender: The model class that triggered the signal.
-        document: The MongoEngine document about to be saved.
-    """
-    _inject_profile_if_missing(document)                       # Auto-assign profile if not set
 
 
 def master_delete_signal(sender, document, **kwargs):
     """
-    Central post-delete coordinator.
-    Triggered after a document is deleted — recalculates metrics to reflect the removal.
+    Triggered after any monitored document is deleted from MongoDB.
+    Runs the same recalculation pipeline as post_save so that
+    removing a record correctly decreases skill scores.
 
     Args:
         sender: The model class that triggered the signal.
         document: The deleted MongoEngine document instance.
     """
-    master_sync_signal(sender, document, **kwargs)              # Same sync pipeline as post-save
-    logging.info(f"[SIGNAL] {sender.__name__} deletion sync completed.")
+    master_sync_signal(sender, document, **kwargs)
+    logging.info(f"[SIGNAL post_delete] {sender.__name__} deletion sync completed.")
+
+
+def _resolve_profile(document):
+    """
+    Resolves the Profile that owns a given document.
+
+    Priority:
+    1. document.profile — direct reference on ownership-enabled models.
+    2. Profile.objects.first() — fallback for global models (Skill, etc.).
+
+    Args:
+        document: Any MongoEngine document instance.
+
+    Returns:
+        Profile | None: The resolved profile, or None if not found.
+    """
+    # For models with a direct profile reference
+    if hasattr(document, 'profile') and document.profile is not None:
+        try:
+            profile = document.profile
+            # Return as-is if it's a full Profile document, otherwise dereference
+            return profile if hasattr(profile, 'full_name') else Profile.objects.get(id=profile)
+        except Exception:
+            pass
+
+    # Fallback for global models like Skill
+    return Profile.objects.first()
 
 
 # -------------------------------------------------------------------------
 # MONITORED MODELS
-# These models trigger the synchronization and profile-injection engine
 # -------------------------------------------------------------------------
 monitored_models = [
     Project, Course, Experience, Education,
@@ -154,8 +160,8 @@ def register_signals():
     Must be called exactly once inside create_app() in App/__init__.py.
     """
     for model in monitored_models:
-        signals.pre_save.connect(master_pre_save_signal,   sender=model)   # Profile injection before save
-        signals.post_save.connect(master_sync_signal,      sender=model)   # Full sync after save
-        signals.post_delete.connect(master_delete_signal,  sender=model)   # Full sync after delete
+        signals.pre_save.connect(master_pre_save_signal,   sender=model)
+        signals.post_save.connect(master_sync_signal,      sender=model)
+        signals.post_delete.connect(master_delete_signal,  sender=model)
 
     print("✅ All System Signals Registered Successfully.")

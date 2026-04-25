@@ -1,150 +1,129 @@
-import logging                                                      # Standard logging library for tracking events
-import os                                                           # OS module for path and directory operations
-from flask import Flask                                             # Core Flask framework
-from flask_cors import CORS                                         # Cross-Origin Resource Sharing for frontend
-from flask_admin import Admin                                       # Admin interface management
+import logging
+import os
+from flask import Flask
+from flask_cors import CORS
+from flask_admin import Admin
 
-# --- LOCAL COMPONENT IMPORTS ---
-from config import get_config                                       # Loading system configurations
-from App.models.database import init_db                             # Database initialization logic
+from config import get_config
+from App.models.database import init_db
 
 # --- MODEL IMPORTS ---
-from App.models.my_media import MediaVault                          # Model for media assets
-from App.models.profile import Profile                              # Model for personal profile
-from App.models.education import Education                          # Model for academic records
-from App.models.achievement import Achievement                      # Model for professional awards
-from App.models.category import Category                            # Model for category awards
-from App.models.course import Course                                # Model for Course awards
-from App.models.experience import Experience                        # Model for Experience awards
-from App.models.skills import Skill, SkillType                      # Models for technical skill architecture
-from admin_views.skill_view import SkillAdminView, SkillTypeAdminView # Custom views for Skills and Types
-from App.models.self_study import SelfStudy
-from App.models.project import Project
-from App.models.goal import Goal
-from App.utils.signals import register_signals as start_system_signals
+from App.models.my_media    import MediaVault
+from App.models.profile     import Profile
+from App.models.education   import Education
+from App.models.achievement import Achievement
+from App.models.category    import Category
+from App.models.course      import Course
+from App.models.experience  import Experience
+from App.models.skills      import Skill, SkillType, ProfileSkill    # ProfileSkill added
+from App.models.self_study  import SelfStudy
+from App.models.project     import Project
+from App.models.goal        import Goal
+from App.utils.signals      import register_signals as start_system_signals
 
 # --- ADMIN VIEW IMPORTS ---
-from admin_views.my_media_view import MediaVaultAdminView            # Custom view for Media
-from admin_views.profile_view import ProfileAdminView                # Custom view for Profile
-from admin_views.education_view import EducationAdminView            # Custom view for Education
-from admin_views.achievement_view import AchievementAdminView        # Custom view for Achievements
-from admin_views.category_view import CategoryAdminView              # Custom view for Category
-from admin_views.course_view import CourseAdminView                  # Custom view for Course
-from admin_views.experience_view import ExperienceAdminView                  # Custom view for Experience
-from admin_views.self_study_view import SelfStudyAdminView
-from admin_views.project_view import ProjectAdminView
-from admin_views.goal_view import GoalAdminView
-
+from admin_views.my_media_view       import MediaVaultAdminView
+from admin_views.profile_view        import ProfileAdminView
+from admin_views.education_view      import EducationAdminView
+from admin_views.achievement_view    import AchievementAdminView
+from admin_views.category_view       import CategoryAdminView
+from admin_views.course_view         import CourseAdminView
+from admin_views.experience_view     import ExperienceAdminView
+from admin_views.self_study_view     import SelfStudyAdminView
+from admin_views.project_view        import ProjectAdminView
+from admin_views.goal_view           import GoalAdminView
+from admin_views.skill_view          import SkillAdminView, SkillTypeAdminView
+from admin_views.profile_skill_view  import ProfileSkillAdminView    # New read-only view
 
 
 def create_app():
     """
     HussamAlshawi-Portfolio Application Factory.
-    Configures logging, database, and admin dashboard with professional standards.
+    Configures logging, database, and admin dashboard.
     """
-    # Define absolute path for templates to ensure reliability
-    template_dir = os.path.abspath('App/templates')                # Get absolute path for template folder
-    app = Flask(__name__, template_folder=template_dir)             # Initialize Flask with specific templates
+    template_dir = os.path.abspath('App/templates')
+    app = Flask(__name__, template_folder=template_dir)
 
-    # 1. CONFIGURATION LOADING
+    # 1. CONFIGURATION
     try:
-        current_config = get_config()                               # Fetch configuration object
-        app.config.from_object(current_config)                      # Load config into Flask app
+        current_config = get_config()
+        app.config.from_object(current_config)
     except Exception as e:
-        # Standard print as fallback if logging isn't ready
-        print(f"[-] Critical Configuration Error: {e}")             # Print error to console
-        raise                                                       # Stop execution on config failure
+        print(f"[-] Critical Configuration Error: {e}")
+        raise
 
-    # 2. CORS SETUP
-    # Allow React frontend to communicate with Python backend
-    CORS(app, resources={r"/api/*": {"origins": "*"}})             # Enable CORS for all API routes
+    # 2. CORS
+    CORS(app, resources={r'/api/*': {'origins': '*'}})
 
-    # 3. PROFESSIONAL LOGGING SYSTEM
-    # English Comment: Directing every internal error and action to 'hussam_dev.log'
-    setup_app_logging(app, current_config)                          # Initialize custom logging handler
+    # 3. LOGGING
+    setup_app_logging(app, current_config)
 
-    # 4. DATABASE INITIALIZATION
+    # 4. DATABASE
     try:
-        init_db(app)                                                # Connect to MongoDB via MongoEngine
-        app.logger.info("[+] MongoDB Atlas connection active.")      # Log successful DB connection
+        init_db(app)
+        app.logger.info('[+] MongoDB Atlas connection active.')
     except Exception as db_err:
-        app.logger.critical(f"[-] DB Connection Failed: {db_err}")  # Log critical DB error
-        raise db_err                                                # Stop app if DB is down
+        app.logger.critical(f'[-] DB Connection Failed: {db_err}')
+        raise db_err
 
-    # 5. FLASK-ADMIN REGISTRATION
-    # English Comment: Initializing the dashboard with a professional identity
+    # 5. FLASK-ADMIN
     admin = Admin(app, name='HussamDev Admin')
 
-    # --- REGISTERING VIEWS TO DASHBOARD ---
+    # Identity & Profile
+    admin.add_view(ProfileAdminView(Profile,     name='Personal Profile', category='Identity'))
+    admin.add_view(EducationAdminView(Education, name='Education',        category='Identity'))
+    admin.add_view(SelfStudyAdminView(SelfStudy, name='Self Study',       category='Identity'))
+    admin.add_view(GoalAdminView(Goal,           name='Roadmap',          category='Identity'))
 
-    # Identity & Profile Section
-    admin.add_view(ProfileAdminView(Profile, name='Personal Profile', category='Identity'))
-    admin.add_view(EducationAdminView(Education, name='Education', category='Identity'))
-    admin.add_view(SelfStudyAdminView(SelfStudy, name='Self Study', category='Identity'))
-    admin.add_view(GoalAdminView(Goal, name='Roadmap', category='Identity'))
-
-    # Career & Professional Section
-    admin.add_view(ExperienceAdminView(Experience, name='Experience', category='Professional'))
+    # Career & Professional
+    admin.add_view(ExperienceAdminView(Experience,   name='Experience',   category='Professional'))
     admin.add_view(AchievementAdminView(Achievement, name='Achievements', category='Professional'))
-    admin.add_view(CourseAdminView(Course, name='Courses', category='Professional'))
+    admin.add_view(CourseAdminView(Course,           name='Courses',      category='Professional'))
 
-    # Technical Skills Section
-    admin.add_view(SkillTypeAdminView(SkillType, name='Skill Types', category='Skills'))
-    admin.add_view(SkillAdminView(Skill, name='Technical Skills', category='Skills'))
+    # Technical Skills
+    admin.add_view(SkillTypeAdminView(SkillType,     name='Skill Types',       category='Skills'))
+    admin.add_view(SkillAdminView(Skill,             name='Skill Dictionary',  category='Skills'))
+    admin.add_view(ProfileSkillAdminView(ProfileSkill, name='Skill Scores',    category='Skills'))  # New
 
-    # Content & System Section
-    admin.add_view(MediaVaultAdminView(MediaVault, name='Media Vault', category='System'))
-    admin.add_view(CategoryAdminView(Category, name='Global Categories', category='System'))
-    admin.add_view(ProjectAdminView(Project, name='Projects', category='Content'))
+    # Content & System
+    admin.add_view(MediaVaultAdminView(MediaVault,  name='Media Vault',        category='System'))
+    admin.add_view(CategoryAdminView(Category,      name='Global Categories',  category='System'))
+    admin.add_view(ProjectAdminView(Project,        name='Projects',           category='Content'))
 
+    # 6. API ROUTES
+    from App.routes import Api as main_bp
+    app.register_blueprint(main_bp, url_prefix='/api')
 
+    # 7. SIGNALS
+    register_signals(app)
 
-    # 6. API ROUTES (BLUEPRINTS)
-    from App.routes import Api as main_bp                           # Import API blueprint
-    app.register_blueprint(main_bp, url_prefix='/api')              # Register blueprint with prefix
+    app.logger.info(f'🚀 {current_config.PROJECT_NAME} is fully operational.')
+    return app
 
-    # 7. AUTOMATION SIGNALS
-    register_signals(app)                                           # Initialize real-time data signals
-
-    app.logger.info(f"🚀 {current_config.PROJECT_NAME} is fully operational.") # Final startup log
-
-    return app                                                      # Return initialized app instance
 
 def setup_app_logging(app, config_obj):
-    """
-    Configures persistent file logging for error tracking and system audits.
-    """
-    # Create logs directory if it doesn't exist to prevent IO errors
-    if not os.path.exists(config_obj.LOG_DIR):                      # Check if LOG_DIR exists
-        os.makedirs(config_obj.LOG_DIR)                             # Create directory if missing
+    """Configures persistent file logging for error tracking and system audits."""
+    if not os.path.exists(config_obj.LOG_DIR):
+        os.makedirs(config_obj.LOG_DIR)
 
-    # Define the absolute path for the log file
-    log_file = os.path.join(config_obj.LOG_DIR, 'hussam_dev.log')    # Set log file path
-
-    # Initialize FileHandler to store logs in the file system
-    file_handler = logging.FileHandler(log_file)                    # Create file handler
-    file_handler.setFormatter(logging.Formatter(                    # Define log entry format
+    log_file     = os.path.join(config_obj.LOG_DIR, 'hussam_dev.log')
+    file_handler = logging.FileHandler(log_file)
+    file_handler.setFormatter(logging.Formatter(
         '%(asctime)s %(levelname)s: %(message)s [in %(pathname)s:%(lineno)d]'
     ))
 
-    # Set logging levels
-    logging.basicConfig(level=logging.INFO)                           # Capture INFO and above in file
-    app.logger.addHandler(file_handler)                             # Link handler to Flask logger
-    app.logger.setLevel(logging.INFO)                               # Set app logging threshold
     logging.basicConfig(level=logging.INFO)
-    app.logger.info("[+] Logging system initialized successfully.") # First entry in the log file
+    file_handler.setLevel(logging.INFO)
+    app.logger.addHandler(file_handler)
+    app.logger.setLevel(logging.INFO)
+    app.logger.info('[+] Logging system initialized successfully.')
 
 
 def register_signals(app):
-    """
-    Registers signals for background automation tasks.
-    """
+    """Registers MongoEngine signals for background automation tasks."""
     with app.app_context():
         try:
-            # التعديل الجوهري هنا: مناداة دالة تسجيل الإشارات الفعلية
-            # English Comment: Connects all models to the Service Layer via MongoEngine signals
             start_system_signals()
-
-            app.logger.info("[+] System signals synchronized and listeners active.")
+            app.logger.info('[+] System signals synchronized and listeners active.')
         except Exception as e:
-            app.logger.error(f"[-] Signal Sync Failed: {e}")
+            app.logger.error(f'[-] Signal Sync Failed: {e}')
