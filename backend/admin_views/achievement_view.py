@@ -1,87 +1,94 @@
-from flask import request  # Handle incoming request data
-from wtforms import FileField, MultipleFileField  # Standard form fields for uploads
-from admin_views.admin_view import ProfessionalModelView  # Base view for consistent UI
-from App.utils.cloudinary_handler import upload_media_batch  # Utility for cloud storage integration
+from flask import request                                      # Access multipart file uploads
+from wtforms import MultipleFileField                          # Virtual file upload field
+from admin_views.admin_view import ProfessionalModelView       # Base view — handles auto profile assignment
+from App.utils.cloudinary_handler import upload_media_batch    # Cloudinary batch upload utility
+from datetime import datetime, timezone                        # Timezone-aware timestamp utilities
 
 
 class AchievementAdminView(ProfessionalModelView):
     """
     Achievement Management View:
-    Handles professional recognitions and milestones with support for
-    evidence document uploads and skill tagging.
+    Handles professional recognitions and milestones with evidence upload support.
+    Profile ownership is automatically assigned via the base class on every save.
     """
 
     # --- TEMPLATE CONFIGURATION ---
-    # English Comment: Use the universal custom template for a premium look
-    create_template = 'admin/model/create.html'  # Path to custom creation template
-    edit_template = 'admin/model/create.html'  # Path to custom editing template
+    create_template = 'admin/model/create.html'                # Full-page premium card layout
+    edit_template   = 'admin/model/create.html'                # Full-page premium card layout
 
-    create_modal = False  # Disable modal to use full page design
-    edit_modal = False  # Disable modal to use full page design
+    create_modal = False                                       # Disable modal — use full page
+    edit_modal   = False                                       # Disable modal — use full page
 
     # --- LIST VIEW DISPLAY ---
-    # English Comment: Columns visible in the main table view
     column_list = ('title', 'issuing_organization', 'date_obtained')
 
     column_labels = {
-        'title': 'Achievement Title',  # Label for recognition name
-        'issuing_organization': 'Issued By',  # Label for the granting entity
-        'date_obtained': 'Date Received'  # Label for the milestone date
+        'title'               : 'Achievement Title',          # Human-readable column label
+        'issuing_organization': 'Issued By',                  # Human-readable column label
+        'date_obtained'       : 'Date Received'               # Human-readable column label
     }
 
     # --- FORM CONFIGURATION ---
-    # English Comment: Extra field to upload certificates or photos of the award
+    # Virtual upload field — not stored in DB directly, processed in on_model_change
     form_extra_fields = {
         'evidence_files': MultipleFileField('Upload Achievement Photos or PDF Certificates')
     }
 
-    # English Comment: Map HTML5 date picker format to Python datetime
     form_args = {
-        'date_obtained': {'format': '%Y-%m-%d'}  # Ensure sync between UI and Backend
+        'date_obtained': {'format': '%Y-%m-%d'}               # Sync with HTML5 native date picker
     }
 
-    # English Comment: Define the exact sequence of fields in the form
+    # 'profile' is intentionally excluded — assigned automatically by the base class
     form_columns = (
-        'title',  # Milestone name
-        'issuing_organization',  # Granting organization
-        'description',  # Context and details
-        'evidence_url',  # Direct link to evidence
-        'date_obtained',  # Timeline
-        'evidence_files',  # Bulk file uploader
-        'skills_demonstrated'  # Dynamic list of skills
+        'title',
+        'issuing_organization',
+        'description',
+        'evidence_url',                                        # Manual URL to online certificate
+        'date_obtained',
+        'evidence_files',                                      # Virtual: bulk file uploader
+        'skills_demonstrated'
     )
 
-    # --- LOGICAL HOOKS ---
+    # --- UI INTERACTION ---
+    column_searchable_list = ['title', 'issuing_organization']  # Enable quick text search
+    column_filters         = ['date_obtained']                  # Enable date range filtering
+
+    # --- LOGIC HOOKS ---
     def on_model_change(self, form, model, is_created):
         """
-        English Comment: Triggered before database save.
-        Processes uploaded files and updates system timestamps.
-        """
+        Triggered before saving to MongoDB.
+        1. Calls super() to auto-assign the profile via the base class.
+        2. Uploads evidence files to Cloudinary and stores returned URLs.
+        3. Sets evidence_url to the first uploaded file if not already set.
+        4. Refreshes the audit timestamp.
 
-        # A. Handle File Uploads (Evidence/Certificates)
-        # English Comment: Batch upload files to the 'Achievements' cloud folder
-        files = request.files.getlist('evidence_files')  # Get files from current request
-        valid_files = [f for f in files if f and f.filename != '']  # Filter empty inputs
+        Args:
+            form: The submitted WTForms form instance.
+            model: The Achievement document being saved.
+            is_created (bool): True if this is a new record.
+        """
+        # Step 1: Run base class logic — auto-assigns profile if not set
+        super().on_model_change(form, model, is_created)
+
+        # Step 2: Retrieve and filter uploaded evidence files from the request
+        files       = request.files.getlist('evidence_files')             # Get all uploaded files
+        valid_files = [f for f in files if f and f.filename != '']        # Filter out empty inputs
 
         if valid_files:
-            # 2. Upload to Cloudinary
-            # English Comment: Upload files to a specific folder in the cloud
-            uploaded_urls = upload_media_batch(valid_files, folder_name="Achievements", sub_folder="evidence")
+            # Step 3: Upload valid files to Cloudinary under 'evidence/Achievements'
+            uploaded_urls = upload_media_batch(
+                valid_files,
+                folder_name='Achievements',                    # Cloudinary folder name
+                sub_folder='evidence'                          # Sub-folder for achievement evidence
+            )
 
             if uploaded_urls:
-                # 3. Save URLs to the model field
-                # English Comment: Sync the returned Cloudinary URLs with the database field
+                # Step 4: Store all uploaded URLs in the evidence_photos list field
                 model.evidence_photos = uploaded_urls
 
-                # English Comment: Also update the single evidence_url for quick access if empty
+                # Step 5: Set the primary evidence_url to the first file if not already defined
                 if not model.evidence_url:
-                    model.evidence_url = uploaded_urls[0]
-        # B. Audit Metadata
-        # English Comment: Update the last modified timestamp on every save
-        from datetime import datetime, timezone
-        model.last_updated = datetime.now(timezone.utc)  # Ensure timezone-aware UTC time
+                    model.evidence_url = uploaded_urls[0]      # Quick-access URL for the first file
 
-    # --- UI INTERACTION ---
-    # English Comment: Configuration for search and filters in the sidebar
-    column_searchable_list = ['title', 'issuing_organization']  # Enable quick text search
-    column_filters = ['date_obtained']  # Enable dropdown/date filtering
+        # Step 6: Refresh the audit timestamp
+        model.last_updated = datetime.now(timezone.utc)       # Ensure timezone-aware UTC timestamp

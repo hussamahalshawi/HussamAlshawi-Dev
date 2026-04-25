@@ -1,38 +1,39 @@
-from admin_views.admin_view import ProfessionalModelView  # Base UI configuration
-from datetime import datetime, timezone  # Time utilities
+from admin_views.admin_view import ProfessionalModelView       # Base view — handles auto profile assignment
+from datetime import datetime, timezone                        # Timezone-aware timestamp utilities
 
 
 class SelfStudyAdminView(ProfessionalModelView):
     """
     Self-Study Management View:
-    Centralizes the tracking of books, courses, and articles with dynamic skill tagging.
+    Tracks books, articles, workshops, and other independent learning activities.
+    Profile ownership is automatically assigned via the base class on every save.
     """
 
     # --- TEMPLATE CONFIGURATION ---
-    create_template = 'admin/model/create.html'  # Using premium card-based layout
-    edit_template = 'admin/model/create.html'
+    create_template = 'admin/model/create.html'                # Full-page premium card layout
+    edit_template   = 'admin/model/create.html'                # Full-page premium card layout
 
-    create_modal = False  # Force full-page for complex lists
-    edit_modal = False  # Force full-page for complex lists
+    create_modal = False                                       # Disable modal — use full page
+    edit_modal   = False                                       # Disable modal — use full page
 
     # --- LIST VIEW DISPLAY ---
     column_list = ('title', 'learning_type', 'platform_name', 'track', 'created_at')
 
     column_labels = {
-        'title': 'Resource Title',
-        'learning_type': 'Type',
-        'platform_name': 'Source/Platform',
-        'track': 'Learning Track',
-        'created_at': 'Recorded On'
+        'title'        : 'Resource Title',                    # Human-readable column label
+        'learning_type': 'Type',                              # Human-readable column label
+        'platform_name': 'Source/Platform',                   # Human-readable column label
+        'track'        : 'Learning Track',                    # Human-readable column label
+        'created_at'   : 'Recorded On'                        # Human-readable column label
     }
 
     # --- FORM CONFIGURATION ---
     form_args = {
-        'start_date': {'format': '%Y-%m-%d'},  # Sync with HTML5 date picker
-        'end_date': {'format': '%Y-%m-%d'}
+        'start_date': {'format': '%Y-%m-%d'},                 # Sync with HTML5 native date picker
+        'end_date'  : {'format': '%Y-%m-%d'}                  # Sync with HTML5 native date picker
     }
 
-    # English Comment: Logic sequence - Identity -> Type -> Timeline -> Skills
+    # 'profile' is intentionally excluded — assigned automatically by the base class
     form_columns = (
         'title',
         'learning_type',
@@ -43,11 +44,23 @@ class SelfStudyAdminView(ProfessionalModelView):
         'cover_image',
         'start_date',
         'end_date',
-        'skills_learned'  # Card-based skill input
+        'skills_learned'                                       # Dynamic skill tags
     )
 
+    # --- LOGIC HOOKS ---
     def on_model_change(self, form, model, is_created):
         """
-        English Comment: Update metadata on every save operation.
+        Triggered before saving to MongoDB.
+        1. Calls super() to auto-assign the profile via the base class.
+        2. Refreshes the audit timestamp.
+
+        Args:
+            form: The submitted WTForms form instance.
+            model: The SelfStudy document being saved.
+            is_created (bool): True if this is a new record.
         """
-        model.last_updated = datetime.now(timezone.utc)  # Refresh sync timestamp
+        # Step 1: Run base class logic — auto-assigns profile if not set
+        super().on_model_change(form, model, is_created)
+
+        # Step 2: Refresh the audit timestamp
+        model.last_updated = datetime.now(timezone.utc)       # Ensure timezone-aware UTC timestamp
