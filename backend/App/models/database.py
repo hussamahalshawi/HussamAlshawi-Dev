@@ -24,7 +24,6 @@ def init_db(app):
                 db=target_db,
                 alias='default',
                 tlsCAFile=certifi.where(),
-                tlsAllowInvalidCertificates=True,
                 serverSelectionTimeoutMS=10000
             )
             app.logger.info(f"[+] Database: Successfully connected to Atlas [{target_db}]")

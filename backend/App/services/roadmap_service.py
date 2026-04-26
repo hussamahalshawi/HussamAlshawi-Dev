@@ -1,6 +1,6 @@
 import logging                                                      # Error tracking and logging
 from datetime import datetime, timezone                             # Time management
-from App.models.skills import Skill                                 # Importing skills for token matching
+from App.models.skills import Skill, ProfileSkill                                 # Importing skills for token matching
 from App.models.goal import Goal                                    # Importing goals for progress updates
 
 
@@ -46,7 +46,9 @@ class RoadmapService:
 
                     # Token intersection: any overlap means a relevant skill match
                     if query_tokens.intersection(skill_tokens):
-                        matched_levels.append(skill_obj.level)      # Collect the proficiency level
+                        ps = ProfileSkill.objects(skill=skill_obj, profile=goal.profile).first()
+                        if ps:
+                            matched_levels.append(ps.score)
 
                 if matched_levels:
                     # Average the levels of all matched skills

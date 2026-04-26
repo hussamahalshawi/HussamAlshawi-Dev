@@ -19,7 +19,6 @@ from App.models.skills      import Skill, SkillType, ProfileSkill    # ProfileSk
 from App.models.self_study  import SelfStudy
 from App.models.project     import Project
 from App.models.goal        import Goal
-from App.utils.signals      import register_signals as start_system_signals
 
 # --- ADMIN VIEW IMPORTS ---
 from admin_views.my_media_view       import MediaVaultAdminView
@@ -123,7 +122,7 @@ def register_signals(app):
     """Registers MongoEngine signals for background automation tasks."""
     with app.app_context():
         try:
-            start_system_signals()
+            from App.utils.signals import register_signals as start_system_signals
             app.logger.info('[+] System signals synchronized and listeners active.')
         except Exception as e:
             app.logger.error(f'[-] Signal Sync Failed: {e}')

@@ -97,7 +97,7 @@ class ProfileAdminView(ProfessionalModelView):
                 model.profile_gallery.extend(new_gallery_urls)
 
         # English Comment: Finalize and trigger metrics update
-        model.save()  # Save changes to apply cloud URLs
+
         ProfileService.calculate_metrics(model.id)  # Perform heavy calculations via service
 
     # --- 5. UI Formatters ---
