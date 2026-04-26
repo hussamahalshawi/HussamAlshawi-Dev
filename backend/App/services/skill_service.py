@@ -6,8 +6,8 @@ from App.models.skills import Skill, SkillType, ProfileSkill
 # -------------------------------------------------------------------------
 # SCORE WEIGHTS PER SOURCE MODEL
 # These weights determine how much each activity type contributes to a score.
-# The score is recalculated from scratch each time using these weights,
-# so editing a record does NOT inflate the score.
+# The score is recalculated from scratch each time — editing a record does
+# NOT inflate the score because we never increment, always recalculate.
 # -------------------------------------------------------------------------
 SKILL_LEVEL_WEIGHTS = {
     'Experience' : 25,   # Real job experience — highest value
@@ -21,15 +21,17 @@ SKILL_LEVEL_WEIGHTS = {
 
 class SkillService:
     """
-    Skill Service:
+    Skill Service.
     Manages the global Skill dictionary and per-profile scores (ProfileSkill).
 
     Key design decisions:
     1. Skill documents store NAMES only — no score/level field.
     2. ProfileSkill documents store the score per (profile, skill) pair.
     3. Scores are ALWAYS recalculated from scratch — never incremented.
-       This means editing a course description does not change any score.
-    4. Recalculation only reads records that belong to the target profile.
+    4. Deleting any source record (Course, Experience, etc.) triggers a full
+       recalculation, which correctly lowers or removes the affected scores.
+    5. _cleanup_stale_profile_skills() uses case-insensitive comparison to
+       reliably detect skills no longer referenced after a deletion.
     """
 
     # ------------------------------------------------------------------
@@ -42,11 +44,12 @@ class SkillService:
         Recalculates ALL skill scores for a given profile from scratch.
 
         Process:
-        1. Collect all skill names mentioned in this profile's records.
-        2. For each skill name, sum the weights of all source records that mention it.
-        3. Cap the total at 100.
-        4. Upsert a ProfileSkill document for each (profile, skill) pair.
-        5. Remove ProfileSkill entries for skills no longer referenced.
+        1. Build a fresh {skill_name: total_score} map from all source records.
+        2. Upsert a ProfileSkill document for each skill in the map.
+        3. Delete ProfileSkill entries for skills no longer in the map.
+           This handles the deletion case — if a Course is deleted and it was
+           the only source for a skill, that skill's ProfileSkill is removed.
+        4. Re-categorize all global Skill documents.
 
         Args:
             profile (Profile): The profile document to recalculate scores for.
@@ -58,38 +61,34 @@ class SkillService:
             return 0
 
         try:
-            # Step 1: Collect all (skill_name → total_score) for this profile
+            # Step 1: Build fresh score map from current source records only.
+            # If a Course was just deleted, its skills will NOT appear here.
             score_map = SkillService._build_score_map(profile)
 
-            # Step 2: Upsert ProfileSkill documents for all found skills
+            # Step 2: Upsert ProfileSkill documents for all skills in the map
             updated_count = 0
 
             for skill_name, total_score in score_map.items():
-                # Find or create the global Skill entry (name dictionary)
-                skill_doc = SkillService._get_or_create_skill(skill_name)
+                skill_doc = SkillService._get_or_create_skill(skill_name)  # Find or create global Skill
 
                 if not skill_doc:
-                    continue                                    # Skip if skill creation failed
+                    continue                                        # Skip if skill creation failed
 
-                # Cap score at 100
-                final_score = min(round(total_score), 100)
+                final_score = min(round(total_score), 100)         # Cap score at 100
 
-                # Upsert: update if exists, create if not
                 profile_skill = ProfileSkill.objects(
                     profile=profile,
                     skill=skill_doc
-                ).first()
+                ).first()                                          # Check if ProfileSkill already exists
 
                 if profile_skill:
-                    # Update existing ProfileSkill
-                    if profile_skill.score != final_score:     # Only save if score actually changed
+                    if profile_skill.score != final_score:         # Only save if score actually changed
                         profile_skill.score        = final_score
                         profile_skill.last_updated = datetime.now(timezone.utc)
                         profile_skill.save()
                         updated_count += 1
                 else:
-                    # Create new ProfileSkill
-                    ProfileSkill(
+                    ProfileSkill(                                   # Create new ProfileSkill entry
                         profile      = profile,
                         skill        = skill_doc,
                         score        = final_score,
@@ -97,7 +96,9 @@ class SkillService:
                     ).save()
                     updated_count += 1
 
-            # Step 3: Remove ProfileSkill entries for skills no longer referenced
+            # Step 3: Remove ProfileSkill entries for skills no longer referenced.
+            # This is the critical step that handles deletions correctly —
+            # if score_map is empty or missing a skill, its ProfileSkill is deleted.
             SkillService._cleanup_stale_profile_skills(profile, score_map.keys())
 
             # Step 4: Re-categorize all skills in the global dictionary
@@ -105,12 +106,16 @@ class SkillService:
 
             logging.info(
                 f"SkillService: Recalculated scores for profile [{profile.id}] "
-                f"— {updated_count} ProfileSkill(s) updated."
+                f"— {updated_count} ProfileSkill(s) updated, "
+                f"{len(score_map)} active skills."
             )
             return updated_count
 
         except Exception as e:
-            logging.error(f"SkillService.recalculate_profile_scores failed: {str(e)}", exc_info=True)
+            logging.error(
+                f"SkillService.recalculate_profile_scores failed: {str(e)}",
+                exc_info=True
+            )
             return 0
 
     # ------------------------------------------------------------------
@@ -120,12 +125,16 @@ class SkillService:
     @staticmethod
     def _build_score_map(profile):
         """
-        Reads all source records belonging to the profile and builds
+        Reads ALL current source records belonging to the profile and builds
         a {skill_name: total_score} dictionary.
 
-        Each skill name found in a record contributes its source weight
-        to the total. The total reflects the CURRENT state of all records
-        — not a running accumulation from previous saves.
+        Because this reads the database at call time, a deleted record will
+        NOT appear in the results — its skills will not be in the returned map,
+        which causes _cleanup_stale_profile_skills() to remove them.
+
+        Skill names are stored with their ORIGINAL casing from the source record.
+        Deduplication in _cleanup uses case-insensitive comparison to handle
+        variations like 'python' vs 'Python' from different records.
 
         Args:
             profile (Profile): The target profile to build scores for.
@@ -133,8 +142,7 @@ class SkillService:
         Returns:
             dict: {skill_name (str): total_score (float)}
         """
-        # Import here to avoid circular imports at module level
-        from App.models.course      import Course
+        from App.models.course      import Course       # Local import — avoids circular dependency
         from App.models.project     import Project
         from App.models.education   import Education
         from App.models.self_study  import SelfStudy
@@ -151,11 +159,10 @@ class SkillService:
             Education  : ('skills_learned',      SKILL_LEVEL_WEIGHTS['Education']),
         }
 
-        score_map = {}                                         # {skill_name: accumulated_score}
+        score_map = {}                                             # {skill_name: accumulated_score}
 
         for model_class, (field_name, weight) in SOURCE_CONFIG.items():
-            # Only read records that belong to THIS profile
-            records = model_class.objects(profile=profile)
+            records = model_class.objects(profile=profile)         # Only records for THIS profile
 
             for record in records:
                 skill_names = getattr(record, field_name, []) or []
@@ -163,13 +170,11 @@ class SkillService:
                 for raw_name in skill_names:
                     name = raw_name.strip()
                     if not name:
-                        continue                               # Skip empty strings
+                        continue                                    # Skip empty strings
 
-                    # Accumulate weight — this represents total exposure to this skill
-                    # from all records of this source type
-                    score_map[name] = score_map.get(name, 0) + weight
+                    score_map[name] = score_map.get(name, 0) + weight  # Accumulate weight
 
-        return score_map
+        return score_map                                           # Empty dict if all records deleted
 
     # ------------------------------------------------------------------
     # PRIVATE: Ensure the global Skill entry exists
@@ -179,7 +184,6 @@ class SkillService:
     def _get_or_create_skill(skill_name):
         """
         Finds an existing Skill by name (case-insensitive) or creates a new one.
-        Skill documents store names only — no score or level.
 
         Args:
             skill_name (str): The raw skill name string.
@@ -188,15 +192,13 @@ class SkillService:
             Skill | None: The Skill document, or None if creation failed.
         """
         try:
-            # Case-insensitive lookup to avoid "python" vs "Python" duplicates
-            existing = Skill.objects(skill_name__iexact=skill_name).first()
+            existing = Skill.objects(skill_name__iexact=skill_name).first()  # Case-insensitive lookup
 
             if existing:
-                return existing                               # Return existing skill
+                return existing                                    # Return existing skill document
 
-            # Create new entry in the global skill dictionary
             new_skill = Skill(
-                skill_name   = skill_name,                   # Store with original casing
+                skill_name   = skill_name,
                 last_updated = datetime.now(timezone.utc)
             )
             new_skill.save()
@@ -214,33 +216,61 @@ class SkillService:
     @staticmethod
     def _cleanup_stale_profile_skills(profile, active_skill_names):
         """
-        Deletes ProfileSkill documents for skills that are no longer mentioned
-        in any of the profile's source records.
+        Deletes ProfileSkill documents for skills that are no longer present
+        in the current score map.
 
-        This ensures that removing a skill name from a course also removes
-        the corresponding ProfileSkill entry after recalculation.
+        This is the core fix for the deletion bug:
+        - When a Course is deleted, _build_score_map() returns a map without
+          that course's skills (if they had no other sources).
+        - active_skill_names will be empty or missing those skills.
+        - This method finds the corresponding ProfileSkill entries and deletes them.
+
+        Case-insensitive comparison prevents mismatch between 'Python' stored
+        in ProfileSkill and 'python' coming from a different source record.
 
         Args:
-            profile (Profile): The target profile.
-            active_skill_names (iterable): Skill names that are currently active.
+            profile            : The target profile.
+            active_skill_names : Iterable of skill names currently in the score map.
+                                 Pass an empty iterable after full deletion to
+                                 remove ALL ProfileSkill entries for the profile.
         """
-        # Normalize active names to lowercase for comparison
+        # Normalize active names to lowercase set for reliable comparison
         active_lower = {name.lower() for name in active_skill_names}
 
-        # Fetch all current ProfileSkill entries for this profile
+        # Fetch ALL current ProfileSkill entries for this profile
         existing_profile_skills = ProfileSkill.objects(profile=profile)
 
+        deleted_count = 0
+
         for ps in existing_profile_skills:
+            # Delete orphaned references (skill document was manually removed)
             if not ps.skill:
-                ps.delete()                                   # Clean up orphaned references
+                ps.delete()
+                deleted_count += 1
+                logging.info(
+                    f"SkillService: Removed orphaned ProfileSkill "
+                    f"(no skill reference) for profile [{profile.id}]."
+                )
                 continue
 
-            if ps.skill.skill_name.lower() not in active_lower:
-                ps.delete()                                   # Remove stale skill
+            skill_name_lower = ps.skill.skill_name.lower()        # Normalize stored name to lowercase
+
+            # If this skill is NOT in the active set, it has no source records —
+            # delete its ProfileSkill entry to reflect the deletion
+            if skill_name_lower not in active_lower:
+                skill_name = ps.skill.skill_name                   # Capture before delete for logging
+                ps.delete()
+                deleted_count += 1
                 logging.info(
                     f"SkillService: Removed stale ProfileSkill "
-                    f"'{ps.skill.skill_name}' for profile [{profile.id}]."
+                    f"'{skill_name}' for profile [{profile.id}] — no source records remain."
                 )
+
+        if deleted_count > 0:
+            logging.info(
+                f"SkillService: Cleanup complete — "
+                f"{deleted_count} stale ProfileSkill(s) removed for profile [{profile.id}]."
+            )
 
     # ------------------------------------------------------------------
     # PUBLIC: Re-categorize all skills in the global dictionary
@@ -253,7 +283,7 @@ class SkillService:
         using token intersection scoring.
 
         This operates on the global Skill dictionary only — not on ProfileSkill.
-        It runs after every recalculation to keep categorization fresh.
+        It runs after every recalculation to keep categorization current.
 
         Returns:
             int: Number of Skill documents updated.
@@ -268,8 +298,7 @@ class SkillService:
                 logging.warning("SkillService: No SkillTypes found — categorization skipped.")
                 return 0
 
-            # Fallback category for unmatched skills
-            fallback_type = SkillType.objects(name__iexact='Other technologies').first()
+            fallback_type = SkillType.objects(name__iexact='Other technologies').first()  # Default category
 
             for skill in all_skills:
                 skill_tokens = set(skill.skill_name.lower().strip().split())
@@ -281,7 +310,6 @@ class SkillService:
                     if not s_type.keywords:
                         continue
 
-                    # Extract tokens from all keyword names in this SkillType
                     type_tokens = set()
                     for keyword in s_type.keywords:
                         if hasattr(keyword, 'name') and keyword.name:
