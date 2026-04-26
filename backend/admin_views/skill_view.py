@@ -86,7 +86,8 @@ class SkillTypeAdminView(ProfessionalModelView):
 class SkillAdminView(ProfessionalModelView):
     """
     Skill Management View:
-    Manages individual technical skills and proficiency levels.
+    Manages individual technical skills in the global dictionary.
+    Score lives in ProfileSkill — not here.
     Auto-categorization runs via signals after every save.
     """
 
@@ -98,14 +99,13 @@ class SkillAdminView(ProfessionalModelView):
 
     # --- List View ---
     column_list          = ('skill_name', 'skill_type', 'last_updated')
-    column_editable_list = []  # Skill has no editable score — score lives in ProfileSkill
-    column_filters = ['skill_type']  # Filter by category only
+    column_editable_list = []                              # No editable score — score lives in ProfileSkill
 
     column_labels = {
-        'skill_name'  : 'Technical Skill',
-        'skill_type'  : 'Category',
-        'level'       : 'Proficiency %',
-        'last_updated': 'Last Sync'
+        'skill_name'  : 'Technical Skill',                # Human-readable label
+        'skill_type'  : 'Category',                       # Human-readable label
+        'last_updated': 'Last Sync'                       # Human-readable label
+
     }
 
     # --- Form Configuration ---
@@ -113,13 +113,12 @@ class SkillAdminView(ProfessionalModelView):
         'skill_name',                                      # Required: unique skill identifier
         'skill_type',                                      # Reference: parent SkillType
         'skill_icon',                                      # Optional: manual icon override
-        'level'                                            # Proficiency 0–100
+
     )
 
     # --- UI Interaction ---
-    column_filters         = ['skill_type', 'level']
-    column_searchable_list = ['skill_name']
-
+    column_filters         = ['skill_type']
+    column_searchable_list = ['skill_name']               # Search by skill name
 
     # --- Custom Route ---
     @expose('/reorganize/')
@@ -133,3 +132,12 @@ class SkillAdminView(ProfessionalModelView):
     def on_model_change(self, form, model, is_created):
         """Refreshes audit timestamp before saving. Categorization runs via signals."""
         model.last_updated = datetime.now(timezone.utc)   # Keep modification time current
+
+
+    # --- Custom Route ---
+    @expose('/reorganize/')
+    def reorganize_skills(self):
+        """Manual trigger to re-categorize all skills via SkillService."""
+        count = SkillService.bulk_update_categories()
+        flash(f"Successfully re-categorized {count} skills.", "success")
+        return redirect(url_for('.index_view'))
