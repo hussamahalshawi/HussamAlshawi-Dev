@@ -46,9 +46,12 @@ class RoadmapService:
 
                     # Token intersection: any overlap means a relevant skill match
                     if query_tokens.intersection(skill_tokens):
-                        ps = ProfileSkill.objects(skill=skill_obj, profile=goal.profile).first()
+                        ps = ProfileSkill.objects(
+                            skill=skill_obj,
+                            profile=goal.profile
+                        ).first()  # Fetch score from ProfileSkill join table
                         if ps:
-                            matched_levels.append(ps.score)
+                            matched_levels.append(ps.score)  # Use calculated score, not nonexistent .level
 
                 if matched_levels:
                     # Average the levels of all matched skills

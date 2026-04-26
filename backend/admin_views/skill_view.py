@@ -97,8 +97,9 @@ class SkillAdminView(ProfessionalModelView):
     edit_modal      = False                                # Disable modal
 
     # --- List View ---
-    column_list          = ('skill_name', 'skill_type', 'level', 'last_updated')
-    column_editable_list = ['level']                       # Quick inline level editing
+    column_list          = ('skill_name', 'skill_type', 'last_updated')
+    column_editable_list = []  # Skill has no editable score — score lives in ProfileSkill
+    column_filters = ['skill_type']  # Filter by category only
 
     column_labels = {
         'skill_name'  : 'Technical Skill',
@@ -118,6 +119,7 @@ class SkillAdminView(ProfessionalModelView):
     # --- UI Interaction ---
     column_filters         = ['skill_type', 'level']
     column_searchable_list = ['skill_name']
+
 
     # --- Custom Route ---
     @expose('/reorganize/')
