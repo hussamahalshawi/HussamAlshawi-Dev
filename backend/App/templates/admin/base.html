@@ -12,58 +12,119 @@
     <style>
         /* --- DESIGN SYSTEM TOKENS --- */
         :root {
-            --primary-color: #2563eb;                           /* Brand primary blue */
-            --sidebar-bg: #1e293b;                              /* Dark slate for depth */
-            --main-bg: #f8fafc;                                 /* Clean light background */
+            --primary-color: #2563eb;                                 /* Brand primary blue */
+            --sidebar-bg   : #1e293b;                                 /* Dark slate for depth */
+            --main-bg      : #f8fafc;                                 /* Clean light background */
         }
 
         body {
             background-color: var(--main-bg);
-            font-family: 'Inter', sans-serif;                   /* Global professional font */
+            font-family: 'Inter', sans-serif;                         /* Global professional font */
         }
 
         /* --- NAVIGATION STYLING --- */
         .navbar-custom {
-            background: #ffffff;
+            background   : #ffffff;
             border-bottom: 1px solid #e2e8f0;
-            padding: 0.75rem 1.5rem;
+            padding      : 0.75rem 1.5rem;
         }
 
         .navbar-brand {
-            font-weight: 700;
+            font-weight   : 700;
             letter-spacing: -0.5px;
-            color: #0f172a !important;
+            color         : #0f172a !important;
         }
 
         .nav-link {
-            color: #475569 !important;
+            color      : #475569 !important;
             font-weight: 500;
-            transition: 0.2s;
+            transition : 0.2s;
         }
 
-        .nav-link:hover {
-            color: var(--primary-color) !important;             /* Hover feedback */
-        }
+        .nav-link:hover { color: var(--primary-color) !important; }   /* Hover feedback */
 
-        /* Styling for the soft blue button */
+        /* Soft blue button style */
         .btn-soft-primary {
             background-color: #eff6ff;
-            color: var(--primary-color) !important;
-            border: none;
+            color           : var(--primary-color) !important;
+            border          : none;
         }
 
         .btn-soft-primary:hover {
             background-color: var(--primary-color);
-            color: #ffffff !important;
+            color           : #ffffff !important;
+        }
+
+        /* --- ADMIN USER BADGE IN NAVBAR --- */
+        .admin-user-badge {
+            display    : flex;
+            align-items: center;
+            gap        : 8px;
+            padding    : 6px 14px;
+            background : #f1f5f9;
+            border-radius: 50px;
+            font-size  : 0.82rem;
+            font-weight: 600;
+            color      : #475569;
+        }
+
+        .admin-user-badge .avatar-dot {
+            width        : 28px;
+            height       : 28px;
+            background   : var(--primary-color);
+            border-radius: 50%;
+            display      : flex;
+            align-items  : center;
+            justify-content: center;
+            color        : white;
+            font-size    : 0.7rem;
+            font-weight  : 700;
+        }
+
+        /* --- LOGOUT BUTTON --- */
+        .btn-logout {
+            background   : #fef2f2;
+            color        : #ef4444 !important;
+            border       : 1px solid #fecaca;
+            border-radius: 50px;
+            padding      : 6px 16px;
+            font-size    : 0.82rem;
+            font-weight  : 600;
+            transition   : 0.2s;
+            white-space  : nowrap;
+        }
+
+        .btn-logout:hover {
+            background: #ef4444;
+            color     : #ffffff !important;
+            border-color: #ef4444;
+        }
+
+        /* --- SESSION EXPIRY WARNING BANNER --- */
+        .session-warning {
+            display   : none;                                         /* Hidden by default */
+            background: #fffbeb;
+            border-bottom: 1px solid #fde68a;
+            padding   : 8px 20px;
+            font-size : 0.82rem;
+            color     : #92400e;
+            text-align: center;
         }
     </style>
     {% block head %}{% endblock %}
 </head>
 <body>
 
+<!-- Session expiry warning banner (shown by JS when < 10 min remaining) -->
+<div class="session-warning" id="sessionWarning">
+    <i class="fas fa-clock mr-2"></i>
+    Your session will expire soon. <a href="/admin" style="color:#b45309; font-weight:700;">Click here</a> to stay logged in.
+</div>
+
 <nav class="navbar navbar-expand-lg navbar-light navbar-custom sticky-top shadow-sm">
     <a class="navbar-brand" href="/admin">
-        <i class="fas fa-cube text-primary mr-2"></i> HussamDev <span class="badge badge-soft-primary ml-1">v3.0</span>
+        <i class="fas fa-cube text-primary mr-2"></i> HussamDev
+        <span class="badge badge-soft-primary ml-1">v3.0</span>
     </a>
 
     <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#adminNavbar"
@@ -72,12 +133,7 @@
     </button>
 
     <div class="collapse navbar-collapse" id="adminNavbar">
-        <ul class="navbar-nav ml-auto">
-<!--            <li class="nav-item">-->
-<!--                <a class="nav-link" href="/admin">-->
-<!--                    <i class="fas fa-home mr-1"></i> Home-->
-<!--                </a>-->
-<!--            </li>-->
+        <ul class="navbar-nav ml-auto align-items-center">
 
             <li class="nav-item">
                 <a class="nav-link {% if admin_view.endpoint == 'profile' %}active text-primary font-weight-bold{% endif %}"
@@ -141,6 +197,7 @@
                     <i class="fas fa-book-reader mr-1"></i> Self Study
                 </a>
             </li>
+
             <li class="nav-item">
                 <a class="nav-link {% if admin_view.endpoint == 'project' %}active text-primary font-weight-bold{% endif %}"
                    href="{{ url_for('project.index_view') }}">
@@ -155,7 +212,6 @@
                 </a>
             </li>
 
-
             <li class="nav-item">
                 <a class="nav-link {% if admin_view.endpoint == 'mediavault' %}active text-primary font-weight-bold{% endif %}"
                    href="{{ url_for('mediavault.index_view') }}">
@@ -163,11 +219,35 @@
                 </a>
             </li>
 
-            <li class="nav-item ml-lg-2">
+            <!-- Divider -->
+            <li class="nav-item ml-lg-2 mr-2">
                 <a class="nav-link btn btn-soft-primary rounded-pill px-3" href="/api" target="_blank">
                     <i class="fas fa-external-link-alt mr-1"></i> View Site
                 </a>
             </li>
+
+            <!-- Current Admin User Badge -->
+            {% if session.get('admin_username') %}
+            <li class="nav-item ml-1 mr-2">
+                <div class="admin-user-badge">
+                    <div class="avatar-dot">
+                        {{ session.get('admin_username', 'A')[0].upper() }}  {# First letter of username #}
+                    </div>
+                    <span>{{ session.get('admin_username') }}</span>
+                    {% if session.get('admin_is_super') %}
+                    <span class="badge badge-primary" style="font-size:0.65rem;">Super</span>
+                    {% endif %}
+                </div>
+            </li>
+            {% endif %}
+
+            <!-- Logout Button -->
+            <li class="nav-item">
+                <a href="{{ url_for('auth.logout_view') }}" class="nav-link btn-logout ml-1">
+                    <i class="fas fa-sign-out-alt mr-1"></i> Logout
+                </a>
+            </li>
+
         </ul>
     </div>
 </nav>
@@ -178,6 +258,40 @@
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+    /**
+     * Session expiry warning system.
+     * Reads the session expiry from a data attribute and shows a banner
+     * when less than 10 minutes remain.
+     */
+    (function checkSessionExpiry() {
+        // The expiry ISO string is injected by the template via Jinja2
+        const expiryIso = "{{ session.get('admin_session_expiry', '') }}";
+
+        if (!expiryIso) return;                                       // No session — skip
+
+        const expiry    = new Date(expiryIso);                        // Parse ISO string to Date
+        const warning   = document.getElementById('sessionWarning');  // Warning banner element
+        const TEN_MIN   = 10 * 60 * 1000;                            // 10 minutes in milliseconds
+
+        function updateWarning() {
+            const remaining = expiry - Date.now();                    // Time left in milliseconds
+
+            if (remaining <= 0) {
+                // Session has expired — redirect to login
+                window.location.href = '/admin/login';
+            } else if (remaining <= TEN_MIN) {
+                // Less than 10 minutes — show warning banner
+                warning.style.display = 'block';
+            }
+        }
+
+        updateWarning();                                              // Check immediately on load
+        setInterval(updateWarning, 60000);                            // Re-check every 60 seconds
+    })();
+</script>
+
 {% block tail_js %}{% endblock %}
 </body>
 </html>

@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Login | HussamDev</title>
+
+    <!-- Bootstrap 4 -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        /* ============================================================
+           DESIGN TOKENS
+           ============================================================ */
+        :root {
+            --primary       : #2563eb;      /* Brand blue */
+            --primary-dark  : #1d4ed8;      /* Hover state */
+            --primary-light : #eff6ff;      /* Soft background */
+            --danger        : #ef4444;      /* Error red */
+            --success       : #22c55e;      /* Success green */
+            --text-dark     : #0f172a;      /* Primary text */
+            --text-muted    : #64748b;      /* Secondary text */
+            --border        : #e2e8f0;      /* Input borders */
+            --bg            : #f1f5f9;      /* Page background */
+        }
+
+        /* ============================================================
+           LAYOUT
+           ============================================================ */
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family    : 'Inter', sans-serif;
+            background     : var(--bg);
+            min-height     : 100vh;
+            display        : flex;
+            align-items    : center;
+            justify-content: center;
+            padding        : 20px;
+        }
+
+        /* ============================================================
+           CARD
+           ============================================================ */
+        .login-card {
+            background    : #ffffff;
+            border-radius : 24px;
+            padding       : 48px 44px;
+            width         : 100%;
+            max-width     : 440px;
+            box-shadow    : 0 20px 60px rgba(0, 0, 0, 0.08);
+            animation     : slideUp 0.4s ease;
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to   { opacity: 1; transform: translateY(0);    }
+        }
+
+        /* ============================================================
+           LOGO / HEADER
+           ============================================================ */
+        .login-logo {
+            width        : 60px;
+            height       : 60px;
+            background   : var(--primary);
+            border-radius: 16px;
+            display      : flex;
+            align-items  : center;
+            justify-content: center;
+            margin       : 0 auto 24px;
+            box-shadow   : 0 8px 20px rgba(37, 99, 235, 0.3);
+        }
+
+        .login-logo i { color: #fff; font-size: 26px; }
+
+        .login-title {
+            font-size  : 1.6rem;
+            font-weight: 700;
+            color      : var(--text-dark);
+            text-align : center;
+            margin-bottom: 6px;
+        }
+
+        .login-subtitle {
+            font-size  : 0.88rem;
+            color      : var(--text-muted);
+            text-align : center;
+            margin-bottom: 36px;
+        }
+
+        /* ============================================================
+           FORM FIELDS
+           ============================================================ */
+        .field-group {
+            margin-bottom: 20px;
+        }
+
+        .field-label {
+            font-size  : 0.8rem;
+            font-weight: 600;
+            color      : var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 8px;
+            display    : block;
+        }
+
+        .field-wrapper {
+            position: relative;
+        }
+
+        .field-icon {
+            position  : absolute;
+            left      : 16px;
+            top       : 50%;
+            transform : translateY(-50%);
+            color     : var(--text-muted);
+            font-size : 0.9rem;
+            pointer-events: none;                  /* Icon doesn't block input */
+        }
+
+        .form-input {
+            width         : 100%;
+            padding       : 14px 16px 14px 44px;   /* Left padding for icon */
+            border        : 1.5px solid var(--border);
+            border-radius : 12px;
+            font-size     : 0.95rem;
+            font-family   : 'Inter', sans-serif;
+            color         : var(--text-dark);
+            background    : #fafafa;
+            transition    : border-color 0.2s, box-shadow 0.2s, background 0.2s;
+            outline       : none;
+        }
+
+        .form-input:focus {
+            border-color: var(--primary);
+            background  : #fff;
+            box-shadow  : 0 0 0 3px rgba(37, 99, 235, 0.12);  /* Soft focus ring */
+        }
+
+        /* Password visibility toggle button */
+        .toggle-password {
+            position  : absolute;
+            right     : 14px;
+            top       : 50%;
+            transform : translateY(-50%);
+            background: none;
+            border    : none;
+            cursor    : pointer;
+            color     : var(--text-muted);
+            padding   : 4px;
+            font-size : 0.9rem;
+            transition: color 0.2s;
+        }
+
+        .toggle-password:hover { color: var(--primary); }
+
+        /* ============================================================
+           ERROR ALERT
+           ============================================================ */
+        .alert-error {
+            background   : #fef2f2;                /* Light red background */
+            border       : 1px solid #fecaca;
+            border-radius: 12px;
+            padding      : 14px 16px;
+            margin-bottom: 24px;
+            display      : flex;
+            align-items  : flex-start;
+            gap          : 10px;
+            animation    : shake 0.4s ease;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0);   }
+            20%, 60% { transform: translateX(-6px); }
+            40%, 80% { transform: translateX(6px);  }
+        }
+
+        .alert-error i  { color: var(--danger); margin-top: 2px; flex-shrink: 0; }
+        .alert-error p  { color: #b91c1c; font-size: 0.88rem; margin: 0; }
+
+        /* ============================================================
+           SUBMIT BUTTON
+           ============================================================ */
+        .btn-login {
+            width        : 100%;
+            padding      : 15px;
+            background   : var(--primary);
+            color        : #fff;
+            border       : none;
+            border-radius: 12px;
+            font-size    : 1rem;
+            font-weight  : 600;
+            font-family  : 'Inter', sans-serif;
+            cursor       : pointer;
+            transition   : background 0.2s, transform 0.1s, box-shadow 0.2s;
+            box-shadow   : 0 4px 14px rgba(37, 99, 235, 0.35);
+            margin-top   : 8px;
+            display      : flex;
+            align-items  : center;
+            justify-content: center;
+            gap          : 10px;
+        }
+
+        .btn-login:hover {
+            background: var(--primary-dark);
+            box-shadow: 0 6px 20px rgba(37, 99, 235, 0.45);
+            transform : translateY(-1px);
+        }
+
+        .btn-login:active { transform: translateY(0); }
+
+        /* Loading spinner inside button */
+        .btn-login .spinner {
+            display   : none;                       /* Hidden by default */
+            width     : 18px;
+            height    : 18px;
+            border    : 2px solid rgba(255,255,255,0.4);
+            border-top: 2px solid #fff;
+            border-radius: 50%;
+            animation : spin 0.7s linear infinite;
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* ============================================================
+           FOOTER
+           ============================================================ */
+        .login-footer {
+            text-align : center;
+            margin-top : 28px;
+            font-size  : 0.78rem;
+            color      : var(--text-muted);
+        }
+
+        .login-footer span { color: var(--primary); font-weight: 600; }
+    </style>
+</head>
+<body>
+
+<div class="login-card">
+
+    <!-- Logo -->
+    <div class="login-logo">
+        <i class="fas fa-cube"></i>
+    </div>
+
+    <h1 class="login-title">Admin Panel</h1>
+    <p class="login-subtitle">HussamDev — Secure Access Only</p>
+
+    <!-- Error Alert (only shown when error exists) -->
+    {% if error %}
+    <div class="alert-error" role="alert">
+        <i class="fas fa-exclamation-circle"></i>
+        <p>{{ error }}</p>
+    </div>
+    {% endif %}
+
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% for category, message in messages %}
+        <div class="alert-error" style="{% if category == 'info' %}background:#eff6ff; border-color:#bfdbfe;{% endif %}">
+            <i class="fas {% if category == 'info' %}fa-info-circle{% else %}fa-exclamation-circle{% endif %}"
+               style="{% if category == 'info' %}color:#2563eb;{% endif %}"></i>
+            <p style="{% if category == 'info' %}color:#1d4ed8;{% endif %}">{{ message }}</p>
+        </div>
+        {% endfor %}
+    {% endwith %}
+
+    <!-- Login Form -->
+    <form method="POST" action="{{ url_for('auth.login_view') }}" id="loginForm" novalidate>
+
+        <!-- CSRF Token (Flask-WTF if available, else hidden) -->
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() if csrf_token is defined else '' }}">
+
+        <!-- Username Field -->
+        <div class="field-group">
+            <label for="username" class="field-label">Username</label>
+            <div class="field-wrapper">
+                <i class="fas fa-user field-icon"></i>
+                <input
+                    type="text"
+                    id="username"
+                    name="username"
+                    class="form-input"
+                    placeholder="Enter your username"
+                    autocomplete="username"
+                    autofocus
+                    required
+                >
+            </div>
+        </div>
+
+        <!-- Password Field -->
+        <div class="field-group">
+            <label for="password" class="field-label">Password</label>
+            <div class="field-wrapper">
+                <i class="fas fa-lock field-icon"></i>
+                <input
+                    type="password"
+                    id="password"
+                    name="password"
+                    class="form-input"
+                    placeholder="Enter your password"
+                    autocomplete="current-password"
+                    required
+                    style="padding-right: 48px;"
+                >
+                <!-- Toggle password visibility -->
+                <button type="button" class="toggle-password" onclick="togglePassword()" title="Show/hide password">
+                    <i class="fas fa-eye" id="toggleIcon"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Submit Button -->
+        <button type="submit" class="btn-login" id="submitBtn">
+            <span class="spinner" id="btnSpinner"></span>
+            <i class="fas fa-sign-in-alt" id="btnIcon"></i>
+            <span id="btnText">Sign In</span>
+        </button>
+
+    </form>
+
+    <!-- Footer -->
+    <div class="login-footer">
+        Protected by <span>HussamDev Auth</span> &bull; Unauthorized access is prohibited
+    </div>
+
+</div>
+
+<script>
+    /**
+     * Toggles password field visibility between text and password type.
+     * Updates the eye icon accordingly.
+     */
+    function togglePassword() {
+        const input = document.getElementById('password');             // Password input element
+        const icon  = document.getElementById('toggleIcon');           // Eye icon element
+
+        if (input.type === 'password') {
+            input.type  = 'text';                                      // Reveal password
+            icon.className = 'fas fa-eye-slash';                       // Switch to slash-eye icon
+        } else {
+            input.type  = 'password';                                  // Hide password
+            icon.className = 'fas fa-eye';                             // Restore eye icon
+        }
+    }
+
+    /**
+     * Shows a loading spinner on the submit button when form is submitted.
+     * Prevents double-submission and gives visual feedback.
+     */
+    document.getElementById('loginForm').addEventListener('submit', function(e) {
+        const username = document.getElementById('username').value.trim();  // Check username
+        const password = document.getElementById('password').value.trim();  // Check password
+
+        // Client-side validation before showing spinner
+        if (!username || !password) {
+            e.preventDefault();                                        // Stop submission
+            return;                                                    // Let browser handle empty validation
+        }
+
+        // Show loading state
+        document.getElementById('btnSpinner').style.display = 'block';  // Show spinner
+        document.getElementById('btnIcon').style.display    = 'none';   // Hide icon
+        document.getElementById('btnText').textContent      = 'Signing in...';  // Update text
+        document.getElementById('submitBtn').disabled       = true;     // Disable to prevent double-click
+    });
+</script>
+
+</body>
+</html>

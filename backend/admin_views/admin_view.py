@@ -1,13 +1,16 @@
-from flask_admin.contrib.mongoengine import ModelView        # Base MongoEngine ModelView
-from flask import redirect, url_for, request                  # Core Flask utilities
+from flask import redirect, url_for, request                         # Core Flask utilities
+from auth.secure_views import SecureModelView                         # ← Authenticated base view
 
 
-class ProfessionalModelView(ModelView):
+class ProfessionalModelView(SecureModelView):
     """
     Base Admin View:
-    Enforces global standards across all admin panels including:
-    - Consistent pagination and UI settings.
-    - Automatic profile ownership assignment on every record creation.
+    Inherits from SecureModelView to enforce authentication on every admin panel.
+    Adds global UI standards, pagination, and automatic profile assignment.
+
+    Authentication flow:
+        Request → SecureModelView.is_accessible() → AuthService.is_authenticated()
+        → Allowed if session is valid, redirected to /admin/login otherwise.
     """
 
     # --- UI LIBRARIES ---
@@ -16,18 +19,18 @@ class ProfessionalModelView(ModelView):
     ]
 
     # --- PAGINATION ---
-    page_size = 20                                             # Display 20 items per page
+    page_size = 20                                                    # Display 20 items per page
 
     # --- PERMISSIONS ---
-    can_create     = True                                      # Allow record creation
-    can_edit       = True                                      # Allow record editing
-    can_delete     = True                                      # Allow record deletion
-    can_view_details = True                                    # Allow detail view
+    can_create      = True                                            # Allow record creation
+    can_edit        = True                                            # Allow record editing
+    can_delete      = True                                            # Allow record deletion
+    can_view_details= True                                            # Allow detail view
 
     # --- MODAL DEFAULTS ---
-    create_modal  = True                                       # Default: use modal for creation
-    edit_modal    = True                                       # Default: use modal for editing
-    details_modal = True                                       # Default: use modal for detail view
+    create_modal  = True                                              # Default: use modal for creation
+    edit_modal    = True                                              # Default: use modal for editing
+    details_modal = True                                              # Default: use modal for detail view
 
     # -------------------------------------------------------------------------
     # AUTO PROFILE ASSIGNMENT
@@ -42,16 +45,16 @@ class ProfessionalModelView(ModelView):
             Profile | None: The primary portfolio profile document.
         """
         try:
-            from App.models.profile import Profile             # Local import to avoid circular dependency
-            return Profile.objects.first()                     # Portfolio always has exactly one profile
+            from App.models.profile import Profile                    # Local import — avoids circular dependency
+            return Profile.objects.first()                            # Portfolio always has exactly one profile
         except Exception:
-            return None                                        # Graceful fallback if DB is unavailable
+            return None                                               # Graceful fallback if DB is unavailable
 
     def on_model_change(self, form, model, is_created):
         """
         Base lifecycle hook triggered before every save.
         Automatically assigns the profile reference to any model that has a 'profile' field.
-        Subclasses should call super().on_model_change(...) to preserve this behavior.
+        Subclasses must call super().on_model_change(...) to preserve this behavior.
 
         Args:
             form: The submitted WTForms form instance.
@@ -66,4 +69,4 @@ class ProfessionalModelView(ModelView):
 
             if profile:
                 # Step 3: Assign the profile reference before Flask-Admin saves the document
-                model.profile = profile                        # Link this record to the owner profile
+                model.profile = profile                               # Link this record to the owner profile
