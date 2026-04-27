@@ -185,6 +185,16 @@ class SkillService:
         """
         Finds an existing Skill by name (case-insensitive) or creates a new one.
 
+        When creating a new skill, this method automatically resolves the best
+        matching SkillType and copies the icon from the matched keyword into
+        skill_icon so the frontend can render it immediately without a separate
+        categorization pass.
+
+        Resolution priority for icon:
+            1. Exact keyword name match inside any SkillType      → use that keyword icon
+            2. Token intersection match (partial word overlap)    → use best matched keyword icon
+            3. No match found                                     → skill_icon left empty (fallback in get_display_meta)
+
         Args:
             skill_name (str): The raw skill name string.
 
@@ -195,19 +205,112 @@ class SkillService:
             existing = Skill.objects(skill_name__iexact=skill_name).first()  # Case-insensitive lookup
 
             if existing:
-                return existing                                    # Return existing skill document
+                return existing                                    # Return existing skill — no changes needed
+
+            # --- Resolve SkillType and icon before saving ---
+            resolved_type, resolved_icon = SkillService._resolve_type_and_icon(skill_name)
 
             new_skill = Skill(
-                skill_name   = skill_name,
+                skill_name   = skill_name,                         # Store with original casing
+                skill_type   = resolved_type,                      # Assign best matching SkillType or None
+                skill_icon   = resolved_icon,                      # Copy icon from matched keyword or empty
                 last_updated = datetime.now(timezone.utc)
             )
             new_skill.save()
-            logging.info(f"SkillService: Created new global skill '{skill_name}'.")
+
+            logging.info(
+                f"SkillService: Created skill '{skill_name}' "
+                f"— type='{resolved_type.name if resolved_type else 'None'}' "
+                f"— icon='{resolved_icon or 'none'}'."
+            )
             return new_skill
 
         except Exception as e:
             logging.error(f"SkillService._get_or_create_skill('{skill_name}') failed: {str(e)}")
             return None
+
+    # ------------------------------------------------------------------
+    # PRIVATE: Resolve the best SkillType and icon for a skill name
+    # ------------------------------------------------------------------
+
+    @staticmethod
+    def _resolve_type_and_icon(skill_name):
+        """
+        Searches all SkillType keywords to find the best match for the given
+        skill name and returns both the SkillType document and the icon string.
+
+        Matching strategy:
+            Step 1 — Exact match: keyword.name.lower() == skill_name.lower()
+                     Returns immediately with the exact keyword icon.
+            Step 2 — Token intersection: counts overlapping words between
+                     the skill name tokens and all keyword name tokens inside
+                     each SkillType. The SkillType with the highest overlap wins.
+                     Then searches that SkillType's keywords for the single
+                     keyword with the highest individual token overlap to get
+                     its icon.
+            Step 3 — No match: returns (fallback_type, '') so skill_icon stays
+                     empty and get_display_meta() falls back to 'fas fa-code'.
+
+        Args:
+            skill_name (str): The skill name to resolve.
+
+        Returns:
+            tuple: (SkillType | None, str) — the best SkillType and icon string.
+        """
+        all_types     = list(SkillType.objects.all())              # Fetch all SkillType documents once
+        skill_lower   = skill_name.lower().strip()                 # Normalize skill name to lowercase
+        skill_tokens  = set(skill_lower.split())                   # Tokenize for partial matching
+
+        fallback_type = next(                                      # Fallback for unmatched skills
+            (t for t in all_types if t.name.lower() == 'other technologies'),
+            None
+        )
+
+        best_type       = None                                     # Best matching SkillType
+        best_type_score = 0                                        # Highest token overlap score
+        best_icon       = ''                                       # Icon from the best matched keyword
+
+        for s_type in all_types:
+            if not s_type.keywords:
+                continue                                           # Skip types with no keywords
+
+            for keyword in s_type.keywords:
+                if not keyword.name:
+                    continue                                       # Skip empty keyword entries
+
+                keyword_lower = keyword.name.lower().strip()       # Normalize keyword to lowercase
+
+                # --- Step 1: Exact match — highest priority ---
+                if keyword_lower == skill_lower:
+                    logging.debug(
+                        f"SkillService._resolve_type_and_icon: "
+                        f"exact match '{skill_name}' → type='{s_type.name}' icon='{keyword.icon}'"
+                    )
+                    return s_type, keyword.icon                    # Return immediately on exact match
+
+                # --- Step 2: Token intersection scoring ---
+                keyword_tokens  = set(keyword_lower.split())       # Tokenize keyword name
+                overlap         = len(skill_tokens.intersection(keyword_tokens))  # Count shared tokens
+
+                if overlap > best_type_score:
+                    best_type_score = overlap                      # Update best score
+                    best_type       = s_type                       # Update best type
+                    best_icon       = keyword.icon                 # Copy icon from this keyword
+
+        # Step 3: Return best token-intersection result or fallback
+        if best_type_score > 0:
+            logging.debug(
+                f"SkillService._resolve_type_and_icon: "
+                f"token match '{skill_name}' (score={best_type_score}) "
+                f"→ type='{best_type.name}' icon='{best_icon}'"
+            )
+            return best_type, best_icon                            # Return best partial match with icon
+
+        logging.debug(
+            f"SkillService._resolve_type_and_icon: "
+            f"no match for '{skill_name}' — using fallback type."
+        )
+        return fallback_type, ''                                   # No match — fallback type, no icon
 
     # ------------------------------------------------------------------
     # PRIVATE: Remove ProfileSkill entries for skills no longer referenced
@@ -280,10 +383,11 @@ class SkillService:
     def bulk_update_categories():
         """
         Assigns each global Skill document to the best-matching SkillType
-        using token intersection scoring.
+        and syncs the skill_icon from the matched keyword.
 
-        This operates on the global Skill dictionary only — not on ProfileSkill.
-        It runs after every recalculation to keep categorization current.
+        Runs after every score recalculation to keep both categorization
+        and icons current. Only saves the document if something actually changed
+        to avoid unnecessary database writes.
 
         Returns:
             int: Number of Skill documents updated.
@@ -292,42 +396,33 @@ class SkillService:
 
         try:
             all_skills = Skill.objects.all()
-            all_types  = SkillType.objects.all()
 
-            if not all_types:
-                logging.warning("SkillService: No SkillTypes found — categorization skipped.")
-                return 0
-
-            fallback_type = SkillType.objects(name__iexact='Other technologies').first()  # Default category
+            if not all_skills:
+                return 0                                           # Nothing to process
 
             for skill in all_skills:
-                skill_tokens = set(skill.skill_name.lower().strip().split())
+                # Resolve the best SkillType and icon using the shared helper
+                resolved_type, resolved_icon = SkillService._resolve_type_and_icon(skill.skill_name)
 
-                best_type  = None
-                best_score = 0
+                type_changed = resolved_type and skill.skill_type != resolved_type   # SkillType changed
+                icon_changed = resolved_icon and skill.skill_icon != resolved_icon   # Icon changed
 
-                for s_type in all_types:
-                    if not s_type.keywords:
-                        continue
+                # Only write to DB if at least one field actually changed
+                if type_changed or icon_changed:
+                    if type_changed:
+                        skill.skill_type = resolved_type           # Update category reference
+                    if icon_changed:
+                        skill.skill_icon = resolved_icon           # Sync icon from keyword
 
-                    type_tokens = set()
-                    for keyword in s_type.keywords:
-                        if hasattr(keyword, 'name') and keyword.name:
-                            type_tokens.update(keyword.name.lower().strip().split())
-
-                    match_score = len(skill_tokens.intersection(type_tokens))
-
-                    if match_score > best_score:
-                        best_score = match_score
-                        best_type  = s_type
-
-                final_type = best_type if best_score > 0 else fallback_type
-
-                if final_type and skill.skill_type != final_type:
-                    skill.skill_type   = final_type
-                    skill.last_updated = datetime.now(timezone.utc)
+                    skill.last_updated = datetime.now(timezone.utc)  # Refresh modification timestamp
                     skill.save()
                     updated_count += 1
+
+                    logging.info(
+                        f"SkillService.bulk_update_categories: updated '{skill.skill_name}' "
+                        f"— type='{resolved_type.name if resolved_type else 'None'}' "
+                        f"— icon='{resolved_icon or 'none'}'."
+                    )
 
         except Exception as e:
             logging.error(f"SkillService.bulk_update_categories failed: {str(e)}")
