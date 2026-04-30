@@ -133,13 +133,9 @@ class SkillService:
         Reads ALL current source records belonging to the profile and builds
         a {skill_name: total_score} dictionary.
 
-        Because this reads the database at call time, a deleted record will
-        NOT appear in the results — its skills will not be in the returned map,
-        which causes _cleanup_stale_profile_skills() to remove them.
-
-        Skill names are stored with their ORIGINAL casing from the source record.
-        Deduplication in _cleanup uses case-insensitive comparison to handle
-        variations like 'python' vs 'Python' from different records.
+        Applies aggressive name sanitization to handle dirty data from the admin
+        form — trailing Arabic commas (٫), Western commas (,), dots, semicolons,
+        and extra whitespace are all stripped before the name is stored.
 
         Args:
             profile (Profile): The target profile to build scores for.
@@ -147,7 +143,9 @@ class SkillService:
         Returns:
             dict: {skill_name (str): total_score (float)}
         """
-        from App.models.course      import Course       # Local import — avoids circular dependency
+        import re                                                      # Regex for character stripping
+
+        from App.models.course      import Course
         from App.models.project     import Project
         from App.models.education   import Education
         from App.models.self_study  import SelfStudy
@@ -164,22 +162,30 @@ class SkillService:
             Education  : ('skills_learned',      SKILL_LEVEL_WEIGHTS['Education']),
         }
 
-        score_map = {}                                             # {skill_name: accumulated_score}
+        score_map = {}                                                 # {skill_name: accumulated_score}
 
         for model_class, (field_name, weight) in SOURCE_CONFIG.items():
-            records = model_class.objects(profile=profile)         # Only records for THIS profile
+            records = model_class.objects(profile=profile)             # Only records for THIS profile
 
             for record in records:
                 skill_names = getattr(record, field_name, []) or []
 
                 for raw_name in skill_names:
-                    name = raw_name.strip()
+                    if not raw_name:
+                        continue                                        # Skip None or empty
+
+                    # Remove trailing/leading: whitespace, commas (EN+AR), dots, semicolons
+                    # \u060c = Arabic comma ، | \u066b = Arabic decimal separator ٫
+                    name = re.sub(r'[\s,،\u060c\u066b.;]+$', '', raw_name)  # Strip trailing garbage
+                    name = re.sub(r'^[\s,،\u060c\u066b.;]+', '', name)      # Strip leading garbage
+                    name = ' '.join(name.split())                       # Collapse internal whitespace
+
                     if not name:
-                        continue                                    # Skip empty strings
+                        continue                                        # Skip if nothing left after clean
 
                     score_map[name] = score_map.get(name, 0) + weight  # Accumulate weight
 
-        return score_map                                           # Empty dict if all records deleted
+        return score_map
 
     # ------------------------------------------------------------------
     # PRIVATE: Ensure the global Skill entry exists

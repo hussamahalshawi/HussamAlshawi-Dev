@@ -1,5 +1,37 @@
 from flask import redirect, url_for, request                         # Core Flask utilities
 from auth.secure_views import SecureModelView                         # ← Authenticated base view
+import re                                                             # Regex for skill name sanitization
+
+
+def sanitize_skill_list(raw_list):
+    """
+    Cleans a list of skill name strings before saving to MongoDB.
+
+    Removes trailing/leading garbage characters that sneak in from the admin
+    form — Arabic commas (،٫), Western commas, dots, semicolons, and extra
+    whitespace. Also collapses internal whitespace and drops empty results.
+
+    Args:
+        raw_list (list): Raw list of strings from the model field.
+
+    Returns:
+        list: Cleaned list with no empty or malformed entries.
+    """
+    cleaned = []
+
+    for raw in (raw_list or []):
+        if not raw:
+            continue                                                   # Skip None and empty strings
+
+        # Strip trailing garbage: spaces, EN/AR commas, dots, semicolons
+        name = re.sub(r'[\s,،\u060c\u066b.;]+$', '', raw)            # Remove from end
+        name = re.sub(r'^[\s,،\u060c\u066b.;]+', '', name)           # Remove from start
+        name = ' '.join(name.split())                                  # Collapse internal spaces
+
+        if name:
+            cleaned.append(name)                                       # Only keep non-empty results
+
+    return cleaned
 
 
 class ProfessionalModelView(SecureModelView):
@@ -33,40 +65,56 @@ class ProfessionalModelView(SecureModelView):
     details_modal = True                                              # Default: use modal for detail view
 
     # -------------------------------------------------------------------------
-    # AUTO PROFILE ASSIGNMENT
+    # AUTO PROFILE ASSIGNMENT + SKILL SANITIZATION
     # -------------------------------------------------------------------------
 
     def _get_active_profile(self):
         """
         Fetches the single active Profile document from MongoDB.
-        Returns None if no profile exists yet (safe fallback).
 
         Returns:
-            Profile | None: The primary portfolio profile document.
+            Profile | None
         """
         try:
-            from App.models.profile import Profile                    # Local import — avoids circular dependency
-            return Profile.objects.first()                            # Portfolio always has exactly one profile
+            from App.models.profile import Profile
+            return Profile.objects.first()
         except Exception:
-            return None                                               # Graceful fallback if DB is unavailable
+            return None
+
+    # Skill list field names present across all models — sanitized automatically
+    SKILL_LIST_FIELDS = [
+        'acquired_skills',       # Course
+        'skills_used',           # Project
+        'skills_acquired',       # Experience
+        'skills_learned',        # Education, SelfStudy
+        'skills_demonstrated',   # Achievement
+        'required_skills',       # Goal
+    ]
 
     def on_model_change(self, form, model, is_created):
         """
         Base lifecycle hook triggered before every save.
-        Automatically assigns the profile reference to any model that has a 'profile' field.
-        Subclasses must call super().on_model_change(...) to preserve this behavior.
+
+        Responsibilities:
+            1. Auto-assign profile reference if missing.
+            2. Sanitize all skill list fields to remove dirty characters
+               (trailing commas, Arabic punctuation, extra spaces).
+
+        Subclasses must call super().on_model_change(...) to keep this behavior.
 
         Args:
-            form: The submitted WTForms form instance.
-            model: The MongoEngine document being saved.
-            is_created (bool): True if this is a new record, False if editing.
+            form      : The submitted WTForms form instance.
+            model     : The MongoEngine document being saved.
+            is_created: True if new record, False if editing.
         """
-        # Step 1: Check if this model has a 'profile' field (not all models need it)
+        # Step 1: Auto-assign profile if this model supports ownership
         if hasattr(model, 'profile') and model.profile is None:
-
-            # Step 2: Fetch the active profile from the database
             profile = self._get_active_profile()
-
             if profile:
-                # Step 3: Assign the profile reference before Flask-Admin saves the document
-                model.profile = profile                               # Link this record to the owner profile
+                model.profile = profile                               # Link to the active portfolio profile
+
+        # Step 2: Sanitize every skill list field present on this model
+        for field_name in self.SKILL_LIST_FIELDS:
+            if hasattr(model, field_name):
+                raw = getattr(model, field_name, [])
+                setattr(model, field_name, sanitize_skill_list(raw))  # Replace with cleaned list
