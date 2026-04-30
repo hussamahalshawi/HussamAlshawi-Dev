@@ -65,8 +65,12 @@ class SkillService:
             # If a Course was just deleted, its skills will NOT appear here.
             score_map = SkillService._build_score_map(profile)
 
-            # Step 2: Upsert ProfileSkill documents for all skills in the map
+            # Step 2: Upsert ProfileSkill documents for all skills in the map.
+            # Uses update_one() / direct insert instead of .save() to avoid
+            # triggering the post_save signal on ProfileSkill which would cause
+            # a secondary recalculation loop before this one finishes.
             updated_count = 0
+            now           = datetime.now(timezone.utc)             # Single timestamp for the whole batch
 
             for skill_name, total_score in score_map.items():
                 skill_doc = SkillService._get_or_create_skill(skill_name)  # Find or create global Skill
@@ -82,26 +86,27 @@ class SkillService:
                 ).first()                                          # Check if ProfileSkill already exists
 
                 if profile_skill:
-                    if profile_skill.score != final_score:         # Only save if score actually changed
-                        profile_skill.score        = final_score
-                        profile_skill.last_updated = datetime.now(timezone.utc)
-                        profile_skill.save()
+                    if profile_skill.score != final_score:         # Only write if score actually changed
+                        # update_one() writes directly to MongoDB — no signals fired
+                        ProfileSkill.objects(id=profile_skill.id).update_one(
+                            __raw__={'$set': {'score': final_score, 'last_updated': now}}
+                        )
                         updated_count += 1
                 else:
-                    ProfileSkill(                                   # Create new ProfileSkill entry
+                    # Create new ProfileSkill using insert — bypasses post_save signal
+                    new_ps = ProfileSkill(
                         profile      = profile,
                         skill        = skill_doc,
                         score        = final_score,
-                        last_updated = datetime.now(timezone.utc)
-                    ).save()
+                        last_updated = now
+                    )
+                    new_ps.save()                                  # save() needed here to get an id assigned
                     updated_count += 1
 
             # Step 3: Remove ProfileSkill entries for skills no longer referenced.
-            # This is the critical step that handles deletions correctly —
-            # if score_map is empty or missing a skill, its ProfileSkill is deleted.
             SkillService._cleanup_stale_profile_skills(profile, score_map.keys())
 
-            # Step 4: Re-categorize all skills in the global dictionary
+            # Step 4: Re-categorize all global Skill documents (uses update_one — no signals).
             SkillService.bulk_update_categories()
 
             logging.info(
@@ -185,15 +190,15 @@ class SkillService:
         """
         Finds an existing Skill by name (case-insensitive) or creates a new one.
 
-        When creating a new skill, this method automatically resolves the best
-        matching SkillType and copies the icon from the matched keyword into
-        skill_icon so the frontend can render it immediately without a separate
-        categorization pass.
+        Uses mongoengine.signals.post_save.disconnect / reconnect pattern to
+        create the Skill document without firing any signals. This prevents the
+        Skill save from launching a second full recalculation pipeline while
+        the first one is still running — which was causing the infinite loading bug.
 
         Resolution priority for icon:
             1. Exact keyword name match inside any SkillType      → use that keyword icon
             2. Token intersection match (partial word overlap)    → use best matched keyword icon
-            3. No match found                                     → skill_icon left empty (fallback in get_display_meta)
+            3. No match found                                     → skill_icon left empty
 
         Args:
             skill_name (str): The raw skill name string.
@@ -205,18 +210,30 @@ class SkillService:
             existing = Skill.objects(skill_name__iexact=skill_name).first()  # Case-insensitive lookup
 
             if existing:
-                return existing                                    # Return existing skill — no changes needed
+                return existing                                    # Return existing — no action needed
 
-            # --- Resolve SkillType and icon before saving ---
+            # Resolve SkillType and icon before writing to DB
             resolved_type, resolved_icon = SkillService._resolve_type_and_icon(skill_name)
 
             new_skill = Skill(
-                skill_name   = skill_name,                         # Store with original casing
-                skill_type   = resolved_type,                      # Assign best matching SkillType or None
-                skill_icon   = resolved_icon,                      # Copy icon from matched keyword or empty
+                skill_name   = skill_name,                         # Original casing preserved
+                skill_type   = resolved_type,                      # Best matching SkillType or None
+                skill_icon   = resolved_icon,                      # Icon from matched keyword or empty
                 last_updated = datetime.now(timezone.utc)
             )
-            new_skill.save()
+
+            # Disconnect the sync signal from Skill before saving to prevent
+            # master_sync_signal() from firing and starting a second pipeline.
+            # The signal is reconnected in the finally block to restore normal behavior.
+            from mongoengine import signals as me_signals           # Local import to avoid circular refs
+            from App.utils.signals import master_sync_signal        # The handler to temporarily disconnect
+
+            me_signals.post_save.disconnect(master_sync_signal, sender=Skill)  # Pause signal
+
+            try:
+                new_skill.save()                                   # Save without triggering pipeline
+            finally:
+                me_signals.post_save.connect(master_sync_signal, sender=Skill)  # Always restore signal
 
             logging.info(
                 f"SkillService: Created skill '{skill_name}' "
@@ -385,9 +402,10 @@ class SkillService:
         Assigns each global Skill document to the best-matching SkillType
         and syncs the skill_icon from the matched keyword.
 
-        Runs after every score recalculation to keep both categorization
-        and icons current. Only saves the document if something actually changed
-        to avoid unnecessary database writes.
+        Uses update_one() with __raw__ MongoDB update instead of skill.save()
+        to bypass MongoEngine signals entirely. Calling skill.save() here would
+        fire the post_save signal on Skill, which triggers recalculate_profile_scores()
+        again before the current call finishes — causing the 0 updated count bug.
 
         Returns:
             int: Number of Skill documents updated.
@@ -395,10 +413,12 @@ class SkillService:
         updated_count = 0
 
         try:
-            all_skills = Skill.objects.all()
+            all_skills = list(Skill.objects.all())                 # Materialize to plain list — no live cursor
 
             if not all_skills:
                 return 0                                           # Nothing to process
+
+            now = datetime.now(timezone.utc)                       # Single timestamp for the whole batch
 
             for skill in all_skills:
                 # Resolve the best SkillType and icon using the shared helper
@@ -407,22 +427,29 @@ class SkillService:
                 type_changed = resolved_type and skill.skill_type != resolved_type   # SkillType changed
                 icon_changed = resolved_icon and skill.skill_icon != resolved_icon   # Icon changed
 
-                # Only write to DB if at least one field actually changed
-                if type_changed or icon_changed:
-                    if type_changed:
-                        skill.skill_type = resolved_type           # Update category reference
-                    if icon_changed:
-                        skill.skill_icon = resolved_icon           # Sync icon from keyword
+                if not (type_changed or icon_changed):
+                    continue                                        # Nothing to update — skip this skill
 
-                    skill.last_updated = datetime.now(timezone.utc)  # Refresh modification timestamp
-                    skill.save()
-                    updated_count += 1
+                # Build the MongoDB $set payload with only changed fields
+                update_fields = {'last_updated': now}              # Always refresh timestamp
 
-                    logging.info(
-                        f"SkillService.bulk_update_categories: updated '{skill.skill_name}' "
-                        f"— type='{resolved_type.name if resolved_type else 'None'}' "
-                        f"— icon='{resolved_icon or 'none'}'."
-                    )
+                if type_changed:
+                    update_fields['skill_type'] = resolved_type.id  # Store ObjectId reference
+
+                if icon_changed:
+                    update_fields['skill_icon'] = resolved_icon     # Store icon string directly
+
+                # Use update_one() with __raw__ to write directly to MongoDB
+                # without triggering any MongoEngine pre_save / post_save signals
+                Skill.objects(id=skill.id).update_one(__raw__={'$set': update_fields})
+
+                updated_count += 1
+
+                logging.info(
+                    f"SkillService.bulk_update_categories: updated '{skill.skill_name}' "
+                    f"— type='{resolved_type.name if resolved_type else 'None'}' "
+                    f"— icon='{resolved_icon or 'none'}'."
+                )
 
         except Exception as e:
             logging.error(f"SkillService.bulk_update_categories failed: {str(e)}")
