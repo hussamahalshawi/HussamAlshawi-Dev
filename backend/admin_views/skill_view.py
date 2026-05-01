@@ -116,9 +116,28 @@ class SkillAdminView(ProfessionalModelView):
 
     )
 
+    extra_css = []
+    extra_js = []
+
+    def _extra_actions(self):
+        return [
+            {
+                'url': url_for('skill.deduplicate_skills'),
+                'label': 'Fix Duplicates',
+                'class': 'btn btn-warning btn-sm'
+            }
+        ]
+
     # --- UI Interaction ---
     column_filters         = ['skill_type']
     column_searchable_list = ['skill_name']               # Search by skill name
+
+    @expose('/deduplicate/')
+    def deduplicate_skills(self):
+        """Manual trigger to merge duplicate Skill documents."""
+        removed = SkillService.deduplicate_skills()
+        flash(f"Deduplication complete — {removed} duplicate(s) removed.", "success")
+        return redirect(url_for('.index_view'))
 
     # --- Custom Route ---
     @expose('/reorganize/')

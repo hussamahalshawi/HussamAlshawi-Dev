@@ -1,6 +1,8 @@
 from mongoengine import signals
 import logging
-import threading                                                       # Run sync pipeline in background thread
+import threading
+import queue
+import time
 from App.models.project     import Project
 from App.models.course      import Course
 from App.models.experience  import Experience
@@ -16,18 +18,95 @@ from App.services.profile_service import ProfileService
 
 
 # -------------------------------------------------------------------------
-# RECURSION GUARD
-# Prevents the same document from being processed more than once at a time.
-# goal.save() inside RoadmapService fires post_save again on the same Goal —
-# this set detects that and returns early, breaking the loop.
+# QUEUE + COOLDOWN SYSTEM
+# Single worker thread processes one profile at a time.
+# Cooldown merges rapid consecutive saves into one pipeline run.
 # -------------------------------------------------------------------------
-_signal_processing = set()                                             # Active document keys being synced
-_signal_lock       = threading.Lock()                                  # Thread-safe access to the set
+_pipeline_queue   = queue.Queue()                                      # FIFO queue for sync jobs
+_pending_profiles = set()                                              # Profiles waiting in queue
+_pending_lock     = threading.Lock()                                   # Thread-safe set access
+_worker_started   = False                                              # Single worker guard
+_worker_lock      = threading.Lock()                                   # Thread-safe worker start
+
+COOLDOWN_SECONDS  = 2                                                  # Wait 2s after job before next
 
 
-# -------------------------------------------------------------------------
-# MODELS THAT CARRY A profile REFERENCE (ownership-enabled)
-# -------------------------------------------------------------------------
+def _pipeline_worker():
+    """
+    Single background daemon thread.
+    Processes one profile sync at a time with a cooldown between jobs.
+    Cooldown allows rapid consecutive saves to merge into one pipeline run.
+    """
+    while True:
+        try:
+            profile_id = _pipeline_queue.get(timeout=5)               # Block until job arrives
+
+            # Cooldown: wait briefly to absorb any rapid follow-up saves
+            # Any additional saves during this window are deduplicated and skipped
+            time.sleep(COOLDOWN_SECONDS)                               # Merge window
+
+            try:
+                from App.models.profile import Profile as ProfileModel
+                fresh_profile = ProfileModel.objects.get(id=profile_id)
+
+                logging.info(f"[QUEUE WORKER] Starting pipeline for profile [{profile_id}]")
+
+                # Step 1: Recalculate all ProfileSkill scores
+                SkillService.recalculate_profile_scores(fresh_profile)
+
+                # Step 2: Sync all goal progress scores
+                RoadmapService.sync_all_goals(profile=fresh_profile)
+
+                # Step 3: Refresh experience_years and overall_score
+                ProfileService.calculate_metrics(profile_id)
+
+                logging.info(f"[QUEUE WORKER] Pipeline completed for profile [{profile_id}]")
+
+            except Exception as e:
+                logging.error(
+                    f"[QUEUE WORKER ERROR] Pipeline failed for profile [{profile_id}]: {str(e)}",
+                    exc_info=True
+                )
+            finally:
+                with _pending_lock:
+                    _pending_profiles.discard(str(profile_id))         # Release dedup lock
+                _pipeline_queue.task_done()
+
+        except queue.Empty:
+            continue                                                    # No jobs — loop and wait
+
+
+def _ensure_worker_running():
+    """Starts the background worker thread exactly once."""
+    global _worker_started
+
+    with _worker_lock:
+        if not _worker_started:
+            worker = threading.Thread(target=_pipeline_worker, daemon=True)
+            worker.start()
+            _worker_started = True
+            logging.info("[QUEUE WORKER] Background pipeline worker started.")
+
+
+def _enqueue_pipeline(profile_id):
+    """
+    Adds a profile sync job to the queue if not already pending.
+    Deduplication: same profile queued twice → only runs once.
+    """
+    _ensure_worker_running()
+
+    str_id = str(profile_id)
+
+    with _pending_lock:
+        if str_id in _pending_profiles:
+            logging.debug(f"[QUEUE] Profile [{str_id}] already queued — skipping duplicate.")
+            return
+
+        _pending_profiles.add(str_id)
+        _pipeline_queue.put(profile_id)
+        logging.debug(f"[QUEUE] Profile [{str_id}] enqueued for pipeline.")
+
+
 PROFILE_OWNED_MODELS = (
     Course, Project, Education, SelfStudy,
     Achievement, Experience, Goal
@@ -35,153 +114,55 @@ PROFILE_OWNED_MODELS = (
 
 
 def master_pre_save_signal(sender, document, **kwargs):
-    """
-    Triggered BEFORE any monitored document is saved.
-    Auto-assigns the active Profile to new documents that have a profile field.
-
-    This runs synchronously (before save) so it must stay in the request thread.
-
-    Args:
-        sender  : The model class that triggered the signal.
-        document: The MongoEngine document about to be saved.
-    """
+    """Auto-assigns the active Profile to new documents before save."""
     if not isinstance(document, PROFILE_OWNED_MODELS):
-        return                                                         # Skip models without profile ownership
+        return
 
     if document.profile is not None:
-        return                                                         # Already assigned — skip
+        return
 
-    profile = Profile.objects.first()                                  # Fetch the single active profile
+    profile = Profile.objects.first()
 
     if profile:
-        document.profile = profile                                     # Assign before Flask-Admin saves
-        logging.info(
-            f"[SIGNAL pre_save] Auto-assigned profile to "
-            f"{type(document).__name__}."
-        )
+        document.profile = profile
+        logging.info(f"[SIGNAL pre_save] Auto-assigned profile to {type(document).__name__}.")
 
 
 def master_sync_signal(sender, document, **kwargs):
-    """
-    Triggered AFTER any monitored document is saved.
-
-    Spawns a background daemon thread to run the full sync pipeline.
-    This returns control to Flask immediately so the HTTP response is sent
-    to the browser without waiting for recalculation to finish.
-
-    The background thread runs:
-        1. SkillService.recalculate_profile_scores()
-        2. RoadmapService.sync_all_goals()
-        3. ProfileService.calculate_metrics()
-
-    Args:
-        sender  : The model class that triggered the signal.
-        document: The saved MongoEngine document instance.
-    """
-    # Resolve profile synchronously before spawning thread
-    profile     = _resolve_profile(document)                           # Must run in request thread
-    sender_name = sender.__name__                                      # Capture for logging in thread
+    """Enqueues a pipeline sync job after any monitored document is saved."""
+    profile = _resolve_profile(document)
 
     if not profile:
-        logging.warning(
-            f"[SIGNAL post_save] {sender_name}: no profile found — sync skipped."
-        )
+        logging.warning(f"[SIGNAL post_save] {sender.__name__}: no profile — sync skipped.")
         return
 
-    profile_id = profile.id                                            # Capture ID — safe to pass to thread
-
-    # Build unique key to prevent duplicate processing of same document
-    doc_key = f"{type(document).__name__}:{document.id}"               # e.g. "Course:507f..."
-
-    with _signal_lock:                                                 # Thread-safe check and add
-        if doc_key in _signal_processing:
-            logging.debug(f"[SIGNAL GUARD] Skipping re-entrant sync for {doc_key}")
-            return                                                     # Already in progress — skip
-        _signal_processing.add(doc_key)                                # Mark as in-progress
-
-    def run_pipeline():
-        """
-        Background thread: runs full recalculation without blocking HTTP response.
-        Always clears the guard key in finally block.
-        """
-        try:
-            # Re-fetch profile inside thread to get a fresh MongoDB connection context
-            from App.models.profile import Profile as ProfileModel
-            fresh_profile = ProfileModel.objects.get(id=profile_id)   # Fresh instance in thread
-
-            # Step 1: Recalculate all ProfileSkill scores from scratch
-            SkillService.recalculate_profile_scores(fresh_profile)
-
-            # Step 2: Recalculate all goal progress scores for this profile
-            RoadmapService.sync_all_goals(profile=fresh_profile)
-
-            # Step 3: Refresh experience_years and overall_score on Profile
-            ProfileService.calculate_metrics(profile_id)
-
-            logging.info(
-                f"[SIGNAL BACKGROUND] {sender_name} sync completed "
-                f"for profile [{profile_id}]."
-            )
-
-        except Exception as e:
-            logging.error(
-                f"[SIGNAL BACKGROUND ERROR] {sender_name} sync failed "
-                f"for profile [{profile_id}]: {str(e)}",
-                exc_info=True
-            )
-
-        finally:
-            with _signal_lock:                                         # Thread-safe removal
-                _signal_processing.discard(doc_key)                    # Always clear — even on error
-
-    # daemon=True: thread does not block application shutdown
-    thread = threading.Thread(target=run_pipeline, daemon=True)        # Create background thread
-    thread.start()                                                     # Launch — request continues immediately
+    _enqueue_pipeline(profile.id)
 
 
 def master_delete_signal(sender, document, **kwargs):
-    """
-    Triggered AFTER any monitored document is deleted.
-    Reuses master_sync_signal so the pipeline runs in background after deletion too.
+    """Enqueues a pipeline sync job after any monitored document is deleted."""
+    profile = _resolve_profile(document)
 
-    Args:
-        sender  : The model class that triggered the signal.
-        document: The deleted MongoEngine document instance.
-    """
-    master_sync_signal(sender, document, **kwargs)                     # Same background pipeline
-    logging.info(f"[SIGNAL post_delete] {sender.__name__} delete sync dispatched.")
+    if not profile:
+        logging.warning(f"[SIGNAL post_delete] {sender.__name__}: no profile — sync skipped.")
+        return
+
+    logging.info(f"[SIGNAL post_delete] {sender.__name__} deleted — enqueuing pipeline.")
+    _enqueue_pipeline(profile.id)
 
 
 def _resolve_profile(document):
-    """
-    Resolves the Profile that owns a given document.
-    Called synchronously in the request thread before the background thread starts.
-
-    Priority:
-        1. document.profile — direct FK on ownership models.
-        2. Profile.objects.first() — fallback for global models.
-
-    Args:
-        document: Any MongoEngine document instance.
-
-    Returns:
-        Profile | None
-    """
+    """Resolves the Profile that owns a given document."""
     if hasattr(document, 'profile') and document.profile is not None:
         try:
             profile = document.profile
             return profile if hasattr(profile, 'full_name') else Profile.objects.get(id=profile.id)
         except Exception:
-            pass                                                       # Fall through to fallback
+            pass
 
-    return Profile.objects.first()                                     # Global fallback
+    return Profile.objects.first()
 
 
-# -------------------------------------------------------------------------
-# MONITORED MODELS
-# Skill is excluded — its save() is called internally by _get_or_create_skill()
-# and must never trigger a new pipeline.
-# -------------------------------------------------------------------------
 monitored_models = [
     Project, Course, Experience, Education,
     SelfStudy, Achievement, Goal
@@ -190,7 +171,7 @@ monitored_models = [
 
 def register_signals():
     """
-    Connects pre_save, post_save, and post_delete signals to all monitored models.
+    Connects signals to all monitored models and starts the worker thread.
     Must be called exactly once inside create_app().
     """
     for model in monitored_models:
@@ -198,4 +179,5 @@ def register_signals():
         signals.post_save.connect(master_sync_signal,     sender=model)
         signals.post_delete.connect(master_delete_signal, sender=model)
 
+    _ensure_worker_running()
     print("✅ All System Signals Registered Successfully.")
