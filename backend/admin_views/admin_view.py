@@ -91,30 +91,46 @@ class ProfessionalModelView(SecureModelView):
         'required_skills',       # Goal
     ]
 
+    # --- URL FIELDS SANITIZATION ---
+    # URL field names present across all models — sanitized automatically
+    URL_FIELDS = [
+        'live_url',  # Project
+        'github_url',  # Project, Experience
+        'company_url',  # Experience
+        'credential_url',  # Course
+        'source_url',  # SelfStudy
+        'evidence_url',  # Achievement
+        'cover_image',  # SelfStudy
+        'medium_url',  # Profile
+        'linkedin_url',  # Profile
+        'instagram_url',  # Profile
+        'facebook_url',  # Profile
+    ]
+
     def on_model_change(self, form, model, is_created):
         """
         Base lifecycle hook triggered before every save.
 
         Responsibilities:
             1. Auto-assign profile reference if missing.
-            2. Sanitize all skill list fields to remove dirty characters
-               (trailing commas, Arabic punctuation, extra spaces).
-
-        Subclasses must call super().on_model_change(...) to keep this behavior.
-
-        Args:
-            form      : The submitted WTForms form instance.
-            model     : The MongoEngine document being saved.
-            is_created: True if new record, False if editing.
+            2. Sanitize all skill list fields to remove dirty characters.
+            3. Sanitize all URL fields — convert empty strings to None.
         """
         # Step 1: Auto-assign profile if this model supports ownership
         if hasattr(model, 'profile') and model.profile is None:
             profile = self._get_active_profile()
             if profile:
-                model.profile = profile                               # Link to the active portfolio profile
+                model.profile = profile  # Link to the active portfolio profile
 
         # Step 2: Sanitize every skill list field present on this model
         for field_name in self.SKILL_LIST_FIELDS:
             if hasattr(model, field_name):
                 raw = getattr(model, field_name, [])
                 setattr(model, field_name, sanitize_skill_list(raw))  # Replace with cleaned list
+
+        # Step 3: Sanitize all URL fields — empty string causes URLField ValidationError
+        for field_name in self.URL_FIELDS:
+            if hasattr(model, field_name):
+                value = getattr(model, field_name, None)  # Read current value
+                if not value or str(value).strip() == '':
+                    setattr(model, field_name, None)  # Replace empty string with None
