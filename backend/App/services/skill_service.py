@@ -393,9 +393,10 @@ class SkillService:
     @staticmethod
     def bulk_update_categories():
         """
-        Updates skill categories based on token matching against SkillType keywords.
-        Uses __raw__ update to bypass signals entirely.
-        Zero-Score protection: unmatched skills fall back to 'Other Technologies'.
+        Re-categorizes all global Skill documents using token matching.
+
+        CRITICAL: Uses update_one(__raw__) instead of skill.save() to bypass
+        MongoEngine signals entirely — prevents recursive pipeline triggers.
 
         Returns:
             int: Number of Skill documents updated.
@@ -403,56 +404,74 @@ class SkillService:
         updated_count = 0
 
         try:
-            all_skills    = list(Skill.objects.all())
-            all_types     = list(SkillType.objects.all())
-            other_tech    = next(                                      # Fallback type
-                (t for t in all_types if t.name.lower() == 'other technologies'),
-                None
-            )
+            all_skills = list(Skill.objects.all())  # Fetch all skills once
+            all_types = list(SkillType.objects.all())  # Fetch all types once
             now = datetime.now(timezone.utc)
 
             if not all_types:
-                logging.error("bulk_update_categories: No SkillTypes found.")
+                logging.error("bulk_update_categories: No SkillTypes found — aborting.")
                 return 0
 
-            for skill in all_skills:
-                skill_tokens      = set(skill.skill_name.lower().strip().split())  # Tokenize skill name
-                best_type         = None
-                highest_score     = 0
+            # Pre-fetch 'Other Technologies' fallback once
+            other_tech = next(
+                (t for t in all_types if t.name.lower() == 'other technologies'),
+                None
+            )
 
-                for s_type in all_types:
-                    if not s_type.keywords:
+            # Pre-build token sets for all SkillTypes — avoids re-computing in inner loop
+            type_token_map = {}  # {SkillType: set_of_tokens}
+
+            for s_type in all_types:
+                if not s_type.keywords:
+                    type_token_map[s_type] = set()
+                    continue
+
+                tokens = set()
+                for kw in s_type.keywords:
+                    kw_name = kw.name if hasattr(kw, 'name') else str(kw)
+                    tokens.update(kw_name.lower().strip().split())  # Tokenize each keyword
+
+                type_token_map[s_type] = tokens  # Store pre-computed tokens
+
+            for skill in all_skills:
+                skill_tokens = set(skill.skill_name.lower().strip().split())
+                best_type = None
+                highest_score = 0
+
+                for s_type, type_tokens in type_token_map.items():
+                    if not type_tokens:
                         continue
 
-                    # Tokenize all keywords in this SkillType
-                    type_tokens = set()
-                    for kw in s_type.keywords:
-                        kw_name = kw.name if hasattr(kw, 'name') else str(kw)
-                        type_tokens.update(kw_name.lower().strip().split())
-
-                    # Intersection: count matching tokens
-                    match_score = len(skill_tokens.intersection(type_tokens))
+                    match_score = len(skill_tokens.intersection(type_tokens))  # Token overlap count
 
                     if match_score > highest_score:
                         highest_score = match_score
-                        best_type     = s_type
+                        best_type = s_type
 
-                # Zero-score fallback
+                # Zero-score fallback to 'Other Technologies'
                 final_type = best_type if highest_score > 0 else other_tech
 
-                if final_type and skill.skill_type != final_type:
-                    Skill.objects(id=skill.id).update_one(
-                        __raw__={'$set': {
-                            'skill_type'  : final_type.id,
-                            'last_updated': now
-                        }}
-                    )
-                    updated_count += 1
+                if not final_type:
+                    continue  # No type available — skip
+
+                if skill.skill_type == final_type:
+                    continue  # No change needed — skip
+
+                # ✅ CRITICAL FIX: update_one with __raw__ bypasses MongoEngine signals entirely
+                # skill.save() would fire post_save signal → recursive pipeline trigger
+                Skill.objects(id=skill.id).update_one(
+                    __raw__={'$set': {
+                        'skill_type': final_type.id,  # Update category reference
+                        'last_updated': now  # Refresh timestamp
+                    }}
+                )
+                updated_count += 1
 
         except Exception as e:
             logging.error(f"SkillService.bulk_update_categories failed: {str(e)}")
             return 0
 
+        logging.info(f"SkillService.bulk_update_categories: {updated_count} skills re-categorized.")
         return updated_count
 
     # ------------------------------------------------------------------

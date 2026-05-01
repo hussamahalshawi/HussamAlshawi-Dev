@@ -1,5 +1,6 @@
 from mongoengine import signals
 import logging
+import os
 import threading
 import queue
 import time
@@ -77,16 +78,39 @@ def _pipeline_worker():
 
 
 def _ensure_worker_running():
-    """Starts the background worker thread exactly once."""
+    """
+    Starts the background worker thread exactly once.
+
+    Flask development reloader spawns TWO processes:
+        - Parent process (monitor) — should NOT run the worker.
+        - Child process (actual app) — runs the worker.
+
+    WERKZEUG_RUN_MAIN=true is set ONLY in the child process.
+    We check this to prevent duplicate workers in development mode.
+    """
     global _worker_started
+
+    # Guard: in development mode, only the child process should run the worker
+    # WERKZEUG_RUN_MAIN is 'true' only in the child process spawned by the reloader
+    is_reloader_parent = (
+        os.environ.get('FLASK_ENV') == 'development'
+        and os.environ.get('WERKZEUG_RUN_MAIN') != 'true'
+    )
+
+    if is_reloader_parent:
+        logging.debug("[QUEUE WORKER] Reloader parent process — skipping worker start.")
+        return                                                         # Skip parent process
 
     with _worker_lock:
         if not _worker_started:
-            worker = threading.Thread(target=_pipeline_worker, daemon=True)
+            worker = threading.Thread(
+                target=_pipeline_worker,
+                daemon=True,
+                name="PipelineWorker"                                  # Named for easier debugging
+            )
             worker.start()
             _worker_started = True
             logging.info("[QUEUE WORKER] Background pipeline worker started.")
-
 
 def _enqueue_pipeline(profile_id):
     """
@@ -167,6 +191,7 @@ monitored_models = [
     Project, Course, Experience, Education,
     SelfStudy, Achievement, Goal
 ]
+
 
 
 def register_signals():
