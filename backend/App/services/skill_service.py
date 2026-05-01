@@ -27,6 +27,31 @@ class SkillService:
         Duplicates are merged before any write operation.
     """
 
+    # Class-level cache — shared across all calls in same pipeline run
+    _skill_cache = {}                                                  # {name_lower: skill_doc}
+
+    # ------------------------------------------------------------------
+    # PUBLIC: Build in-memory skill cache (ONE query replaces N+1)
+    # ------------------------------------------------------------------
+
+    @staticmethod
+    def _build_skill_cache():
+        """
+        Pre-loads ALL existing Skill documents into memory in ONE query.
+        Must be called once at the start of recalculate_profile_scores().
+        Reduces N+1 Atlas round-trips to a single batch fetch.
+        """
+        SkillService._skill_cache = {}                                 # Reset cache before rebuild
+
+        for skill in Skill.objects.all():                              # Single query — fetch all
+            key = skill.skill_name.strip().lower()                     # Normalize key
+            SkillService._skill_cache[key] = skill                     # Map: {name_lower: skill_doc}
+
+        logging.info(
+            f"SkillService: Cache built — "
+            f"{len(SkillService._skill_cache)} skills loaded."
+        )
+
     # ------------------------------------------------------------------
     # PUBLIC: Deduplicate existing Skill documents (run once to fix DB)
     # ------------------------------------------------------------------
@@ -90,7 +115,7 @@ class SkillService:
         documents for the same (profile, skill) pair.
         Keeps the one with the higher score and deletes the rest.
         """
-        all_ps    = list(ProfileSkill.objects.all())                   # Fetch all ProfileSkill docs
+        all_ps     = list(ProfileSkill.objects.all())                  # Fetch all ProfileSkill docs
         seen_pairs = {}                                                # {(profile_id, skill_id): ps}
 
         for ps in all_ps:
@@ -103,7 +128,6 @@ class SkillService:
             if pair in seen_pairs:
                 existing = seen_pairs[pair]
 
-                # Keep the higher score, delete the lower
                 if ps.score >= existing.score:
                     existing.delete()                                  # Delete old lower score
                     seen_pairs[pair] = ps                              # Replace with higher
@@ -127,11 +151,12 @@ class SkillService:
         Recalculates ALL skill scores for a given profile from scratch.
 
         Process:
-        1. Build fresh {normalized_name: total_score} map from all source records.
-        2. Fetch all existing ProfileSkill docs in ONE query.
-        3. Upsert only changed scores.
-        4. Delete stale ProfileSkill entries using pre-fetched map.
-        5. Re-categorize all global Skill documents.
+        1. Build in-memory skill cache — ONE query replaces N+1.
+        2. Build fresh {normalized_name: total_score} map from all source records.
+        3. Fetch all existing ProfileSkill docs in ONE query.
+        4. Upsert only changed scores.
+        5. Delete stale ProfileSkill entries using pre-fetched map.
+        6. Re-categorize all global Skill documents.
 
         Args:
             profile: The Profile document to recalculate scores for.
@@ -143,20 +168,21 @@ class SkillService:
             return 0
 
         try:
-            # Step 1: Build score map — all calculation in memory first
-            score_map = SkillService._build_score_map(profile)
-            now       = datetime.now(timezone.utc)
+            # ✅ Step 1: Build cache FIRST — single query replaces N+1 Atlas round-trips
+            SkillService._build_skill_cache()                          # Load all skills into memory
+
+            # Step 2: Build score map — all calculation in memory first
+            score_map     = SkillService._build_score_map(profile)
+            now           = datetime.now(timezone.utc)
             updated_count = 0
 
-            # Step 2: Fetch all existing ProfileSkill in ONE query
-            # Map: {skill_name_lower: ProfileSkill}
+            # Step 3: Fetch all existing ProfileSkill in ONE query
             existing_ps_map = {}
 
             for ps in ProfileSkill.objects(profile=profile).select_related():
                 if ps.skill:
                     key = ps.skill.skill_name.strip().lower()
                     if key in existing_ps_map:
-                        # Duplicate found — keep higher score, delete lower
                         existing = existing_ps_map[key]
                         if ps.score >= existing.score:
                             existing.delete()
@@ -166,16 +192,16 @@ class SkillService:
                     else:
                         existing_ps_map[key] = ps
 
-            # Step 3: Upsert scores
+            # Step 4: Upsert scores
             active_keys = set()                                        # Track processed skills
 
             for skill_name, total_score in score_map.items():
-                normalized = SkillService._normalize_name(skill_name)  # Title Case
-                key        = normalized.lower()                        # Lookup key
+                normalized  = SkillService._normalize_name(skill_name) # Title Case
+                key         = normalized.lower()                       # Lookup key
                 final_score = min(round(total_score), 100)             # Cap at 100
                 active_keys.add(key)
 
-                skill_doc = SkillService._get_or_create_skill(normalized)  # Find or create
+                skill_doc = SkillService._get_or_create_skill(normalized)  # Uses cache now
 
                 if not skill_doc:
                     continue
@@ -192,7 +218,6 @@ class SkillService:
                         )
                         updated_count += 1
                 else:
-                    # Create new ProfileSkill
                     new_ps = ProfileSkill(
                         profile      = profile,
                         skill        = skill_doc,
@@ -202,7 +227,7 @@ class SkillService:
                     new_ps.save()
                     updated_count += 1
 
-            # Step 4: Remove stale ProfileSkill entries
+            # Step 5: Remove stale ProfileSkill entries
             deleted_count = 0
 
             for key, ps in existing_ps_map.items():
@@ -215,7 +240,7 @@ class SkillService:
                         f"'{skill_name}' for profile [{profile.id}]."
                     )
 
-            # Step 5: Re-categorize global Skill documents
+            # Step 6: Re-categorize global Skill documents
             SkillService.bulk_update_categories()
 
             logging.info(
@@ -251,7 +276,6 @@ class SkillService:
         if not raw_name:
             return ''
 
-        # Strip trailing/leading garbage: commas, Arabic punctuation, dots, spaces
         name = re.sub(r'[\s,،\u060c\u066b.;]+$', '', str(raw_name))   # Remove from end
         name = re.sub(r'^[\s,،\u060c\u066b.;]+', '', name)             # Remove from start
         name = ' '.join(name.split())                                  # Collapse internal spaces
@@ -267,9 +291,6 @@ class SkillService:
         """
         Reads all source records for the profile and builds
         {normalized_skill_name: total_score} in memory.
-
-        All skill names are normalized to Title Case before accumulation
-        so 'python' and 'Python' map to the same key 'Python'.
 
         Args:
             profile: The target profile.
@@ -307,28 +328,25 @@ class SkillService:
                     if not normalized:
                         continue
 
-                    # Use lowercase as dict key to merge case variants
-                    key = normalized.lower()
+                    key = normalized.lower()                           # Lowercase for dedup
 
-                    # Store the Title Case name, accumulate score
                     if key not in score_map:
                         score_map[key] = {'name': normalized, 'score': 0}
 
                     score_map[key]['score'] += weight                  # Accumulate weight
 
-        # Return {title_case_name: score} — key is the display name
         return {v['name']: v['score'] for v in score_map.values()}
 
     # ------------------------------------------------------------------
-    # PRIVATE: Find or create a Skill document (normalized name)
+    # PRIVATE: Find or create a Skill document — uses cache
     # ------------------------------------------------------------------
 
     @staticmethod
     def _get_or_create_skill(normalized_name):
         """
-        Finds an existing Skill by name (case-insensitive) or creates a new one.
-        Always stores the skill in Title Case.
-        Disconnects signals before saving to prevent recursive pipeline.
+        Finds an existing Skill by name using in-memory cache first.
+        Falls back to DB creation only if not found in cache.
+        Eliminates N+1 Atlas queries during pipeline runs.
 
         Args:
             normalized_name (str): Title Case skill name.
@@ -339,21 +357,14 @@ class SkillService:
         if not normalized_name:
             return None
 
+        key = normalized_name.lower()                                  # Normalize lookup key
+
+        # ✅ Check cache first — zero DB queries if skill exists
+        if key in SkillService._skill_cache:
+            return SkillService._skill_cache[key]                      # Return instantly from memory
+
         try:
-            # Case-insensitive lookup
-            existing = Skill.objects(
-                skill_name__iexact=normalized_name
-            ).first()
-
-            if existing:
-                # If found with different casing, normalize it
-                if existing.skill_name != normalized_name:
-                    Skill.objects(id=existing.id).update_one(
-                        __raw__={'$set': {'skill_name': normalized_name}}
-                    )
-                return existing
-
-            # Create new Skill with normalized name
+            # Not in cache — create new skill in DB
             resolved_type, resolved_icon = SkillService._resolve_type_and_icon(normalized_name)
 
             new_skill = Skill(
@@ -371,6 +382,7 @@ class SkillService:
 
             try:
                 new_skill.save()
+                SkillService._skill_cache[key] = new_skill             # ✅ Add to cache after creation
             finally:
                 me_signals.post_save.connect(master_sync_signal, sender=Skill)
 
@@ -387,16 +399,14 @@ class SkillService:
             return None
 
     # ------------------------------------------------------------------
-    # PUBLIC: Re-categorize all skills (from old SkillService you shared)
+    # PUBLIC: Re-categorize all skills
     # ------------------------------------------------------------------
 
     @staticmethod
     def bulk_update_categories():
         """
         Re-categorizes all global Skill documents using token matching.
-
-        CRITICAL: Uses update_one(__raw__) instead of skill.save() to bypass
-        MongoEngine signals entirely — prevents recursive pipeline triggers.
+        Uses update_one(__raw__) to bypass MongoEngine signals entirely.
 
         Returns:
             int: Number of Skill documents updated.
@@ -404,22 +414,20 @@ class SkillService:
         updated_count = 0
 
         try:
-            all_skills = list(Skill.objects.all())  # Fetch all skills once
-            all_types = list(SkillType.objects.all())  # Fetch all types once
-            now = datetime.now(timezone.utc)
+            all_skills = list(Skill.objects.all())                     # Fetch all skills once
+            all_types  = list(SkillType.objects.all())                 # Fetch all types once
+            now        = datetime.now(timezone.utc)
 
             if not all_types:
                 logging.error("bulk_update_categories: No SkillTypes found — aborting.")
                 return 0
 
-            # Pre-fetch 'Other Technologies' fallback once
             other_tech = next(
                 (t for t in all_types if t.name.lower() == 'other technologies'),
                 None
             )
 
-            # Pre-build token sets for all SkillTypes — avoids re-computing in inner loop
-            type_token_map = {}  # {SkillType: set_of_tokens}
+            type_token_map = {}                                        # {SkillType: set_of_tokens}
 
             for s_type in all_types:
                 if not s_type.keywords:
@@ -429,40 +437,37 @@ class SkillService:
                 tokens = set()
                 for kw in s_type.keywords:
                     kw_name = kw.name if hasattr(kw, 'name') else str(kw)
-                    tokens.update(kw_name.lower().strip().split())  # Tokenize each keyword
+                    tokens.update(kw_name.lower().strip().split())     # Tokenize each keyword
 
-                type_token_map[s_type] = tokens  # Store pre-computed tokens
+                type_token_map[s_type] = tokens
 
             for skill in all_skills:
-                skill_tokens = set(skill.skill_name.lower().strip().split())
-                best_type = None
+                skill_tokens  = set(skill.skill_name.lower().strip().split())
+                best_type     = None
                 highest_score = 0
 
                 for s_type, type_tokens in type_token_map.items():
                     if not type_tokens:
                         continue
 
-                    match_score = len(skill_tokens.intersection(type_tokens))  # Token overlap count
+                    match_score = len(skill_tokens.intersection(type_tokens))
 
                     if match_score > highest_score:
                         highest_score = match_score
-                        best_type = s_type
+                        best_type     = s_type
 
-                # Zero-score fallback to 'Other Technologies'
                 final_type = best_type if highest_score > 0 else other_tech
 
                 if not final_type:
-                    continue  # No type available — skip
+                    continue
 
                 if skill.skill_type == final_type:
-                    continue  # No change needed — skip
+                    continue                                            # No change needed — skip
 
-                # ✅ CRITICAL FIX: update_one with __raw__ bypasses MongoEngine signals entirely
-                # skill.save() would fire post_save signal → recursive pipeline trigger
                 Skill.objects(id=skill.id).update_one(
                     __raw__={'$set': {
-                        'skill_type': final_type.id,  # Update category reference
-                        'last_updated': now  # Refresh timestamp
+                        'skill_type'  : final_type.id,
+                        'last_updated': now
                     }}
                 )
                 updated_count += 1
@@ -482,9 +487,6 @@ class SkillService:
     def _resolve_type_and_icon(skill_name):
         """
         Searches all SkillType keywords to find the best match.
-        Step 1: Exact match → return immediately.
-        Step 2: Token intersection → return best score.
-        Step 3: Fallback → 'Other Technologies', no icon.
 
         Args:
             skill_name (str): Normalized skill name.
@@ -501,16 +503,16 @@ class SkillService:
             None
         )
 
-        best_type       = None
-        best_score      = 0
-        best_icon       = ''
+        best_type  = None
+        best_score = 0
+        best_icon  = ''
 
         for s_type in all_types:
             if not s_type.keywords:
                 continue
 
             for keyword in s_type.keywords:
-                kw_name = keyword.name if hasattr(keyword, 'name') else str(keyword)
+                kw_name  = keyword.name if hasattr(keyword, 'name') else str(keyword)
                 kw_lower = kw_name.lower().strip()
 
                 if kw_lower == skill_lower:                            # Exact match
