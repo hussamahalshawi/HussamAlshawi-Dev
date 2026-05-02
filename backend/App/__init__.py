@@ -136,6 +136,9 @@ def create_app():
     from App.routes import Api as main_bp                             # Main API blueprint
     app.register_blueprint(main_bp, url_prefix='/api')               # Mount under /api
 
+    from App.routes.goals import goals_bp  # Goals API blueprint
+    app.register_blueprint(goals_bp, url_prefix='/api')  # Mount under /api
+
     # -------------------------------------------------------------------------
     # STEP 10: SIGNALS (MongoEngine automation)
     # -------------------------------------------------------------------------
