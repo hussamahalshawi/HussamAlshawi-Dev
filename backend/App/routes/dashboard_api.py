@@ -108,7 +108,8 @@ def get_profile(profile_id):
             'courses'     : Course.objects(profile=profile).count(),         # Course records
             'projects'    : Project.objects(profile=profile).count(),        # Project records
             'education'   : Education.objects(profile=profile).count(),      # Education records
-            'achievements': Achievement.objects(profile=profile).count(),    # Achievement records
+            'self_study': SelfStudy.objects(profile=profile).count(),
+            'achievements': Achievement.objects(profile=profile).count(),  # Achievement records
         }
 
         return jsonify({
