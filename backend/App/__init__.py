@@ -36,7 +36,8 @@ from admin_views.skill_view          import SkillAdminView, SkillTypeAdminView  
 from admin_views.profile_skill_view  import ProfileSkillAdminView     # Read-only skill scores view
 
 # --- AUTH IMPORTS ---
-from auth.secure_views import SecureAdminIndexView                    # Authenticated admin index
+from auth.secure_views import SecureAdminIndexView                    # Keep for reference (unused now)
+from admin_views.dashboard_view import DashboardIndexView             # New analytics dashboard index
 from auth.routes       import auth_bp                                 # Login/logout route blueprint
 from auth.cli          import cli_bp                                  # CLI commands (create-admin)
 
@@ -105,8 +106,8 @@ def create_app():
     # -------------------------------------------------------------------------
     admin = Admin(
         app,
-        name      = 'HussamDev Admin',
-        index_view= SecureAdminIndexView()                            # ← All admin routes now require login
+        name='HussamDev Admin',
+        index_view=DashboardIndexView()  # ← Dashboard replaces blank index
     )
 
     # Identity & Profile
@@ -138,6 +139,9 @@ def create_app():
 
     from App.routes.goals import goals_bp  # Goals API blueprint
     app.register_blueprint(goals_bp, url_prefix='/api')  # Mount under /api
+
+    from App.routes.dashboard_api import dashboard_bp  # Dashboard API blueprint
+    app.register_blueprint(dashboard_bp, url_prefix='/api')  # Mount under /api
 
     # -------------------------------------------------------------------------
     # STEP 10: SIGNALS (MongoEngine automation)
