@@ -180,6 +180,24 @@
         border-radius: 12px; padding: 14px 18px; font-size: 13px;
         border: 1px solid #f5c4b3; margin-top: 8px;
     }
+    /* LANGUAGE CARDS */
+.lang-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+    gap: 12px;
+}
+.lang-card {
+    border-radius: 14px; padding: 16px 12px;
+    text-align: center; border: 1px solid transparent;
+    transition: transform .15s, box-shadow .15s;
+}
+.lang-card:hover { transform: translateY(-3px); box-shadow: 0 6px 18px rgba(0,0,0,.08); }
+.lang-card-icon  { font-size: 22px; margin-bottom: 10px; }
+.lang-card-name  { font-size: 13px; font-weight: 700; color: #0f172a; margin-bottom: 6px; }
+.lang-card-badge {
+    display: inline-block; font-size: 10px; font-weight: 700;
+    padding: 3px 10px; border-radius: 20px; letter-spacing: .03em;
+}
 </style>
 {% endblock %}
 
@@ -351,15 +369,17 @@ async function init() {
 async function prefetchProfile(profileId) {
     if (_cache[profileId]) return;                             // Already cached — skip
     try {
-        const [profileData, skillsData, goalsData] = await Promise.all([
+        const [profileData, skillsData, goalsData, langsData] = await Promise.all([
             api(`/api/profile/${profileId}`),
             api(`/api/profile-skills?profile_id=${profileId}`),
             api(`/api/goals-dashboard?profile_id=${profileId}`),
+            api(`/api/dashboard-languages?profile_id=${profileId}`),
         ]);
         _cache[profileId] = {                                  // Save to cache
             profile: profileData,
             skills : skillsData.skills  || [],
             goals  : goalsData.goals    || [],
+            languages: langsData.languages || [],
         };
     } catch(e) { /* silent — will retry on demand */ }
 }
@@ -423,7 +443,7 @@ function updateTopBar(profile) {
 /* ================================================================
    MAIN RENDER
 ================================================================ */
-function renderDashboard(profile, skills, goals) {
+function renderDashboard(profile, skills, goals, languages = []) {
     const counts        = profile.model_counts || {};
     const avgSkill      = skills.length ? rnd(skills.reduce((a,s)=>a+s.score,0)/skills.length) : 0;
     const goalsAchieved = goals.filter(g=>g.status==='Achieved'||g.progress_pct>=100).length;
@@ -575,6 +595,17 @@ function renderDashboard(profile, skills, goals) {
             <div class="model-counts-grid" id="modelCountsGrid"></div>
         </div>
     </div>
+    <div class="charts-grid-2">
+        <div class="chart-card">
+            <div class="chart-card-header"><div>
+                <div class="chart-card-title">
+                    <i class="fas fa-language mr-2 text-primary"></i>Languages
+                </div>
+                <div class="chart-card-sub">Communication proficiency levels</div>
+            </div></div>
+            <div class="lang-grid" id="langSection"></div>
+        </div>
+    </div>
 
     <div class="chart-card full-width">
         <div class="chart-card-header"><div>
@@ -594,6 +625,7 @@ function renderDashboard(profile, skills, goals) {
         buildYearBar(years, yearAvgs);
         buildModelCounts(counts);
         buildGoalList(goals);
+        buildLanguages(languages);
     });
 }
 
@@ -716,7 +748,36 @@ function buildGoalList(goals) {
         </div>`;
     }).join('');
 }
+const LANG_PALETTE = {
+    'Native'      : { bg:'#E1F5EE', border:'#9FE1CB', text:'#0F6E56', icon:'🌍' },
+    'Fluent'      : { bg:'#E6F1FB', border:'#B5D4F4', text:'#185FA5', icon:'💬' },
+    'Advanced'    : { bg:'#EEEDFE', border:'#CECBF6', text:'#534AB7', icon:'📚' },
+    'Intermediate': { bg:'#FAEEDA', border:'#FAC775', text:'#854F0B', icon:'🗣️' },
+    'Beginner'    : { bg:'#F1EFE8', border:'#D3D1C7', text:'#5F5E5A', icon:'🌱' },
+};
 
+function buildLanguages(languages) {
+    const sec = $('langSection');
+    if (!sec) return;
+    if (!languages || !languages.length) {
+        sec.innerHTML = `<div style="grid-column:1/-1;text-align:center;color:#94a3b8;padding:24px 0;font-size:13px">
+            <i class="fas fa-language" style="font-size:26px;display:block;margin-bottom:8px"></i>
+            No languages added yet.
+        </div>`;
+        return;
+    }
+    sec.innerHTML = languages.map(lang => {
+        const p = LANG_PALETTE[lang.proficiency] || LANG_PALETTE['Intermediate'];
+        return `
+        <div class="lang-card" style="background:${p.bg};border-color:${p.border}">
+            <div class="lang-card-icon">${p.icon}</div>
+            <div class="lang-card-name">${lang.language_name}</div>
+            <span class="lang-card-badge" style="background:${p.border};color:${p.text}">
+                ${lang.proficiency}
+            </span>
+        </div>`;
+    }).join('');
+}
 document.addEventListener('DOMContentLoaded', init);
 </script>
 {% endblock %}

@@ -152,6 +152,9 @@ def create_app():
     from App.routes.feedback_api import feedback_bp
     app.register_blueprint(feedback_bp, url_prefix='/api')
 
+    from App.routes.languages_feedback_api import languages_feedback_bp
+    app.register_blueprint(languages_feedback_bp, url_prefix='/api')
+
     # -------------------------------------------------------------------------
     # STEP 10: SIGNALS (MongoEngine automation)
     # -------------------------------------------------------------------------
