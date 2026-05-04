@@ -10,8 +10,15 @@ class ExperienceAdminView(ProfessionalModelView):
     Experience Management View:
     Handles career history entries and enforces timeline logic for active roles.
     Profile ownership is automatically assigned via the base class on every save.
-    Supports media uploads: workplace/team photos (multi) and a video testimonial (single).
-    Upload pattern mirrors ProjectAdminView for architectural consistency.
+
+    Media upload behavior (all fields are fully independent):
+        image_uploads     → appended to experience_images list (never overwrites existing)
+        video_upload      → overwrites experience_video (single slot)
+        certificate_upload→ overwrites certificate_image (single slot)
+
+    Coexistence rule:
+        All three media fields can coexist. Uploading one does NOT affect the others.
+        If only a certificate is uploaded, experience_images and experience_video remain untouched.
     """
 
     # --- TEMPLATE CONFIGURATION ---
@@ -32,11 +39,12 @@ class ExperienceAdminView(ProfessionalModelView):
         'start_date'     : 'Joined On'                        # Human-readable column label
     }
 
-    # --- FORM CONFIGURATION ---
-    # Virtual upload fields — not stored in DB directly, processed in on_model_change
+    # --- FORM EXTRA FIELDS ---
+    # Three separate virtual upload fields — each maps to an independent model field
     form_extra_fields = {
-        'image_uploads': MultipleFileField('Upload Workplace or Team Photos'),  # Multi-image
-        'video_upload' : FileField('Upload Video Testimonial or Role Walkthrough')  # Single video
+        'image_uploads'     : MultipleFileField('Upload Workplace or Team Photos'),            # → experience_images list
+        'video_upload'      : FileField('Upload Video Testimonial or Role Walkthrough'),       # → experience_video string
+        'certificate_upload': FileField('Upload Employment Letter or Contract Scan'),          # → certificate_image string
     }
 
     form_args = {
@@ -55,8 +63,9 @@ class ExperienceAdminView(ProfessionalModelView):
         'is_current',
         'start_date',
         'end_date',
-        'image_uploads',                                       # Virtual: multi-image uploader
-        'video_upload',                                        # Virtual: single video uploader
+        'image_uploads',                                       # Virtual: multi-image uploader → experience_images
+        'video_upload',                                        # Virtual: single video uploader  → experience_video
+        'certificate_upload',                                  # Virtual: single cert uploader  → certificate_image
         'skills_acquired'
     )
 
@@ -68,55 +77,72 @@ class ExperienceAdminView(ProfessionalModelView):
     def on_model_change(self, form, model, is_created):
         """
         Triggered before saving to MongoDB.
-        1. Calls super() to auto-assign the profile via the base class.
-        2. Clears end_date if the role is marked as current (business rule).
-        3. Uploads workplace/team photos to Cloudinary and appends to experience_images.
-        4. Uploads video testimonial to Cloudinary and stores URL in experience_video.
-        5. Refreshes the audit timestamp.
+
+        Upload steps are fully independent — each block checks its own file input
+        and only modifies its own model field. No block reads or clears another field.
+
+        Steps:
+            1. super()           — auto-assigns profile via base class.
+            2. Business rule     — clear end_date if role is marked as current.
+            3. image_uploads     — append new URLs to experience_images (never clear existing).
+            4. video_upload      — update experience_video if a new file was provided.
+            5. certificate_upload— update certificate_image if a new file was provided.
+            6. last_updated      — refresh audit timestamp.
 
         Args:
-            form: The submitted WTForms form instance.
-            model: The Experience document being saved.
-            is_created (bool): True if this is a new record.
+            form      : The submitted WTForms form instance.
+            model     : The Experience document being saved.
+            is_created: True if this is a new record.
         """
-        # Step 1: Run base class logic — auto-assigns profile if not set
+        # Step 1: Base class — auto-assigns profile if not set
         super().on_model_change(form, model, is_created)
 
         # Step 2: Business rule — active roles must not have an end date
         if model.is_current:
-            model.end_date = None                              # Clear end date for active employment
+            model.end_date = None                              # Clear end date for ongoing employment
 
-        # Step 3: Handle multiple workplace/team photo uploads
+        # ── BLOCK A: Multiple workplace / team photos ────────────────────────
+        # Independent: only touches model.experience_images, ignores all other media fields
         img_files    = request.files.getlist('image_uploads')             # Get all uploaded image files
-        valid_images = [f for f in img_files if f and f.filename != '']   # Filter out empty inputs
+        valid_images = [f for f in img_files if f and f.filename != '']   # Filter out empty file inputs
 
         if valid_images:
-            # Upload images to Cloudinary under 'Experience/photos'
             img_urls = upload_media_batch(
                 valid_images,
-                folder_name='Experience',                      # Cloudinary folder name
-                sub_folder='photos'                            # Sub-folder for experience photos
+                folder_name='Experience',                      # Cloudinary folder: hussam_Dev/photos/Experience
+                sub_folder='photos'
             )
-
             if img_urls:
                 if not model.experience_images:
-                    model.experience_images = img_urls         # Initialize list on first upload
+                    model.experience_images = img_urls         # Initialize empty list on first upload
                 else:
-                    model.experience_images.extend(img_urls)   # Append new photos to existing list
+                    model.experience_images.extend(img_urls)   # Append — never overwrite existing photos
 
-        # Step 4: Handle single video testimonial upload
+        # ── BLOCK B: Single video testimonial / role walkthrough ─────────────
+        # Independent: only touches model.experience_video, ignores experience_images and certificate_image
         video_file = request.files.get('video_upload')         # Get the single video file
 
-        if video_file and video_file.filename != '':
-            # Upload video to Cloudinary under 'Experience/videos'
+        if video_file and video_file.filename != '':           # Guard: skip if no file selected
             video_urls = upload_media_batch(
                 [video_file],
-                folder_name='Experience',                      # Cloudinary folder name
-                sub_folder='videos'                            # Sub-folder for experience videos
+                folder_name='Experience',                      # Cloudinary folder: hussam_Dev/videos/Experience
+                sub_folder='videos'
             )
-
             if video_urls:
-                model.experience_video = video_urls[0]         # Store the single returned video URL
+                model.experience_video = video_urls[0]         # Single slot — always the latest upload
 
-        # Step 5: Refresh the audit timestamp
-        model.last_updated = datetime.now(timezone.utc)        # Ensure timezone-aware UTC timestamp
+        # ── BLOCK C: Single employment letter / contract scan ────────────────
+        # Independent: only touches model.certificate_image, ignores experience_images and experience_video
+        cert_file = request.files.get('certificate_upload')    # Get the single certificate file
+
+        if cert_file and cert_file.filename != '':             # Guard: skip if no file selected
+            cert_urls = upload_media_batch(
+                [cert_file],
+                folder_name='Experience',                      # Cloudinary folder: hussam_Dev/certificates/Experience
+                sub_folder='certificates'
+            )
+            if cert_urls:
+                model.certificate_image = cert_urls[0]         # Single slot — always the latest upload
+
+        # Step 6: Refresh audit timestamp
+        model.last_updated = datetime.now(timezone.utc)        # Timezone-aware UTC timestamp

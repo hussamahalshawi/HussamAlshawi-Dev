@@ -8,9 +8,17 @@ from datetime import datetime, timezone                        # Timezone-aware 
 class AchievementAdminView(ProfessionalModelView):
     """
     Achievement Management View:
-    Handles professional recognitions and milestones with evidence upload support.
+    Handles professional recognitions and milestones with full media upload support.
     Profile ownership is automatically assigned via the base class on every save.
-    Supports media uploads: evidence photos/PDFs (multi) and a video walkthrough (single).
+
+    Media upload behavior (all fields are fully independent):
+        evidence_files    → appended to evidence_photos list (never overwrites existing)
+        video_upload      → overwrites evidence_video (single slot)
+        certificate_upload→ overwrites certificate_image (single slot)
+
+    Coexistence rule:
+        All three media fields can coexist. Uploading one does NOT affect the others.
+        If only a certificate is uploaded, evidence_photos and evidence_video remain untouched.
     """
 
     # --- TEMPLATE CONFIGURATION ---
@@ -29,11 +37,12 @@ class AchievementAdminView(ProfessionalModelView):
         'date_obtained'       : 'Date Received'               # Human-readable column label
     }
 
-    # --- FORM CONFIGURATION ---
-    # Virtual upload fields — not stored in DB directly, processed in on_model_change
+    # --- FORM EXTRA FIELDS ---
+    # Three separate virtual upload fields — each maps to an independent model field
     form_extra_fields = {
-        'evidence_files': MultipleFileField('Upload Achievement Photos or PDF Certificates'),  # Multi-image
-        'video_upload'  : FileField('Upload Video Walkthrough or Acceptance Speech')           # Single video
+        'evidence_files'    : MultipleFileField('Upload Evidence Photos or PDF Certificates'),  # → evidence_photos list
+        'video_upload'      : FileField('Upload Video Walkthrough or Acceptance Speech'),       # → evidence_video string
+        'certificate_upload': FileField('Upload Official Certificate or Award Scan'),           # → certificate_image string
     }
 
     form_args = {
@@ -47,8 +56,9 @@ class AchievementAdminView(ProfessionalModelView):
         'description',
         'evidence_url',                                        # Manual URL to online certificate
         'date_obtained',
-        'evidence_files',                                      # Virtual: bulk photo/PDF uploader
-        'video_upload',                                        # Virtual: single video uploader
+        'evidence_files',                                      # Virtual: multi-file uploader     → evidence_photos
+        'video_upload',                                        # Virtual: single video uploader   → evidence_video
+        'certificate_upload',                                  # Virtual: single cert uploader    → certificate_image
         'skills_demonstrated'
     )
 
@@ -60,53 +70,72 @@ class AchievementAdminView(ProfessionalModelView):
     def on_model_change(self, form, model, is_created):
         """
         Triggered before saving to MongoDB.
-        1. Calls super() to auto-assign the profile via the base class.
-        2. Uploads evidence photos/PDFs to Cloudinary and stores returned URLs in evidence_photos.
-        3. Sets evidence_url to the first uploaded file URL if not already set.
-        4. Uploads video to Cloudinary and stores URL in evidence_video.
-        5. Refreshes the audit timestamp.
+
+        Upload steps are fully independent — each block checks its own file input
+        and only modifies its own model field. No block reads or clears another field.
+
+        Steps:
+            1. super()           — auto-assigns profile via base class.
+            2. evidence_files    — append new URLs to evidence_photos (never clear existing).
+                                   Sets evidence_url to first upload if not already set.
+            3. video_upload      — update evidence_video if a new file was provided.
+            4. certificate_upload— update certificate_image if a new file was provided.
+            5. last_updated      — refresh audit timestamp.
 
         Args:
-            form: The submitted WTForms form instance.
-            model: The Achievement document being saved.
-            is_created (bool): True if this is a new record.
+            form      : The submitted WTForms form instance.
+            model     : The Achievement document being saved.
+            is_created: True if this is a new record.
         """
-        # Step 1: Run base class logic — auto-assigns profile if not set
+        # Step 1: Base class — auto-assigns profile if not set
         super().on_model_change(form, model, is_created)
 
-        # Step 2: Retrieve and filter uploaded evidence photos/PDFs from the request
-        files       = request.files.getlist('evidence_files')             # Get all uploaded files
-        valid_files = [f for f in files if f and f.filename != '']        # Filter out empty inputs
+        # ── BLOCK A: Multiple evidence photos / PDFs ─────────────────────────
+        # Independent: only touches model.evidence_photos and model.evidence_url
+        # Does NOT affect evidence_video or certificate_image
+        files       = request.files.getlist('evidence_files')             # Get all uploaded evidence files
+        valid_files = [f for f in files if f and f.filename != '']        # Filter out empty file inputs
 
         if valid_files:
-            # Step 3: Upload valid files to Cloudinary under 'evidence/Achievements'
             uploaded_urls = upload_media_batch(
                 valid_files,
-                folder_name='Achievements',                    # Cloudinary folder name
-                sub_folder='evidence'                          # Sub-folder for achievement evidence
+                folder_name='Achievements',                    # Cloudinary folder: hussam_Dev/evidence/Achievements
+                sub_folder='evidence'
             )
-
             if uploaded_urls:
-                # Step 4: Store all uploaded URLs in the evidence_photos list field
-                model.evidence_photos = uploaded_urls
+                model.evidence_photos = uploaded_urls          # Replace with latest batch of evidence files
 
-                # Step 5: Set the primary evidence_url to the first file if not already defined
+                # Set convenience URL to the first file only if not already manually set
                 if not model.evidence_url:
-                    model.evidence_url = uploaded_urls[0]      # Quick-access URL for the first file
+                    model.evidence_url = uploaded_urls[0]      # Auto-populate the quick-access link
 
-        # Step 6: Handle single video upload
+        # ── BLOCK B: Single video walkthrough / acceptance speech ────────────
+        # Independent: only touches model.evidence_video
+        # Does NOT affect evidence_photos or certificate_image
         video_file = request.files.get('video_upload')         # Get the single video file
 
-        if video_file and video_file.filename != '':
-            # Upload video to Cloudinary under 'Achievements/videos'
+        if video_file and video_file.filename != '':           # Guard: skip if no file selected
             video_urls = upload_media_batch(
                 [video_file],
-                folder_name='Achievements',                    # Cloudinary folder name
-                sub_folder='videos'                            # Sub-folder for achievement videos
+                folder_name='Achievements',                    # Cloudinary folder: hussam_Dev/videos/Achievements
+                sub_folder='videos'
             )
-
             if video_urls:
-                model.evidence_video = video_urls[0]           # Store the single returned video URL
+                model.evidence_video = video_urls[0]           # Single slot — always the latest upload
 
-        # Step 7: Refresh the audit timestamp
-        model.last_updated = datetime.now(timezone.utc)        # Ensure timezone-aware UTC timestamp
+        # ── BLOCK C: Single official certificate / award scan ────────────────
+        # Independent: only touches model.certificate_image
+        # Does NOT affect evidence_photos or evidence_video
+        cert_file = request.files.get('certificate_upload')    # Get the single certificate file
+
+        if cert_file and cert_file.filename != '':             # Guard: skip if no file selected
+            cert_urls = upload_media_batch(
+                [cert_file],
+                folder_name='Achievements',                    # Cloudinary folder: hussam_Dev/certificates/Achievements
+                sub_folder='certificates'
+            )
+            if cert_urls:
+                model.certificate_image = cert_urls[0]         # Single slot — always the latest upload
+
+        # Step 5: Refresh audit timestamp
+        model.last_updated = datetime.now(timezone.utc)        # Timezone-aware UTC timestamp

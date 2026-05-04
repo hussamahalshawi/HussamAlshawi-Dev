@@ -7,7 +7,15 @@ class Experience(Document):
     Represents professional work history and career milestones.
     Linked to a Profile document to scope all records to a single portfolio owner.
     This model serves as a primary data source for profile metrics and skill tracking.
-    Supports media uploads: workplace photos and video testimonials or walkthroughs.
+
+    Media fields:
+        experience_images — Multiple workplace or team photos (Cloudinary URLs list).
+        experience_video  — Single video testimonial or role walkthrough (Cloudinary URL string).
+        certificate_image — Single employment letter, contract scan, or award (Cloudinary URL string).
+
+    Save behavior:
+        Each media field is independent. Uploading a certificate does NOT overwrite
+        existing experience_images, and vice versa. All three can coexist simultaneously.
     """
 
     # --- OWNERSHIP ---
@@ -37,11 +45,9 @@ class Experience(Document):
     is_current = BooleanField(default=False)                   # Flag to indicate active employment
 
     # --- MEDIA ASSETS ---
-    # Stores workplace photos, team pictures, or project screenshots from Cloudinary
-    experience_images = ListField(StringField())               # Array of Cloudinary image URLs
-
-    # Stores a single video testimonial, company intro, or role walkthrough from Cloudinary
-    experience_video  = StringField()                          # Cloudinary video URL
+    certificate_image = StringField()                          # Cloudinary URL — single employment letter or contract scan
+    experience_images = ListField(StringField())               # Array of Cloudinary URLs — workplace/team photos
+    experience_video  = StringField()                          # Cloudinary URL — single video testimonial/walkthrough
 
     # --- SKILL ACQUISITION ---
     # List of skills utilized or mastered during this professional tenure

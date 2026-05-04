@@ -8,7 +8,15 @@ class Course(Document):
     Represents professional certifications and training courses.
     Linked to a Profile to scope records to a single portfolio owner.
     Serves as evidence of continuous development and contributes to skill leveling.
-    Supports media uploads: course certificate images and demo/promo videos.
+
+    Media fields:
+        course_images     — Multiple screenshots or cover photos (Cloudinary URLs list).
+        course_video      — Single promo or demo video (Cloudinary URL string).
+        certificate_image — Single certificate scan or badge image (Cloudinary URL string).
+
+    Save behavior:
+        Each media field is independent. Uploading a certificate does NOT overwrite
+        existing course_images, and vice versa. All three can coexist simultaneously.
     """
 
     # --- OWNERSHIP ---
@@ -27,14 +35,12 @@ class Course(Document):
     project_summary = StringField()                            # Context of hands-on application during the course
 
     # --- CREDENTIALS & EVIDENCE ---
-    credential_url = URLField()                                # Public link to the digital certificate or badge
+    credential_url    = URLField()                             # Public link to the digital certificate or badge
+    certificate_image = StringField()                          # Cloudinary URL — single uploaded certificate scan
 
     # --- MEDIA ASSETS ---
-    # Stores uploaded course screenshots, certificate images, or cover photos from Cloudinary
-    course_images = ListField(StringField())                   # Array of Cloudinary image URLs
-
-    # Stores a single promo or demo video URL from Cloudinary
-    course_video  = StringField()                              # Cloudinary video URL for course walkthrough
+    course_images = ListField(StringField())                   # Array of Cloudinary image URLs (screenshots/covers)
+    course_video  = StringField()                              # Cloudinary URL — single promo or demo video
 
     # --- TIMELINE ---
     start_date = DateTimeField(required=True)                  # Commencement date

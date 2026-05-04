@@ -7,7 +7,15 @@ class Achievement(Document):
     Represents professional awards, recognitions, and major career milestones.
     Linked to a Profile to scope records to a single portfolio owner.
     Highlights exceptional performance and validation of high-level skills.
-    Supports media uploads: evidence photos/certificates and a video walkthrough.
+
+    Media fields:
+        evidence_photos   — Multiple evidence photos or PDF certificates (Cloudinary URLs list).
+        evidence_video    — Single video walkthrough or acceptance speech (Cloudinary URL string).
+        certificate_image — Single official certificate or award scan (Cloudinary URL string).
+
+    Save behavior:
+        Each media field is independent. Uploading a certificate does NOT overwrite
+        existing evidence_photos, and vice versa. All three can coexist simultaneously.
     """
 
     # --- OWNERSHIP ---
@@ -19,11 +27,9 @@ class Achievement(Document):
     issuing_organization = StringField()                       # Entity that granted the award
 
     # --- MEDIA EVIDENCE ---
-    # Stores URLs of uploaded certificates or photos from Cloudinary
-    evidence_photos = ListField(StringField())                 # List of Cloudinary image/PDF URLs
-
-    # Stores a single video walkthrough or acceptance speech from Cloudinary
-    evidence_video  = StringField()                            # Cloudinary video URL for achievement context
+    certificate_image = StringField()                          # Cloudinary URL — single official certificate scan
+    evidence_photos   = ListField(StringField())               # List of Cloudinary URLs — photos and PDF evidence
+    evidence_video    = StringField()                          # Cloudinary URL — single video walkthrough
 
     # --- VALIDATION & EVIDENCE ---
     evidence_url = URLField()                                  # Link to verify the achievement authenticity

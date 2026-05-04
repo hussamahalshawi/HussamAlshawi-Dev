@@ -9,10 +9,18 @@ import logging                                                 # Error tracking
 class EducationAdminView(ProfessionalModelView):
     """
     Education Management View:
-    Handles academic milestones with certificate image and video upload support.
+    Handles academic milestones with full media upload support.
     Profile ownership is automatically assigned via the base class on every save.
     After saving, profile metrics are refreshed to reflect the new education entry.
-    Supports media uploads: certificate images (multi) and a graduation/campus video (single).
+
+    Media upload behavior (all fields are fully independent):
+        certificate_upload → appended to certificates list (never overwrites existing)
+        video_upload       → overwrites education_video (single slot)
+        cert_image_upload  → overwrites certificate_image (single slot)
+
+    Coexistence rule:
+        All three media fields can coexist. Uploading one does NOT affect the others.
+        If only a certificate_image is uploaded, certificates list and education_video remain untouched.
     """
 
     # --- TEMPLATE CONFIGURATION ---
@@ -33,11 +41,12 @@ class EducationAdminView(ProfessionalModelView):
         'end_date'   : 'Graduated/Expected'                   # Human-readable column label
     }
 
-    # --- FORM CONFIGURATION ---
-    # Virtual upload fields — not stored in DB directly, processed in on_model_change
+    # --- FORM EXTRA FIELDS ---
+    # Three separate virtual upload fields — each maps to an independent model field
     form_extra_fields = {
-        'certificate_upload': MultipleFileField('Upload Certificates or Campus Photos'),  # Multi-image
-        'video_upload'      : FileField('Upload Graduation or Campus Tour Video')         # Single video
+        'certificate_upload': MultipleFileField('Upload Certificates or Campus Photos'),        # → certificates list
+        'video_upload'      : FileField('Upload Graduation or Campus Tour Video'),              # → education_video string
+        'cert_image_upload' : FileField('Upload Primary Degree Scan (Single Official Image)'), # → certificate_image string
     }
 
     form_args = {
@@ -54,8 +63,9 @@ class EducationAdminView(ProfessionalModelView):
         'description',
         'start_date',
         'end_date',
-        'certificate_upload',                                  # Virtual: multi-image certificate uploader
-        'video_upload',                                        # Virtual: single graduation/campus video
+        'certificate_upload',                                  # Virtual: multi-image → certificates list
+        'video_upload',                                        # Virtual: single video → education_video
+        'cert_image_upload',                                   # Virtual: single cert  → certificate_image
         'skills_learned'
     )
 
@@ -67,47 +77,69 @@ class EducationAdminView(ProfessionalModelView):
     def on_model_change(self, form, model, is_created):
         """
         Triggered before saving to MongoDB.
-        1. Calls super() to auto-assign the profile via the base class.
-        2. Uploads certificate/photo images to Cloudinary and stores returned URLs.
-        3. Uploads graduation/campus video to Cloudinary and stores URL in education_video.
+
+        Upload steps are fully independent — each block checks its own file input
+        and only modifies its own model field. No block reads or clears another field.
+
+        Steps:
+            1. super()            — auto-assigns profile via base class.
+            2. certificate_upload — append new URLs to certificates list (never clear existing).
+            3. video_upload       — update education_video if a new file was provided.
+            4. cert_image_upload  — update certificate_image if a new file was provided.
 
         Args:
-            form: The submitted WTForms form instance.
-            model: The Education document being saved.
-            is_created (bool): True if this is a new record.
+            form      : The submitted WTForms form instance.
+            model     : The Education document being saved.
+            is_created: True if this is a new record.
         """
-        # Step 1: Run base class logic — auto-assigns profile if not set
+        # Step 1: Base class — auto-assigns profile if not set
         super().on_model_change(form, model, is_created)
 
-        # Step 2: Retrieve and filter uploaded certificate/photo files from the request
-        files       = request.files.getlist('certificate_upload')          # Get all uploaded files
-        valid_files = [f for f in files if f and f.filename != '']         # Filter out empty inputs
+        # ── BLOCK A: Multiple certificate scans / campus photos ──────────────
+        # Independent: only touches model.certificates list
+        # Does NOT affect education_video or certificate_image
+        files       = request.files.getlist('certificate_upload')          # Get all uploaded cert/photo files
+        valid_files = [f for f in files if f and f.filename != '']         # Filter out empty file inputs
 
         if valid_files:
-            # Step 3: Upload valid files to Cloudinary under 'certificates/Academic'
             cert_urls = upload_media_batch(
                 valid_files,
                 folder_name='Academic',                        # Cloudinary folder: hussam_Dev/certificates/Academic
-                sub_folder='certificates'                      # Sub-folder for academic certificates
+                sub_folder='certificates'
             )
-
             if cert_urls:
-                # Step 4: Persist the returned Cloudinary URLs into the certificates list field
-                model.certificates = cert_urls                 # Store all uploaded certificate URLs
+                if not model.certificates:
+                    model.certificates = cert_urls             # Initialize empty list on first upload
+                else:
+                    model.certificates.extend(cert_urls)       # Append — never overwrite existing certificates
 
-        # Step 5: Handle single graduation/campus video upload
+        # ── BLOCK B: Single graduation / campus tour video ───────────────────
+        # Independent: only touches model.education_video
+        # Does NOT affect certificates or certificate_image
         video_file = request.files.get('video_upload')         # Get the single video file
 
-        if video_file and video_file.filename != '':
-            # Upload video to Cloudinary under 'Education/videos'
+        if video_file and video_file.filename != '':           # Guard: skip if no file selected
             video_urls = upload_media_batch(
                 [video_file],
-                folder_name='Education',                       # Cloudinary folder name
-                sub_folder='videos'                            # Sub-folder for education videos
+                folder_name='Education',                       # Cloudinary folder: hussam_Dev/videos/Education
+                sub_folder='videos'
             )
-
             if video_urls:
-                model.education_video = video_urls[0]          # Store the single returned video URL
+                model.education_video = video_urls[0]          # Single slot — always the latest upload
+
+        # ── BLOCK C: Single primary degree scan ──────────────────────────────
+        # Independent: only touches model.certificate_image
+        # Does NOT affect certificates list or education_video
+        cert_img_file = request.files.get('cert_image_upload') # Get the single degree scan file
+
+        if cert_img_file and cert_img_file.filename != '':     # Guard: skip if no file selected
+            cert_img_urls = upload_media_batch(
+                [cert_img_file],
+                folder_name='Education',                       # Cloudinary folder: hussam_Dev/certificates/Education
+                sub_folder='certificates'
+            )
+            if cert_img_urls:
+                model.certificate_image = cert_img_urls[0]     # Single slot — always the latest upload
 
     def after_model_change(self, form, model, is_created):
         """
@@ -115,9 +147,9 @@ class EducationAdminView(ProfessionalModelView):
         Refreshes profile metrics so experience_years reflects the new entry immediately.
 
         Args:
-            form: The submitted WTForms form instance.
-            model: The saved Education document.
-            is_created (bool): True if this was a new record.
+            form      : The submitted WTForms form instance.
+            model     : The saved Education document.
+            is_created: True if this was a new record.
         """
         try:
             from App.models.profile import Profile             # Local import — avoids circular dependency

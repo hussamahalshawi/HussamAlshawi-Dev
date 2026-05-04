@@ -7,7 +7,15 @@ class Education(Document):
     Represents academic qualifications and formal schooling.
     Linked to a Profile to scope records to a single portfolio owner.
     Contributes to the weighted experience calculation within the Profile model.
-    Supports media uploads: certificate images and a campus/graduation video.
+
+    Media fields:
+        certificates      — Multiple certificate scans or campus photos (Cloudinary URLs list).
+        education_video   — Single graduation ceremony or campus tour video (Cloudinary URL string).
+        certificate_image — Single primary official degree scan (Cloudinary URL string).
+
+    Save behavior:
+        Each media field is independent. Uploading a certificate_image does NOT overwrite
+        existing certificates list, and vice versa. All three can coexist simultaneously.
     """
 
     # --- OWNERSHIP ---
@@ -28,11 +36,10 @@ class Education(Document):
     start_date = DateTimeField(required=True)                  # Enrollment start date
     end_date   = DateTimeField(required=True)                  # Graduation or expected end date
 
-    # --- CERTIFICATES & MEDIA ---
-    certificates = ListField(StringField())                    # Cloudinary URLs for uploaded certificate images
-
-    # Stores a single graduation ceremony or campus tour video from Cloudinary
-    education_video = StringField()                            # Cloudinary video URL
+    # --- MEDIA ASSETS ---
+    certificate_image = StringField()                          # Cloudinary URL — single primary official degree scan
+    education_photos      = ListField(StringField())               # Cloudinary URLs list — multiple certificate scans/photos
+    education_video   = StringField()                          # Cloudinary URL — single graduation/campus video
 
     # --- SKILLS & GROWTH ---
     # Theoretical or practical skills acquired during the degree
