@@ -14,13 +14,13 @@ class EducationAdminView(ProfessionalModelView):
     After saving, profile metrics are refreshed to reflect the new education entry.
 
     Media upload behavior (all fields are fully independent):
-        certificate_upload → appended to certificates list (never overwrites existing)
-        video_upload       → overwrites education_video (single slot)
-        cert_image_upload  → overwrites certificate_image (single slot)
+        photos_upload     → appended to education_photos list (never overwrites existing)
+        video_upload      → overwrites education_video (single slot)
+        cert_image_upload → overwrites certificate_image (single slot)
 
     Coexistence rule:
         All three media fields can coexist. Uploading one does NOT affect the others.
-        If only a certificate_image is uploaded, certificates list and education_video remain untouched.
+        If only a certificate_image is uploaded, education_photos and education_video remain untouched.
     """
 
     # --- TEMPLATE CONFIGURATION ---
@@ -44,7 +44,7 @@ class EducationAdminView(ProfessionalModelView):
     # --- FORM EXTRA FIELDS ---
     # Three separate virtual upload fields — each maps to an independent model field
     form_extra_fields = {
-        'certificate_upload': MultipleFileField('Upload Certificates or Campus Photos'),        # → certificates list
+        'photos_upload'     : MultipleFileField('Upload Campus Photos or Certificate Scans'),   # → education_photos list
         'video_upload'      : FileField('Upload Graduation or Campus Tour Video'),              # → education_video string
         'cert_image_upload' : FileField('Upload Primary Degree Scan (Single Official Image)'), # → certificate_image string
     }
@@ -63,7 +63,7 @@ class EducationAdminView(ProfessionalModelView):
         'description',
         'start_date',
         'end_date',
-        'certificate_upload',                                  # Virtual: multi-image → certificates list
+        'photos_upload',                                       # Virtual: multi-image  → education_photos
         'video_upload',                                        # Virtual: single video → education_video
         'cert_image_upload',                                   # Virtual: single cert  → certificate_image
         'skills_learned'
@@ -82,10 +82,10 @@ class EducationAdminView(ProfessionalModelView):
         and only modifies its own model field. No block reads or clears another field.
 
         Steps:
-            1. super()            — auto-assigns profile via base class.
-            2. certificate_upload — append new URLs to certificates list (never clear existing).
-            3. video_upload       — update education_video if a new file was provided.
-            4. cert_image_upload  — update certificate_image if a new file was provided.
+            1. super()           — auto-assigns profile via base class.
+            2. photos_upload     — append new URLs to education_photos (never clear existing).
+            3. video_upload      — update education_video if a new file was provided.
+            4. cert_image_upload — update certificate_image if a new file was provided.
 
         Args:
             form      : The submitted WTForms form instance.
@@ -95,27 +95,27 @@ class EducationAdminView(ProfessionalModelView):
         # Step 1: Base class — auto-assigns profile if not set
         super().on_model_change(form, model, is_created)
 
-        # ── BLOCK A: Multiple certificate scans / campus photos ──────────────
-        # Independent: only touches model.certificates list
+        # ── BLOCK A: Multiple campus photos / certificate scans ──────────────
+        # Independent: only touches model.education_photos list
         # Does NOT affect education_video or certificate_image
-        files       = request.files.getlist('certificate_upload')          # Get all uploaded cert/photo files
+        files       = request.files.getlist('photos_upload')               # Get all uploaded photo/cert files
         valid_files = [f for f in files if f and f.filename != '']         # Filter out empty file inputs
 
         if valid_files:
-            cert_urls = upload_media_batch(
+            photo_urls = upload_media_batch(
                 valid_files,
-                folder_name='Academic',                        # Cloudinary folder: hussam_Dev/certificates/Academic
-                sub_folder='certificates'
+                folder_name='Education',                       # Cloudinary folder: hussam_Dev/photos/Education
+                sub_folder='photos'
             )
-            if cert_urls:
-                if not model.certificates:
-                    model.certificates = cert_urls             # Initialize empty list on first upload
+            if photo_urls:
+                if not model.education_photos:
+                    model.education_photos = photo_urls        # Initialize empty list on first upload
                 else:
-                    model.certificates.extend(cert_urls)       # Append — never overwrite existing certificates
+                    model.education_photos.extend(photo_urls)  # Append — never overwrite existing photos
 
         # ── BLOCK B: Single graduation / campus tour video ───────────────────
         # Independent: only touches model.education_video
-        # Does NOT affect certificates or certificate_image
+        # Does NOT affect education_photos or certificate_image
         video_file = request.files.get('video_upload')         # Get the single video file
 
         if video_file and video_file.filename != '':           # Guard: skip if no file selected
@@ -127,9 +127,9 @@ class EducationAdminView(ProfessionalModelView):
             if video_urls:
                 model.education_video = video_urls[0]          # Single slot — always the latest upload
 
-        # ── BLOCK C: Single primary degree scan ──────────────────────────────
+        # ── BLOCK C: Single primary official degree scan ─────────────────────
         # Independent: only touches model.certificate_image
-        # Does NOT affect certificates list or education_video
+        # Does NOT affect education_photos or education_video
         cert_img_file = request.files.get('cert_image_upload') # Get the single degree scan file
 
         if cert_img_file and cert_img_file.filename != '':     # Guard: skip if no file selected
