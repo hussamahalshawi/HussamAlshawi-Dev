@@ -9,16 +9,8 @@ class AchievementAdminView(ProfessionalModelView):
     """
     Achievement Management View:
     Handles professional recognitions and milestones with full media upload support.
+    Displays saved media in edit mode via Gallery Viewer injected through edit_form().
     Profile ownership is automatically assigned via the base class on every save.
-
-    Media upload behavior (all fields are fully independent):
-        evidence_files    → appended to evidence_photos list (never overwrites existing)
-        video_upload      → overwrites evidence_video (single slot)
-        certificate_upload→ overwrites certificate_image (single slot)
-
-    Coexistence rule:
-        All three media fields can coexist. Uploading one does NOT affect the others.
-        If only a certificate is uploaded, evidence_photos and evidence_video remain untouched.
     """
 
     # --- TEMPLATE CONFIGURATION ---
@@ -66,21 +58,62 @@ class AchievementAdminView(ProfessionalModelView):
     column_searchable_list = ['title', 'issuing_organization']  # Enable quick text search
     column_filters         = ['date_obtained']                  # Enable date range filtering
 
+    # ── Inject saved media into the form before the edit template renders ─────
+    def edit_form(self, obj=None):
+        """
+        Overrides the default edit_form factory.
+        Loads saved media URLs from the Achievement document and attaches them
+        to the form as _media_galleries so the Gallery Viewer in the template
+        can display them with per-image delete buttons.
+
+        Args:
+            obj: The Achievement document being edited.
+
+        Returns:
+            WTForms form instance with _media_galleries attribute attached.
+        """
+        form = super().edit_form(obj)                          # Build the standard form first
+
+        galleries = []                                         # Empty list to hold all gallery configs
+
+        # evidence_photos — multiple evidence photos or PDF certificates
+        if obj and obj.evidence_photos:
+            galleries.append({
+                'field_name': 'evidence_photos',              # Model field name — used in hidden input name
+                'label'     : 'Evidence Photos & Certificates', # UI section label
+                'urls'      : list(obj.evidence_photos),      # Real URLs from MongoDB
+            })
+
+        # evidence_video — single video walkthrough or acceptance speech
+        if obj and obj.evidence_video:
+            galleries.append({
+                'field_name': 'evidence_video',               # Model field name
+                'label'     : 'Video Walkthrough',            # UI section label
+                'urls'      : [obj.evidence_video],           # Wrapped in list for uniform template handling
+            })
+
+        # certificate_image — single official certificate or award scan
+        if obj and obj.certificate_image:
+            galleries.append({
+                'field_name': 'certificate_image',            # Model field name
+                'label'     : 'Official Certificate',         # UI section label
+                'urls'      : [obj.certificate_image],        # Wrapped in list for uniform template handling
+            })
+
+        form._media_galleries = galleries                      # Attach galleries to the form object
+        return form                                            # Return enriched form to Flask-Admin
+
     # --- LOGIC HOOKS ---
     def on_model_change(self, form, model, is_created):
         """
         Triggered before saving to MongoDB.
 
-        Upload steps are fully independent — each block checks its own file input
-        and only modifies its own model field. No block reads or clears another field.
-
         Steps:
-            1. super()           — auto-assigns profile via base class.
-            2. evidence_files    — append new URLs to evidence_photos (never clear existing).
-                                   Sets evidence_url to first upload if not already set.
-            3. video_upload      — update evidence_video if a new file was provided.
-            4. certificate_upload— update certificate_image if a new file was provided.
-            5. last_updated      — refresh audit timestamp.
+            1. super()              — auto-assigns profile via base class.
+            2. evidence_photos      — apply deletions from Gallery Viewer, then append new uploads.
+            3. evidence_video       — apply deletion from Gallery Viewer, then upload new if provided.
+            4. certificate_image    — apply deletion from Gallery Viewer, then upload new if provided.
+            5. last_updated         — refresh audit timestamp.
 
         Args:
             form      : The submitted WTForms form instance.
@@ -90,11 +123,19 @@ class AchievementAdminView(ProfessionalModelView):
         # Step 1: Base class — auto-assigns profile if not set
         super().on_model_change(form, model, is_created)
 
-        # ── BLOCK A: Multiple evidence photos / PDFs ─────────────────────────
-        # Independent: only touches model.evidence_photos and model.evidence_url
-        # Does NOT affect evidence_video or certificate_image
-        files       = request.files.getlist('evidence_files')             # Get all uploaded evidence files
-        valid_files = [f for f in files if f and f.filename != '']        # Filter out empty file inputs
+        # ── BLOCK A: evidence_photos — multiple photos / PDFs ──────────────
+        keep_photos = request.form.get('_keep_evidence_photos', None)  # Read kept URLs from hidden input
+
+        if keep_photos is not None:                            # None means create mode — skip deletion logic
+            # User opened Edit — apply their deletion choices
+            model.evidence_photos = (
+                [u.strip() for u in keep_photos.split(',') if u.strip()]
+                if keep_photos.strip() else []                 # Empty string = all deleted
+            )
+
+        # Upload new evidence files and append to the surviving list
+        files       = request.files.getlist('evidence_files')             # Get all uploaded files
+        valid_files = [f for f in files if f and f.filename != '']        # Filter out empty inputs
 
         if valid_files:
             uploaded_urls = upload_media_batch(
@@ -103,39 +144,54 @@ class AchievementAdminView(ProfessionalModelView):
                 sub_folder='evidence'
             )
             if uploaded_urls:
-                model.evidence_photos = uploaded_urls          # Replace with latest batch of evidence files
+                if not model.evidence_photos:
+                    model.evidence_photos = uploaded_urls      # Initialize list on first upload
+                else:
+                    model.evidence_photos.extend(uploaded_urls) # Append — never overwrite survivors
 
-                # Set convenience URL to the first file only if not already manually set
+                # Auto-populate evidence_url with first file if not already set manually
                 if not model.evidence_url:
-                    model.evidence_url = uploaded_urls[0]      # Auto-populate the quick-access link
+                    model.evidence_url = uploaded_urls[0]      # Quick-access URL for the first file
 
-        # ── BLOCK B: Single video walkthrough / acceptance speech ────────────
-        # Independent: only touches model.evidence_video
-        # Does NOT affect evidence_photos or certificate_image
+        # ── BLOCK B: evidence_video — single video slot ────────────────────
+        keep_video = request.form.get('_keep_evidence_video', None)  # Read kept URL from hidden input
+
+        if keep_video is not None:                             # None means create mode — skip deletion logic
+            # Take the first URL if kept, otherwise clear the field
+            model.evidence_video = (
+                keep_video.strip().split(',')[0].strip()
+                if keep_video.strip() else None               # Empty = user deleted the video
+            )
+
         video_file = request.files.get('video_upload')         # Get the single video file
-
-        if video_file and video_file.filename != '':           # Guard: skip if no file selected
+        if video_file and video_file.filename != '':
             video_urls = upload_media_batch(
                 [video_file],
                 folder_name='Achievements',                    # Cloudinary folder: hussam_Dev/videos/Achievements
                 sub_folder='videos'
             )
             if video_urls:
-                model.evidence_video = video_urls[0]           # Single slot — always the latest upload
+                model.evidence_video = video_urls[0]           # Single slot — always latest upload
 
-        # ── BLOCK C: Single official certificate / award scan ────────────────
-        # Independent: only touches model.certificate_image
-        # Does NOT affect evidence_photos or evidence_video
-        cert_file = request.files.get('certificate_upload')    # Get the single certificate file
+        # ── BLOCK C: certificate_image — single certificate slot ───────────
+        keep_cert = request.form.get('_keep_certificate_image', None)  # Read kept URL from hidden input
 
-        if cert_file and cert_file.filename != '':             # Guard: skip if no file selected
+        if keep_cert is not None:                              # None means create mode — skip deletion logic
+            # Take the first URL if kept, otherwise clear the field
+            model.certificate_image = (
+                keep_cert.strip().split(',')[0].strip()
+                if keep_cert.strip() else None                # Empty = user deleted the certificate
+            )
+
+        cert_file = request.files.get('certificate_upload')   # Get the single certificate file
+        if cert_file and cert_file.filename != '':
             cert_urls = upload_media_batch(
                 [cert_file],
                 folder_name='Achievements',                    # Cloudinary folder: hussam_Dev/certificates/Achievements
                 sub_folder='certificates'
             )
             if cert_urls:
-                model.certificate_image = cert_urls[0]         # Single slot — always the latest upload
+                model.certificate_image = cert_urls[0]         # Single slot — always latest upload
 
         # Step 5: Refresh audit timestamp
         model.last_updated = datetime.now(timezone.utc)        # Timezone-aware UTC timestamp
