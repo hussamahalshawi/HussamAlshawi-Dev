@@ -180,25 +180,49 @@
         border-radius: 12px; padding: 14px 18px; font-size: 13px;
         border: 1px solid #f5c4b3; margin-top: 8px;
     }
-    /* LANGUAGE CARDS */
-.lang-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
-    gap: 12px;
-}
-.lang-card {
-    border-radius: 14px; padding: 16px 12px;
-    text-align: center; border: 1px solid transparent;
-    transition: transform .15s, box-shadow .15s;
-}
-.lang-card:hover { transform: translateY(-3px); box-shadow: 0 6px 18px rgba(0,0,0,.08); }
-.lang-card-icon  { font-size: 22px; margin-bottom: 10px; }
-.lang-card-name  { font-size: 13px; font-weight: 700; color: #0f172a; margin-bottom: 6px; }
-.lang-card-badge {
-    display: inline-block; font-size: 10px; font-weight: 700;
-    padding: 3px 10px; border-radius: 20px; letter-spacing: .03em;
-}
-        /* ================================================================
+
+    /* ================================================================
+       PROGRESSIVE SECTION — fade-in animation as each section loads
+    ================================================================ */
+    .dash-section {
+        opacity: 0;
+        transform: translateY(16px);
+        transition: opacity .45s ease, transform .45s ease;
+    }
+    .dash-section.visible {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    /* ================================================================
+       SKELETON SHIMMER
+    ================================================================ */
+    @keyframes shimmer {
+        0%   { background-position: 200% 0; }
+        100% { background-position: -200% 0; }
+    }
+    .skeleton {
+        background: #f1f5f9;
+        background-image: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
+        background-size: 200% 100%;
+        animation: shimmer 1.4s infinite;
+        border-radius: 8px;
+    }
+
+    /* ================================================================
+       SECTION LOADING PLACEHOLDER (inline per section)
+    ================================================================ */
+    .section-loader {
+        display: flex; align-items: center; gap: 10px;
+        padding: 28px 20px; color: #94a3b8; font-size: 13px;
+    }
+    .section-loader .mini-spin {
+        width: 18px; height: 18px;
+        border: 2px solid #e2e8f0; border-top-color: #2563eb;
+        border-radius: 50%; animation: spin .7s linear infinite; flex-shrink: 0;
+    }
+
+    /* ================================================================
        LANGUAGE CARDS
     ================================================================ */
     .lang-grid {
@@ -206,129 +230,45 @@
         grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
         gap: 12px;
     }
-
     .lang-card {
-        border-radius: 14px;
-        padding: 16px 12px;
-        text-align: center;
-        border: 1px solid transparent;
+        border-radius: 14px; padding: 16px 12px;
+        text-align: center; border: 1px solid transparent;
         transition: transform .15s, box-shadow .15s;
     }
-
-    .lang-card:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 6px 18px rgba(0,0,0,.08);
-    }
-
-    .lang-card-icon {
-        font-size: 22px;
-        margin-bottom: 10px;
-    }
-
-    .lang-card-name {
-        font-size: 13px;
-        font-weight: 700;
-        color: #0f172a;
-        margin-bottom: 6px;
-    }
-
+    .lang-card:hover { transform: translateY(-3px); box-shadow: 0 6px 18px rgba(0,0,0,.08); }
+    .lang-card-icon  { font-size: 22px; margin-bottom: 10px; }
+    .lang-card-name  { font-size: 13px; font-weight: 700; color: #0f172a; margin-bottom: 6px; }
     .lang-card-badge {
-        display: inline-block;
-        font-size: 10px;
-        font-weight: 700;
-        padding: 3px 10px;
-        border-radius: 20px;
-        letter-spacing: .03em;
+        display: inline-block; font-size: 10px; font-weight: 700;
+        padding: 3px 10px; border-radius: 20px; letter-spacing: .03em;
     }
 
     /* ================================================================
        FEEDBACK WIDGET
     ================================================================ */
     .feedback-stats {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 10px;
-        margin-bottom: 16px;
+        display: grid; grid-template-columns: repeat(3, 1fr);
+        gap: 10px; margin-bottom: 16px;
     }
-
     .fb-stat-item {
-        background: #f8fafc;
-        border-radius: 12px;
-        padding: 14px 10px;
-        text-align: center;
-        border: 1px solid #f1f5f9;
+        background: #f8fafc; border-radius: 12px;
+        padding: 14px 10px; text-align: center; border: 1px solid #f1f5f9;
     }
-
-    .fb-stat-val {
-        font-size: 24px;
-        font-weight: 700;
-        color: #0f172a;
-        line-height: 1;
-    }
-
-    .fb-stat-lbl {
-        font-size: 10px;
-        color: #94a3b8;
-        margin-top: 4px;
-        text-transform: uppercase;
-        letter-spacing: .04em;
-    }
-
+    .fb-stat-val { font-size: 24px; font-weight: 700; color: #0f172a; line-height: 1; }
+    .fb-stat-lbl { font-size: 10px; color: #94a3b8; margin-top: 4px; text-transform: uppercase; letter-spacing: .04em; }
     .fb-latest {
-        background: #f8fafc;
-        border-radius: 14px;
-        padding: 16px;
-        border: 1px solid #f1f5f9;
-        position: relative;
+        background: #f8fafc; border-radius: 14px;
+        padding: 16px; border: 1px solid #f1f5f9; position: relative;
     }
-
     .fb-latest-badge {
-        position: absolute;
-        top: 12px; right: 12px;
-        font-size: 9px;
-        font-weight: 700;
-        padding: 2px 8px;
-        border-radius: 20px;
+        position: absolute; top: 12px; right: 12px;
+        font-size: 9px; font-weight: 700; padding: 2px 8px; border-radius: 20px;
     }
-
-    .fb-latest-label {
-        font-size: 10px;
-        font-weight: 700;
-        color: #94a3b8;
-        text-transform: uppercase;
-        letter-spacing: .06em;
-        margin-bottom: 8px;
-    }
-
-    .fb-latest-name {
-        font-size: 13px;
-        font-weight: 700;
-        color: #0f172a;
-        margin-bottom: 2px;
-    }
-
-    .fb-latest-meta {
-        font-size: 11px;
-        color: #94a3b8;
-        margin-bottom: 10px;
-    }
-
-    .fb-latest-msg {
-        font-size: 12px;
-        color: #475569;
-        line-height: 1.6;
-        border-left: 3px solid #2563eb;
-        padding-left: 10px;
-        font-style: italic;
-    }
-
-    .fb-empty {
-        text-align: center;
-        padding: 28px 0;
-        color: #94a3b8;
-        font-size: 13px;
-    }
-
+    .fb-latest-label { font-size: 10px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: .06em; margin-bottom: 8px; }
+    .fb-latest-name  { font-size: 13px; font-weight: 700; color: #0f172a; margin-bottom: 2px; }
+    .fb-latest-meta  { font-size: 11px; color: #94a3b8; margin-bottom: 10px; }
+    .fb-latest-msg   { font-size: 12px; color: #475569; line-height: 1.6; border-left: 3px solid #2563eb; padding-left: 10px; font-style: italic; }
+    .fb-empty { text-align: center; padding: 28px 0; color: #94a3b8; font-size: 13px; }
 </style>
 {% endblock %}
 
@@ -341,26 +281,24 @@
             <div class="dash-topbar-title">
                 <i class="fas fa-chart-pie text-primary mr-2"></i>Analytics Dashboard
             </div>
-            <div class="dash-topbar-sub" id="profileSubtitle">Select a profile to view analytics</div>
+            <div class="dash-topbar-sub" id="profileSubtitle">Loading profiles…</div>
         </div>
 
         {# ── PROFILE SELECTOR ── #}
         <div class="profile-pill">
-            <div id="avatarWrap">
-                <div class="avatar-initials">?</div>
-            </div>
+            <div id="avatarWrap"><div class="avatar-initials">?</div></div>
             <label for="profileSelect">Profile</label>
-            <select id="profileSelect" onchange="loadProfile(this.value)">
-                <option value="">Loading...</option>
+            <select id="profileSelect" onchange="loadProfile(this.value)" disabled>
+                <option value="">Loading…</option>
             </select>
         </div>
     </div>
 
-    {# ── MAIN CONTENT (replaced on every profile switch) ── #}
+    {# ── MAIN CONTENT — replaced on every profile switch ── #}
     <div id="dashContent">
         <div class="state-loading">
             <div class="spinner"></div>
-            <span>Loading profiles...</span>
+            <span>Loading profiles…</span>
         </div>
     </div>
 
@@ -369,6 +307,9 @@
 
 {% block tail_js %}
 <script>
+    /* ================================================================
+       COLOUR PALETTE
+    ================================================================ */
     const C = {
         blue  : ['#378ADD','#B5D4F4','#185FA5','#E6F1FB','#0C447C'],
         teal  : ['#1D9E75','#9FE1CB','#0F6E56','#E1F5EE','#085041'],
@@ -381,35 +322,42 @@
     };
 
     /* ================================================================
-       CACHE — يحفظ نتائج كل profile حُمّل مسبقاً
+       CACHE — stores fully loaded profile data to avoid re-fetching
+       Structure: { profileId: { profile, skills, goals, languages, feedback } }
     ================================================================ */
-    const _cache    = {};                                          // { profileId: { profile, skills, goals } }
-    let   _charts   = {};                                         // Active Chart.js instances
-    let   _profiles = [];                                         // Profile list
+    const _cache  = {};
+    let   _charts = {};       // Active Chart.js instances — destroyed before each re-render
 
     /* ================================================================
-       UTILS
+       UTILITIES
     ================================================================ */
-    const $    = id => document.getElementById(id);
-    const rnd  = v  => Math.round(parseFloat(v) || 0);
+    const $    = id  => document.getElementById(id);
+    const rnd  = v   => Math.round(parseFloat(v) || 0);
 
+    // Destroy all active Chart.js instances before re-rendering
     function destroyCharts() {
         Object.values(_charts).forEach(c => { try { c.destroy(); } catch(e){} });
         _charts = {};
     }
 
+    // Generic JSON fetch — throws on non-2xx
     async function api(url) {
         const r = await fetch(url);
-        if (!r.ok) throw new Error(`HTTP ${r.status}`);
+        if (!r.ok) throw new Error(`HTTP ${r.status} — ${url}`);
         return r.json();
     }
 
+    // Build a small colour-legend row
     function buildLegend(items) {
         return `<div class="chart-legend">` +
-            items.map(i => `<div class="chart-legend-item"><span class="legend-swatch" style="background:${i.color}"></span>${i.label}</div>`).join('') +
-        `</div>`;
+            items.map(i =>
+                `<div class="chart-legend-item">
+                    <span class="legend-swatch" style="background:${i.color}"></span>${i.label}
+                 </div>`
+            ).join('') + `</div>`;
     }
 
+    // Map a 0-100 score to a traffic-light colour
     function scoreColor(v)      { return v>=80?C.teal[0]:v>=60?C.blue[0]:v>=40?C.amber[0]:C.coral[0]; }
     function scoreColorLight(v) { return v>=80?C.teal[3]:v>=60?C.blue[3]:v>=40?C.amber[3]:C.coral[3]; }
 
@@ -426,11 +374,12 @@
         'Low'     :`background:${C.gray[3]};color:${C.gray[0]}`,
     };
 
+    // Simple keyword-based skill categoriser used as fallback
     const CAT_KW = {
-        'Backend' :['python','flask','django','fastapi','node','express','go','rust','java','spring','php','laravel','ruby','rails','c#','.net'],
-        'Frontend':['react','vue','angular','javascript','typescript','css','html','svelte','next','nuxt','tailwind','bootstrap','sass'],
-        'DevOps'  :['docker','kubernetes','linux','aws','gcp','azure','ci','cd','terraform','ansible','nginx','jenkins','git','bash','shell'],
-        'Database':['mongodb','postgresql','postgres','mysql','redis','sqlite','firebase','elasticsearch','cassandra','dynamo'],
+        'Backend' :['python','flask','django','fastapi','node','express','go','rust','java','spring','php'],
+        'Frontend':['react','vue','angular','javascript','typescript','css','html','svelte','next','tailwind'],
+        'DevOps'  :['docker','kubernetes','linux','aws','gcp','azure','ci','cd','terraform','ansible','nginx'],
+        'Database':['mongodb','postgresql','postgres','mysql','redis','sqlite','firebase','elasticsearch'],
     };
     function categorize(n) {
         n = n.toLowerCase();
@@ -439,135 +388,30 @@
     }
 
     /* ================================================================
-       SKELETON — يظهر فوراً قبل ما تجي البيانات
+       FADE-IN HELPER — adds .visible class to trigger CSS transition
     ================================================================ */
-    function showSkeleton() {
-        const p = 'background:#f1f5f9;border-radius:8px;animation:shimmer 1.2s infinite;background-size:200% 100%;background-image:linear-gradient(90deg,#f1f5f9 25%,#e2e8f0 50%,#f1f5f9 75%);';
-
-        const metricCard = [1,2,3,4,5,6].map(()=>
-            '<div class="metric-card">' +
-            '<div style="height:36px;margin-bottom:12px;' + p + '"></div>' +
-            '<div style="height:12px;width:60%;margin-bottom:8px;' + p + '"></div>' +
-            '<div style="height:28px;width:50%;' + p + '"></div>' +
-            '</div>'
-        ).join('');
-
-        const chartCard2 = [1,2].map(()=>
-            '<div class="chart-card"><div style="height:260px;' + p + '"></div></div>'
-        ).join('');
-
-        const chartCard3 = [1,2,3].map(()=>
-            '<div class="chart-card"><div style="height:200px;' + p + '"></div></div>'
-        ).join('');
-
-        $('dashContent').innerHTML =
-            '<style>@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}</style>' +
-            '<div class="metrics-row">'   + metricCard  + '</div>' +
-            '<div class="charts-grid-2">' + chartCard2  + '</div>' +
-            '<div class="charts-grid-3">' + chartCard3  + '</div>';
+    function revealSection(el) {
+        if (!el) return;
+        requestAnimationFrame(() => el.classList.add('visible'));
     }
 
     /* ================================================================
-       BOOTSTRAP
+       SECTION LOADER PLACEHOLDER — shown inside a card while fetching
     ================================================================ */
-    async function init() {
-        try {
-            const data = await api('/api/profiles');
-            _profiles  = data.profiles || [];
-
-            if (!_profiles.length) {
-                $('dashContent').innerHTML = `<div class="state-error"><i class="fas fa-exclamation-circle mr-2"></i>No profiles found.</div>`;
-                return;
-            }
-
-            const sel = $('profileSelect');
-            sel.innerHTML = _profiles.map(p=>`<option value="${p.id}">${p.full_name}</option>`).join('');
-
-            // بدء تحميل الـ profile الأول
-            loadProfile(_profiles[0].id);
-
-            // pre-fetch باقي الـ profiles في الخلفية بدون انتظار
-            _profiles.slice(1).forEach(p => prefetchProfile(p.id));
-
-        } catch(e) {
-            $('dashContent').innerHTML = `<div class="state-error"><i class="fas fa-exclamation-circle mr-2"></i>${e.message}</div>`;
-        }
+    function sectionLoader(text) {
+        return `<div class="section-loader">
+            <div class="mini-spin"></div>
+            <span>${text}</span>
+        </div>`;
     }
 
     /* ================================================================
-       PRE-FETCH — يحمّل بيانات profile في الخلفية ويحفظها في الـ cache
-    ================================================================ */
-    async function prefetchProfile(profileId) {
-        if (_cache[profileId]) return;                             // Already cached — skip
-        try {
-            const [profileData, skillsData, goalsData, langsData] = await Promise.all([
-                api(`/api/profile/${profileId}`),
-                api(`/api/profile-skills?profile_id=${profileId}`),
-                api(`/api/goals-dashboard?profile_id=${profileId}`),
-                api(`/api/dashboard-languages?profile_id=${profileId}`),
-                api(`/api/dashboard-feedback?profile_id=${profileId}`),
-            ]);
-            _cache[profileId] = {                                  // Save to cache
-                profile: profileData,
-                skills : skillsData.skills  || [],
-                goals  : goalsData.goals    || [],
-                languages: langsData.languages || [],
-                feedback : fbData,
-            };
-        } catch(e) { /* silent — will retry on demand */ }
-    }
-
-    /* ================================================================
-       PROFILE LOADER
-    ================================================================ */
-    async function loadProfile(profileId) {
-        if (!profileId) return;
-
-        // إذا البيانات موجودة في الـ cache → رسم فوري بدون loading
-        if (_cache[profileId]) {
-            destroyCharts();
-            const { profile, skills, goals, languages, feedback } = _cache[profileId];
-            updateTopBar(profile);
-            renderDashboard(profile, skills, goals, languages, feedback);
-            return;
-        }
-
-        // أول مرة → skeleton أسرع من spinner
-        showSkeleton();
-        destroyCharts();
-
-        try {
-            // الـ 3 calls بالتوازي كما كان — لكن بعد الـ skeleton يظهر فوراً
-            const [profileData, skillsData, goalsData, langsData, fbData] = await Promise.all([
-                api(`/api/profile/${profileId}`),
-                api(`/api/profile-skills?profile_id=${profileId}`),
-                api(`/api/goals-dashboard?profile_id=${profileId}`),
-                api(`/api/dashboard-languages?profile_id=${profileId}`),
-                api(`/api/dashboard-feedback?profile_id=${profileId}`),
-            ]);
-
-            const profile = profileData;
-            const skills  = skillsData.skills || [];
-            const goals   = goalsData.goals   || [];
-            const languages = langsData.languages || [];
-            const feedback  = fbData;
-
-            // حفظ في الـ cache للمرة القادمة
-            _cache[profileId] = { profile, skills, goals, languages, feedback };
-
-            updateTopBar(profile);
-            renderDashboard(profile, skills, goals, languages, feedback);
-
-        } catch(e) {
-            $('dashContent').innerHTML = `<div class="state-error"><i class="fas fa-exclamation-circle mr-2"></i>${e.message}</div>`;
-        }
-    }
-
-    /* ================================================================
-       TOP BAR
+       TOP BAR UPDATE
     ================================================================ */
     function updateTopBar(profile) {
-        $('profileSubtitle').textContent = `${profile.title||'Developer'} · ${profile.experience_years}y experience · ${profile.overall_score}% overall score`;
+        $('profileSubtitle').textContent =
+            `${profile.title||'Developer'} · ${profile.experience_years}y experience · ${profile.overall_score}% overall score`;
+
         const wrap = $('avatarWrap');
         if (profile.primary_avatar) {
             wrap.innerHTML = `<img src="${profile.primary_avatar}" class="avatar-sm" alt="${profile.full_name}">`;
@@ -578,221 +422,349 @@
     }
 
     /* ================================================================
-       MAIN RENDER
+       BOOTSTRAP — called once on DOMContentLoaded
+       1. Fetches the profile list
+       2. Populates the selector
+       3. Immediately loads the first profile
     ================================================================ */
-    function renderDashboard(profile, skills, goals, languages = [], feedback = null) {
-        const counts        = profile.model_counts || {};
-        const avgSkill      = skills.length ? rnd(skills.reduce((a,s)=>a+s.score,0)/skills.length) : 0;
-        const goalsAchieved = goals.filter(g=>g.status==='Achieved'||g.progress_pct>=100).length;
-        const topSkills     = [...skills].sort((a,b)=>b.score-a.score).slice(0,12);
+    async function init() {
+        try {
+            const data     = await api('/api/profiles');
+            const profiles = data.profiles || [];
 
-        const catMap = {};
-        skills.forEach(s => {
-            const cat = s.skill_type || categorize(s.skill_name);
-            if (!catMap[cat]) catMap[cat] = [];
-            catMap[cat].push(s.score);
+            if (!profiles.length) {
+                $('dashContent').innerHTML =
+                    `<div class="state-error"><i class="fas fa-exclamation-circle mr-2"></i>No profiles found.</div>`;
+                return;
+            }
+
+            // Populate selector and enable it
+            const sel      = $('profileSelect');
+            sel.innerHTML  = profiles.map(p => `<option value="${p.id}">${p.full_name}</option>`).join('');
+            sel.disabled   = false;
+
+            // Load first profile immediately — no waiting
+            await loadProfile(profiles[0].id);
+
+        } catch(e) {
+            $('dashContent').innerHTML =
+                `<div class="state-error"><i class="fas fa-exclamation-circle mr-2"></i>${e.message}</div>`;
+        }
+    }
+
+    /* ================================================================
+       LOAD PROFILE
+       - If cached: render immediately from memory
+       - If not cached: build the shell first, then fetch each API
+         endpoint independently and render each section as it arrives
+    ================================================================ */
+    async function loadProfile(profileId) {
+        if (!profileId) return;
+
+        destroyCharts();
+
+        // ── CACHED PATH: instant render ──────────────────────────────
+        if (_cache[profileId]) {
+            const { profile, skills, goals, languages, feedback } = _cache[profileId];
+            updateTopBar(profile);
+            renderAll(profile, skills, goals, languages, feedback);
+            return;
+        }
+
+        // ── FRESH LOAD: progressive section-by-section rendering ─────
+
+        // Step 1 — render the structural shell with per-section placeholders
+        buildShell();
+
+        // Step 2 — fetch the core profile first (provides metrics cards)
+        let profile;
+        try {
+            profile = await api(`/api/profile/${profileId}`);
+            updateTopBar(profile);
+            renderMetrics(profile);    // Show metric cards immediately
+            renderModelCounts(profile.model_counts || {});
+        } catch(e) {
+            showSectionError('sectionMetrics', `Metrics unavailable: ${e.message}`);
+            return; // Profile is mandatory — abort on failure
+        }
+
+        // Step 3 — fire remaining API calls in parallel, render each as it resolves
+        // Using individual .then() chains so each section renders independently
+
+        let skills    = [];
+        let goals     = [];
+        let languages = [];
+        let feedback  = null;
+
+        // Skills
+        api(`/api/profile-skills?profile_id=${profileId}`)
+            .then(d => {
+                skills = d.skills || [];
+                renderSkillsSection(skills);
+            })
+            .catch(e => showSectionError('sectionSkills', `Skills unavailable: ${e.message}`));
+
+        // Goals
+        api(`/api/goals-dashboard?profile_id=${profileId}`)
+            .then(d => {
+                goals = d.goals || [];
+                renderGoalsSection(goals);
+            })
+            .catch(e => {
+                showSectionError('sectionGoals', `Goals unavailable: ${e.message}`);
+                showSectionError('sectionRoadmap', `Roadmap unavailable: ${e.message}`);
+            });
+
+        // Languages
+        api(`/api/dashboard-languages?profile_id=${profileId}`)
+            .then(d => {
+                languages = d.languages || [];
+                renderLanguagesSection(languages);
+            })
+            .catch(e => showSectionError('sectionLanguages', `Languages unavailable: ${e.message}`));
+
+        // Feedback
+        api(`/api/dashboard-feedback?profile_id=${profileId}`)
+            .then(d => {
+                feedback = d;
+                renderFeedbackSection(feedback);
+            })
+            .catch(e => showSectionError('sectionFeedback', `Feedback unavailable: ${e.message}`));
+
+        // Step 4 — after all calls settle, save to cache
+        Promise.allSettled([
+            api(`/api/profile-skills?profile_id=${profileId}`).catch(()=>({ skills: [] })),
+            api(`/api/goals-dashboard?profile_id=${profileId}`).catch(()=>({ goals: [] })),
+            api(`/api/dashboard-languages?profile_id=${profileId}`).catch(()=>({ languages: [] })),
+            api(`/api/dashboard-feedback?profile_id=${profileId}`).catch(()=>null),
+        ]).then(results => {
+            // Cache only if all four resolved successfully
+            if (results.every(r => r.status === 'fulfilled')) {
+                _cache[profileId] = {
+                    profile,
+                    skills   : results[0].value.skills    || [],
+                    goals    : results[1].value.goals     || [],
+                    languages: results[2].value.languages || [],
+                    feedback : results[3].value,
+                };
+            }
         });
-        const catLabels = Object.keys(catMap).filter(c=>catMap[c].length>0);
-        const catAvgs   = catLabels.map(c=>rnd(catMap[c].reduce((a,v)=>a+v,0)/catMap[c].length));
+    }
 
-        const bands      = ['0–20','21–40','41–60','61–80','81–100'];
-        const bandRanges = [[0,20],[21,40],[41,60],[61,80],[81,100]];
-        const bandCounts = bandRanges.map(([lo,hi])=>skills.filter(s=>s.score>=lo&&s.score<=hi).length);
-
-        const priLabels  = ['Critical','High','Medium','Low'];
-        const priCounts  = priLabels.map(l=>goals.filter(g=>g.priority===l).length);
-        const priColors  = [C.coral[0],C.amber[0],C.blue[0],C.gray[0]];
-
-        const statLabels = ['Achieved','In Progress','Planned','Paused'];
-        const statCounts = statLabels.map(l=>goals.filter(g=>g.status===l).length);
-        const statColors = [C.teal[0],C.blue[0],C.amber[0],C.gray[0]];
-
-        const years    = [...new Set(goals.map(g=>g.target_year).filter(Boolean))].sort();
-        const yearAvgs = years.map(y=>{
-            const yg = goals.filter(g=>g.target_year===y);
-            return yg.length ? rnd(yg.reduce((a,g)=>a+g.progress_pct,0)/yg.length) : 0;
-        });
-
+    /* ================================================================
+       BUILD SHELL — writes the page structure with loading placeholders
+       Each section has a unique id so individual renderers can target it
+    ================================================================ */
+    function buildShell() {
         $('dashContent').innerHTML = `
-        <div class="metrics-row">
+
+            <!-- METRICS ROW (section 1) -->
+            <div id="sectionMetrics" class="dash-section metrics-row">
+                ${[1,2,3,4,5,6].map(()=>`
+                    <div class="metric-card">
+                        <div class="skeleton" style="height:36px;width:36px;border-radius:10px;margin-bottom:12px;"></div>
+                        <div class="skeleton" style="height:10px;width:55%;margin-bottom:8px;"></div>
+                        <div class="skeleton" style="height:26px;width:45%;"></div>
+                    </div>`).join('')}
+            </div>
+
+            <!-- SKILLS + RADAR (section 2) -->
+            <div class="charts-grid-2 mb-4">
+                <div id="sectionSkills" class="chart-card dash-section">
+                    <div class="chart-card-header"><div>
+                        <div class="chart-card-title">Skill Scores — Top 12</div>
+                        <div class="chart-card-sub">Sorted by proficiency</div>
+                    </div></div>
+                    ${sectionLoader('Loading skill scores…')}
+                </div>
+                <div id="sectionRadar" class="chart-card dash-section">
+                    <div class="chart-card-header"><div>
+                        <div class="chart-card-title">Skills by Category</div>
+                        <div class="chart-card-sub">Average score per domain</div>
+                    </div></div>
+                    ${sectionLoader('Waiting for skills…')}
+                </div>
+            </div>
+
+            <!-- DISTRIBUTION + GOAL CHARTS (section 3) -->
+            <div class="charts-grid-3 mb-4">
+                <div id="sectionDist" class="chart-card dash-section">
+                    <div class="chart-card-header"><div>
+                        <div class="chart-card-title">Score Distribution</div>
+                        <div class="chart-card-sub">Skills spread across bands</div>
+                    </div></div>
+                    ${sectionLoader('Waiting for skills…')}
+                </div>
+                <div id="sectionGoals" class="chart-card dash-section">
+                    <div class="chart-card-header"><div>
+                        <div class="chart-card-title">Goal Priority</div>
+                        <div class="chart-card-sub">Breakdown by importance</div>
+                    </div></div>
+                    ${sectionLoader('Loading goals…')}
+                </div>
+                <div id="sectionStatus" class="chart-card dash-section">
+                    <div class="chart-card-header"><div>
+                        <div class="chart-card-title">Goal Status</div>
+                        <div class="chart-card-sub">Progress toward completion</div>
+                    </div></div>
+                    ${sectionLoader('Loading goals…')}
+                </div>
+            </div>
+
+            <!-- YEAR BAR + MODEL COUNTS (section 4) -->
+            <div class="charts-grid-2 mb-4">
+                <div id="sectionYear" class="chart-card dash-section">
+                    <div class="chart-card-header"><div>
+                        <div class="chart-card-title">Goal Progress by Year</div>
+                        <div class="chart-card-sub">Average completion per target year</div>
+                    </div></div>
+                    ${sectionLoader('Loading goals…')}
+                </div>
+                <div id="sectionCounts" class="chart-card dash-section">
+                    <div class="chart-card-header"><div>
+                        <div class="chart-card-title">Portfolio Records</div>
+                        <div class="chart-card-sub">Total documents per model</div>
+                    </div></div>
+                    ${sectionLoader('Loading profile…')}
+                </div>
+            </div>
+
+            <!-- LANGUAGES + FEEDBACK (section 5) -->
+            <div class="charts-grid-2 mb-4">
+                <div id="sectionLanguages" class="chart-card dash-section">
+                    <div class="chart-card-header"><div>
+                        <div class="chart-card-title">
+                            <i class="fas fa-language mr-2 text-primary"></i>Languages
+                        </div>
+                        <div class="chart-card-sub">Communication proficiency levels</div>
+                    </div></div>
+                    ${sectionLoader('Loading languages…')}
+                </div>
+                <div id="sectionFeedback" class="chart-card dash-section">
+                    <div class="chart-card-header"><div>
+                        <div class="chart-card-title">
+                            <i class="fas fa-envelope-open-text mr-2 text-primary"></i>Feedback Inbox
+                        </div>
+                        <div class="chart-card-sub">Visitor messages &amp; testimonials</div>
+                    </div></div>
+                    ${sectionLoader('Loading feedback…')}
+                </div>
+            </div>
+
+            <!-- CAREER ROADMAP (section 6) -->
+            <div id="sectionRoadmap" class="chart-card full-width dash-section" style="margin-bottom:16px;">
+                <div class="chart-card-header"><div>
+                    <div class="chart-card-title">
+                        <i class="fas fa-road mr-2 text-primary"></i>Career Roadmap
+                    </div>
+                    <div class="chart-card-sub">All goals with detailed progress</div>
+                </div></div>
+                ${sectionLoader('Loading roadmap…')}
+            </div>
+        `;
+
+        // Reveal the shell itself immediately
+        requestAnimationFrame(() => {
+            document.querySelectorAll('.dash-section').forEach(el => {
+                revealSection(el);
+            });
+        });
+    }
+
+    /* ================================================================
+       SHOW SECTION ERROR — replaces the loader inside a section card
+    ================================================================ */
+    function showSectionError(sectionId, msg) {
+        const el = $(sectionId);
+        if (!el) return;
+        // Keep the header, replace everything after it
+        const header = el.querySelector('.chart-card-header');
+        if (header) {
+            // Remove everything after the header
+            let next = header.nextSibling;
+            while (next) { const n = next.nextSibling; el.removeChild(next); next = n; }
+            el.insertAdjacentHTML('beforeend',
+                `<div class="state-error" style="margin:8px 0;">
+                    <i class="fas fa-exclamation-circle mr-1"></i>${msg}
+                 </div>`);
+        }
+        revealSection(el);
+    }
+
+    /* ================================================================
+       SECTION RENDERERS — each replaces its placeholder independently
+    ================================================================ */
+
+    // ── Section 1: Metric cards ──────────────────────────────────────
+    function renderMetrics(profile) {
+        const el = $('sectionMetrics');
+        if (!el) return;
+
+        el.innerHTML = `
             <div class="metric-card">
-                <div class="metric-icon" style="background:${C.blue[3]}"><i class="fas fa-clock" style="color:${C.blue[0]}"></i></div>
+                <div class="metric-icon" style="background:${C.blue[3]}">
+                    <i class="fas fa-clock" style="color:${C.blue[0]}"></i>
+                </div>
                 <div class="metric-label">Experience</div>
                 <div class="metric-value">${profile.experience_years}<span class="metric-unit">y</span></div>
                 <div class="metric-sub">weighted years</div>
             </div>
             <div class="metric-card">
-                <div class="metric-icon" style="background:${C.teal[3]}"><i class="fas fa-chart-line" style="color:${C.teal[0]}"></i></div>
+                <div class="metric-icon" style="background:${C.teal[3]}">
+                    <i class="fas fa-chart-line" style="color:${C.teal[0]}"></i>
+                </div>
                 <div class="metric-label">Overall Score</div>
                 <div class="metric-value">${rnd(profile.overall_score)}<span class="metric-unit">%</span></div>
                 <div class="metric-sub">skills + goals blend</div>
             </div>
             <div class="metric-card">
-                <div class="metric-icon" style="background:${C.purple[3]}"><i class="fas fa-microchip" style="color:${C.purple[0]}"></i></div>
-                <div class="metric-label">Avg Skill Score</div>
-                <div class="metric-value">${avgSkill}<span class="metric-unit">%</span></div>
-                <div class="metric-sub">across ${skills.length} skills</div>
+                <div class="metric-icon" style="background:${C.purple[3]}">
+                    <i class="fas fa-microchip" style="color:${C.purple[0]}"></i>
+                </div>
+                <div class="metric-label">Skills</div>
+                <div class="metric-value">${rnd(profile.model_counts?.skills||0)}</div>
+                <div class="metric-sub">tracked skills</div>
             </div>
             <div class="metric-card">
-                <div class="metric-icon" style="background:${C.amber[3]}"><i class="fas fa-map-signs" style="color:${C.amber[0]}"></i></div>
-                <div class="metric-label">Goals Progress</div>
-                <div class="metric-value">${goalsAchieved}<span class="metric-unit">/${goals.length}</span></div>
-                <div class="metric-sub">achieved</div>
+                <div class="metric-icon" style="background:${C.amber[3]}">
+                    <i class="fas fa-map-signs" style="color:${C.amber[0]}"></i>
+                </div>
+                <div class="metric-label">Goals</div>
+                <div class="metric-value">${rnd(profile.model_counts?.goals||0)}</div>
+                <div class="metric-sub">on roadmap</div>
             </div>
             <div class="metric-card">
-                <div class="metric-icon" style="background:${C.coral[3]}"><i class="fas fa-briefcase" style="color:${C.coral[0]}"></i></div>
-                <div class="metric-label">Active Goals</div>
-                <div class="metric-value">${goals.filter(g=>g.status==='In Progress').length}</div>
-                <div class="metric-sub">in progress</div>
+                <div class="metric-icon" style="background:${C.coral[3]}">
+                    <i class="fas fa-briefcase" style="color:${C.coral[0]}"></i>
+                </div>
+                <div class="metric-label">Experience</div>
+                <div class="metric-value">${rnd(profile.model_counts?.experience||0)}</div>
+                <div class="metric-sub">roles recorded</div>
             </div>
             <div class="metric-card">
-                <div class="metric-icon" style="background:${C.green[3]}"><i class="fas fa-user-check" style="color:${C.green[0]}"></i></div>
+                <div class="metric-icon" style="background:${C.green[3]}">
+                    <i class="fas fa-user-check" style="color:${C.green[0]}"></i>
+                </div>
                 <div class="metric-label">For Hire</div>
                 <div class="metric-value" style="font-size:14px;margin-top:4px">
                     <span class="avail-badge ${profile.is_available?'avail-yes':'avail-no'}">
-                        <span class="dot"></span>${profile.is_available?'Available':'Not Available'}
+                        <span class="dot"></span>
+                        ${profile.is_available?'Available':'Not Available'}
                     </span>
                 </div>
                 <div class="metric-sub">${profile.remote_preference?'Remote preferred':''}</div>
             </div>
-        </div>
-
-        <div class="charts-grid-2">
-            <div class="chart-card">
-                <div class="chart-card-header"><div>
-                    <div class="chart-card-title">Skill Scores — Top 12</div>
-                    <div class="chart-card-sub">Sorted by proficiency</div>
-                </div></div>
-                ${buildLegend([
-                    {color:C.teal[0],label:'Excellent (80–100%)'},
-                    {color:C.blue[0],label:'Good (60–79%)'},
-                    {color:C.amber[0],label:'Growing (40–59%)'},
-                    {color:C.coral[0],label:'Learning (0–39%)'},
-                ])}
-                <div id="cSkillRings" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:10px;padding:4px 0;"></div>
-            </div>
-            <div class="chart-card">
-                <div class="chart-card-header"><div>
-                    <div class="chart-card-title">Skills by Category</div>
-                    <div class="chart-card-sub">Average score per domain</div>
-                </div></div>
-                <div class="chart-canvas-wrap" style="height:280px">
-                    <canvas id="cRadar" role="img" aria-label="Radar chart of average skill score by category"></canvas>
-                </div>
-            </div>
-        </div>
-
-        <div class="charts-grid-3">
-            <div class="chart-card">
-                <div class="chart-card-header"><div>
-                    <div class="chart-card-title">Score Distribution</div>
-                    <div class="chart-card-sub">How skills spread across bands</div>
-                </div></div>
-                <div class="chart-canvas-wrap" style="height:220px">
-                    <canvas id="cDist" role="img" aria-label="Bar chart of skill score distribution"></canvas>
-                </div>
-            </div>
-            <div class="chart-card">
-                <div class="chart-card-header"><div>
-                    <div class="chart-card-title">Goal Priority</div>
-                    <div class="chart-card-sub">Breakdown by importance</div>
-                </div></div>
-                ${buildLegend(priLabels.map((l,i)=>({color:priColors[i],label:`${l} (${priCounts[i]})`})))}
-                <div class="chart-canvas-wrap" style="height:200px">
-                    <canvas id="cPriority" role="img" aria-label="Donut chart of goal priority breakdown"></canvas>
-                </div>
-            </div>
-            <div class="chart-card">
-                <div class="chart-card-header"><div>
-                    <div class="chart-card-title">Goal Status</div>
-                    <div class="chart-card-sub">Progress toward completion</div>
-                </div></div>
-                ${buildLegend(statLabels.map((l,i)=>({color:statColors[i],label:`${l} (${statCounts[i]})`})))}
-                <div class="chart-canvas-wrap" style="height:200px">
-                    <canvas id="cStatus" role="img" aria-label="Donut chart of goal status breakdown"></canvas>
-                </div>
-            </div>
-        </div>
-
-        <div class="charts-grid-2">
-            <div class="chart-card">
-                <div class="chart-card-header"><div>
-                    <div class="chart-card-title">Goal Progress by Year</div>
-                    <div class="chart-card-sub">Average completion rate per target year</div>
-                </div></div>
-                <div class="chart-canvas-wrap" style="height:220px">
-                    <canvas id="cYear" role="img" aria-label="Bar chart of average goal progress by target year"></canvas>
-                </div>
-            </div>
-            <div class="chart-card">
-                <div class="chart-card-header"><div>
-                    <div class="chart-card-title">Portfolio Records</div>
-                    <div class="chart-card-sub">Total documents per model</div>
-                </div></div>
-                <div class="model-counts-grid" id="modelCountsGrid"></div>
-            </div>
-        </div>
-        <div class="charts-grid-2">
-            <div class="chart-card">
-                <div class="chart-card-header"><div>
-                    <div class="chart-card-title">
-                        <i class="fas fa-language mr-2 text-primary"></i>Languages
-                    </div>
-                    <div class="chart-card-sub">Communication proficiency levels</div>
-                </div></div>
-                <div class="lang-grid" id="langSection"></div>
-            </div>
-
-        <!-- ── Feedback Inbox Card ── -->
-        <div class="chart-card">
-            <div class="chart-card-header">
-                <div>
-                    <div class="chart-card-title">
-                        <i class="fas fa-envelope-open-text mr-2 text-primary"></i>Feedback Inbox
-                    </div>
-                    <div class="chart-card-sub">Visitor messages &amp; testimonials</div>
-                </div>
-            </div>
-            <div id="feedbackSection">
-                <!-- Populated by buildFeedbackWidget() -->
-            </div>
-        </div>
-        </div>
-
-    </div>
-
-        <div class="chart-card full-width">
-            <div class="chart-card-header"><div>
-                <div class="chart-card-title"><i class="fas fa-road mr-2 text-primary"></i>Career Roadmap</div>
-                <div class="chart-card-sub">All goals with detailed progress</div>
-            </div></div>
-            <div class="goal-list" id="goalListSection"></div>
-        </div>`;
-
-        // رسم الـ charts بعد الـ DOM بـ frame واحد
-        requestAnimationFrame(() => {
-            buildSkillRings(topSkills);
-            buildRadar(catLabels, catAvgs);
-            buildDistribution(bands, bandCounts);
-            buildDonut('cPriority', priLabels, priCounts, priColors);
-            buildDonut('cStatus',   statLabels, statCounts, statColors);
-            buildYearBar(years, yearAvgs);
-            buildModelCounts(counts);
-            buildGoalList(goals);
-            buildLanguages(languages);
-            buildFeedbackWidget(feedback);
-
-        });
+        `;
+        revealSection(el);
     }
 
-    /* ================================================================
-       CHART BUILDERS
-    ================================================================ */
-    function buildSkillRings(skills) {
-        const container = $('cSkillRings');
-        if (!container) return;
-        container.innerHTML = skills.map(s => {
-            const r    = 28, circ = 2*Math.PI*r;
+    // ── Section 2: Skill rings + Radar chart ────────────────────────
+    function renderSkillsSection(skills) {
+        const topSkills = [...skills].sort((a,b)=>b.score-a.score).slice(0,12);
+
+        // Build score rings HTML
+        const ringsHtml = topSkills.map(s => {
+            const r = 28, circ = 2*Math.PI*r;
             const dash = (s.score/100)*circ, gap = circ-dash;
             const c = scoreColor(s.score), cl = scoreColorLight(s.score);
             const cat = s.skill_type || categorize(s.skill_name);
@@ -810,71 +782,372 @@
                 <div style="font-size:12px;font-weight:500;color:#0f172a;margin-bottom:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${s.skill_name}</div>
                 <div style="font-size:10px;color:#94a3b8;">${cat}</div>
             </div>`;
-        }).join('');                                               // join أسرع من += في الـ loop
+        }).join('');
+
+        // Replace loader in skills card
+        const skillsEl = $('sectionSkills');
+        if (skillsEl) {
+            skillsEl.innerHTML = `
+                <div class="chart-card-header"><div>
+                    <div class="chart-card-title">Skill Scores — Top 12</div>
+                    <div class="chart-card-sub">Sorted by proficiency</div>
+                </div></div>
+                ${buildLegend([
+                    {color:C.teal[0],label:'Excellent (80–100%)'},
+                    {color:C.blue[0],label:'Good (60–79%)'},
+                    {color:C.amber[0],label:'Growing (40–59%)'},
+                    {color:C.coral[0],label:'Learning (0–39%)'},
+                ])}
+                <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:10px;padding:4px 0;">
+                    ${ringsHtml}
+                </div>`;
+            revealSection(skillsEl);
+        }
+
+        // Radar chart — build category averages
+        const catMap = {};
+        skills.forEach(s => {
+            const cat = s.skill_type || categorize(s.skill_name);
+            if (!catMap[cat]) catMap[cat] = [];
+            catMap[cat].push(s.score);
+        });
+        const catLabels = Object.keys(catMap).filter(c=>catMap[c].length>0);
+        const catAvgs   = catLabels.map(c=>rnd(catMap[c].reduce((a,v)=>a+v,0)/catMap[c].length));
+
+        const radarEl = $('sectionRadar');
+        if (radarEl) {
+            radarEl.innerHTML = `
+                <div class="chart-card-header"><div>
+                    <div class="chart-card-title">Skills by Category</div>
+                    <div class="chart-card-sub">Average score per domain</div>
+                </div></div>
+                <div class="chart-canvas-wrap" style="height:280px">
+                    <canvas id="cRadar"></canvas>
+                </div>`;
+            revealSection(radarEl);
+
+            // Draw radar after DOM update
+            requestAnimationFrame(() => {
+                if ($('cRadar')) {
+                    _charts.radar = new Chart($('cRadar'), {
+                        type: 'radar',
+                        data: { labels: catLabels, datasets:[{
+                            label:'Avg Score', data:catAvgs,
+                            backgroundColor: C.blue[3]+'aa', borderColor: C.blue[0],
+                            borderWidth:2, pointBackgroundColor:C.blue[0], pointRadius:4
+                        }]},
+                        options:{
+                            responsive:true, maintainAspectRatio:false,
+                            plugins:{ legend:{display:false}, tooltip:{callbacks:{label:ctx=>` ${rnd(ctx.parsed.r)}%`}} },
+                            scales:{ r:{ min:0,max:100,ticks:{stepSize:25,font:{size:10}},pointLabels:{font:{size:12}} } }
+                        }
+                    });
+                }
+            });
+        }
+
+        // Score distribution bands (also depends on skills data)
+        const bands      = ['0–20','21–40','41–60','61–80','81–100'];
+        const bandRanges = [[0,20],[21,40],[41,60],[61,80],[81,100]];
+        const bandCounts = bandRanges.map(([lo,hi])=>skills.filter(s=>s.score>=lo&&s.score<=hi).length);
+        const distEl     = $('sectionDist');
+        if (distEl) {
+            distEl.innerHTML = `
+                <div class="chart-card-header"><div>
+                    <div class="chart-card-title">Score Distribution</div>
+                    <div class="chart-card-sub">Skills spread across bands</div>
+                </div></div>
+                <div class="chart-canvas-wrap" style="height:220px">
+                    <canvas id="cDist"></canvas>
+                </div>`;
+            revealSection(distEl);
+            requestAnimationFrame(() => {
+                if ($('cDist')) {
+                    const bColors  = [C.coral[3],C.amber[3],C.amber[1],C.blue[3],C.teal[3]];
+                    const bBorders = [C.coral[0],C.amber[0],C.amber[0],C.blue[0],C.teal[0]];
+                    _charts.dist = new Chart($('cDist'), {
+                        type:'bar',
+                        data:{ labels:bands, datasets:[{
+                            label:'Skills', data:bandCounts,
+                            backgroundColor:bColors, borderColor:bBorders,
+                            borderWidth:1.5, borderRadius:5
+                        }]},
+                        options:{
+                            responsive:true, maintainAspectRatio:false,
+                            plugins:{ legend:{display:false} },
+                            scales:{ x:{grid:{display:false}}, y:{min:0,ticks:{stepSize:1},grid:{color:'rgba(0,0,0,0.04)'}} }
+                        }
+                    });
+                }
+            });
+        }
     }
 
-    function buildRadar(labels, values) {
-        _charts.radar = new Chart($('cRadar'), {
-            type:'radar',
-            data:{ labels, datasets:[{ label:'Avg Score', data:values,
-                backgroundColor:C.blue[3]+'aa', borderColor:C.blue[0],
-                borderWidth:2, pointBackgroundColor:C.blue[0], pointRadius:4 }] },
-            options:{ responsive:true, maintainAspectRatio:false,
-                plugins:{ legend:{display:false}, tooltip:{callbacks:{label:ctx=>` ${rnd(ctx.parsed.r)}%`}} },
-                scales:{ r:{ min:0, max:100, ticks:{stepSize:25,font:{size:10}}, pointLabels:{font:{size:12}} } } }
+    // ── Section 3: Goal charts (priority donut + status donut + year bar + roadmap list) ──
+    function renderGoalsSection(goals) {
+        const priLabels  = ['Critical','High','Medium','Low'];
+        const priCounts  = priLabels.map(l=>goals.filter(g=>g.priority===l).length);
+        const priColors  = [C.coral[0],C.amber[0],C.blue[0],C.gray[0]];
+        const statLabels = ['Achieved','In Progress','Planned','Paused'];
+        const statCounts = statLabels.map(l=>goals.filter(g=>g.status===l).length);
+        const statColors = [C.teal[0],C.blue[0],C.amber[0],C.gray[0]];
+        const years      = [...new Set(goals.map(g=>g.target_year).filter(Boolean))].sort();
+        const yearAvgs   = years.map(y=>{
+            const yg = goals.filter(g=>g.target_year===y);
+            return yg.length ? rnd(yg.reduce((a,g)=>a+g.progress_pct,0)/yg.length) : 0;
+        });
+
+        // Goal Priority donut
+        const goalsEl = $('sectionGoals');
+        if (goalsEl) {
+            goalsEl.innerHTML = `
+                <div class="chart-card-header"><div>
+                    <div class="chart-card-title">Goal Priority</div>
+                    <div class="chart-card-sub">Breakdown by importance</div>
+                </div></div>
+                ${buildLegend(priLabels.map((l,i)=>({color:priColors[i],label:`${l} (${priCounts[i]})`})))}
+                <div class="chart-canvas-wrap" style="height:200px">
+                    <canvas id="cPriority"></canvas>
+                </div>`;
+            revealSection(goalsEl);
+            requestAnimationFrame(() => {
+                if ($('cPriority')) buildDonut('cPriority', priLabels, priCounts, priColors);
+            });
+        }
+
+        // Goal Status donut
+        const statusEl = $('sectionStatus');
+        if (statusEl) {
+            statusEl.innerHTML = `
+                <div class="chart-card-header"><div>
+                    <div class="chart-card-title">Goal Status</div>
+                    <div class="chart-card-sub">Progress toward completion</div>
+                </div></div>
+                ${buildLegend(statLabels.map((l,i)=>({color:statColors[i],label:`${l} (${statCounts[i]})`})))}
+                <div class="chart-canvas-wrap" style="height:200px">
+                    <canvas id="cStatus"></canvas>
+                </div>`;
+            revealSection(statusEl);
+            requestAnimationFrame(() => {
+                if ($('cStatus')) buildDonut('cStatus', statLabels, statCounts, statColors);
+            });
+        }
+
+        // Year bar
+        const yearEl = $('sectionYear');
+        if (yearEl) {
+            yearEl.innerHTML = `
+                <div class="chart-card-header"><div>
+                    <div class="chart-card-title">Goal Progress by Year</div>
+                    <div class="chart-card-sub">Average completion per target year</div>
+                </div></div>
+                <div class="chart-canvas-wrap" style="height:220px">
+                    <canvas id="cYear"></canvas>
+                </div>`;
+            revealSection(yearEl);
+            requestAnimationFrame(() => {
+                if ($('cYear')) {
+                    _charts.year = new Chart($('cYear'), {
+                        type:'bar',
+                        data:{ labels:years.map(String), datasets:[{
+                            label:'Avg Progress %', data:yearAvgs,
+                            backgroundColor:C.purple[3], borderColor:C.purple[0],
+                            borderWidth:1.5, borderRadius:5
+                        }]},
+                        options:{
+                            responsive:true, maintainAspectRatio:false,
+                            plugins:{ legend:{display:false} },
+                            scales:{ x:{grid:{display:false}},
+                                     y:{min:0,max:100,ticks:{callback:v=>`${v}%`},grid:{color:'rgba(0,0,0,0.04)'}} }
+                        }
+                    });
+                }
+            });
+        }
+
+        // Roadmap list
+        const roadmapEl = $('sectionRoadmap');
+        if (roadmapEl) {
+            roadmapEl.innerHTML = `
+                <div class="chart-card-header"><div>
+                    <div class="chart-card-title">
+                        <i class="fas fa-road mr-2 text-primary"></i>Career Roadmap
+                    </div>
+                    <div class="chart-card-sub">All goals with detailed progress</div>
+                </div></div>
+                <div class="goal-list">${buildGoalListHtml(goals)}</div>`;
+            revealSection(roadmapEl);
+        }
+    }
+
+    // ── Section 4: Model counts ──────────────────────────────────────
+    function renderModelCounts(counts) {
+        const countsEl = $('sectionCounts');
+        if (!countsEl) return;
+        countsEl.innerHTML = `
+            <div class="chart-card-header"><div>
+                <div class="chart-card-title">Portfolio Records</div>
+                <div class="chart-card-sub">Total documents per model</div>
+            </div></div>
+            <div class="model-counts-grid">${buildModelCountsHtml(counts)}</div>`;
+        revealSection(countsEl);
+    }
+
+    // ── Section 5: Languages ─────────────────────────────────────────
+    function renderLanguagesSection(languages) {
+        const el = $('sectionLanguages');
+        if (!el) return;
+
+        const LANG_PALETTE = {
+            'Native'      : { bg:'#E1F5EE', border:'#9FE1CB', text:'#0F6E56', icon:'🌍' },
+            'Fluent'      : { bg:'#E6F1FB', border:'#B5D4F4', text:'#185FA5', icon:'💬' },
+            'Advanced'    : { bg:'#EEEDFE', border:'#CECBF6', text:'#534AB7', icon:'📚' },
+            'Intermediate': { bg:'#FAEEDA', border:'#FAC775', text:'#854F0B', icon:'🗣️' },
+            'Beginner'    : { bg:'#F1EFE8', border:'#D3D1C7', text:'#5F5E5A', icon:'🌱' },
+        };
+
+        const cardsHtml = !languages.length
+            ? `<div class="fb-empty" style="grid-column:1/-1">
+                <i class="fas fa-language" style="font-size:28px;display:block;margin-bottom:8px"></i>
+                No languages added yet.
+               </div>`
+            : languages.map(lang => {
+                const p = LANG_PALETTE[lang.proficiency] || LANG_PALETTE['Intermediate'];
+                return `
+                <div class="lang-card" style="background:${p.bg};border-color:${p.border}">
+                    <div class="lang-card-icon">${p.icon}</div>
+                    <div class="lang-card-name">${lang.language_name}</div>
+                    <span class="lang-card-badge" style="background:${p.border};color:${p.text}">
+                        ${lang.proficiency}
+                    </span>
+                </div>`;
+            }).join('');
+
+        el.innerHTML = `
+            <div class="chart-card-header"><div>
+                <div class="chart-card-title">
+                    <i class="fas fa-language mr-2 text-primary"></i>Languages
+                </div>
+                <div class="chart-card-sub">Communication proficiency levels</div>
+            </div></div>
+            <div class="lang-grid">${cardsHtml}</div>`;
+        revealSection(el);
+    }
+
+    // ── Section 6: Feedback inbox ────────────────────────────────────
+    function renderFeedbackSection(feedback) {
+        const el = $('sectionFeedback');
+        if (!el) return;
+
+        let bodyHtml = '<div class="fb-empty">No feedback data available.</div>';
+
+        if (feedback) {
+            const { stats, latest } = feedback;
+            const unreadColor   = stats.unread   > 0 ? '#D85A30' : '#0f172a';
+            const featuredColor = stats.featured > 0 ? '#1D9E75' : '#0f172a';
+
+            const statsHtml = `
+            <div class="feedback-stats">
+                <div class="fb-stat-item">
+                    <div class="fb-stat-val">${stats.total||0}</div>
+                    <div class="fb-stat-lbl">Total</div>
+                </div>
+                <div class="fb-stat-item">
+                    <div class="fb-stat-val" style="color:${unreadColor}">${stats.unread||0}</div>
+                    <div class="fb-stat-lbl">Unread</div>
+                </div>
+                <div class="fb-stat-item">
+                    <div class="fb-stat-val" style="color:${featuredColor}">${stats.featured||0}</div>
+                    <div class="fb-stat-lbl">Featured</div>
+                </div>
+            </div>`;
+
+            let latestHtml = `<div class="fb-empty" style="padding:20px 0">
+                <i class="fas fa-inbox" style="font-size:22px;display:block;margin-bottom:8px"></i>
+                No messages yet.
+            </div>`;
+
+            if (latest) {
+                const isUnread = !latest.is_read;
+                const badgeStyle = isUnread
+                    ? 'background:#FAECE7;color:#D85A30'
+                    : 'background:#f1f5f9;color:#94a3b8';
+                const meta = [latest.job_title, latest.company_name].filter(Boolean).join(' @ ');
+                const date = latest.submitted_at
+                    ? new Date(latest.submitted_at).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'})
+                    : '';
+                latestHtml = `
+                <div class="fb-latest">
+                    <span class="fb-latest-badge" style="${badgeStyle}">${isUnread?'● Unread':'Read'}</span>
+                    <div class="fb-latest-label">Latest Message</div>
+                    <div class="fb-latest-name">${latest.sender_name}</div>
+                    <div class="fb-latest-meta">${[meta,date].filter(Boolean).join(' · ')}</div>
+                    <div class="fb-latest-msg">${latest.message}</div>
+                </div>`;
+            }
+
+            bodyHtml = statsHtml + latestHtml;
+        }
+
+        el.innerHTML = `
+            <div class="chart-card-header"><div>
+                <div class="chart-card-title">
+                    <i class="fas fa-envelope-open-text mr-2 text-primary"></i>Feedback Inbox
+                </div>
+                <div class="chart-card-sub">Visitor messages &amp; testimonials</div>
+            </div></div>
+            ${bodyHtml}`;
+        revealSection(el);
+    }
+
+    /* ================================================================
+       FULL RE-RENDER (used when loading from cache — instant)
+    ================================================================ */
+    function renderAll(profile, skills, goals, languages, feedback) {
+        buildShell();
+        // Render all sections synchronously — all data available
+        requestAnimationFrame(() => {
+            renderMetrics(profile);
+            renderSkillsSection(skills);
+            renderGoalsSection(goals);
+            renderModelCounts(profile.model_counts || {});
+            renderLanguagesSection(languages);
+            renderFeedbackSection(feedback);
         });
     }
 
-    function buildDistribution(labels, counts) {
-        const bColors  = [C.coral[3],C.amber[3],C.amber[1],C.blue[3],C.teal[3]];
-        const bBorders = [C.coral[0],C.amber[0],C.amber[0],C.blue[0],C.teal[0]];
-        _charts.dist = new Chart($('cDist'), {
-            type:'bar',
-            data:{ labels, datasets:[{ label:'Skills', data:counts,
-                backgroundColor:bColors, borderColor:bBorders, borderWidth:1.5, borderRadius:5 }] },
-            options:{ responsive:true, maintainAspectRatio:false,
-                plugins:{ legend:{display:false}, tooltip:{callbacks:{label:ctx=>` ${ctx.parsed.y} skill${ctx.parsed.y!==1?'s':''}`}} },
-                scales:{ x:{ticks:{font:{size:11}},grid:{display:false}},
-                         y:{min:0,ticks:{stepSize:1,font:{size:11}},grid:{color:'rgba(0,0,0,0.04)'}} } }
-        });
-    }
-
+    /* ================================================================
+       CHART HELPERS
+    ================================================================ */
     function buildDonut(id, labels, data, colors) {
         _charts[id] = new Chart($(id), {
             type:'doughnut',
             data:{ labels, datasets:[{ data, backgroundColor:colors, borderWidth:2, borderColor:'#fff' }] },
-            options:{ responsive:true, maintainAspectRatio:false, cutout:'65%',
-                plugins:{ legend:{display:false}, tooltip:{callbacks:{label:ctx=>` ${ctx.label}: ${ctx.parsed}`}} } }
+            options:{
+                responsive:true, maintainAspectRatio:false, cutout:'65%',
+                plugins:{ legend:{display:false}, tooltip:{callbacks:{label:ctx=>` ${ctx.label}: ${ctx.parsed}`}} }
+            }
         });
     }
 
-    function buildYearBar(years, avgs) {
-        _charts.year = new Chart($('cYear'), {
-            type:'bar',
-            data:{ labels:years.map(String), datasets:[{ label:'Avg Progress %', data:avgs,
-                backgroundColor:C.purple[3], borderColor:C.purple[0], borderWidth:1.5, borderRadius:5 }] },
-            options:{ responsive:true, maintainAspectRatio:false,
-                plugins:{ legend:{display:false}, tooltip:{callbacks:{label:ctx=>` ${rnd(ctx.parsed.y)}% avg progress`}} },
-                scales:{ x:{ticks:{font:{size:11}},grid:{display:false}},
-                         y:{min:0,max:100,ticks:{callback:v=>`${v}%`,font:{size:11}},grid:{color:'rgba(0,0,0,0.04)'}} } }
-        });
-    }
-
+    /* ================================================================
+       HTML BUILDER HELPERS
+    ================================================================ */
     const MODEL_META = {
-        skills      :{ icon:'fas fa-microchip',      label:'Skills'      },
-        goals       :{ icon:'fas fa-map-signs',       label:'Goals'       },
-        experience  :{ icon:'fas fa-briefcase',       label:'Experience'  },
-        courses     :{ icon:'fas fa-certificate',     label:'Courses'     },
-        projects    :{ icon:'fas fa-project-diagram', label:'Projects'    },
-        education   :{ icon:'fas fa-graduation-cap',  label:'Education'   },
-        self_study  :{ icon:'fas fa-book-reader',     label:'Self Study'  },
-        languages   :{ icon:'fas fa-language',        label:'Languages'   },
-    feedback    :{ icon:'fas fa-envelope',        label:'Feedback'    },
-        achievements:{ icon:'fas fa-trophy',          label:'Achievements'},
+        skills      :{ icon:'fas fa-microchip',      label:'Skills'       },
+        goals       :{ icon:'fas fa-map-signs',       label:'Goals'        },
+        experience  :{ icon:'fas fa-briefcase',       label:'Experience'   },
+        courses     :{ icon:'fas fa-certificate',     label:'Courses'      },
+        projects    :{ icon:'fas fa-project-diagram', label:'Projects'     },
+        education   :{ icon:'fas fa-graduation-cap',  label:'Education'    },
+        self_study  :{ icon:'fas fa-book-reader',     label:'Self Study'   },
+        languages   :{ icon:'fas fa-language',        label:'Languages'    },
+        feedback    :{ icon:'fas fa-envelope',        label:'Feedback'     },
+        achievements:{ icon:'fas fa-trophy',          label:'Achievements' },
     };
 
-    function buildModelCounts(counts) {
-        $('modelCountsGrid').innerHTML = Object.entries(MODEL_META).map(([key,meta])=>`
+    function buildModelCountsHtml(counts) {
+        return Object.entries(MODEL_META).map(([key, meta]) => `
             <div class="model-count-item">
                 <div class="mc-icon"><i class="${meta.icon}"></i></div>
                 <div class="mc-val">${rnd(counts[key]||0)}</div>
@@ -882,10 +1155,9 @@
             </div>`).join('');
     }
 
-    function buildGoalList(goals) {
-        const sec = $('goalListSection');
-        if (!goals.length) { sec.innerHTML='<p style="color:#94a3b8;font-size:13px;padding:12px 0">No goals found.</p>'; return; }
-        sec.innerHTML = goals.map(g => {
+    function buildGoalListHtml(goals) {
+        if (!goals.length) return `<p style="color:#94a3b8;font-size:13px;padding:12px 0">No goals found.</p>`;
+        return goals.map(g => {
             const pct = rnd(g.progress_pct);
             const bc  = pct>=80?C.teal[0]:pct>=50?C.blue[0]:C.amber[0];
             return `
@@ -899,7 +1171,9 @@
                     </div>
                 </div>
                 <div class="goal-track">
-                    <div class="goal-track-bar"><div class="goal-track-fill" style="width:${pct}%;background:${bc}"></div></div>
+                    <div class="goal-track-bar">
+                        <div class="goal-track-fill" style="width:${pct}%;background:${bc}"></div>
+                    </div>
                     <div class="goal-pct" style="color:${bc}">${pct}%</div>
                 </div>
                 <div class="goal-scores">${g.current_score} / ${g.target_score} pts toward target</div>
@@ -907,109 +1181,9 @@
         }).join('');
     }
 
-    const LANG_PALETTE = {
-        'Native'      : { bg: '#E1F5EE', border: '#9FE1CB', text: '#0F6E56', icon: '🌍' },
-        'Fluent'      : { bg: '#E6F1FB', border: '#B5D4F4', text: '#185FA5', icon: '💬' },
-        'Advanced'    : { bg: '#EEEDFE', border: '#CECBF6', text: '#534AB7', icon: '📚' },
-        'Intermediate': { bg: '#FAEEDA', border: '#FAC775', text: '#854F0B', icon: '🗣️' },
-        'Beginner'    : { bg: '#F1EFE8', border: '#D3D1C7', text: '#5F5E5A', icon: '🌱' },
-    };
-
-    function buildLanguages(languages) {
-        const sec = $('langSection');
-        if (!sec) return;
-
-        if (!languages || !languages.length) {
-            sec.innerHTML = `<div class="fb-empty" style="grid-column:1/-1">
-                <i class="fas fa-language" style="font-size:28px;display:block;margin-bottom:8px"></i>
-                No languages added yet.
-            </div>`;
-            return;
-        }
-
-        sec.innerHTML = languages.map(lang => {
-            const p = LANG_PALETTE[lang.proficiency] || LANG_PALETTE['Intermediate'];
-            return `
-            <div class="lang-card" style="background:${p.bg};border-color:${p.border}">
-                <div class="lang-card-icon">${p.icon}</div>
-                <div class="lang-card-name">${lang.language_name}</div>
-                <span class="lang-card-badge" style="background:${p.border};color:${p.text}">
-                    ${lang.proficiency}
-                </span>
-            </div>`;
-        }).join('');
-    }
-
-
-    // ── 3E: NEW — Feedback inbox builder ────────────────────────
-    function buildFeedbackWidget(feedback) {
-        const sec = $('feedbackSection');
-        if (!sec) return;
-
-        if (!feedback) {
-            sec.innerHTML = '<div class="fb-empty">No feedback data available.</div>';
-            return;
-        }
-
-        const { stats, latest } = feedback;
-
-        // ── Stats row ──
-        const unreadColor   = stats.unread   > 0 ? '#D85A30' : '#0f172a';  // Coral if unread exist
-        const featuredColor = stats.featured > 0 ? '#1D9E75' : '#0f172a';  // Teal if featured exist
-
-        const statsHtml = `
-        <div class="feedback-stats">
-            <div class="fb-stat-item">
-                <div class="fb-stat-val">${stats.total || 0}</div>
-                <div class="fb-stat-lbl">Total</div>
-            </div>
-            <div class="fb-stat-item">
-                <div class="fb-stat-val" style="color:${unreadColor}">${stats.unread || 0}</div>
-                <div class="fb-stat-lbl">Unread</div>
-            </div>
-            <div class="fb-stat-item">
-                <div class="fb-stat-val" style="color:${featuredColor}">${stats.featured || 0}</div>
-                <div class="fb-stat-lbl">Featured</div>
-            </div>
-        </div>`;
-
-        // ── Latest message ──
-        let latestHtml = `<div class="fb-empty" style="padding:20px 0">
-            <i class="fas fa-inbox" style="font-size:22px;display:block;margin-bottom:8px"></i>
-            No messages yet.
-        </div>`;
-
-        if (latest) {
-            const isUnread   = !latest.is_read;
-            const badgeStyle = isUnread
-                ? 'background:#FAECE7;color:#D85A30'               // Coral — unread
-                : 'background:#f1f5f9;color:#94a3b8';              // Grey — already read
-
-            const meta = [latest.job_title, latest.company_name]
-                .filter(Boolean)
-                .join(' @ ');                                      // e.g. "CTO @ Google"
-
-            const date = latest.submitted_at
-                ? new Date(latest.submitted_at).toLocaleDateString('en-GB', {
-                    day: 'numeric', month: 'short', year: 'numeric'
-                  })
-                : '';
-
-            latestHtml = `
-            <div class="fb-latest">
-                <span class="fb-latest-badge" style="${badgeStyle}">
-                    ${isUnread ? '● Unread' : 'Read'}
-                </span>
-                <div class="fb-latest-label">Latest Message</div>
-                <div class="fb-latest-name">${latest.sender_name}</div>
-                <div class="fb-latest-meta">${[meta, date].filter(Boolean).join(' · ')}</div>
-                <div class="fb-latest-msg">${latest.message}</div>
-            </div>`;
-        }
-
-        sec.innerHTML = statsHtml + latestHtml;
-    }
-
+    /* ================================================================
+       ENTRY POINT
+    ================================================================ */
     document.addEventListener('DOMContentLoaded', init);
 </script>
 {% endblock %}
