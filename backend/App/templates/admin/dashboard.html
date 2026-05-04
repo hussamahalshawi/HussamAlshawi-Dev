@@ -293,26 +293,29 @@ function categorize(n) {
    SKELETON — يظهر فوراً قبل ما تجي البيانات
 ================================================================ */
 function showSkeleton() {
-    const pulse = `
-        background: linear-gradient(90deg,#f1f5f9 25%,#e2e8f0 50%,#f1f5f9 75%);
-        background-size: 200% 100%;
-        animation: shimmer 1.2s infinite;
-        border-radius: 8px;
-    `;
-    $('dashContent').innerHTML = `
-    <style>
-        @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
-    </style>
-    <div class="metrics-row">
-        ${'<div class="metric-card"><div style="height:36px;margin-bottom:12px;'+pulse+'"></div><div style="height:12px;width:60%;margin-bottom:8px;'+pulse+'"></div><div style="height:28px;width:50%;'+pulse+'"></div></div>'.repeat(6)}
-    </div>
-    <div class="charts-grid-2">
-        <div class="chart-card"><div style="height:260px;${pulse}"></div></div>
-        <div class="chart-card"><div style="height:260px;${pulse}"></div></div>
-    </div>
-    <div class="charts-grid-3">
-        ${'<div class="chart-card"><div style="height:200px;'+pulse+'"></div></div>'.repeat(3)}
-    </div>`;
+    const p = 'background:#f1f5f9;border-radius:8px;animation:shimmer 1.2s infinite;background-size:200% 100%;background-image:linear-gradient(90deg,#f1f5f9 25%,#e2e8f0 50%,#f1f5f9 75%);';
+
+    const metricCard = [1,2,3,4,5,6].map(()=>
+        '<div class="metric-card">' +
+        '<div style="height:36px;margin-bottom:12px;' + p + '"></div>' +
+        '<div style="height:12px;width:60%;margin-bottom:8px;' + p + '"></div>' +
+        '<div style="height:28px;width:50%;' + p + '"></div>' +
+        '</div>'
+    ).join('');
+
+    const chartCard2 = [1,2].map(()=>
+        '<div class="chart-card"><div style="height:260px;' + p + '"></div></div>'
+    ).join('');
+
+    const chartCard3 = [1,2,3].map(()=>
+        '<div class="chart-card"><div style="height:200px;' + p + '"></div></div>'
+    ).join('');
+
+    $('dashContent').innerHTML =
+        '<style>@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}</style>' +
+        '<div class="metrics-row">'   + metricCard  + '</div>' +
+        '<div class="charts-grid-2">' + chartCard2  + '</div>' +
+        '<div class="charts-grid-3">' + chartCard3  + '</div>';
 }
 
 /* ================================================================
