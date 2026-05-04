@@ -8,6 +8,7 @@ class Course(Document):
     Represents professional certifications and training courses.
     Linked to a Profile to scope records to a single portfolio owner.
     Serves as evidence of continuous development and contributes to skill leveling.
+    Supports media uploads: course certificate images and demo/promo videos.
     """
 
     # --- OWNERSHIP ---
@@ -27,6 +28,13 @@ class Course(Document):
 
     # --- CREDENTIALS & EVIDENCE ---
     credential_url = URLField()                                # Public link to the digital certificate or badge
+
+    # --- MEDIA ASSETS ---
+    # Stores uploaded course screenshots, certificate images, or cover photos from Cloudinary
+    course_images = ListField(StringField())                   # Array of Cloudinary image URLs
+
+    # Stores a single promo or demo video URL from Cloudinary
+    course_video  = StringField()                              # Cloudinary video URL for course walkthrough
 
     # --- TIMELINE ---
     start_date = DateTimeField(required=True)                  # Commencement date

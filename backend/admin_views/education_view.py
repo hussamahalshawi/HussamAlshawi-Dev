@@ -1,5 +1,5 @@
 from flask import request                                      # Access multipart file uploads
-from wtforms import MultipleFileField                          # Virtual file upload field
+from wtforms import MultipleFileField, FileField               # Virtual file upload fields
 from admin_views.admin_view import ProfessionalModelView       # Base view — handles auto profile assignment
 from App.utils.cloudinary_handler import upload_media_batch    # Cloudinary batch upload utility
 from App.services.profile_service import ProfileService        # Recalculate experience metrics after save
@@ -9,9 +9,10 @@ import logging                                                 # Error tracking
 class EducationAdminView(ProfessionalModelView):
     """
     Education Management View:
-    Handles academic milestones with certificate upload support.
+    Handles academic milestones with certificate image and video upload support.
     Profile ownership is automatically assigned via the base class on every save.
     After saving, profile metrics are refreshed to reflect the new education entry.
+    Supports media uploads: certificate images (multi) and a graduation/campus video (single).
     """
 
     # --- TEMPLATE CONFIGURATION ---
@@ -33,9 +34,10 @@ class EducationAdminView(ProfessionalModelView):
     }
 
     # --- FORM CONFIGURATION ---
-    # Virtual upload field — not stored in DB directly, processed in on_model_change
+    # Virtual upload fields — not stored in DB directly, processed in on_model_change
     form_extra_fields = {
-        'certificate_upload': MultipleFileField('Upload Certificates or Campus Photos')
+        'certificate_upload': MultipleFileField('Upload Certificates or Campus Photos'),  # Multi-image
+        'video_upload'      : FileField('Upload Graduation or Campus Tour Video')         # Single video
     }
 
     form_args = {
@@ -52,7 +54,8 @@ class EducationAdminView(ProfessionalModelView):
         'description',
         'start_date',
         'end_date',
-        'certificate_upload',                                  # Virtual: file uploader for certificates
+        'certificate_upload',                                  # Virtual: multi-image certificate uploader
+        'video_upload',                                        # Virtual: single graduation/campus video
         'skills_learned'
     )
 
@@ -65,7 +68,8 @@ class EducationAdminView(ProfessionalModelView):
         """
         Triggered before saving to MongoDB.
         1. Calls super() to auto-assign the profile via the base class.
-        2. Uploads certificate files to Cloudinary and stores returned URLs.
+        2. Uploads certificate/photo images to Cloudinary and stores returned URLs.
+        3. Uploads graduation/campus video to Cloudinary and stores URL in education_video.
 
         Args:
             form: The submitted WTForms form instance.
@@ -75,7 +79,7 @@ class EducationAdminView(ProfessionalModelView):
         # Step 1: Run base class logic — auto-assigns profile if not set
         super().on_model_change(form, model, is_created)
 
-        # Step 2: Retrieve and filter uploaded certificate files from the request
+        # Step 2: Retrieve and filter uploaded certificate/photo files from the request
         files       = request.files.getlist('certificate_upload')          # Get all uploaded files
         valid_files = [f for f in files if f and f.filename != '']         # Filter out empty inputs
 
@@ -90,6 +94,20 @@ class EducationAdminView(ProfessionalModelView):
             if cert_urls:
                 # Step 4: Persist the returned Cloudinary URLs into the certificates list field
                 model.certificates = cert_urls                 # Store all uploaded certificate URLs
+
+        # Step 5: Handle single graduation/campus video upload
+        video_file = request.files.get('video_upload')         # Get the single video file
+
+        if video_file and video_file.filename != '':
+            # Upload video to Cloudinary under 'Education/videos'
+            video_urls = upload_media_batch(
+                [video_file],
+                folder_name='Education',                       # Cloudinary folder name
+                sub_folder='videos'                            # Sub-folder for education videos
+            )
+
+            if video_urls:
+                model.education_video = video_urls[0]          # Store the single returned video URL
 
     def after_model_change(self, form, model, is_created):
         """

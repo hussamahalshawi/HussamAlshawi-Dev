@@ -7,6 +7,7 @@ class Experience(Document):
     Represents professional work history and career milestones.
     Linked to a Profile document to scope all records to a single portfolio owner.
     This model serves as a primary data source for profile metrics and skill tracking.
+    Supports media uploads: workplace photos and video testimonials or walkthroughs.
     """
 
     # --- OWNERSHIP ---
@@ -34,6 +35,13 @@ class Experience(Document):
     start_date = DateTimeField(required=True)                  # Date when the tenure began
     end_date   = DateTimeField(required=False)                 # Date when the tenure ended (null if current)
     is_current = BooleanField(default=False)                   # Flag to indicate active employment
+
+    # --- MEDIA ASSETS ---
+    # Stores workplace photos, team pictures, or project screenshots from Cloudinary
+    experience_images = ListField(StringField())               # Array of Cloudinary image URLs
+
+    # Stores a single video testimonial, company intro, or role walkthrough from Cloudinary
+    experience_video  = StringField()                          # Cloudinary video URL
 
     # --- SKILL ACQUISITION ---
     # List of skills utilized or mastered during this professional tenure
