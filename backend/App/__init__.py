@@ -20,6 +20,8 @@ from App.models.skills      import Skill, SkillType, ProfileSkill    # Skill sys
 from App.models.self_study  import SelfStudy                          # Independent learning model
 from App.models.project     import Project                            # Portfolio projects model
 from App.models.goal        import Goal                               # Career roadmap model
+from App.models.language import Language                      # Human language proficiency model
+from App.models.feedback import Feedback                      # Visitor feedback and testimonials model
 
 # --- ADMIN VIEW IMPORTS ---
 from admin_views.my_media_view       import MediaVaultAdminView       # Media gallery view
@@ -34,6 +36,8 @@ from admin_views.project_view        import ProjectAdminView          # Project 
 from admin_views.goal_view           import GoalAdminView             # Career roadmap view
 from admin_views.skill_view          import SkillAdminView, SkillTypeAdminView  # Skill management views
 from admin_views.profile_skill_view  import ProfileSkillAdminView     # Read-only skill scores view
+from admin_views.language_view import LanguageAdminView       # Language management view
+from admin_views.feedback_view import FeedbackAdminView       # Feedback inbox and testimonials view
 
 # --- AUTH IMPORTS ---
 from auth.secure_views import SecureAdminIndexView                    # Keep for reference (unused now)
@@ -115,6 +119,8 @@ def create_app():
     admin.add_view(EducationAdminView(Education, name='Education',        category='Identity'))
     admin.add_view(SelfStudyAdminView(SelfStudy, name='Self Study',       category='Identity'))
     admin.add_view(GoalAdminView(Goal,           name='Roadmap',          category='Identity'))
+    admin.add_view(LanguageAdminView(Language, name='Languages', category='Identity'))
+    admin.add_view(FeedbackAdminView(Feedback, name='Feedback Inbox', category='Engagement'))
 
     # Career & Professional
     admin.add_view(ExperienceAdminView(Experience,   name='Experience',   category='Professional'))
@@ -142,6 +148,9 @@ def create_app():
 
     from App.routes.dashboard_api import dashboard_bp  # Dashboard API blueprint
     app.register_blueprint(dashboard_bp, url_prefix='/api')  # Mount under /api
+
+    from App.routes.feedback_api import feedback_bp
+    app.register_blueprint(feedback_bp, url_prefix='/api')
 
     # -------------------------------------------------------------------------
     # STEP 10: SIGNALS (MongoEngine automation)
