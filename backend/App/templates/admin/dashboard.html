@@ -220,9 +220,6 @@
 
 {% block tail_js %}
 <script>
-/* ================================================================
-   PALETTE CONSTANTS
-================================================================ */
 const C = {
     blue  : ['#378ADD','#B5D4F4','#185FA5','#E6F1FB','#0C447C'],
     teal  : ['#1D9E75','#9FE1CB','#0F6E56','#E1F5EE','#085041'],
@@ -233,86 +230,93 @@ const C = {
     pink  : ['#D4537E','#F4C0D1','#993556','#FBEAF0','#72243E'],
     gray  : ['#888780','#D3D1C7','#5F5E5A','#F1EFE8','#444441'],
 };
-const PAL     = [C.blue[0],C.teal[0],C.amber[0],C.purple[0],C.coral[0],C.green[0],C.pink[0]];
-const PAL_LT  = [C.blue[3],C.teal[3],C.amber[3],C.purple[3],C.coral[3],C.green[3],C.pink[3]];
 
 /* ================================================================
-   STATE
+   CACHE — يحفظ نتائج كل profile حُمّل مسبقاً
 ================================================================ */
-let _charts  = {};                 // Active Chart.js instances — destroyed on profile change
-let _profiles = [];                // Cached profile list
+const _cache    = {};                                          // { profileId: { profile, skills, goals } }
+let   _charts   = {};                                         // Active Chart.js instances
+let   _profiles = [];                                         // Profile list
 
 /* ================================================================
    UTILS
 ================================================================ */
-const $  = id => document.getElementById(id);          // Shorthand querySelector by id
-const rnd = v  => Math.round(parseFloat(v) || 0);       // Safe round
+const $    = id => document.getElementById(id);
+const rnd  = v  => Math.round(parseFloat(v) || 0);
 
-// Destroy all active Chart.js instances before re-rendering
 function destroyCharts() {
     Object.values(_charts).forEach(c => { try { c.destroy(); } catch(e){} });
     _charts = {};
 }
 
-// Generic JSON fetch with error propagation
 async function api(url) {
     const r = await fetch(url);
-    if (!r.ok) throw new Error(`HTTP ${r.status} — ${url}`);
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
     return r.json();
 }
 
-// Build a legend row of color swatches + labels
-function buildLegend(items) {  // items = [{color, label}]
+function buildLegend(items) {
     return `<div class="chart-legend">` +
-        items.map(i => `
-            <div class="chart-legend-item">
-                <span class="legend-swatch" style="background:${i.color}"></span>
-                ${i.label}
-            </div>`).join('') +
+        items.map(i => `<div class="chart-legend-item"><span class="legend-swatch" style="background:${i.color}"></span>${i.label}</div>`).join('') +
     `</div>`;
 }
 
-// Map a score to a color (teal=excellent, blue=good, amber=growing, coral=learning)
-function scoreColor(v) {
-    return v >= 80 ? C.teal[0] : v >= 60 ? C.blue[0] : v >= 40 ? C.amber[0] : C.coral[0];
-}
-function scoreColorLight(v) {
-    return v >= 80 ? C.teal[3] : v >= 60 ? C.blue[3] : v >= 40 ? C.amber[3] : C.coral[3];
-}
+function scoreColor(v)      { return v>=80?C.teal[0]:v>=60?C.blue[0]:v>=40?C.amber[0]:C.coral[0]; }
+function scoreColorLight(v) { return v>=80?C.teal[3]:v>=60?C.blue[3]:v>=40?C.amber[3]:C.coral[3]; }
 
-// Status badge styles
-const STATUS_STYLE = {
-    'Achieved'   : `background:${C.teal[3]};color:${C.teal[2]}`,
-    'In Progress': `background:${C.blue[3]};color:${C.blue[2]}`,
-    'Planned'    : `background:${C.amber[3]};color:${C.amber[1]}`,
-    'Paused'     : `background:${C.gray[3]};color:${C.gray[0]}`,
+const STATUS_STYLE   = {
+    'Achieved'   :`background:${C.teal[3]};color:${C.teal[2]}`,
+    'In Progress':`background:${C.blue[3]};color:${C.blue[2]}`,
+    'Planned'    :`background:${C.amber[3]};color:${C.amber[1]}`,
+    'Paused'     :`background:${C.gray[3]};color:${C.gray[0]}`,
 };
 const PRIORITY_STYLE = {
-    'Critical': `background:${C.coral[3]};color:${C.coral[2]}`,
-    'High'    : `background:${C.amber[3]};color:${C.amber[1]}`,
-    'Medium'  : `background:${C.blue[3]};color:${C.blue[2]}`,
-    'Low'     : `background:${C.gray[3]};color:${C.gray[0]}`,
+    'Critical':`background:${C.coral[3]};color:${C.coral[2]}`,
+    'High'    :`background:${C.amber[3]};color:${C.amber[1]}`,
+    'Medium'  :`background:${C.blue[3]};color:${C.blue[2]}`,
+    'Low'     :`background:${C.gray[3]};color:${C.gray[0]}`,
 };
 
-/* ================================================================
-   SKILL CATEGORIZER (client-side fallback)
-================================================================ */
 const CAT_KW = {
-    'Backend'  : ['python','flask','django','fastapi','node','express','go','rust','java','spring','php','laravel','ruby','rails','c#','.net'],
-    'Frontend' : ['react','vue','angular','javascript','typescript','css','html','svelte','next','nuxt','tailwind','bootstrap','sass'],
-    'DevOps'   : ['docker','kubernetes','linux','aws','gcp','azure','ci','cd','terraform','ansible','nginx','jenkins','git','bash','shell'],
-    'Database' : ['mongodb','postgresql','postgres','mysql','redis','sqlite','firebase','elasticsearch','cassandra','dynamo'],
+    'Backend' :['python','flask','django','fastapi','node','express','go','rust','java','spring','php','laravel','ruby','rails','c#','.net'],
+    'Frontend':['react','vue','angular','javascript','typescript','css','html','svelte','next','nuxt','tailwind','bootstrap','sass'],
+    'DevOps'  :['docker','kubernetes','linux','aws','gcp','azure','ci','cd','terraform','ansible','nginx','jenkins','git','bash','shell'],
+    'Database':['mongodb','postgresql','postgres','mysql','redis','sqlite','firebase','elasticsearch','cassandra','dynamo'],
 };
-function categorize(skillName) {
-    const n = skillName.toLowerCase();
-    for (const [cat, kws] of Object.entries(CAT_KW)) {
-        if (kws.some(k => n.includes(k))) return cat;
-    }
+function categorize(n) {
+    n = n.toLowerCase();
+    for (const [cat,kws] of Object.entries(CAT_KW)) if (kws.some(k=>n.includes(k))) return cat;
     return 'Other';
 }
 
 /* ================================================================
-   BOOTSTRAP — load profiles on page load
+   SKELETON — يظهر فوراً قبل ما تجي البيانات
+================================================================ */
+function showSkeleton() {
+    const pulse = `
+        background: linear-gradient(90deg,#f1f5f9 25%,#e2e8f0 50%,#f1f5f9 75%);
+        background-size: 200% 100%;
+        animation: shimmer 1.2s infinite;
+        border-radius: 8px;
+    `;
+    $('dashContent').innerHTML = `
+    <style>
+        @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+    </style>
+    <div class="metrics-row">
+        ${'<div class="metric-card"><div style="height:36px;margin-bottom:12px;'+pulse+'"></div><div style="height:12px;width:60%;margin-bottom:8px;'+pulse+'"></div><div style="height:28px;width:50%;'+pulse+'"></div></div>'.repeat(6)}
+    </div>
+    <div class="charts-grid-2">
+        <div class="chart-card"><div style="height:260px;${pulse}"></div></div>
+        <div class="chart-card"><div style="height:260px;${pulse}"></div></div>
+    </div>
+    <div class="charts-grid-3">
+        ${'<div class="chart-card"><div style="height:200px;'+pulse+'"></div></div>'.repeat(3)}
+    </div>`;
+}
+
+/* ================================================================
+   BOOTSTRAP
 ================================================================ */
 async function init() {
     try {
@@ -320,36 +324,64 @@ async function init() {
         _profiles  = data.profiles || [];
 
         if (!_profiles.length) {
-            $('dashContent').innerHTML = `<div class="state-error"><i class="fas fa-exclamation-circle mr-2"></i>No profiles found in the database.</div>`;
+            $('dashContent').innerHTML = `<div class="state-error"><i class="fas fa-exclamation-circle mr-2"></i>No profiles found.</div>`;
             return;
         }
 
-        // Populate dropdown
         const sel = $('profileSelect');
-        sel.innerHTML = _profiles.map(p =>
-            `<option value="${p.id}">${p.full_name}</option>`
-        ).join('');
+        sel.innerHTML = _profiles.map(p=>`<option value="${p.id}">${p.full_name}</option>`).join('');
 
-        // Load first profile automatically
+        // بدء تحميل الـ profile الأول
         loadProfile(_profiles[0].id);
 
+        // pre-fetch باقي الـ profiles في الخلفية بدون انتظار
+        _profiles.slice(1).forEach(p => prefetchProfile(p.id));
+
     } catch(e) {
-        $('dashContent').innerHTML = `<div class="state-error"><i class="fas fa-exclamation-circle mr-2"></i>Failed to load profiles: ${e.message}</div>`;
+        $('dashContent').innerHTML = `<div class="state-error"><i class="fas fa-exclamation-circle mr-2"></i>${e.message}</div>`;
     }
 }
 
 /* ================================================================
-   PROFILE LOADER — called on dropdown change
+   PRE-FETCH — يحمّل بيانات profile في الخلفية ويحفظها في الـ cache
+================================================================ */
+async function prefetchProfile(profileId) {
+    if (_cache[profileId]) return;                             // Already cached — skip
+    try {
+        const [profileData, skillsData, goalsData] = await Promise.all([
+            api(`/api/profile/${profileId}`),
+            api(`/api/profile-skills?profile_id=${profileId}`),
+            api(`/api/goals-dashboard?profile_id=${profileId}`),
+        ]);
+        _cache[profileId] = {                                  // Save to cache
+            profile: profileData,
+            skills : skillsData.skills  || [],
+            goals  : goalsData.goals    || [],
+        };
+    } catch(e) { /* silent — will retry on demand */ }
+}
+
+/* ================================================================
+   PROFILE LOADER
 ================================================================ */
 async function loadProfile(profileId) {
     if (!profileId) return;
 
-    // Show spinner
-    $('dashContent').innerHTML = `<div class="state-loading"><div class="spinner"></div><span>Loading analytics...</span></div>`;
+    // إذا البيانات موجودة في الـ cache → رسم فوري بدون loading
+    if (_cache[profileId]) {
+        destroyCharts();
+        const { profile, skills, goals } = _cache[profileId];
+        updateTopBar(profile);
+        renderDashboard(profile, skills, goals);
+        return;
+    }
+
+    // أول مرة → skeleton أسرع من spinner
+    showSkeleton();
     destroyCharts();
 
     try {
-        // Fire all 3 API calls in parallel — faster than sequential
+        // الـ 3 calls بالتوازي كما كان — لكن بعد الـ skeleton يظهر فوراً
         const [profileData, skillsData, goalsData] = await Promise.all([
             api(`/api/profile/${profileId}`),
             api(`/api/profile-skills?profile_id=${profileId}`),
@@ -360,28 +392,27 @@ async function loadProfile(profileId) {
         const skills  = skillsData.skills || [];
         const goals   = goalsData.goals   || [];
 
-        // Update subtitle and avatar
-        updateTopBar(profile);
+        // حفظ في الـ cache للمرة القادمة
+        _cache[profileId] = { profile, skills, goals };
 
-        // Render full dashboard
+        updateTopBar(profile);
         renderDashboard(profile, skills, goals);
 
     } catch(e) {
-        $('dashContent').innerHTML = `<div class="state-error"><i class="fas fa-exclamation-circle mr-2"></i>Error loading dashboard: ${e.message}</div>`;
+        $('dashContent').innerHTML = `<div class="state-error"><i class="fas fa-exclamation-circle mr-2"></i>${e.message}</div>`;
     }
 }
 
 /* ================================================================
-   UPDATE TOP BAR
+   TOP BAR
 ================================================================ */
 function updateTopBar(profile) {
-    $('profileSubtitle').textContent = `${profile.title || 'Developer'} · ${profile.experience_years}y experience · ${profile.overall_score}% overall score`;
-
+    $('profileSubtitle').textContent = `${profile.title||'Developer'} · ${profile.experience_years}y experience · ${profile.overall_score}% overall score`;
     const wrap = $('avatarWrap');
     if (profile.primary_avatar) {
         wrap.innerHTML = `<img src="${profile.primary_avatar}" class="avatar-sm" alt="${profile.full_name}">`;
     } else {
-        const initials = (profile.full_name || 'U').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+        const initials = (profile.full_name||'U').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
         wrap.innerHTML = `<div class="avatar-initials">${initials}</div>`;
     }
 }
@@ -390,12 +421,11 @@ function updateTopBar(profile) {
    MAIN RENDER
 ================================================================ */
 function renderDashboard(profile, skills, goals) {
-    const counts  = profile.model_counts || {};
-    const avgSkill = skills.length ? rnd(skills.reduce((a,s)=>a+s.score,0)/skills.length) : 0;
+    const counts        = profile.model_counts || {};
+    const avgSkill      = skills.length ? rnd(skills.reduce((a,s)=>a+s.score,0)/skills.length) : 0;
     const goalsAchieved = goals.filter(g=>g.status==='Achieved'||g.progress_pct>=100).length;
-    const topSkills = [...skills].sort((a,b)=>b.score-a.score).slice(0,12);
+    const topSkills     = [...skills].sort((a,b)=>b.score-a.score).slice(0,12);
 
-    // Group skills by category for radar chart
     const catMap = {};
     skills.forEach(s => {
         const cat = s.skill_type || categorize(s.skill_name);
@@ -403,212 +433,159 @@ function renderDashboard(profile, skills, goals) {
         catMap[cat].push(s.score);
     });
     const catLabels = Object.keys(catMap).filter(c=>catMap[c].length>0);
-    const catAvgs   = catLabels.map(c => rnd(catMap[c].reduce((a,v)=>a+v,0)/catMap[c].length));
+    const catAvgs   = catLabels.map(c=>rnd(catMap[c].reduce((a,v)=>a+v,0)/catMap[c].length));
 
-    // Score distribution bands
-    const bands     = ['0–20','21–40','41–60','61–80','81–100'];
-    const bandRanges= [[0,20],[21,40],[41,60],[61,80],[81,100]];
-    const bandCounts= bandRanges.map(([lo,hi])=>skills.filter(s=>s.score>=lo&&s.score<=hi).length);
+    const bands      = ['0–20','21–40','41–60','61–80','81–100'];
+    const bandRanges = [[0,20],[21,40],[41,60],[61,80],[81,100]];
+    const bandCounts = bandRanges.map(([lo,hi])=>skills.filter(s=>s.score>=lo&&s.score<=hi).length);
 
-    // Priority counts
     const priLabels  = ['Critical','High','Medium','Low'];
     const priCounts  = priLabels.map(l=>goals.filter(g=>g.priority===l).length);
     const priColors  = [C.coral[0],C.amber[0],C.blue[0],C.gray[0]];
 
-    // Status counts
     const statLabels = ['Achieved','In Progress','Planned','Paused'];
     const statCounts = statLabels.map(l=>goals.filter(g=>g.status===l).length);
     const statColors = [C.teal[0],C.blue[0],C.amber[0],C.gray[0]];
 
-    // Year grouped goals
-    const years     = [...new Set(goals.map(g=>g.target_year).filter(Boolean))].sort();
-    const yearAvgs  = years.map(y => {
+    const years    = [...new Set(goals.map(g=>g.target_year).filter(Boolean))].sort();
+    const yearAvgs = years.map(y=>{
         const yg = goals.filter(g=>g.target_year===y);
         return yg.length ? rnd(yg.reduce((a,g)=>a+g.progress_pct,0)/yg.length) : 0;
     });
 
-    // ── WRITE HTML ──
     $('dashContent').innerHTML = `
-
-    <!-- METRIC CARDS -->
     <div class="metrics-row">
         <div class="metric-card">
-            <div class="metric-icon" style="background:${C.blue[3]}">
-                <i class="fas fa-clock" style="color:${C.blue[0]}"></i>
-            </div>
+            <div class="metric-icon" style="background:${C.blue[3]}"><i class="fas fa-clock" style="color:${C.blue[0]}"></i></div>
             <div class="metric-label">Experience</div>
             <div class="metric-value">${profile.experience_years}<span class="metric-unit">y</span></div>
             <div class="metric-sub">weighted years</div>
         </div>
         <div class="metric-card">
-            <div class="metric-icon" style="background:${C.teal[3]}">
-                <i class="fas fa-chart-line" style="color:${C.teal[0]}"></i>
-            </div>
+            <div class="metric-icon" style="background:${C.teal[3]}"><i class="fas fa-chart-line" style="color:${C.teal[0]}"></i></div>
             <div class="metric-label">Overall Score</div>
             <div class="metric-value">${rnd(profile.overall_score)}<span class="metric-unit">%</span></div>
             <div class="metric-sub">skills + goals blend</div>
         </div>
         <div class="metric-card">
-            <div class="metric-icon" style="background:${C.purple[3]}">
-                <i class="fas fa-microchip" style="color:${C.purple[0]}"></i>
-            </div>
+            <div class="metric-icon" style="background:${C.purple[3]}"><i class="fas fa-microchip" style="color:${C.purple[0]}"></i></div>
             <div class="metric-label">Avg Skill Score</div>
             <div class="metric-value">${avgSkill}<span class="metric-unit">%</span></div>
             <div class="metric-sub">across ${skills.length} skills</div>
         </div>
         <div class="metric-card">
-            <div class="metric-icon" style="background:${C.amber[3]}">
-                <i class="fas fa-map-signs" style="color:${C.amber[0]}"></i>
-            </div>
+            <div class="metric-icon" style="background:${C.amber[3]}"><i class="fas fa-map-signs" style="color:${C.amber[0]}"></i></div>
             <div class="metric-label">Goals Progress</div>
             <div class="metric-value">${goalsAchieved}<span class="metric-unit">/${goals.length}</span></div>
             <div class="metric-sub">achieved</div>
         </div>
         <div class="metric-card">
-            <div class="metric-icon" style="background:${C.coral[3]}">
-                <i class="fas fa-briefcase" style="color:${C.coral[0]}"></i>
-            </div>
+            <div class="metric-icon" style="background:${C.coral[3]}"><i class="fas fa-briefcase" style="color:${C.coral[0]}"></i></div>
             <div class="metric-label">Active Goals</div>
             <div class="metric-value">${goals.filter(g=>g.status==='In Progress').length}</div>
             <div class="metric-sub">in progress</div>
         </div>
         <div class="metric-card">
-            <div class="metric-icon" style="background:${C.green[3]}">
-                <i class="fas fa-user-check" style="color:${C.green[0]}"></i>
-            </div>
+            <div class="metric-icon" style="background:${C.green[3]}"><i class="fas fa-user-check" style="color:${C.green[0]}"></i></div>
             <div class="metric-label">For Hire</div>
             <div class="metric-value" style="font-size:14px;margin-top:4px">
                 <span class="avail-badge ${profile.is_available?'avail-yes':'avail-no'}">
-                    <span class="dot"></span>
-                    ${profile.is_available ? 'Available' : 'Not Available'}
+                    <span class="dot"></span>${profile.is_available?'Available':'Not Available'}
                 </span>
             </div>
             <div class="metric-sub">${profile.remote_preference?'Remote preferred':''}</div>
         </div>
     </div>
 
-    <!-- ROW 1: Skills bar (wide) + Radar -->
     <div class="charts-grid-2">
-
         <div class="chart-card">
-            <div class="chart-card-header">
-                <div>
-                    <div class="chart-card-title">Skill Scores — Top 12</div>
-                    <div class="chart-card-sub">Sorted by proficiency</div>
-                </div>
-            </div>
+            <div class="chart-card-header"><div>
+                <div class="chart-card-title">Skill Scores — Top 12</div>
+                <div class="chart-card-sub">Sorted by proficiency</div>
+            </div></div>
             ${buildLegend([
-                {color:C.teal[0], label:'Excellent (80–100%)'},
-                {color:C.blue[0], label:'Good (60–79%)'},
+                {color:C.teal[0],label:'Excellent (80–100%)'},
+                {color:C.blue[0],label:'Good (60–79%)'},
                 {color:C.amber[0],label:'Growing (40–59%)'},
                 {color:C.coral[0],label:'Learning (0–39%)'},
             ])}
             <div id="cSkillRings" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:10px;padding:4px 0;"></div>
-
         </div>
-
         <div class="chart-card">
-            <div class="chart-card-header">
-                <div>
-                    <div class="chart-card-title">Skills by Category</div>
-                    <div class="chart-card-sub">Average score per domain</div>
-                </div>
-            </div>
+            <div class="chart-card-header"><div>
+                <div class="chart-card-title">Skills by Category</div>
+                <div class="chart-card-sub">Average score per domain</div>
+            </div></div>
             <div class="chart-canvas-wrap" style="height:280px">
                 <canvas id="cRadar" role="img" aria-label="Radar chart of average skill score by category"></canvas>
             </div>
         </div>
-
     </div>
 
-    <!-- ROW 2: Distribution + Priority donut + Status donut -->
     <div class="charts-grid-3">
-
         <div class="chart-card">
-            <div class="chart-card-header">
-                <div>
-                    <div class="chart-card-title">Score Distribution</div>
-                    <div class="chart-card-sub">How skills spread across bands</div>
-                </div>
-            </div>
+            <div class="chart-card-header"><div>
+                <div class="chart-card-title">Score Distribution</div>
+                <div class="chart-card-sub">How skills spread across bands</div>
+            </div></div>
             <div class="chart-canvas-wrap" style="height:220px">
                 <canvas id="cDist" role="img" aria-label="Bar chart of skill score distribution"></canvas>
             </div>
         </div>
-
         <div class="chart-card">
-            <div class="chart-card-header">
-                <div>
-                    <div class="chart-card-title">Goal Priority</div>
-                    <div class="chart-card-sub">Breakdown by importance</div>
-                </div>
-            </div>
+            <div class="chart-card-header"><div>
+                <div class="chart-card-title">Goal Priority</div>
+                <div class="chart-card-sub">Breakdown by importance</div>
+            </div></div>
             ${buildLegend(priLabels.map((l,i)=>({color:priColors[i],label:`${l} (${priCounts[i]})`})))}
             <div class="chart-canvas-wrap" style="height:200px">
                 <canvas id="cPriority" role="img" aria-label="Donut chart of goal priority breakdown"></canvas>
             </div>
         </div>
-
         <div class="chart-card">
-            <div class="chart-card-header">
-                <div>
-                    <div class="chart-card-title">Goal Status</div>
-                    <div class="chart-card-sub">Progress toward completion</div>
-                </div>
-            </div>
+            <div class="chart-card-header"><div>
+                <div class="chart-card-title">Goal Status</div>
+                <div class="chart-card-sub">Progress toward completion</div>
+            </div></div>
             ${buildLegend(statLabels.map((l,i)=>({color:statColors[i],label:`${l} (${statCounts[i]})`})))}
             <div class="chart-canvas-wrap" style="height:200px">
                 <canvas id="cStatus" role="img" aria-label="Donut chart of goal status breakdown"></canvas>
             </div>
         </div>
-
     </div>
 
-    <!-- ROW 3: Year chart + Model counts -->
     <div class="charts-grid-2">
-
         <div class="chart-card">
-            <div class="chart-card-header">
-                <div>
-                    <div class="chart-card-title">Goal Progress by Year</div>
-                    <div class="chart-card-sub">Average completion rate per target year</div>
-                </div>
-            </div>
+            <div class="chart-card-header"><div>
+                <div class="chart-card-title">Goal Progress by Year</div>
+                <div class="chart-card-sub">Average completion rate per target year</div>
+            </div></div>
             <div class="chart-canvas-wrap" style="height:220px">
                 <canvas id="cYear" role="img" aria-label="Bar chart of average goal progress by target year"></canvas>
             </div>
         </div>
-
         <div class="chart-card">
-            <div class="chart-card-header">
-                <div>
-                    <div class="chart-card-title">Portfolio Records</div>
-                    <div class="chart-card-sub">Total documents per model</div>
-                </div>
-            </div>
+            <div class="chart-card-header"><div>
+                <div class="chart-card-title">Portfolio Records</div>
+                <div class="chart-card-sub">Total documents per model</div>
+            </div></div>
             <div class="model-counts-grid" id="modelCountsGrid"></div>
         </div>
-
     </div>
 
-    <!-- ROW 4: Full-width goal roadmap -->
     <div class="chart-card full-width">
-        <div class="chart-card-header">
-            <div>
-                <div class="chart-card-title"><i class="fas fa-road mr-2 text-primary"></i>Career Roadmap</div>
-                <div class="chart-card-sub">All goals with detailed progress</div>
-            </div>
-        </div>
+        <div class="chart-card-header"><div>
+            <div class="chart-card-title"><i class="fas fa-road mr-2 text-primary"></i>Career Roadmap</div>
+            <div class="chart-card-sub">All goals with detailed progress</div>
+        </div></div>
         <div class="goal-list" id="goalListSection"></div>
-    </div>
+    </div>`;
 
-    `;
-
-    // ── RENDER CHARTS & SECTIONS ──
+    // رسم الـ charts بعد الـ DOM بـ frame واحد
     requestAnimationFrame(() => {
-        buildSkillBar(topSkills);
+        buildSkillRings(topSkills);
         buildRadar(catLabels, catAvgs);
-        buildDistribution(bands, bandCounts, bandRanges);
+        buildDistribution(bands, bandCounts);
         buildDonut('cPriority', priLabels, priCounts, priColors);
         buildDonut('cStatus',   statLabels, statCounts, statColors);
         buildYearBar(years, yearAvgs);
@@ -620,213 +597,104 @@ function renderDashboard(profile, skills, goals) {
 /* ================================================================
    CHART BUILDERS
 ================================================================ */
-
-// Horizontal bar — top skills
-function buildSkillBar(skills) {
+function buildSkillRings(skills) {
     const container = $('cSkillRings');
-    if (!container) return;                                    // Guard: element must exist
-
-    container.innerHTML = '';                                  // Clear previous render
-
-    skills.forEach(s => {
-        const r     = 28;                                      // Circle radius in px
-        const circ  = 2 * Math.PI * r;                        // Full circumference
-        const dash  = (s.score / 100) * circ;                 // Filled arc length
-        const gap   = circ - dash;                            // Empty arc length
-        const c     = scoreColor(s.score);                    // Stroke color based on score
-        const cl    = scoreColorLight(s.score);               // Light fill for background ring
-
-        // Resolve skill type label — fallback to categorize() if not provided
+    if (!container) return;
+    container.innerHTML = skills.map(s => {
+        const r    = 28, circ = 2*Math.PI*r;
+        const dash = (s.score/100)*circ, gap = circ-dash;
+        const c = scoreColor(s.score), cl = scoreColorLight(s.score);
         const cat = s.skill_type || categorize(s.skill_name);
-
-        container.innerHTML += `
-        <div style="
-            background: var(--color-background-primary);
-            border: 0.5px solid var(--color-border-tertiary);
-            border-radius: var(--border-radius-lg);
-            padding: 14px 8px 12px;
-            text-align: center;
-        ">
-            <div style="width:70px;height:70px;margin:0 auto 10px;position:relative;">
-                <svg width="70" height="70" viewBox="0 0 70 70" role="img" aria-label="${s.skill_name} score ${s.score}%">
-                    <circle cx="35" cy="35" r="${r}"
-                        fill="none"
-                        stroke="${cl}"
-                        stroke-width="6"/>
-                    <circle cx="35" cy="35" r="${r}"
-                        fill="none"
-                        stroke="${c}"
-                        stroke-width="6"
+        return `
+        <div style="background:#fff;border:0.5px solid #e2e8f0;border-radius:12px;padding:14px 8px 12px;text-align:center;">
+            <div style="width:70px;height:70px;margin:0 auto 10px;">
+                <svg width="70" height="70" viewBox="0 0 70 70">
+                    <circle cx="35" cy="35" r="${r}" fill="none" stroke="${cl}" stroke-width="6"/>
+                    <circle cx="35" cy="35" r="${r}" fill="none" stroke="${c}" stroke-width="6"
                         stroke-dasharray="${dash.toFixed(1)} ${gap.toFixed(1)}"
-                        stroke-linecap="round"
-                        transform="rotate(-90 35 35)"/>
-                    <text x="35" y="39"
-                        text-anchor="middle"
-                        font-size="13"
-                        font-weight="500"
-                        fill="${c}">${rnd(s.score)}</text>
+                        stroke-linecap="round" transform="rotate(-90 35 35)"/>
+                    <text x="35" y="39" text-anchor="middle" font-size="13" font-weight="500" fill="${c}">${rnd(s.score)}</text>
                 </svg>
             </div>
-            <div style="font-size:12px;font-weight:500;color:var(--color-text-primary);margin-bottom:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${s.skill_name}</div>
-            <div style="font-size:10px;color:var(--color-text-tertiary);">${cat}</div>
+            <div style="font-size:12px;font-weight:500;color:#0f172a;margin-bottom:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${s.skill_name}</div>
+            <div style="font-size:10px;color:#94a3b8;">${cat}</div>
         </div>`;
-    });
+    }).join('');                                               // join أسرع من += في الـ loop
 }
-// Radar — category averages
+
 function buildRadar(labels, values) {
     _charts.radar = new Chart($('cRadar'), {
-        type: 'radar',
-        data: {
-            labels,
-            datasets: [{
-                label          : 'Avg Score',
-                data           : values,
-                backgroundColor: C.blue[3] + 'aa',
-                borderColor    : C.blue[0],
-                borderWidth    : 2,
-                pointBackgroundColor: C.blue[0],
-                pointRadius    : 4,
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend : { display: false },
-                tooltip: { callbacks: { label: ctx => ` ${rnd(ctx.parsed.r)}%` } }
-            },
-            scales: { r: { min:0, max:100, ticks:{stepSize:25,font:{size:10}}, pointLabels:{font:{size:12}} } }
-        }
+        type:'radar',
+        data:{ labels, datasets:[{ label:'Avg Score', data:values,
+            backgroundColor:C.blue[3]+'aa', borderColor:C.blue[0],
+            borderWidth:2, pointBackgroundColor:C.blue[0], pointRadius:4 }] },
+        options:{ responsive:true, maintainAspectRatio:false,
+            plugins:{ legend:{display:false}, tooltip:{callbacks:{label:ctx=>` ${rnd(ctx.parsed.r)}%`}} },
+            scales:{ r:{ min:0, max:100, ticks:{stepSize:25,font:{size:10}}, pointLabels:{font:{size:12}} } } }
     });
 }
 
-// Score distribution bars
-function buildDistribution(labels, counts, ranges) {
+function buildDistribution(labels, counts) {
     const bColors  = [C.coral[3],C.amber[3],C.amber[1],C.blue[3],C.teal[3]];
     const bBorders = [C.coral[0],C.amber[0],C.amber[0],C.blue[0],C.teal[0]];
-
     _charts.dist = new Chart($('cDist'), {
-        type: 'bar',
-        data: {
-            labels,
-            datasets: [{
-                label: 'Skills',
-                data : counts,
-                backgroundColor: bColors,
-                borderColor    : bBorders,
-                borderWidth    : 1.5,
-                borderRadius   : 5,
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend : { display: false },
-                tooltip: { callbacks: { label: ctx => ` ${ctx.parsed.y} skill${ctx.parsed.y!==1?'s':''}` } }
-            },
-            scales: {
-                x: { ticks:{font:{size:11}}, grid:{display:false} },
-                y: { min:0, ticks:{stepSize:1,font:{size:11}}, grid:{color:'rgba(0,0,0,0.04)'} }
-            }
-        }
+        type:'bar',
+        data:{ labels, datasets:[{ label:'Skills', data:counts,
+            backgroundColor:bColors, borderColor:bBorders, borderWidth:1.5, borderRadius:5 }] },
+        options:{ responsive:true, maintainAspectRatio:false,
+            plugins:{ legend:{display:false}, tooltip:{callbacks:{label:ctx=>` ${ctx.parsed.y} skill${ctx.parsed.y!==1?'s':''}`}} },
+            scales:{ x:{ticks:{font:{size:11}},grid:{display:false}},
+                     y:{min:0,ticks:{stepSize:1,font:{size:11}},grid:{color:'rgba(0,0,0,0.04)'}} } }
     });
 }
 
-// Generic donut chart
-function buildDonut(canvasId, labels, data, colors) {
-    _charts[canvasId] = new Chart($(canvasId), {
-        type: 'doughnut',
-        data: {
-            labels,
-            datasets: [{
-                data,
-                backgroundColor: colors,
-                borderWidth    : 2,
-                borderColor    : '#fff',
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            cutout: '65%',
-            plugins: {
-                legend : { display: false },
-                tooltip: { callbacks: { label: ctx => ` ${ctx.label}: ${ctx.parsed}` } }
-            }
-        }
+function buildDonut(id, labels, data, colors) {
+    _charts[id] = new Chart($(id), {
+        type:'doughnut',
+        data:{ labels, datasets:[{ data, backgroundColor:colors, borderWidth:2, borderColor:'#fff' }] },
+        options:{ responsive:true, maintainAspectRatio:false, cutout:'65%',
+            plugins:{ legend:{display:false}, tooltip:{callbacks:{label:ctx=>` ${ctx.label}: ${ctx.parsed}`}} } }
     });
 }
 
-// Goals progress by year
 function buildYearBar(years, avgs) {
     _charts.year = new Chart($('cYear'), {
-        type: 'bar',
-        data: {
-            labels: years.map(String),
-            datasets: [{
-                label          : 'Avg Progress %',
-                data           : avgs,
-                backgroundColor: C.purple[3],
-                borderColor    : C.purple[0],
-                borderWidth    : 1.5,
-                borderRadius   : 5,
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend : { display: false },
-                tooltip: { callbacks: { label: ctx => ` ${rnd(ctx.parsed.y)}% avg progress` } }
-            },
-            scales: {
-                x: { ticks:{font:{size:11}}, grid:{display:false} },
-                y: { min:0, max:100, ticks:{callback:v=>`${v}%`,font:{size:11}}, grid:{color:'rgba(0,0,0,0.04)'} }
-            }
-        }
+        type:'bar',
+        data:{ labels:years.map(String), datasets:[{ label:'Avg Progress %', data:avgs,
+            backgroundColor:C.purple[3], borderColor:C.purple[0], borderWidth:1.5, borderRadius:5 }] },
+        options:{ responsive:true, maintainAspectRatio:false,
+            plugins:{ legend:{display:false}, tooltip:{callbacks:{label:ctx=>` ${rnd(ctx.parsed.y)}% avg progress`}} },
+            scales:{ x:{ticks:{font:{size:11}},grid:{display:false}},
+                     y:{min:0,max:100,ticks:{callback:v=>`${v}%`,font:{size:11}},grid:{color:'rgba(0,0,0,0.04)'}} } }
     });
 }
 
-/* ================================================================
-   MODEL COUNTS SECTION
-================================================================ */
 const MODEL_META = {
-    skills      : { icon:'fas fa-microchip',     label:'Skills'      },
-    goals       : { icon:'fas fa-map-signs',      label:'Goals'       },
-    experience  : { icon:'fas fa-briefcase',      label:'Experience'  },
-    courses     : { icon:'fas fa-certificate',    label:'Courses'     },
-    projects    : { icon:'fas fa-project-diagram',label:'Projects'    },
-    education   : { icon:'fas fa-graduation-cap', label:'Education'   },
-    self_study  : { icon:'fas fa-book-reader',    label:'Self Study'  },
-    achievements: { icon:'fas fa-trophy',         label:'Achievements'},
+    skills      :{ icon:'fas fa-microchip',      label:'Skills'      },
+    goals       :{ icon:'fas fa-map-signs',       label:'Goals'       },
+    experience  :{ icon:'fas fa-briefcase',       label:'Experience'  },
+    courses     :{ icon:'fas fa-certificate',     label:'Courses'     },
+    projects    :{ icon:'fas fa-project-diagram', label:'Projects'    },
+    education   :{ icon:'fas fa-graduation-cap',  label:'Education'   },
+    self_study  :{ icon:'fas fa-book-reader',     label:'Self Study'  },
+    achievements:{ icon:'fas fa-trophy',          label:'Achievements'},
 };
 
 function buildModelCounts(counts) {
-    const grid = $('modelCountsGrid');
-    grid.innerHTML = Object.entries(MODEL_META).map(([key, meta]) => `
+    $('modelCountsGrid').innerHTML = Object.entries(MODEL_META).map(([key,meta])=>`
         <div class="model-count-item">
             <div class="mc-icon"><i class="${meta.icon}"></i></div>
-            <div class="mc-val">${rnd(counts[key] || 0)}</div>
+            <div class="mc-val">${rnd(counts[key]||0)}</div>
             <div class="mc-lbl">${meta.label}</div>
-        </div>
-    `).join('');
+        </div>`).join('');
 }
 
-/* ================================================================
-   GOAL LIST SECTION
-================================================================ */
 function buildGoalList(goals) {
     const sec = $('goalListSection');
-    if (!goals.length) {
-        sec.innerHTML = '<p style="color:#94a3b8;font-size:13px;padding:12px 0">No goals found for this profile.</p>';
-        return;
-    }
-
+    if (!goals.length) { sec.innerHTML='<p style="color:#94a3b8;font-size:13px;padding:12px 0">No goals found.</p>'; return; }
     sec.innerHTML = goals.map(g => {
-        const pct      = rnd(g.progress_pct);
-        const barColor = pct >= 80 ? C.teal[0] : pct >= 50 ? C.blue[0] : C.amber[0];
-
+        const pct = rnd(g.progress_pct);
+        const bc  = pct>=80?C.teal[0]:pct>=50?C.blue[0]:C.amber[0];
         return `
         <div class="goal-item">
             <div class="goal-header">
@@ -838,19 +706,14 @@ function buildGoalList(goals) {
                 </div>
             </div>
             <div class="goal-track">
-                <div class="goal-track-bar">
-                    <div class="goal-track-fill" style="width:${pct}%;background:${barColor}"></div>
-                </div>
-                <div class="goal-pct" style="color:${barColor}">${pct}%</div>
+                <div class="goal-track-bar"><div class="goal-track-fill" style="width:${pct}%;background:${bc}"></div></div>
+                <div class="goal-pct" style="color:${bc}">${pct}%</div>
             </div>
             <div class="goal-scores">${g.current_score} / ${g.target_score} pts toward target</div>
         </div>`;
     }).join('');
 }
 
-/* ================================================================
-   KICK OFF
-================================================================ */
 document.addEventListener('DOMContentLoaded', init);
 </script>
 {% endblock %}
