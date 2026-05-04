@@ -8,6 +8,8 @@ from App.models.education   import Education                       # Education m
 from App.models.project     import Project                         # Project model
 from App.models.self_study  import SelfStudy                       # SelfStudy model
 from App.models.achievement import Achievement                     # Achievement model
+from App.models.language import Language
+from App.models.feedback import Feedback
 import logging                                                      # Error tracking
 
 
@@ -109,9 +111,10 @@ def get_profile(profile_id):
             'projects'    : Project.objects(profile=profile).count(),        # Project records
             'education'   : Education.objects(profile=profile).count(),      # Education records
             'self_study': SelfStudy.objects(profile=profile).count(),
+            'languages': Language.objects(profile=profile).count(),
+            'feedback': Feedback.objects(profile=profile).count(),
             'achievements': Achievement.objects(profile=profile).count(),  # Achievement records
         }
-
         return jsonify({
             'id'              : str(profile.id),                       # MongoDB ObjectId as string
             'full_name'       : profile.full_name or '',               # Display name
@@ -124,6 +127,7 @@ def get_profile(profile_id):
             'primary_avatar'  : profile.primary_avatar or '',          # Avatar URL
             'model_counts'    : model_counts,                          # Related record counts
         }), 200
+
 
     except Profile.DoesNotExist:
         return jsonify({'error': 'Profile not found'}), 404
