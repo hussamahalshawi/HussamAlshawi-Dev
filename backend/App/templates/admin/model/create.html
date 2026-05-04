@@ -23,7 +23,65 @@
                 <div class="card-body p-4">
                     <form action="" method="POST" enctype="multipart/form-data" novalidate id="admin-form">
                         {{ form.hidden_tag() if form.hidden_tag }}
+                        {# ── MEDIA GALLERY VIEWER — يظهر فقط في وضع التعديل لما يكون في صور ── #}
+                        {% if form._media_galleries is defined %}
+                        {% for gallery in form._media_galleries %}
+                        <div class="form-group mb-4" id="gallery-{{ gallery.field_name }}">
+                            <label class="font-weight-bold text-muted small text-uppercase mb-2 d-block">
+                                <i class="fas fa-images text-primary mr-1"></i>
+                                {{ gallery.label }} — الصور المحفوظة ({{ gallery.urls | length }})
+                            </label>
 
+                            {# حقل مخفي يحمل الـ URLs اللي تبقت بعد الحذف #}
+                            <input type="hidden"
+                                   name="_keep_{{ gallery.field_name }}"
+                                   id="keep-{{ gallery.field_name }}"
+                                   value="{{ gallery.urls | join(',') }}">
+
+                            <div class="row" id="grid-{{ gallery.field_name }}">
+                                {% for url in gallery.urls %}
+                                <div class="col-xl-2 col-lg-3 col-md-4 col-6 mb-3 gallery-item"
+                                     data-url="{{ url }}"
+                                     data-field="{{ gallery.field_name }}">
+
+                                    <div class="card border-0 shadow-sm position-relative"
+                                         style="border-radius: 12px; overflow: hidden;">
+
+                                        {# الصورة #}
+                                        <img src="{{ url }}"
+                                             class="img-fluid"
+                                             style="height: 120px; width: 100%; object-fit: cover; cursor: pointer;"
+                                             onclick="window.open('{{ url }}', '_blank')">
+
+                                        {# زر الحذف #}
+                                        <button type="button"
+                                                class="btn btn-danger btn-sm gallery-delete-btn"
+                                                style="position: absolute; top: 5px; right: 5px;
+                                   border-radius: 50%; width: 28px; height: 28px;
+                                   padding: 0; font-size: 11px; z-index: 10;"
+                                                onclick="removeGalleryImage(this, '{{ gallery.field_name }}')">
+                                            <i class="fas fa-times"></i>
+                                        </button>
+
+                                        {# overlay لما تحزف #}
+                                        <div class="deleted-overlay d-none"
+                                             style="position: absolute; inset: 0; background: rgba(239,68,68,0.7);
+                                display: flex; align-items: center; justify-content: center;
+                                border-radius: 12px;">
+                                            <i class="fas fa-trash-alt text-white" style="font-size: 24px;"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+
+                            {# رسالة لو حزف كل الصور #}
+                            <div id="empty-{{ gallery.field_name }}" class="d-none text-center py-3 text-muted small">
+                                <i class="fas fa-image mr-1"></i> كل الصور محذوفة — سيتم حذفها عند الحفظ
+                            </div>
+                        </div>
+                        {% endfor %}
+                        {% endif %}
                         {% for field in form if field.type != 'CSRFTokenField' %}
                         <div class="form-group mb-4">
                             <label class="font-weight-bold text-muted small text-uppercase mb-2 d-block">
@@ -40,6 +98,7 @@
                             {# --- LOGIC 2: SMART FILE UPLOAD --- #}
                             {# English Comment: Modern upload interface for files and avatars #}
                             {% elif field.type in ['FileField', 'MultipleFileField'] or 'upload' in field.id %}
+
                             <div class="custom-upload-wrapper">
                                 {{ field(class="d-none dynamic-file-input", id=field.id) }}
                                 <label for="{{ field.id }}" class="modern-upload-btn">
@@ -479,6 +538,30 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
         const count = e.target.files.length;
         $(this).closest('.custom-upload-wrapper').find('.file-status-text').text(count + " Files Selected");
     });
+    // ── Gallery Image Delete ──────────────────────────────────────────────────
+function removeGalleryImage(btn, fieldName) {
+    // الحصول على الـ item الأب
+    const item     = btn.closest('.gallery-item');
+    const url      = item.dataset.url;
+    const keepInput = document.getElementById('keep-' + fieldName);
+
+    // تحديث قائمة الـ URLs المتبقية
+    const currentUrls = keepInput.value ? keepInput.value.split(',').filter(u => u) : [];
+    const newUrls     = currentUrls.filter(u => u !== url);
+    keepInput.value   = newUrls.join(',');
+
+    // إظهار الـ overlay الأحمر وإخفاء زر الحذف
+    item.querySelector('.deleted-overlay').classList.remove('d-none');
+    item.querySelector('.deleted-overlay').style.display = 'flex';
+    btn.style.display = 'none';
+
+    // تحقق لو كل الصور اتحزفت
+    const grid      = document.getElementById('grid-' + fieldName);
+    const remaining = grid.querySelectorAll('.gallery-item .gallery-delete-btn:not([style*="none"])');
+    if (remaining.length === 0) {
+        document.getElementById('empty-' + fieldName).classList.remove('d-none');
+    }
+}
 </script>
 {% endblock %}
 {% endblock %}
