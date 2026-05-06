@@ -155,6 +155,22 @@ def create_app():
     from App.routes.languages_feedback_api import languages_feedback_bp
     app.register_blueprint(languages_feedback_bp, url_prefix='/api')
 
+    from App.routes.portfolio_api              import portfolio_profile_bp
+    from App.routes.skills_api                 import skills_public_bp
+    from App.routes.experience_projects_api    import experience_projects_bp
+    from App.routes.education_courses_api      import education_courses_bp
+    from App.routes.goals_languages_api        import goals_languages_public_bp
+    from App.routes.analytics_api              import analytics_public_bp
+
+    # Then register them inside create_app() after the existing blueprint registrations:
+
+    app.register_blueprint(portfolio_profile_bp,    url_prefix='/api')
+    app.register_blueprint(skills_public_bp,        url_prefix='/api')
+    app.register_blueprint(experience_projects_bp,  url_prefix='/api')
+    app.register_blueprint(education_courses_bp,    url_prefix='/api')
+    app.register_blueprint(goals_languages_public_bp, url_prefix='/api')
+    app.register_blueprint(analytics_public_bp,     url_prefix='/api')
+
     # -------------------------------------------------------------------------
     # STEP 10: SIGNALS (MongoEngine automation)
     # -------------------------------------------------------------------------
