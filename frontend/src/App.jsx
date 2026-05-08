@@ -1,61 +1,35 @@
-/*
- * App.jsx - القلب النابض للمشروع
- * يقوم بإدارة حالة التحميل وجلب البيانات من الـ API
+/**
+ * App.jsx — Root application component
+ * Defines all client-side routes using React Router v6.
+ * Each page is a lazy-loaded or direct import to keep the bundle lean.
  */
-import { useState, useEffect } from 'react';
-import PageLoader from './components/utils/PageLoader';
-import OfflineBanner from './components/utils/OfflineBanner';
-import { API_BASE_URL, ENDPOINTS } from './utils/constants';
+import { Routes, Route }  from 'react-router-dom';            // Declarative routing primitives
+import Navbar             from './components/layout/Navbar';  // Fixed top navigation bar
+import Footer             from './components/layout/Footer';  // Bottom footer strip
+import Home               from './pages/Home';                // Main portfolio landing page
+import NotFound           from './pages/NotFound';            // 404 fallback page
 
-// ملاحظة: سنحتاج لاستيراد الأقسام (Hero, Navbar...) فور رفعها
-// import Navbar from './components/layout/Navbar'; 
-
-function App() {
-  const [data, setData] = useState(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState(null);
-
-  useEffect(() => {
-    // دالة جلب البيانات من السيرفر
-    const fetchPortfolioData = async () => {
-      try {
-        setIsLoading(true);
-        const response = await fetch(`${API_BASE_URL}${ENDPOINTS.PROFILE}`);
-        if (!response.ok) throw new Error('Failed to fetch data');
-        const result = await response.json();
-        setData(result);
-      } catch (err) {
-        setError("Unable to connect to the portfolio API. Some data might be missing.");
-        console.error("API Error:", err);
-      } finally {
-        // تأخير بسيط لإعطاء تجربة مستخدم سلسة مع الـ Loader
-        setTimeout(() => setIsLoading(false), 1200);
-      }
-    };
-
-    fetchPortfolioData();
-  }, []);
-
+/**
+ * App — the routing shell.
+ * Navbar and Footer are rendered on every route.
+ * The <Routes> block swaps the page content based on the URL.
+ */
+export default function App() {
   return (
-    <div className="app-container">
-      {/* شاشة التحميل الرئيسية */}
-      <PageLoader visible={isLoading} />
+    <>
+      {/* ── Persistent navigation ── */}
+      <Navbar />
 
-      {/* بانر حالة عدم الاتصال */}
-      {error && <OfflineBanner message={error} />}
+      {/* ── Page content area ── */}
+      <main>
+        <Routes>
+          <Route path="/"  element={<Home />} />              {/* Portfolio home page */}
+          <Route path="*"  element={<NotFound />} />          {/* Catch-all 404 route */}
+        </Routes>
+      </main>
 
-      {!isLoading && (
-        <main className="fade-in">
-          {/* هنا سيتم وضع الأقسام فور جاهزيتها */}
-          {/* <Navbar /> */}
-          <section style={{ padding: '100px 20px', textAlign: 'center' }}>
-            <h1 className="s-title">Hussam Alshawi</h1>
-            <p className="s-sub">Portfolio structure is ready. Waiting for sections...</p>
-          </section>
-        </main>
-      )}
-    </div>
+      {/* ── Persistent footer ── */}
+      <Footer />
+    </>
   );
 }
-
-export default App;

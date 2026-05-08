@@ -1,0 +1,74 @@
+/* ═══════════════════════════════════════════════════
+   Footer.css — Bottom strip styles
+   ═══════════════════════════════════════════════════ */
+
+/* ── Outer wrapper ────────────────────────────────── */
+.footer {
+  background:    var(--color-bg2);                /* Slightly lighter than page background */
+  border-top:    1px solid var(--color-border);   /* Subtle top divider */
+  padding:       2rem 3.5rem;                     /* Comfortable breathing room */
+}
+
+/* ── Inner row: socials left, copy right ─────────── */
+.footer__inner {
+  display:         flex;
+  align-items:     center;
+  justify-content: space-between;
+  flex-wrap:       wrap;                          /* Stack on mobile */
+  gap:             1rem;
+}
+
+/* ── Social links row ─────────────────────────────── */
+.footer__socials {
+  display:     flex;
+  align-items: center;
+  gap:         1.5rem;
+}
+
+/* Individual social link */
+.footer__soc-link {
+  display:         flex;
+  align-items:     center;
+  gap:             0.4rem;
+  color:           var(--color-muted);            /* Default muted colour */
+  font-size:       0.82rem;
+  font-weight:     500;
+  text-decoration: none;
+  transition:      color var(--transition-fast);
+}
+
+.footer__soc-link:hover {
+  color: var(--color-lime);                       /* Lime highlight on hover */
+}
+
+.footer__soc-icon {
+  font-size: 1rem;                                /* Slightly larger emoji icon */
+}
+
+.footer__soc-label {
+  font-size: 0.78rem;
+}
+
+/* ── Copyright text ───────────────────────────────── */
+.footer__copy {
+  font-family:    var(--font-mono);               /* Mono font for techy feel */
+  font-size:      0.72rem;
+  letter-spacing: 0.06em;
+  color:          var(--color-faint);             /* Very muted colour */
+}
+
+.footer__copy-accent {
+  color: var(--color-muted);                      /* Slightly less faint accent text */
+}
+
+/* ── Responsive ───────────────────────────────────── */
+@media (max-width: 900px) {
+  .footer {
+    padding: 1.5rem;                              /* Tighter on mobile */
+  }
+
+  .footer__inner {
+    flex-direction: column;                       /* Stack vertically */
+    align-items:    flex-start;
+  }
+}
