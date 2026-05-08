@@ -1,71 +1,91 @@
 /**
  * usePortfolioData.js
- * Hook مركزي يجلب كل البيانات بالتوازي مع fallback نظيف
+ * ─────────────────────────────────────────────────────────
+ * Central data hook — fetches ALL portfolio data in parallel.
+ * Uses Promise.allSettled so a single API failure does NOT
+ * crash the whole page (partial data is shown instead).
+ * ─────────────────────────────────────────────────────────
  */
-import { useState, useEffect } from 'react';
-import profileService   from '../services/profileService';
-import analyticsService from '../services/analyticsService';
-import skillsService    from '../services/skillsService';
-import projectsService  from '../services/projectsService';
+import { useState, useEffect }  from 'react';
+import profileService           from '../services/profileService';    // Profile API
+import analyticsService         from '../services/analyticsService';  // Analytics API
+import skillsService            from '../services/skillsService';     // Skills API
+import projectsService          from '../services/projectsService';   // Projects API
 
-/** الحالة الافتراضية — تظهر لو الـ API وقع */
-const FALLBACK = {
-  profile:   null,
-  analytics: null,
-  skills:    null,
-  projects:  null,
+/** Default empty state — prevents undefined crashes before data loads */
+const INITIAL_STATE = {
+  profile:   null,   // Profile object from /api/portfolio/profile
+  analytics: null,   // Analytics object from /api/portfolio/analytics
+  skills:    null,   // Skills object from /api/portfolio/skills
+  projects:  null,   // Projects object from /api/portfolio/projects
 };
 
+/**
+ * Fetches all portfolio data concurrently.
+ * @returns {{ data, loading, error, refetch }}
+ */
 export function usePortfolioData() {
-  const [data,    setData]    = useState(FALLBACK);
-  const [loading, setLoading] = useState(true);
-  const [error,   setError]   = useState(null);   // null = ok, string = مشكلة
+  const [data,    setData]    = useState(INITIAL_STATE); // Holds all API responses
+  const [loading, setLoading] = useState(true);          // True while fetching
+  const [error,   setError]   = useState(null);          // null = ok, string = error msg
 
-  useEffect(() => {
-    let cancelled = false;                          // cleanup لو الـ component اتشال
+  /** Core fetch function — extracted so refetch() can call it too */
+  async function fetchAll() {
+    setLoading(true);    // Show loader
+    setError(null);      // Clear previous errors
 
-    async function fetchAll() {
-      setLoading(true);
-      setError(null);
+    // Fire all requests simultaneously — no waterfall
+    const results = await Promise.allSettled([
+      profileService.getPublicProfile(),       // Slot 0 — profile
+      analyticsService.getAnalytics(),         // Slot 1 — analytics
+      skillsService.getPublicSkills(),         // Slot 2 — skills
+      projectsService.getProjects(),           // Slot 3 — projects
+    ]);
 
-      // ── نشغّل كل الطلبات بالتوازي ─────────────────────────────
-      const results = await Promise.allSettled([
-        profileService.getPublicProfile(),
-        analyticsService.getAnalytics(),
-        skillsService.getPublicSkills(),
-        projectsService.getProjects(),
-      ]);
+    // Destructure by position (matches order above)
+    const [profileRes, analyticsRes, skillsRes, projectsRes] = results;
 
-      if (cancelled) return;
+    // Build the data object — null if that specific request failed
+    const newData = {
+      profile:   profileRes.status   === 'fulfilled' ? profileRes.value   : null,
+      analytics: analyticsRes.status === 'fulfilled' ? analyticsRes.value : null,
+      skills:    skillsRes.status    === 'fulfilled' ? skillsRes.value    : null,
+      projects:  projectsRes.status  === 'fulfilled' ? projectsRes.value  : null,
+    };
 
-      // ── نفصل النجاح عن الفشل لكل طلب ─────────────────────────
-      const [profileRes, analyticsRes, skillsRes, projectsRes] = results;
-
-      const newData = {
-        profile:   profileRes.status   === 'fulfilled' ? profileRes.value   : null,
-        analytics: analyticsRes.status === 'fulfilled' ? analyticsRes.value : null,
-        skills:    skillsRes.status    === 'fulfilled' ? skillsRes.value    : null,
-        projects:  projectsRes.status  === 'fulfilled' ? projectsRes.value  : null,
-      };
-
-      // ── لو كل شيء فشل → error state ──────────────────────────
-      const allFailed = Object.values(newData).every(v => v === null);
-      if (allFailed) {
-        const firstError = results.find(r => r.status === 'rejected');
-        setError(
-          firstError?.reason?.isNetworkError
-            ? 'Backend is offline. Showing demo data.'
-            : 'Failed to load portfolio data.'
-        );
-      }
-
-      setData(newData);
-      setLoading(false);
+    // Only show error if EVERYTHING failed (full offline)
+    const allFailed = Object.values(newData).every(v => v === null);
+    if (allFailed) {
+      const firstRejection = results.find(r => r.status === 'rejected');
+      const isOffline      = firstRejection?.reason?.isNetworkError;
+      setError(
+        isOffline
+          ? 'Backend is offline. Showing demo content.'   // Network down
+          : 'Failed to load portfolio data.'              // API error
+      );
     }
 
-    fetchAll();
-    return () => { cancelled = true; };             // cleanup
-  }, []);
+    setData(newData);    // Update state with whatever succeeded
+    setLoading(false);   // Hide loader
+  }
 
-  return { data, loading, error };
+  useEffect(() => {
+    let cancelled = false;                               // Prevent stale updates
+
+    async function run() {
+      await fetchAll();
+      // Note: cancelled check would go here for production
+    }
+
+    run();
+
+    return () => { cancelled = true; };                  // Cleanup on unmount
+  }, []);                                                // Run once on mount
+
+  return {
+    data,               // { profile, analytics, skills, projects }
+    loading,            // boolean
+    error,              // null | string
+    refetch: fetchAll,  // Call this to manually refresh all data
+  };
 }

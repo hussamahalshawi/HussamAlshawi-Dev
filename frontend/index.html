@@ -8,6 +8,312 @@
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet"/>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <style>
+    /*
+ * ═══════════════════════════════════════════════════════
+ *  READABILITY PATCH — HussamAlshawi-Dev Portfolio
+ *  Apply: Add <link rel="stylesheet" href="readability-patch.css">
+ *  after the main <style> block in index.html
+ *  Author: Claude for Hussam Alshawi
+ * ═══════════════════════════════════════════════════════
+ */
+
+/* ── 1. ROOT TOKENS — brighter text & muted colors ─── */
+:root {
+  --text:  #F0F2FF;          /* Was #E8EAF2 — noticeably whiter/crisper       */
+  --muted: #9BA3C0;          /* Was #6B7280 — much easier to read on dark bg  */
+  --faint: #353A52;          /* Was #2E3347 — slightly lighter for contrast    */
+}
+
+/* ── 2. BASE FONT SIZE ───────────────────────────────── */
+html {
+  font-size: 16px;           /* Explicit base so all rem values scale cleanly */
+}
+
+body {
+  font-size: 1rem;           /* 16px base body text                           */
+  letter-spacing: 0.01em;   /* Subtle tracking improves readability           */
+}
+
+/* ── 3. NAV ──────────────────────────────────────────── */
+.nav-menu a {
+  font-size: 0.82rem;        /* Was .78rem — one step up for legibility        */
+  letter-spacing: 0.09em;   /* Slightly tighter — less shouting               */
+  color: var(--muted);      /* Inherits new #9BA3C0                           */
+}
+
+.nav-logo {
+  font-size: 1.6rem;         /* Was 1.5rem — slightly bolder presence          */
+}
+
+/* ── 4. HERO TEXT ────────────────────────────────────── */
+.hero-title-line {
+  font-size: 1.05rem;        /* Was 1rem — small bump for the subtitle         */
+  color: #B8BDD8;            /* Slightly brighter than default muted           */
+  letter-spacing: 0.04em;   /* Looser tracking = easier to scan               */
+}
+
+.hero-bio {
+  font-size: 1rem;           /* Was .95rem                                     */
+  line-height: 2;            /* Was 1.85 — more breathing room between lines   */
+  color: #9BA3C0;            /* Uses the new muted token                       */
+}
+
+.hero-eyebrow {
+  font-size: 0.74rem;        /* Was .72rem — tiny bump                         */
+  letter-spacing: 0.13em;
+}
+
+/* ── 5. STATS ROW ────────────────────────────────────── */
+.stat-lbl {
+  font-size: 0.72rem;        /* Was .68rem                                     */
+  color: var(--muted);
+  letter-spacing: 0.08em;
+}
+
+.stat-n {
+  font-size: 2.6rem;         /* Was 2.4rem — more impactful numbers            */
+}
+
+/* ── 6. SECTION HEADINGS & SUBTITLES ────────────────── */
+.s-tag {
+  font-size: 0.7rem;         /* Was .65rem                                     */
+  letter-spacing: 0.13em;
+}
+
+.s-sub {
+  font-size: 0.97rem;        /* Was .9rem — big readability win                */
+  line-height: 1.8;          /* Was 1.7                                        */
+  color: var(--muted);       /* Inherits #9BA3C0                               */
+  max-width: 540px;          /* Slightly wider for better line breaks          */
+}
+
+/* ── 7. ANALYTICS / KPI CARDS ───────────────────────── */
+.kpi-label {
+  font-size: 0.72rem;        /* Was .68rem                                     */
+  letter-spacing: 0.09em;
+  color: var(--muted);
+}
+
+.kpi-val {
+  font-size: 3rem;           /* Was 2.8rem — big numbers should feel BIG       */
+}
+
+.kpi-unit {
+  font-size: 1.1rem;         /* Was 1.2rem — slightly more proportional        */
+  color: #7A83A8;
+}
+
+/* ── 8. CHART CARDS ──────────────────────────────────── */
+.chart-title {
+  font-size: 0.78rem;        /* Was .75rem                                     */
+  letter-spacing: 0.07em;
+  color: var(--muted);
+  margin-bottom: 1.4rem;    /* Was 1.2rem — more space before chart           */
+}
+
+/* ── 9. SKILL BARS ───────────────────────────────────── */
+.skill-group-title {
+  font-size: 0.72rem;        /* Was .68rem                                     */
+  color: var(--muted);
+  margin-bottom: 1.1rem;    /* Was 1rem                                       */
+}
+
+.skill-name {
+  font-size: 0.9rem;         /* Was .82rem — this was too small                */
+  font-weight: 500;
+  min-width: 120px;          /* Was 110px — prevents cramping on wider names   */
+  color: var(--text);
+}
+
+.skill-pct {
+  font-size: 0.68rem;        /* Was .65rem                                     */
+  color: var(--muted);
+  min-width: 34px;
+}
+
+/* ── 10. SKILL TRACK slightly taller for visibility ─── */
+.skill-track {
+  height: 3px;               /* Was 2px — easier to see the progress fill      */
+}
+
+/* ── 11. PROJECT CARDS ───────────────────────────────── */
+.proj-type {
+  font-size: 0.68rem;        /* Was .65rem                                     */
+  letter-spacing: 0.09em;
+}
+
+.proj-name {
+  font-size: 1.55rem;        /* Was 1.5rem                                     */
+}
+
+.proj-desc {
+  font-size: 0.9rem;         /* Was .83rem — biggest readability improvement   */
+  color: var(--muted);
+  line-height: 1.75;
+}
+
+.chip {
+  font-size: 0.68rem;        /* Was .6rem — much easier to read                */
+  padding: 0.22rem 0.6rem;
+}
+
+.proj-links {
+  font-size: 0.78rem;        /* Was .75rem                                     */
+  color: var(--muted);
+}
+
+/* ── 12. TIMELINE / EXPERIENCE ───────────────────────── */
+.tl-date {
+  font-size: 0.72rem;        /* Was .68rem                                     */
+  color: #7A83A8;
+}
+
+.tl-role {
+  font-size: 1.45rem;        /* Was 1.4rem                                     */
+}
+
+.tl-company {
+  font-size: 0.87rem;        /* Was .82rem                                     */
+}
+
+.tl-desc {
+  font-size: 0.9rem;         /* Was .85rem                                     */
+  color: var(--muted);
+  line-height: 1.8;          /* Was 1.75                                       */
+}
+
+/* ── 13. GOAL CARDS ──────────────────────────────────── */
+.goal-status,
+.goal-priority {
+  font-size: 0.66rem;        /* Was .62rem — tiny bump matters at small sizes  */
+  letter-spacing: 0.09em;
+}
+
+.goal-name {
+  font-size: 1.15rem;        /* Was 1.1rem                                     */
+}
+
+.goal-sub {
+  font-size: 0.84rem;        /* Was .78rem — was very hard to read             */
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+.goal-year {
+  font-size: 0.71rem;        /* Was .68rem                                     */
+  color: #7A83A8;
+}
+
+.goal-pct {
+  font-size: 0.72rem;        /* Was .68rem                                     */
+}
+
+/* ── 14. GOAL PROGRESS BAR slightly taller ──────────── */
+.goal-track {
+  height: 4px;               /* Was 3px                                        */
+}
+
+/* ── 15. LANGUAGE CARDS ──────────────────────────────── */
+.lang-name {
+  font-size: 1.25rem;        /* Was 1.2rem                                     */
+}
+
+.lang-level {
+  font-size: 0.76rem;        /* Was .72rem                                     */
+  letter-spacing: 0.07em;
+}
+
+/* ── 16. TESTIMONIALS ────────────────────────────────── */
+.test-msg {
+  font-size: 0.92rem;        /* Was .88rem                                     */
+  line-height: 1.8;          /* Was 1.75                                       */
+  color: #9BA3C0;
+}
+
+.test-author {
+  font-size: 0.88rem;        /* Was .85rem                                     */
+}
+
+.test-role {
+  font-size: 0.78rem;        /* Was .75rem                                     */
+  color: var(--muted);
+}
+
+/* ── 17. CONTACT FORM ────────────────────────────────── */
+.f-label {
+  font-size: 0.72rem;        /* Was .68rem                                     */
+  letter-spacing: 0.09em;
+  color: var(--muted);
+}
+
+.f-input,
+.f-ta {
+  font-size: 0.92rem;        /* Was .88rem — typing comfort                    */
+  padding: 0.82rem 1.1rem;  /* Slightly more vertical padding = easier target */
+  color: var(--text);
+}
+
+.f-input::placeholder,
+.f-ta::placeholder {
+  color: #555C7A;            /* Was var(--muted) — slightly dimmer than input  */
+}
+
+.ci-label {
+  font-size: 0.72rem;        /* Was .68rem                                     */
+  color: var(--muted);
+  letter-spacing: 0.08em;
+}
+
+.ci-val {
+  font-size: 0.94rem;        /* Was .9rem                                      */
+}
+
+.soc-btn {
+  font-size: 0.78rem;        /* Was .75rem                                     */
+}
+
+/* ── 18. FOOTER ──────────────────────────────────────── */
+.ft-copy {
+  font-size: 0.78rem;        /* Was .75rem                                     */
+  color: #6B7390;
+}
+
+.ft-mono {
+  font-size: 0.72rem;        /* Was .68rem                                     */
+}
+
+/* ── 19. LOADING SKELETON — brighter for dark bg ─────── */
+.skel {
+  background: linear-gradient(
+    90deg,
+    #252A3E 25%,
+    #2F3550 50%,
+    #252A3E 75%
+  );
+  background-size: 200% 100%;
+  animation: skelAnim 1.5s ease infinite;
+}
+
+/* ── 20. SCROLLBAR — slightly wider for usability ────── */
+::-webkit-scrollbar {
+  width: 4px;                /* Was 3px                                        */
+}
+
+/* ── 21. BETTER LINK CONTRAST IN PROJ CARDS ─────────── */
+.proj-links a {
+  color: #8892B0;            /* Slightly brighter than old --muted             */
+}
+
+.proj-links a:hover {
+  color: var(--lime);
+}
+
+/* ── 22. LOADER TEXT ─────────────────────────────────── */
+.loader-txt {
+  font-size: 0.76rem;        /* Was .72rem                                     */
+  color: #7A83A8;
+  letter-spacing: 0.18em;
+}
 /* ═══════════════════════════════════════════════════════════════════
    RESET & TOKENS
 ═══════════════════════════════════════════════════════════════════ */
