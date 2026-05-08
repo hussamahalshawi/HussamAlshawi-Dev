@@ -1,0 +1,176 @@
+/* ═══════════════════════════════════════
+   DESIGN TOKENS — عدّل هنا فقط للثيم
+═══════════════════════════════════════ */
+:root {
+  /* Colors */
+  --color-bg:        #0A0B0F;
+  --color-bg2:       #11131A;
+  --color-bg3:       #181B24;
+  --color-surface:   #1D2130;
+  --color-border:    rgba(255, 255, 255, 0.08);
+  --color-border2:   rgba(255, 255, 255, 0.14);
+
+  --color-text:      #E8EAF2;
+  --color-muted:     #6B7280;
+  --color-faint:     #2E3347;
+
+  --color-lime:      #C8FF57;
+  --color-cyan:      #00E5FF;
+  --color-violet:    #9B59F5;
+  --color-coral:     #FF6B6B;
+  --color-gold:      #F5A623;
+
+  /* Typography */
+  --font-display:    'Bebas Neue', sans-serif;
+  --font-body:       'Outfit', sans-serif;
+  --font-mono:       'Space Mono', monospace;
+
+  /* Spacing scale */
+  --space-1:  0.25rem;
+  --space-2:  0.5rem;
+  --space-3:  0.75rem;
+  --space-4:  1rem;
+  --space-6:  1.5rem;
+  --space-8:  2rem;
+  --space-12: 3rem;
+  --space-16: 4rem;
+
+  /* Border radius */
+  --radius-sm: 3px;
+  --radius-md: 6px;
+  --radius-lg: 12px;
+
+  /* Transitions */
+  --transition-fast:   0.15s ease;
+  --transition-normal: 0.25s ease;
+  --transition-slow:   0.4s ease;
+
+  /* Shadows */
+  --shadow-lime: 0 10px 30px rgba(200, 255, 87, 0.2);
+  --shadow-card: 0 20px 50px rgba(0, 0, 0, 0.4);
+}
+
+/* ═══════════════════════════════════════
+   RESET
+═══════════════════════════════════════ */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+  overflow-x: hidden;
+}
+
+body {
+  background:   var(--color-bg);
+  color:        var(--color-text);
+  font-family:  var(--font-body);
+  font-weight:  400;
+  line-height:  1.6;
+  overflow-x:   hidden;
+  cursor:       none;          /* custom cursor */
+}
+
+/* ═══════════════════════════════════════
+   TYPOGRAPHY UTILITIES
+═══════════════════════════════════════ */
+.font-display { font-family: var(--font-display); }
+.font-mono    { font-family: var(--font-mono); }
+
+/* ═══════════════════════════════════════
+   SCROLLBAR
+═══════════════════════════════════════ */
+::-webkit-scrollbar       { width: 3px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--color-lime); border-radius: 2px; }
+
+/* ═══════════════════════════════════════
+   ANIMATIONS — مشتركة بين كل المكونات
+═══════════════════════════════════════ */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes riseUp {
+  from { transform: translateY(100%); }
+  to   { transform: translateY(0); }
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.3; }
+}
+
+@keyframes shimmer {
+  0%   { transform: translateX(-100%); }
+  100% { transform: translateX(200%); }
+}
+
+@keyframes rotateSlow {
+  to { transform: rotate(360deg); }
+}
+
+/* ═══════════════════════════════════════
+   REVEAL ON SCROLL
+═══════════════════════════════════════ */
+.reveal {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.7s ease, transform 0.7s ease;
+}
+.reveal.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ═══════════════════════════════════════
+   SKELETON LOADER
+═══════════════════════════════════════ */
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--color-faint) 25%,
+    var(--color-border2) 50%,
+    var(--color-faint) 75%
+  );
+  background-size: 200% 100%;
+  animation: skeletonMove 1.5s ease infinite;
+  border-radius: var(--radius-sm);
+}
+
+@keyframes skeletonMove {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* ═══════════════════════════════════════
+   LAYOUT CONTAINER
+═══════════════════════════════════════ */
+.container {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 var(--space-12);
+}
+
+.section {
+  padding: 7rem var(--space-12);
+  position: relative;
+}
+
+.section--alt {
+  background: var(--color-bg2);
+}
