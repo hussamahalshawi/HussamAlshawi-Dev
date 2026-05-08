@@ -2,45 +2,47 @@
    Navbar.css — Fixed top navigation styles
    ═══════════════════════════════════════════════════ */
 
-/* ── Nav container ────────────────────────────────── */
+/* ── Container ────────────────────────────────────── */
 .navbar {
-  position:    fixed;
-  top:         0;
-  left:        0;
-  right:       0;
-  z-index:     500;
-  display:     flex;
-  align-items: center;
+  position:        fixed;
+  top:             0;
+  left:            0;
+  right:           0;
+  z-index:         500;
+  display:         flex;
+  align-items:     center;
   justify-content: space-between;
-  padding:     1.1rem 3.5rem;
-  border-bottom: 1px solid transparent;
-  transition:  background 0.4s ease, border-color 0.4s ease,
-               backdrop-filter 0.4s ease;
+  padding:         1.1rem 3.5rem;
+  border-bottom:   1px solid transparent;
+  transition:      background var(--transition-slow),
+                   border-color var(--transition-slow),
+                   backdrop-filter var(--transition-slow);
 }
 
 /* ── Scrolled state ───────────────────────────────── */
 .navbar--stuck {
-  background:      rgba(10, 11, 15, 0.88);
-  backdrop-filter: blur(24px);
-  border-bottom-color: var(--color-border, rgba(255,255,255,0.08));
+  background:           rgba(10, 11, 15, 0.88);
+  backdrop-filter:      blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border-bottom-color: var(--color-border);
 }
 
 /* ── Logo ─────────────────────────────────────────── */
 .navbar__logo {
-  font-family:    var(--font-display, 'Bebas Neue', sans-serif);
-  font-size:      1.6rem;
-  letter-spacing: 0.06em;
-  color:          var(--color-text, #F0F2FF);
+  font-family:     var(--font-display);
+  font-size:       1.6rem;
+  letter-spacing:  0.06em;
+  color:           var(--color-text);
   text-decoration: none;
-  user-select:    none;
+  user-select:     none;
 }
 
 .navbar__logo em {
-  color:       var(--color-lime, #C8FF57); /* Accent dot */
-  font-style:  normal;
+  color:      var(--color-lime);
+  font-style: normal;
 }
 
-/* ── Menu list ────────────────────────────────────── */
+/* ── Menu ─────────────────────────────────────────── */
 .navbar__menu {
   display:    flex;
   gap:        2.2rem;
@@ -49,20 +51,19 @@
   padding:    0;
 }
 
-/* ── Menu links ───────────────────────────────────── */
 .navbar__link {
-  font-size:      0.82rem;
-  font-weight:    500;
-  letter-spacing: 0.09em;
-  text-transform: uppercase;
-  color:          var(--color-muted, #9BA3C0);
+  font-size:       0.82rem;
+  font-weight:     500;
+  letter-spacing:  0.09em;
+  text-transform:  uppercase;
+  color:           var(--color-muted);
   text-decoration: none;
-  position:       relative;
-  padding-bottom: 4px;
-  transition:     color 0.2s ease;
+  position:        relative;
+  padding-bottom:  4px;
+  transition:      color var(--transition-fast);
 }
 
-/* Animated underline ─────────────────────────────── */
+/* Animated underline */
 .navbar__link::after {
   content:    '';
   position:   absolute;
@@ -70,21 +71,21 @@
   left:       0;
   width:      0;
   height:     1px;
-  background: var(--color-lime, #C8FF57);
-  transition: width 0.3s ease;
+  background: var(--color-lime);
+  transition: width var(--transition-normal);
 }
 
 .navbar__link:hover {
-  color: var(--color-text, #F0F2FF);
+  color: var(--color-text);
 }
 
 .navbar__link:hover::after,
 .navbar__link--active::after {
-  width: 100%; /* Full underline on hover / active */
+  width: 100%;
 }
 
 .navbar__link--active {
-  color: var(--color-text, #F0F2FF);
+  color: var(--color-text);
 }
 
 /* ── Availability badge ───────────────────────────── */
@@ -92,101 +93,31 @@
   display:     flex;
   align-items: center;
   gap:         0.5rem;
-  font-family: var(--font-mono, 'Space Mono', monospace);
+  font-family: var(--font-mono);
   font-size:   0.7rem;
-  color:       var(--color-lime, #C8FF57);
+  color:       var(--color-lime);
   white-space: nowrap;
 }
 
-/* Pulsing dot ────────────────────────────────────── */
+/* Pulsing dot before badge */
 .navbar__badge::before {
-  content:      '';
-  width:        6px;
-  height:       6px;
+  content:       '';
+  width:         6px;
+  height:        6px;
   border-radius: 50%;
-  background:   var(--color-lime, #C8FF57);
-  box-shadow:   0 0 8px var(--color-lime, #C8FF57);
-  animation:    navBadgePulse 2s ease infinite;
-  flex-shrink:  0;
-}
-
-@keyframes navBadgePulse {
-  0%, 100% { opacity: 1; }
-  50%       { opacity: 0.3; }
-}
-
-/* ── Hamburger (mobile) ───────────────────────────── */
-.navbar__hamburger {
-  display:    none;
-  flex-direction: column;
-  gap:        5px;
-  cursor:     pointer;
-  background: none;
-  border:     none;
-  padding:    4px;
-}
-
-.navbar__hamburger span {
-  display:       block;
-  width:         22px;
-  height:        1px;
-  background:    var(--color-text, #F0F2FF);
-  transition:    all 0.3s ease;
-}
-
-/* ── Mobile menu drawer ───────────────────────────── */
-.navbar__drawer {
-  display:         none;
-  position:        fixed;
-  top:             0;
-  right:           0;
-  bottom:          0;
-  width:           260px;
-  background:      var(--color-bg2, #11131A);
-  border-left:     1px solid var(--color-border, rgba(255,255,255,0.08));
-  padding:         5rem 2rem 2rem;
-  flex-direction:  column;
-  gap:             1.5rem;
-  z-index:         600;
-  transform:       translateX(100%);
-  transition:      transform 0.3s ease;
-}
-
-.navbar__drawer--open {
-  transform: translateX(0); /* Slide in */
-}
-
-.navbar__drawer .navbar__link {
-  font-size: 1rem;          /* Bigger on mobile */
-  display:   block;
-  padding:   0.5rem 0;
-}
-
-/* ── Overlay behind drawer ────────────────────────── */
-.navbar__overlay {
-  display:    none;
-  position:   fixed;
-  inset:      0;
-  background: rgba(0, 0, 0, 0.5);
-  z-index:    599;
+  background:    var(--color-lime);
+  box-shadow:    0 0 8px var(--color-lime);
+  animation:     pulse 2s ease infinite;
+  flex-shrink:   0;
 }
 
 /* ── Responsive ───────────────────────────────────── */
 @media (max-width: 900px) {
   .navbar {
-    padding: 1rem 1.5rem; /* Less padding on mobile */
+    padding: 1rem 1.5rem;
   }
 
   .navbar__menu {
-    display: none;         /* Hide desktop menu */
-  }
-
-  .navbar__hamburger {
-    display: flex;         /* Show hamburger on mobile */
-  }
-
-  .navbar__drawer,
-  .navbar__overlay {
-    display: flex;         /* Allow drawer to show */
+    display: none; /* Hidden on mobile — add hamburger logic if needed */
   }
 }

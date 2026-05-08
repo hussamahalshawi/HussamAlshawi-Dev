@@ -1,0 +1,79 @@
+/* ═══════════════════════════════════════════════════
+   NotFound.css — 404 page styles
+   ═══════════════════════════════════════════════════ */
+
+.not-found {
+  min-height:      100vh;
+  display:         flex;
+  flex-direction:  column;
+  align-items:     center;
+  justify-content: center;
+  text-align:      center;
+  padding:         2rem;
+  position:        relative;
+  overflow:        hidden;
+}
+
+/* Background glow */
+.not-found__bg {
+  position:   absolute;
+  inset:      0;
+  z-index:    0;
+  background: radial-gradient(
+    ellipse 600px 400px at 50% 50%,
+    rgba(200, 255, 87, 0.04) 0%,
+    transparent 70%
+  );
+}
+
+.not-found__content {
+  position: relative;
+  z-index:  1;
+}
+
+/* Giant 404 number */
+.not-found__code {
+  font-family:    var(--font-display);
+  font-size:      clamp(8rem, 20vw, 16rem);
+  line-height:    0.85;
+  letter-spacing: 0.05em;
+  color:          transparent;
+  -webkit-text-stroke: 1px var(--color-faint);
+  margin-bottom:  1.5rem;
+  position:       relative;
+}
+
+/* Lime accent overlay */
+.not-found__code::after {
+  content:            '404';
+  position:           absolute;
+  inset:              0;
+  color:              var(--color-lime);
+  -webkit-text-stroke: 0;
+  opacity:            0.08;
+  filter:             blur(20px);
+}
+
+.not-found__title {
+  font-family:    var(--font-display);
+  font-size:      clamp(1.8rem, 4vw, 2.8rem);
+  letter-spacing: 0.04em;
+  color:          var(--color-text);
+  margin-bottom:  1rem;
+}
+
+.not-found__sub {
+  font-size:     0.97rem;
+  color:         var(--color-muted);
+  line-height:   1.8;
+  max-width:     400px;
+  margin:        0 auto 2.5rem;
+}
+
+.not-found__actions {
+  display:     flex;
+  gap:         1rem;
+  align-items: center;
+  justify-content: center;
+  flex-wrap:   wrap;
+}

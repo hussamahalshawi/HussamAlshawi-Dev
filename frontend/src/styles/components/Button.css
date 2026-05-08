@@ -1,43 +1,104 @@
-/**
- * useAnalytics.js
- * ─────────────────────────────────────────────────────────
- * Focused hook for fetching the analytics mega-payload.
- * Use in AnalyticsSection and all dashboard charts.
- * ─────────────────────────────────────────────────────────
- */
-import { useState, useEffect } from 'react';
-import analyticsService        from '../services/analyticsService'; // Analytics API calls
+/* ═══════════════════════════════════════════════════
+   Button.css — Reusable button component styles
+   ═══════════════════════════════════════════════════ */
 
-/**
- * @returns {{ analytics, loading, error }}
- * analytics shape: { profile_summary, counts, skills_radar,
- *                    top_skills, goals_by_status, ... }
- */
-export function useAnalytics() {
-  const [analytics, setAnalytics] = useState(null); // Analytics response object
-  const [loading,   setLoading]   = useState(true); // Fetching state
-  const [error,     setError]     = useState(null); // Error message or null
+/* ── Base button ──────────────────────────────────── */
+.btn {
+  display:         inline-flex;
+  align-items:     center;
+  justify-content: center;
+  gap:             0.6rem;
+  font-family:     var(--font-body);
+  font-weight:     600;
+  letter-spacing:  0.05em;
+  border:          none;
+  border-radius:   var(--radius-sm);
+  cursor:          pointer;
+  text-decoration: none;
+  transition:      all var(--transition-normal);
+  position:        relative;
+  overflow:        hidden;
+  white-space:     nowrap;
+}
 
-  useEffect(() => {
-    let cancelled = false;
+/* ── Sizes ────────────────────────────────────────── */
+.btn--sm {
+  font-size: 0.75rem;
+  padding:   0.5rem 1.2rem;
+}
 
-    async function fetch() {
-      setLoading(true);
-      setError(null);
+.btn--md {
+  font-size: 0.82rem;
+  padding:   0.75rem 1.8rem;
+}
 
-      try {
-        const data = await analyticsService.getAnalytics(); // GET /portfolio/analytics
-        if (!cancelled) setAnalytics(data);
-      } catch (err) {
-        if (!cancelled) setError(err.message || 'Failed to load analytics.');
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    }
+.btn--lg {
+  font-size: 0.92rem;
+  padding:   0.95rem 2.2rem;
+}
 
-    fetch();
-    return () => { cancelled = true; };
-  }, []);
+/* ── Variant: primary (lime) ──────────────────────── */
+.btn--primary {
+  background: var(--color-lime);
+  color:      #000;
+}
 
-  return { analytics, loading, error };
+.btn--primary:hover {
+  transform:  translateY(-2px);
+  box-shadow: var(--shadow-lime);
+}
+
+/* ── Variant: ghost (outline) ─────────────────────── */
+.btn--ghost {
+  background:   transparent;
+  color:        var(--color-text);
+  border:       1px solid var(--color-border2);
+}
+
+.btn--ghost:hover {
+  border-color: var(--color-lime);
+  color:        var(--color-lime);
+}
+
+/* ── Variant: danger ──────────────────────────────── */
+.btn--danger {
+  background: rgba(255, 107, 107, 0.12);
+  color:      var(--color-coral);
+  border:     1px solid rgba(255, 107, 107, 0.25);
+}
+
+.btn--danger:hover {
+  background: rgba(255, 107, 107, 0.2);
+}
+
+/* ── States ───────────────────────────────────────── */
+.btn--disabled,
+.btn:disabled {
+  opacity:        0.45;
+  cursor:         not-allowed;
+  pointer-events: none;
+}
+
+.btn--loading {
+  cursor:         wait;
+  pointer-events: none;
+}
+
+/* ── Spinner ──────────────────────────────────────── */
+.btn__spinner {
+  display:       inline-block;
+  width:         12px;
+  height:        12px;
+  border:        2px solid rgba(0, 0, 0, 0.2);
+  border-top:    2px solid currentColor;
+  border-radius: 50%;
+  animation:     spin 0.7s linear infinite;
+  flex-shrink:   0;
+}
+
+/* ── Icon wrapper ─────────────────────────────────── */
+.btn__icon {
+  display:     inline-flex;
+  align-items: center;
+  font-size:   0.9em;
 }
