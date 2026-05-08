@@ -2,7 +2,7 @@
  * OfflineBanner.jsx
  * بانر يظهر لما الـ API ما يرد — مرئي وواضح للزائر
  */
-import './OfflineBanner.css';
+import '../../styles/components/OfflineBanner.css';
 
 export default function OfflineBanner({ message }) {
   return (

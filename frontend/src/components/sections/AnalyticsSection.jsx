@@ -136,7 +136,7 @@ export default function AnalyticsSection({ analytics }) {
                 <p className="skill-group__title" style={{ marginBottom: '1rem' }}>
                   Category Averages
                 </p>
-                {radar.slice(0, 5).map((cat, i) => (           /* Show top 5 categories */}
+                {radar.slice(0, 5).map((cat, i) => (           /* Show top 5 categories */
                   <div key={cat.category} style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
                     <span style={{ fontSize: '0.82rem', color: 'var(--color-muted)' }}>{cat.category}</span>
                     <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.75rem', color: CHART_COLORS[i % CHART_COLORS.length] }}>

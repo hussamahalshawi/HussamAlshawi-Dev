@@ -81,7 +81,7 @@ export default function HeroSection({ profile }) {
           <Button
             variant="primary"
             size="lg"
-            href="#contact"                                    {/* Scroll to contact section */}
+            href="#contact"                                    /* Scroll to contact section */
           >
             Hire Me
           </Button>
@@ -91,7 +91,7 @@ export default function HeroSection({ profile }) {
             <Button
               variant="ghost"
               size="lg"
-              href={social[firstSocial.key]}                  {/* First available social URL */}
+              href={social[firstSocial.key]}                  /* First available social URL */
             >
               {firstSocial.icon} {firstSocial.label}          {/* Icon + label */}
             </Button>
