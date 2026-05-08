@@ -167,7 +167,7 @@ function GoalCard({ goal }) {
       {/* ── Required skills tags ── */}
       {goal.required_skills?.length > 0 && (
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem' }}>
-          {goal.required_skills.slice(0, 5).map(skill => (     /* Max 5 tags shown */}
+          {goal.required_skills.slice(0, 5).map(skill => (     /* Max 5 tags shown */
             <Badge
               key={skill.skill_name}
               label={skill.skill_name}

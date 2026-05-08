@@ -141,7 +141,7 @@ function ProjectCard({ project }) {
         {/* Tech skills used */}
         {project.skills_used?.length > 0 && (
           <div className="project-card__tags">
-            {project.skills_used.slice(0, 5).map(skill => (   /* Show max 5 tags */}
+            {project.skills_used.slice(0, 5).map(skill => (   /* Show max 5 tags */
               <Badge key={skill} label={skill} variant="muted" />
             ))}
             {project.skills_used.length > 5 && (             /* +N more indicator */}

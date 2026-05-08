@@ -6,7 +6,7 @@
  * and optional hover/glow effects.
  * ─────────────────────────────────────────────────────────
  */
-import '../styles/components/Card.css';                // Component styles
+import '../../styles/components/Card.css';                // Component styles
 
 /**
  * @param {object}          props

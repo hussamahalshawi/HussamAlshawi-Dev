@@ -73,7 +73,7 @@ export default function HeroSection({ profile }) {
 
         {/* ── Bio ── */}
         {bio && (
-          <p className="hero__bio">{bio}</p>                  {/* Bio text from profile */}
+          <p className="hero__bio">{bio}</p>
         )}
 
         {/* ── CTA buttons ── */}

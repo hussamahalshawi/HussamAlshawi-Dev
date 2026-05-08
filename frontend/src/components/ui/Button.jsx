@@ -6,7 +6,7 @@
  * Sizes:    sm, md (default), lg
  * ─────────────────────────────────────────────────────────
  */
-import '../styles/components/Button.css';              // Component styles
+import '../../styles/components/Button.css';              // Component styles
 
 /**
  * @param {object}   props

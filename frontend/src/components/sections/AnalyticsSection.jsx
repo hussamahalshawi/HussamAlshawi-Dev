@@ -84,7 +84,7 @@ export default function AnalyticsSection({ analytics }) {
             <p className="skill-group__title" style={{ marginBottom: '1.2rem' }}>
               Top Skills
             </p>
-            {topSkills.slice(0, 8).map((skill, index) => (    /* Show top 8 */}
+            {topSkills.slice(0, 8).map((skill, index) => (    /* Show top 8 */
               <div key={skill.skill_name} className="skill-row">
                 <span className="skill-row__name">{skill.skill_name}</span>
                 <div className="skill-row__track">
