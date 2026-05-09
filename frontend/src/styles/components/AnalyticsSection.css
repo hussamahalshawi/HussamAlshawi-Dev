@@ -1,31 +1,53 @@
 /* ═══════════════════════════════════════════════════
    AnalyticsSection.css — KPI cards and analytics layout
+   Full glassmorphism dark theme
    ═══════════════════════════════════════════════════ */
 
 /* ── KPI cards grid ───────────────────────────────── */
 .kpi-grid {
   display:               grid;
-  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); /* Responsive columns */
-  gap:                   1px;                                  /* Hair-thin borders via gap */
-  background:            var(--color-border);                  /* Shows as border between cards */
-  border:                1px solid var(--color-border);
-  border-radius:         var(--radius-md);
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap:                   1px;                              /* Gap acts as thin border */
+  background:            var(--border-subtle);             /* Shows between cards */
+  border:                1px solid var(--border-subtle);
+  border-radius:         var(--r-xl);
   overflow:              hidden;
-  margin-bottom:         4rem;
+  margin-bottom:         var(--s10);
 }
 
 /* Individual KPI card */
 .kpi-card {
-  background:   var(--color-bg3);                              /* Dark card background */
-  padding:      1.6rem 1.4rem;
-  display:      flex;
+  background:     rgba(13, 17, 32, 0.95);
+  padding:        1.6rem 1.4rem;
+  display:        flex;
   flex-direction: column;
-  gap:          0.4rem;
-  transition:   background var(--transition-fast);
+  gap:            var(--s2);
+  transition:     background var(--t-fast);
+  position:       relative;
+  overflow:       hidden;
 }
 
+/* Hover glow effect */
 .kpi-card:hover {
-  background: var(--color-surface);                            /* Subtle hover lift */
+  background: rgba(20, 25, 42, 0.98);
+}
+
+/* Bottom-right glow orb */
+.kpi-card::after {
+  content:    '';
+  position:   absolute;
+  bottom:     -20px;
+  right:      -20px;
+  width:      70px;
+  height:     70px;
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--cyan) 0%, transparent 70%);
+  opacity:    0.06;
+  transition: opacity var(--t-base);
+}
+
+.kpi-card:hover::after {
+  opacity: 0.12;
 }
 
 /* Icon */
@@ -34,52 +56,58 @@
   line-height: 1;
 }
 
-/* Count number */
+/* Animated count number */
 .kpi-card__num {
-  font-family:    var(--font-display);                         /* Bebas Neue for big number */
-  font-size:      2.8rem;
+  font-family:    var(--font-display);
+  font-size:      2.6rem;
+  font-weight:    800;
   line-height:    1;
-  letter-spacing: 0.04em;
+  letter-spacing: -0.02em;
+  color:          var(--text-white);
 }
 
-/* Label below number */
+/* Label */
 .kpi-card__label {
-  font-size:      0.72rem;
+  font-family:    var(--font-mono);
+  font-size:      0.62rem;
   font-weight:    500;
-  letter-spacing: 0.09em;
+  letter-spacing: 0.10em;
   text-transform: uppercase;
-  color:          var(--color-muted);
+  color:          var(--text-muted);
 }
 
 /* ── Bottom two-column layout ─────────────────────── */
 .analytics-bottom {
-  display:     grid;
-  grid-template-columns: 1.2fr 1fr;                           /* Skills wider than dist */
-  gap:         4rem;
-  align-items: start;
+  display:               grid;
+  grid-template-columns: 1.2fr 1fr;
+  gap:                   var(--s10);
+  align-items:           start;
 }
 
-/* Skills column */
-.analytics-skills {
-  /* Inherits skill-row styles from Home.css */
-}
-
-/* Distribution column */
+/* ── Distribution panel ───────────────────────────── */
 .analytics-dist {
-  background:    var(--color-bg3);
-  border:        1px solid var(--color-border);
-  border-radius: var(--radius-md);
-  padding:       1.6rem;
+  background:    rgba(13, 17, 32, 0.6);
+  border:        1px solid var(--border-subtle);
+  border-radius: var(--r-xl);
+  padding:       var(--s6);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
 }
 
 /* ── Responsive ───────────────────────────────────── */
 @media (max-width: 900px) {
   .kpi-grid {
-    grid-template-columns: repeat(2, 1fr);                    /* 2 columns on mobile */
+    grid-template-columns: repeat(2, 1fr);  /* 2 columns on tablet */
   }
 
   .analytics-bottom {
-    grid-template-columns: 1fr;                               /* Stack vertically */
-    gap:                   2rem;
+    grid-template-columns: 1fr;            /* Stack on mobile */
+    gap:                   var(--s6);
+  }
+}
+
+@media (max-width: 480px) {
+  .kpi-card__num {
+    font-size: 2rem;                       /* Smaller number on mobile */
   }
 }

@@ -1,21 +1,24 @@
 /**
- * ContactForm.jsx — Contact section with form and info column
+ * ContactForm.jsx — Contact Section with Form and Info Column
+ * ─────────────────────────────────────────────────────────
  * Left: contact form with validation and submission feedback
  * Right: email, phone, address, social links from profile
  * Submits to POST /api/feedback via feedbackService.
+ * ─────────────────────────────────────────────────────────
  */
 import { useState }        from 'react';                      // Form state management
 import Button              from '../ui/Button';               // Reusable button component
 import { useProfile }      from '../../hooks/useProfile';    // Profile data for contact info
 import feedbackService     from '../../services/feedbackService'; // Feedback API
 import { SOCIAL_PLATFORMS } from '../../utils/constants';    // Social platforms config
+import '../../styles/components/ContactForm.css';             // Component-specific styles
 
 /**
  * ContactForm — full contact section component.
  * Handles: field state, validation, API submission, success/error feedback.
  */
 export default function ContactForm() {
-  const { profile } = useProfile();                           // Profile for contact info column
+  const { profile } = useProfile();                           // Profile for contact info
 
   // ── Form field state ─────────────────────────────────────────────────────
   const [fields, setFields] = useState({
@@ -27,8 +30,8 @@ export default function ContactForm() {
   });
 
   const [errors,     setErrors]     = useState({});          // Validation error map
-  const [submitting, setSubmitting] = useState(false);       // True while API call is in progress
-  const [submitted,  setSubmitted]  = useState(false);       // True after successful submission
+  const [submitting, setSubmitting] = useState(false);       // True while API call in progress
+  const [submitted,  setSubmitted]  = useState(false);       // True after successful submit
   const [apiError,   setApiError]   = useState(null);        // Server-side error message
 
   // ── Field change handler ─────────────────────────────────────────────────
@@ -43,47 +46,47 @@ export default function ContactForm() {
     const newErrors = {};
 
     if (!fields.name.trim())
-      newErrors.name = 'Name is required.';                   // Required field check
+      newErrors.name = 'Name is required.';
 
     if (!fields.email.trim())
-      newErrors.email = 'Email is required.';                 // Required field check
+      newErrors.email = 'Email is required.';
     else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(fields.email))
-      newErrors.email = 'Enter a valid email address.';       // Format check
+      newErrors.email = 'Enter a valid email address.';
 
     if (!fields.message.trim())
-      newErrors.message = 'Message is required.';             // Required field check
+      newErrors.message = 'Message is required.';
     else if (fields.message.trim().length < 20)
-      newErrors.message = 'Message must be at least 20 characters.'; // Min length
+      newErrors.message = 'Message must be at least 20 characters.';
 
     return newErrors;
   };
 
   // ── Form submission ──────────────────────────────────────────────────────
   const handleSubmit = async () => {
-    const validationErrors = validate();                      // Run validation
+    const validationErrors = validate();
 
     if (Object.keys(validationErrors).length > 0) {
       setErrors(validationErrors);                            // Show all validation errors
-      return;                                                 // Stop submission
+      return;
     }
 
-    setSubmitting(true);                                      // Show loading state
-    setApiError(null);                                        // Clear previous API error
+    setSubmitting(true);
+    setApiError(null);
 
     try {
       await feedbackService.submitFeedback(fields);           // POST /api/feedback
-      setSubmitted(true);                                     // Show success message
-      setFields({ name: '', email: '', company: '', job_title: '', message: '' }); // Reset
+      setSubmitted(true);                                     // Show success state
+      setFields({ name: '', email: '', company: '', job_title: '', message: '' });
     } catch (err) {
-      setApiError(err.message || 'Failed to send message. Please try again.'); // Show error
+      setApiError(err.message || 'Failed to send message. Please try again.');
     } finally {
-      setSubmitting(false);                                   // Hide loading state
+      setSubmitting(false);
     }
   };
 
-  // ── Social links from profile ────────────────────────────────────────────
+  // ── Active social links ──────────────────────────────────────────────────
   const activeSocials = SOCIAL_PLATFORMS.filter(
-    p => profile?.social?.[p.key]                             // Only non-null URLs
+    p => profile?.social?.[p.key]
   );
 
   return (
@@ -107,12 +110,28 @@ export default function ContactForm() {
           ════════════════════════ */}
           {submitted ? (
             /* ── Success state ── */
-            <div style={{ padding: '3rem', textAlign: 'center' }}>
-              <p style={{ fontSize: '2rem', marginBottom: '1rem' }}>✅</p>
-              <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '1.8rem', marginBottom: '0.5rem' }}>
+            <div style={{
+              display:        'flex',
+              flexDirection:  'column',
+              alignItems:     'center',
+              justifyContent: 'center',
+              textAlign:      'center',
+              padding:        'var(--s12)',
+              background:     'rgba(13, 17, 32, 0.6)',
+              border:         '1px solid var(--border-subtle)',
+              borderRadius:   'var(--r-2xl)',
+              backdropFilter: 'blur(16px)',
+            }}>
+              <p style={{ fontSize: '2.5rem', marginBottom: 'var(--s4)' }}>✅</p>
+              <h3 style={{
+                fontFamily:    'var(--font-display)',
+                fontSize:      '1.8rem',
+                marginBottom:  'var(--s2)',
+                color:         'var(--text-white)',
+              }}>
                 Message Sent!
               </h3>
-              <p style={{ color: 'var(--color-muted)', marginBottom: '1.5rem' }}>
+              <p style={{ color: 'var(--text-secondary)', marginBottom: 'var(--s6)', fontSize: '0.88rem' }}>
                 I'll get back to you as soon as possible.
               </p>
               <Button variant="ghost" size="sm" onClick={() => setSubmitted(false)}>
@@ -125,12 +144,15 @@ export default function ContactForm() {
               {/* API-level error banner */}
               {apiError && (
                 <div style={{
-                  background: 'rgba(255,107,107,0.1)',
-                  border: '1px solid rgba(255,107,107,0.3)',
-                  borderRadius: 'var(--radius-sm)',
-                  padding: '0.75rem 1rem',
-                  color: 'var(--color-coral)',
-                  fontSize: '0.84rem',
+                  background:   'rgba(240,98,146,0.1)',
+                  border:       '1px solid rgba(240,98,146,0.3)',
+                  borderRadius: 'var(--r-md)',
+                  padding:      'var(--s3) var(--s4)',
+                  color:        '#F06292',
+                  fontSize:     '0.82rem',
+                  display:      'flex',
+                  alignItems:   'center',
+                  gap:          'var(--s2)',
                 }}>
                   ⚠ {apiError}
                 </div>
@@ -190,10 +212,10 @@ export default function ContactForm() {
                   value={fields.message}
                   onChange={handleChange}
                   rows={5}
-                  style={errors.message ? { borderColor: 'var(--color-coral)' } : {}}
+                  style={errors.message ? { borderColor: '#F06292' } : {}}
                 />
                 {errors.message && (
-                  <span style={{ color: 'var(--color-coral)', fontSize: '0.75rem', marginTop: '0.25rem' }}>
+                  <span style={{ color: '#F06292', fontSize: '0.72rem', marginTop: 'var(--s1)' }}>
                     {errors.message}
                   </span>
                 )}
@@ -219,17 +241,31 @@ export default function ContactForm() {
 
             {/* Email */}
             {profile?.email && (
-              <ContactInfoItem icon="✉" label="Email" value={profile.email} href={`mailto:${profile.email}`} />
+              <ContactInfoItem
+                icon="✉"
+                label="Email"
+                value={profile.email}
+                href={`mailto:${profile.email}`}
+              />
             )}
 
             {/* Phone */}
             {profile?.phone && (
-              <ContactInfoItem icon="📞" label="Phone" value={profile.phone} href={`tel:${profile.phone}`} />
+              <ContactInfoItem
+                icon="📞"
+                label="Phone"
+                value={profile.phone}
+                href={`tel:${profile.phone}`}
+              />
             )}
 
             {/* Address */}
             {profile?.address && (
-              <ContactInfoItem icon="📍" label="Location" value={profile.address} />
+              <ContactInfoItem
+                icon="📍"
+                label="Location"
+                value={profile.address}
+              />
             )}
 
             {/* Social links */}
@@ -256,7 +292,7 @@ export default function ContactForm() {
 }
 
 /**
- * FormField — a labeled input with optional error message.
+ * FormField — labeled input with optional error message.
  */
 function FormField({ label, name, type, placeholder, value, error, onChange }) {
   return (
@@ -269,10 +305,10 @@ function FormField({ label, name, type, placeholder, value, error, onChange }) {
         className="form-group__input"
         value={value}
         onChange={onChange}
-        style={error ? { borderColor: 'var(--color-coral)' } : {}} /* Red border on error */
+        style={error ? { borderColor: '#F06292' } : {}}      // Red border on error
       />
       {error && (
-        <span style={{ color: 'var(--color-coral)', fontSize: '0.75rem', marginTop: '0.25rem' }}>
+        <span style={{ color: '#F06292', fontSize: '0.72rem', marginTop: 'var(--s1)' }}>
           {error}
         </span>
       )}
@@ -281,7 +317,7 @@ function FormField({ label, name, type, placeholder, value, error, onChange }) {
 }
 
 /**
- * ContactInfoItem — a single contact detail row with icon.
+ * ContactInfoItem — single contact detail row with icon.
  */
 function ContactInfoItem({ icon, label, value, href }) {
   return (
@@ -290,7 +326,7 @@ function ContactInfoItem({ icon, label, value, href }) {
       <div>
         <p className="ci-item__label">{label}</p>
         {href
-          ? <a href={href} className="ci-item__value" style={{ textDecoration: 'none' }}>{value}</a>
+          ? <a href={href} className="ci-item__value">{value}</a>
           : <p className="ci-item__value">{value}</p>
         }
       </div>

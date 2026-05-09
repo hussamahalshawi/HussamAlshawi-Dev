@@ -1,8 +1,10 @@
 /**
- * ProjectsSection.jsx — Portfolio projects grid with filter tabs
+ * ProjectsSection.jsx — Portfolio Projects Grid with Filter Tabs
+ * ─────────────────────────────────────────────────────────
  * Features: filter by project type, project cards with tech tags,
- * GitHub and live URL links.
+ * GitHub and live URL links, cover images.
  * All data comes from the projects prop (no internal fetching).
+ * ─────────────────────────────────────────────────────────
  */
 import { useState }           from 'react';                   // State for active filter tab
 import Card                   from '../ui/Card';              // Reusable card wrapper
@@ -11,6 +13,7 @@ import Button                 from '../ui/Button';            // Reusable button
 import { SkeletonCardGrid }   from '../ui/SkeletonLoader';    // Skeleton while loading
 import { formatDateRange,
          truncate }           from '../../utils/formatters';  // Date range and text truncation
+import '../../styles/components/ProjectsSection.css';         // Component-specific styles
 
 /**
  * @param {object}      props
@@ -29,7 +32,7 @@ export default function ProjectsSection({ projects }) {
             <span className="s-tag">Portfolio</span>
             <h2 className="s-title">Projects</h2>
           </div>
-          <SkeletonCardGrid count={6} height="240px" />
+          <SkeletonCardGrid count={6} height="320px" />
         </div>
       </section>
     );
@@ -38,7 +41,7 @@ export default function ProjectsSection({ projects }) {
   const allProjects = projects.projects || [];                // Full projects array
   const types       = ['All', ...(projects.types || [])];    // Filter tabs including "All"
 
-  // Apply type filter — show all if 'All' is selected
+  // Apply type filter — show all if 'All' selected
   const filtered = activeType === 'All'
     ? allProjects
     : allProjects.filter(p => p.project_type === activeType);
@@ -62,7 +65,7 @@ export default function ProjectsSection({ projects }) {
             <button
               key={type}
               className={`projects-filter-btn ${activeType === type ? 'projects-filter-btn--active' : ''}`}
-              onClick={() => setActiveType(type)}             /* Switch active filter */
+              onClick={() => setActiveType(type)}             // Switch active filter
             >
               {type}
             </button>
@@ -78,7 +81,7 @@ export default function ProjectsSection({ projects }) {
 
         {/* Empty state */}
         {filtered.length === 0 && (
-          <p style={{ color: 'var(--color-muted)', textAlign: 'center', padding: '3rem 0' }}>
+          <p style={{ color: 'var(--text-muted)', textAlign: 'center', padding: '3rem 0' }}>
             No projects found for this filter.
           </p>
         )}
@@ -97,7 +100,7 @@ function ProjectCard({ project }) {
     project.end_date
   );
 
-  // Show first project image or a placeholder gradient
+  // First project image or null for gradient placeholder
   const coverImage = project.media?.project_images?.[0] || null;
 
   return (
@@ -131,20 +134,20 @@ function ProjectCard({ project }) {
           <span className="project-card__date">{dateRange}</span>
         )}
 
-        {/* Description (truncated) */}
+        {/* Description (truncated to 120 chars) */}
         {project.description && (
           <p className="project-card__desc">
-            {truncate(project.description, 120)}              {/* Max 120 chars */}
+            {truncate(project.description, 120)}
           </p>
         )}
 
-        {/* Tech skills used */}
+        {/* Tech tags */}
         {project.skills_used?.length > 0 && (
           <div className="project-card__tags">
-            {project.skills_used.slice(0, 5).map(skill => (   /* Show max 5 tags */
+            {project.skills_used.slice(0, 5).map(skill => (   // Max 5 visible tags
               <Badge key={skill} label={skill} variant="muted" />
             ))}
-            {project.skills_used.length > 5 && (             /* +N more indicator */
+            {project.skills_used.length > 5 && (              // "+N more" overflow badge
               <Badge label={`+${project.skills_used.length - 5}`} variant="muted" />
             )}
           </div>
@@ -153,20 +156,12 @@ function ProjectCard({ project }) {
         {/* ── Action buttons ── */}
         <div className="project-card__actions">
           {project.github_url && (
-            <Button
-              variant="ghost"
-              size="sm"
-              href={project.github_url}
-            >
+            <Button variant="ghost" size="sm" href={project.github_url}>
               ⚙ Code
             </Button>
           )}
           {project.live_url && (
-            <Button
-              variant="primary"
-              size="sm"
-              href={project.live_url}
-            >
+            <Button variant="primary" size="sm" href={project.live_url}>
               ↗ Live
             </Button>
           )}

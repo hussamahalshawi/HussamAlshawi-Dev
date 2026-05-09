@@ -1,13 +1,16 @@
 /**
- * SkillsSection.jsx — Skills grid with animated bars and radar chart
- * Left column: skill bars grouped by category (top 10 visible)
+ * SkillsSection.jsx — Skills Grid with Animated Bars and Radar Chart
+ * ─────────────────────────────────────────────────────────
+ * Left column: skill bars grouped by category (top 6 per category)
  * Right column: RadarChart showing category averages
  * All data comes from the skills prop (no internal fetching).
+ * ─────────────────────────────────────────────────────────
  */
 import { useEffect, useRef }  from 'react';                   // Refs and side effects
 import SkillRadarChart        from '../charts/RadarChart';    // Recharts radar component
 import { SkeletonSkillRow }   from '../ui/SkeletonLoader';    // Skeleton while loading
 import { formatScore }        from '../../utils/formatters';  // Score → "92%" formatter
+import '../../styles/components/SkillsSection.css';           // Component-specific styles
 
 /**
  * @param {object}      props
@@ -19,33 +22,33 @@ export default function SkillsSection({ skills }) {
 
   // ── Animate skill bars when section scrolls into view ───────────────────
   useEffect(() => {
-    if (!barsRef.current) return;                             // Guard: element not mounted yet
+    if (!barsRef.current) return;                             // Guard: not mounted yet
 
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach(entry => {
-          if (!entry.isIntersecting) return;                  // Only trigger when visible
+          if (!entry.isIntersecting) return;                  // Only when visible
 
-          // Find all fill elements and set their scaleX to trigger CSS transition
+          // Find all fill bars and trigger the CSS scale animation
           const fills = entry.target.querySelectorAll('.skill-row__fill');
           fills.forEach(fill => {
-            fill.style.transform = 'scaleX(1)';              // Animate from 0 → 1 via CSS
+            fill.style.transform = 'scaleX(1)';              // Animate from 0 → 1
           });
 
           observer.unobserve(entry.target);                  // Only animate once
         });
       },
-      { threshold: 0.2 }                                     // Trigger when 20% visible
+      { threshold: 0.2 }                                     // 20% visible threshold
     );
 
-    observer.observe(barsRef.current);                        // Watch the bars container
+    observer.observe(barsRef.current);
     return () => observer.disconnect();                       // Cleanup on unmount
-  }, [skills]);                                               // Re-run when skills data arrives
+  }, [skills]);                                               // Re-run when data arrives
 
-  // ── Derive display data from the skills prop ─────────────────────────────
-  const grouped    = skills?.grouped    || {};                // { "Backend": [...], ... }
-  const radarData  = skills?.skills
-    ? buildRadarData(skills.grouped)                          // Build radar data from grouped
+  // ── Derive display data from skills prop ────────────────────────────────
+  const grouped   = skills?.grouped   || {};                  // { "Backend": [...] }
+  const radarData = skills?.grouped
+    ? buildRadarData(skills.grouped)                          // Build from grouped
     : [];
 
   // Show skeletons while loading
@@ -60,7 +63,7 @@ export default function SkillsSection({ skills }) {
           <div className="skills-layout">
             <div className="skill-groups">
               {Array.from({ length: 8 }, (_, i) => (
-                <SkeletonSkillRow key={i} />                  /* 8 placeholder rows */
+                <SkeletonSkillRow key={i} />                  // 8 skeleton rows
               ))}
             </div>
           </div>
@@ -93,7 +96,7 @@ export default function SkillsSection({ skills }) {
                 {/* Category heading */}
                 <p className="skill-group__title">{category}</p>
 
-                {/* Individual skill bars — top 6 per category */}
+                {/* Skill bars — top 6 per category */}
                 {skillList.slice(0, 6).map(skill => (
                   <div key={skill.skill_name} className="skill-row">
 
@@ -105,17 +108,17 @@ export default function SkillsSection({ skills }) {
                       <div
                         className="skill-row__fill"
                         style={{
-                          width:   `${skill.score}%`,         /* Set width to score */
-                          background: skill.color             /* Use API-provided color */
-                            ? `linear-gradient(90deg, ${skill.color}, #00E5FF)`
-                            : 'linear-gradient(90deg, #C8FF57, #00E5FF)',
+                          width:      `${skill.score}%`,      // Bar width = score
+                          background: skill.color
+                            ? `linear-gradient(90deg, ${skill.color}, #4FC3F7)` // API color
+                            : 'linear-gradient(90deg, #4ECCA3, #4FC3F7)',        // Default
                         }}
                       />
                     </div>
 
                     {/* Score percentage */}
                     <span className="skill-row__pct">
-                      {formatScore(skill.score)}              {/* "92%" */}
+                      {formatScore(skill.score)}              // "92%"
                     </span>
                   </div>
                 ))}
@@ -125,11 +128,11 @@ export default function SkillsSection({ skills }) {
 
           {/* ── RIGHT: radar chart ── */}
           <div className="radar-wrap">
-            <p className="skill-group__title" style={{ marginBottom: '1.5rem' }}>
+            <p className="skill-group__title" style={{ marginBottom: 'var(--s5)' }}>
               Category Overview
             </p>
             <SkillRadarChart
-              data={radarData}                                /* Category averages for radar */
+              data={radarData}                                // Category averages
               height={300}
             />
           </div>
@@ -140,16 +143,16 @@ export default function SkillsSection({ skills }) {
 }
 
 /**
- * Builds radar chart data from grouped skills object.
+ * Builds radar chart data from grouped skills.
  * Calculates average score per category.
  * @param {object} grouped - { category: skill[] }
  * @returns {{ category: string, avg_score: number }[]}
  */
 function buildRadarData(grouped = {}) {
-  return Object.entries(grouped).map(([category, skills]) => ({
+  return Object.entries(grouped).map(([category, skillsList]) => ({
     category,                                                 // Category name for axis label
-    avg_score: Math.round(                                    // Average rounded to integer
-      skills.reduce((sum, s) => sum + s.score, 0) / skills.length
+    avg_score: Math.round(                                    // Rounded integer average
+      skillsList.reduce((sum, s) => sum + s.score, 0) / skillsList.length
     ),
   }));
 }

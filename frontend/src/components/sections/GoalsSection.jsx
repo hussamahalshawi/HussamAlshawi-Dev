@@ -1,14 +1,17 @@
 /**
- * GoalsSection.jsx — Career roadmap goals grid
+ * GoalsSection.jsx — Career Roadmap Goals Grid
+ * ─────────────────────────────────────────────────────────
  * Displays goal cards with progress bars, status badges,
  * and required skills match indicators.
  * Data is fetched internally from the goals API (not passed as prop).
+ * ─────────────────────────────────────────────────────────
  */
 import { useState, useEffect }  from 'react';                 // State and lifecycle hooks
 import Card                     from '../ui/Card';            // Reusable card wrapper
 import Badge                    from '../ui/Badge';           // Status / priority badge
 import { SkeletonCardGrid }     from '../ui/SkeletonLoader';  // Loading skeleton
 import goalsService             from '../../services/goalsService'; // Goals API calls
+import '../../styles/components/GoalsSection.css';            // Component-specific styles
 
 /**
  * GoalsSection — renders a grid of career roadmap goal cards.
@@ -61,7 +64,7 @@ export default function GoalsSection() {
     return (
       <section id="goals" className="section section--alt">
         <div className="container">
-          <p style={{ color: 'var(--color-muted)' }}>Goals data unavailable.</p>
+          <p style={{ color: 'var(--text-muted)' }}>Goals data unavailable.</p>
         </div>
       </section>
     );
@@ -91,7 +94,7 @@ export default function GoalsSection() {
 
         {/* Empty state */}
         {goalsList.length === 0 && (
-          <p style={{ color: 'var(--color-muted)', textAlign: 'center', padding: '3rem 0' }}>
+          <p style={{ color: 'var(--text-muted)', textAlign: 'center', padding: '3rem 0' }}>
             No goals configured yet.
           </p>
         )}
@@ -109,14 +112,20 @@ function GoalCard({ goal }) {
     <Card interactive className="goal-card">
 
       {/* ── Header row: name + priority badge ── */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.8rem' }}>
-        <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '1.3rem', letterSpacing: '0.04em', lineHeight: 1.1 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 'var(--s3)' }}>
+        <h3 style={{
+          fontFamily:    'var(--font-display)',
+          fontSize:      '1.2rem',
+          letterSpacing: '0.02em',
+          lineHeight:    1.1,
+          color:         'var(--text-white)',
+        }}>
           {goal.goal_name}
         </h3>
         {goal.priority && (
           <Badge
             label={goal.priority}
-            bg={goal.priority_style?.bg}                      /* API-provided colour tokens */
+            bg={goal.priority_style?.bg}                      // API-provided colour tokens
             color={goal.priority_style?.text}
             border={goal.priority_style?.border}
           />
@@ -125,53 +134,66 @@ function GoalCard({ goal }) {
 
       {/* Sub-title */}
       {goal.sub_title && (
-        <p style={{ fontSize: '0.84rem', color: 'var(--color-muted)', marginBottom: '0.8rem' }}>
+        <p style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', marginBottom: 'var(--s3)', lineHeight: 1.6 }}>
           {goal.sub_title}
         </p>
       )}
 
       {/* ── Status badge ── */}
       {goal.status && (
-        <Badge
-          label={goal.status}
-          bg={goal.status_style?.bg}                          /* API-provided colour tokens */
-          color={goal.status_style?.text}
-          border={goal.status_style?.border}
-          style={{ marginBottom: '1rem' }}
-        />
+        <div style={{ marginBottom: 'var(--s4)' }}>
+          <Badge
+            label={goal.status}
+            bg={goal.status_style?.bg}                        // API-provided colour tokens
+            color={goal.status_style?.text}
+            border={goal.status_style?.border}
+          />
+        </div>
       )}
 
       {/* ── Progress bar ── */}
-      <div style={{ marginBottom: '1rem' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.35rem' }}>
-          <span style={{ fontSize: '0.72rem', color: 'var(--color-muted)' }}>Progress</span>
-          <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.72rem', color: 'var(--color-lime)' }}>
-            {goal.progress_pct}%                              {/* Pre-computed by API */}
+      <div style={{ marginBottom: 'var(--s4)' }}>
+        {/* Progress header row */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 'var(--s2)' }}>
+          <span style={{ fontSize: '0.70rem', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)', letterSpacing: '0.08em' }}>
+            PROGRESS
+          </span>
+          <span style={{
+            fontFamily:  'var(--font-mono)',
+            fontSize:    '0.72rem',
+            color:       'var(--cyan)',
+            fontWeight:  700,
+          }}>
+            {goal.progress_pct}%
           </span>
         </div>
+        {/* Track */}
         <div className="goal-card__track">
           <div
             className="goal-card__fill"
-            style={{ width: `${goal.progress_pct}%` }}         /* Animate via CSS width */
+            style={{ width: `${goal.progress_pct}%` }}        // Inline width from API
           />
         </div>
       </div>
 
       {/* ── Target year ── */}
       {goal.target_year && (
-        <p style={{ fontSize: '0.72rem', color: 'var(--color-muted)', marginBottom: '0.8rem' }}>
-          Target: <strong style={{ color: 'var(--color-text)' }}>{goal.target_year}</strong>
+        <p style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginBottom: 'var(--s3)' }}>
+          Target:{' '}
+          <strong style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-mono)' }}>
+            {goal.target_year}
+          </strong>
         </p>
       )}
 
       {/* ── Required skills tags ── */}
       {goal.required_skills?.length > 0 && (
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem' }}>
-          {goal.required_skills.slice(0, 5).map(skill => (     /* Max 5 tags shown */
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--s1)', marginTop: 'auto', paddingTop: 'var(--s3)' }}>
+          {goal.required_skills.slice(0, 5).map(skill => (    // Max 5 tags
             <Badge
               key={skill.skill_name}
               label={skill.skill_name}
-              variant={skill.matched ? 'lime' : 'muted'}       /* Lime if skill is matched */
+              variant={skill.matched ? 'lime' : 'muted'}      // Lime if skill matched
             />
           ))}
         </div>
