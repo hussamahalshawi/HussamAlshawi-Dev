@@ -5,6 +5,7 @@
  * overview panel: welcome header, KPI cards, top projects
  * preview, and performance metrics panel.
  * Matches the Devoryn-style glassmorphism panel layout.
+ * Matches the Devoryn-style glassmorphism panel layout.
  * ─────────────────────────────────────────────────────────
  */
 import { useRef, useEffect }  from 'react';
