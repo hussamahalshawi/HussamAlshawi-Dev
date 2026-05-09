@@ -1,0 +1,190 @@
+/* ═══════════════════════════════════════════════════
+   ExperienceSection.css — Vertical Timeline Styles
+   Glassmorphism dark theme with cyan accent line
+   ═══════════════════════════════════════════════════ */
+
+/* ── Timeline container ───────────────────────────── */
+.timeline {
+  position: relative;
+  padding:  0 0 var(--s6) 0;
+}
+
+/* ── Individual timeline item ─────────────────────── */
+.timeline__item {
+  display:       grid;
+  grid-template-columns: 32px 1fr;   /* Marker column + content */
+  gap:           0 var(--s5);
+  margin-bottom: var(--s8);
+  animation:     fadeUp 0.5s ease both;
+}
+
+.timeline__item--last {
+  margin-bottom: 0;                  /* No bottom margin on last */
+}
+
+/* ── Left marker: dot + vertical line ────────────── */
+.timeline__marker {
+  display:        flex;
+  flex-direction: column;
+  align-items:    center;
+  position:       relative;
+  padding-top:    6px;              /* Align dot with title */
+}
+
+/* Glowing dot */
+.timeline__dot {
+  width:         14px;
+  height:        14px;
+  border-radius: 50%;
+  background:    var(--cyan);
+  box-shadow:    0 0 12px rgba(79,195,247,0.6), 0 0 24px rgba(79,195,247,0.2);
+  flex-shrink:   0;
+  position:      relative;
+  z-index:       1;
+  animation:     pulseDot 3s ease infinite;
+}
+
+/* Vertical connector line */
+.timeline__line {
+  width:      1px;
+  flex:       1;
+  min-height: 40px;
+  background: linear-gradient(
+    to bottom,
+    rgba(79,195,247,0.4),
+    rgba(79,195,247,0.08)
+  );
+  margin-top: var(--s2);
+}
+
+/* ── Content card ─────────────────────────────────── */
+.timeline__content {
+  background:    rgba(13, 17, 32, 0.6);
+  border:        1px solid var(--border-subtle);
+  border-radius: var(--r-xl);
+  padding:       var(--s6);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  transition:    border-color var(--t-base), transform var(--t-base);
+  position:      relative;
+  overflow:      hidden;
+}
+
+/* Glow accent on left edge */
+.timeline__content::before {
+  content:    '';
+  position:   absolute;
+  left:       0;
+  top:        0;
+  bottom:     0;
+  width:      2px;
+  background: linear-gradient(to bottom, var(--cyan), transparent);
+  opacity:    0.6;
+}
+
+.timeline__content:hover {
+  border-color: var(--border-medium);
+  transform:    translateX(4px);    /* Subtle right nudge on hover */
+}
+
+/* ── Date range ───────────────────────────────────── */
+.timeline__date {
+  font-family:    var(--font-mono);
+  font-size:      0.65rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color:          var(--cyan);
+  margin-bottom:  var(--s2);
+}
+
+/* ── Job title ────────────────────────────────────── */
+.timeline__title {
+  font-family:    var(--font-display);
+  font-size:      1.25rem;
+  font-weight:    700;
+  color:          var(--text-white);
+  letter-spacing: -0.01em;
+  line-height:    1.2;
+  margin-bottom:  var(--s1);
+}
+
+/* ── Company row ──────────────────────────────────── */
+.timeline__company {
+  display:     flex;
+  align-items: center;
+  gap:         var(--s2);
+  font-size:   0.85rem;
+  font-weight: 500;
+  color:       var(--text-secondary);
+  margin-bottom: var(--s4);
+  flex-wrap:   wrap;
+}
+
+.timeline__location {
+  color: var(--text-muted);          /* Even more muted for location */
+}
+
+.timeline__badge {
+  margin-left: var(--s1);
+}
+
+/* ── Description ──────────────────────────────────── */
+.timeline__desc {
+  font-size:     0.85rem;
+  color:         var(--text-secondary);
+  line-height:   1.75;
+  margin-bottom: var(--s4);
+}
+
+/* ── Responsibilities list ────────────────────────── */
+.timeline__list {
+  list-style: none;
+  margin:     0 0 var(--s4);
+  padding:    0;
+  display:    flex;
+  flex-direction: column;
+  gap:        var(--s2);
+}
+
+.timeline__list-item {
+  font-size:   0.82rem;
+  color:       var(--text-secondary);
+  padding-left: var(--s5);
+  position:    relative;
+  line-height: 1.6;
+}
+
+/* Cyan bullet */
+.timeline__list-item::before {
+  content:    '→';
+  position:   absolute;
+  left:       0;
+  color:      var(--cyan);
+  font-size:  0.75rem;
+  opacity:    0.7;
+}
+
+/* ── Tech tags row ────────────────────────────────── */
+.timeline__tags {
+  display:   flex;
+  flex-wrap: wrap;
+  gap:       var(--s2);
+  margin-top: var(--s2);
+}
+
+/* ── Responsive ───────────────────────────────────── */
+@media (max-width: 600px) {
+  .timeline__item {
+    grid-template-columns: 24px 1fr;  /* Narrower marker on mobile */
+    gap: 0 var(--s3);
+  }
+
+  .timeline__dot {
+    width:  10px;
+    height: 10px;
+  }
+
+  .timeline__content {
+    padding: var(--s4);
+  }
+}

@@ -1,0 +1,164 @@
+/* ═══════════════════════════════════════════════════
+   ProjectsSection.css — Projects Grid + Filter Tabs
+   ═══════════════════════════════════════════════════ */
+
+/* ── Filter tabs bar ──────────────────────────────── */
+.projects-filters {
+  display:       flex;
+  gap:           var(--s2);
+  flex-wrap:     wrap;
+  margin-bottom: var(--s8);
+}
+
+/* Individual filter button */
+.projects-filter-btn {
+  padding:        var(--s2) var(--s4);
+  background:     var(--glass-light);
+  border:         1px solid var(--border-subtle);
+  border-radius:  var(--r-full);
+  font-family:    var(--font-body);
+  font-size:      0.78rem;
+  font-weight:    500;
+  color:          var(--text-secondary);
+  cursor:         pointer;
+  transition:     all var(--t-base);
+  letter-spacing: 0.03em;
+}
+
+.projects-filter-btn:hover {
+  border-color: var(--border-medium);
+  color:        var(--text-primary);
+  background:   var(--glass-medium);
+}
+
+/* Active filter state */
+.projects-filter-btn--active {
+  background:   var(--cyan-glow);
+  border-color: rgba(79,195,247,0.3);
+  color:        var(--cyan);
+}
+
+/* ── Projects grid ────────────────────────────────── */
+.projects-grid {
+  display:               grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap:                   var(--s5);
+}
+
+/* ── Project card ─────────────────────────────────── */
+.project-card {
+  display:        flex;
+  flex-direction: column;
+  padding:        0;                /* Override Card padding — handled internally */
+  overflow:       hidden;
+}
+
+/* ── Cover image area ─────────────────────────────── */
+.project-card__cover {
+  height:   160px;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Cover image */
+.project-card__img {
+  width:      100%;
+  height:     100%;
+  object-fit: cover;
+  transition: transform 0.5s ease;
+  display:    block;
+}
+
+/* Zoom on hover */
+.project-card:hover .project-card__img {
+  transform: scale(1.04);
+}
+
+/* Gradient placeholder when no image */
+.project-card__cover-placeholder {
+  width:      100%;
+  height:     100%;
+  background: linear-gradient(
+    135deg,
+    rgba(79,195,247,0.08) 0%,
+    rgba(91,141,239,0.12) 50%,
+    rgba(155,127,234,0.08) 100%
+  );
+  position:   relative;
+}
+
+/* Noise texture over placeholder */
+.project-card__cover-placeholder::after {
+  content:    '';
+  position:   absolute;
+  inset:      0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.06'/%3E%3C/svg%3E");
+  opacity:    0.5;
+}
+
+/* Type badge overlay */
+.project-card__type-badge {
+  position: absolute;
+  top:      var(--s3);
+  right:    var(--s3);
+  z-index:  1;
+}
+
+/* ── Card body ────────────────────────────────────── */
+.project-card__body {
+  display:        flex;
+  flex-direction: column;
+  gap:            var(--s2);
+  padding:        var(--s5);
+  flex:           1;
+}
+
+/* Project name */
+.project-card__name {
+  font-family:    var(--font-display);
+  font-size:      1.1rem;
+  font-weight:    700;
+  color:          var(--text-white);
+  letter-spacing: -0.01em;
+  line-height:    1.2;
+}
+
+/* Date range */
+.project-card__date {
+  font-family:    var(--font-mono);
+  font-size:      0.62rem;
+  color:          var(--text-muted);
+  letter-spacing: 0.06em;
+}
+
+/* Description text */
+.project-card__desc {
+  font-size:   0.82rem;
+  color:       var(--text-secondary);
+  line-height: 1.7;
+  flex:        1;
+}
+
+/* Tech tags row */
+.project-card__tags {
+  display:   flex;
+  flex-wrap: wrap;
+  gap:       var(--s1);
+  margin-top: var(--s1);
+}
+
+/* Action buttons row */
+.project-card__actions {
+  display:    flex;
+  gap:        var(--s2);
+  margin-top: var(--s2);
+  padding-top: var(--s3);
+  border-top: 1px solid var(--border-subtle);
+}
+
+/* ── Responsive ───────────────────────────────────── */
+@media (max-width: 768px) {
+  .projects-grid {
+    grid-template-columns: 1fr;    /* Single column on mobile */
+  }
+}

@@ -1,0 +1,55 @@
+/* ═══════════════════════════════════════════════════
+   GoalsSection.css — Career Roadmap Goals Grid
+   ═══════════════════════════════════════════════════ */
+
+/* ── Goals grid layout ────────────────────────────── */
+.goals-grid {
+  display:               grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap:                   var(--s5);
+}
+
+/* ── Goal card ────────────────────────────────────── */
+.goal-card {
+  display:        flex;
+  flex-direction: column;
+  gap:            var(--s3);
+}
+
+/* ── Progress track ───────────────────────────────── */
+.goal-card__track {
+  height:        4px;
+  background:    rgba(255,255,255,0.07);
+  border-radius: var(--r-full);
+  overflow:      hidden;
+}
+
+/* Fill bar — width set via inline style from API */
+.goal-card__fill {
+  height:           100%;
+  background:       linear-gradient(90deg, var(--cyan), var(--blue));
+  border-radius:    var(--r-full);
+  transition:       width 1.2s cubic-bezier(0.16,1,0.3,1);
+  position:         relative;
+}
+
+/* Glowing tip effect */
+.goal-card__fill::after {
+  content:    '';
+  position:   absolute;
+  right:      -3px;
+  top:        50%;
+  transform:  translateY(-50%);
+  width:      8px;
+  height:     8px;
+  border-radius: 50%;
+  background: var(--cyan);
+  box-shadow: 0 0 10px var(--cyan);
+}
+
+/* ── Responsive ───────────────────────────────────── */
+@media (max-width: 768px) {
+  .goals-grid {
+    grid-template-columns: 1fr;    /* Single column on mobile */
+  }
+}
