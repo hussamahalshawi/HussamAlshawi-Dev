@@ -1,11 +1,10 @@
 /**
- * OverviewSection.jsx — Dashboard Overview (Hero replacement)
+ * OverviewSection.jsx — Dashboard Overview (Hero Replacement)
  * ─────────────────────────────────────────────────────────
  * Replaces the old full-page hero with a dashboard-style
- * overview panel: welcome header, KPI cards, top projects
- * preview, and performance metrics panel.
- * Matches the Devoryn-style glassmorphism panel layout.
- * Matches the Devoryn-style glassmorphism panel layout.
+ * overview: welcome header, profile card, KPI grid,
+ * top skills quick-view, and performance panel.
+ * Matches the Devoryn-style glassmorphism layout.
  * ─────────────────────────────────────────────────────────
  */
 import { useRef, useEffect }  from 'react';
@@ -15,31 +14,32 @@ import {
 }                             from '../../utils/formatters';       // Pure display formatters
 import { CHART_COLORS }       from '../../utils/constants';        // Consistent color palette
 import { SkeletonKPI }        from '../ui/SkeletonLoader';         // Loading skeleton
+import '../../styles/components/OverviewSection.css';              // Component styles
 
 /**
  * @param {object}      props
- * @param {object|null} props.profile   - Profile object from /api/portfolio/profile
- * @param {object|null} props.analytics - Analytics object from /api/portfolio/analytics
+ * @param {object|null} props.profile   - Profile object from API
+ * @param {object|null} props.analytics - Analytics object from API
  */
 export default function OverviewSection({ profile, analytics }) {
 
-  // ── Derive display data with safe fallbacks ──────────────────────────────
-  const fullName    = profile?.full_name        || 'Hussam Alshawi';
-  const title       = profile?.title            || 'Full Stack Developer';
-  const bio         = profile?.bio              || '';
-  const avatar      = profile?.primary_avatar   || null;
-  const expYears    = profile?.experience_years  || 0;
-  const score       = profile?.overall_score     || 0;
-  const available   = profile?.is_available_for_hire || false;
+  // ── Safe fallbacks for all display values ───────────────────────────────
+  const fullName  = profile?.full_name              || 'Hussam Alshawi';
+  const title     = profile?.title                  || 'Full Stack Developer';
+  const bio       = profile?.bio                    || '';
+  const avatar    = profile?.primary_avatar         || null;
+  const expYears  = profile?.experience_years        || 0;
+  const score     = profile?.overall_score           || 0;
+  const available = profile?.is_available_for_hire   || false;
 
-  // Count data from analytics
-  const counts      = analytics?.counts          || {};
-  const topSkills   = analytics?.top_skills      || [];
+  // Analytics counts
+  const counts    = analytics?.counts   || {};
+  const topSkills = analytics?.top_skills || [];
 
-  // KPI card definitions
+  // KPI cards config
   const kpis = [
     { label: 'Skills',      value: counts.skills       || 0, icon: '⚙',  color: CHART_COLORS[0] },
-    { label: 'Projects',    value: counts.projects      || 0, icon: '⊡', color: CHART_COLORS[1] },
+    { label: 'Projects',    value: counts.projects      || 0, icon: '⊡',  color: CHART_COLORS[1] },
     { label: 'Courses',     value: counts.courses       || 0, icon: '📚', color: CHART_COLORS[2] },
     { label: 'Roles',       value: counts.experience    || 0, icon: '💼', color: CHART_COLORS[3] },
     { label: 'Goals',       value: counts.goals         || 0, icon: '◈',  color: CHART_COLORS[4] },
@@ -47,138 +47,98 @@ export default function OverviewSection({ profile, analytics }) {
   ];
 
   return (
-    <section id="overview" style={{ marginBottom: 'var(--s8)' }}>
+    <section id="overview" className="overview-section">
 
       {/* ── Page header ── */}
-      <div className="page-header" style={{ animationDelay: '0.1s' }}>
+      <div className="page-header">
         <div className="page-header__left">
           <h1 className="page-header__title">Dashboard Overview</h1>
           <p className="page-header__sub">
-            {title} • Portfolio Analytics
+            {title} · Portfolio Analytics
           </p>
         </div>
 
-        {/* Availability badge */}
+        {/* Availability pill */}
         <div className="page-header__actions">
-          <span style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 'var(--s2)',
-            padding: 'var(--s2) var(--s4)',
-            background: available ? 'rgba(78,204,163,0.12)' : 'var(--glass-light)',
-            border: `1px solid ${available ? 'rgba(78,204,163,0.25)' : 'var(--border-subtle)'}`,
-            borderRadius: 'var(--r-full)',
-            fontFamily: 'var(--font-mono)',
-            fontSize: '0.68rem',
-            letterSpacing: '0.08em',
-            color: available ? 'var(--green)' : 'var(--text-muted)',
-          }}>
-            <span style={{
-              width: '6px', height: '6px', borderRadius: '50%',
-              background: available ? 'var(--green)' : 'var(--text-muted)',
-              boxShadow: available ? '0 0 8px var(--green)' : 'none',
-              animation: available ? 'pulseDot 2s ease infinite' : 'none',
-            }} />
+          <div className={`availability-pill ${available ? 'availability-pill--open' : ''}`}>
+            <span className={`availability-pill__dot ${available ? 'availability-pill__dot--pulse' : ''}`} />
             {available ? 'Available for Hire' : 'Currently Employed'}
-          </span>
+          </div>
         </div>
       </div>
 
       {/* ══════════════════════════════════════
           ROW 1: Profile card + KPI grid
       ══════════════════════════════════════ */}
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: '300px 1fr',
-        gap: 'var(--s5)',
-        marginBottom: 'var(--s5)',
-      }}>
+      <div className="overview-row">
 
-        {/* ── Profile Card (left) ── */}
-        <div className="panel" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', gap: 'var(--s4)' }}>
+        {/* ── Profile Card ── */}
+        <div className="profile-card">
 
-          {/* Avatar */}
-          <div style={{
-            width: '80px', height: '80px',
-            borderRadius: 'var(--r-xl)',
-            background: 'linear-gradient(135deg, var(--cyan), var(--violet))',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontFamily: 'var(--font-display)',
-            fontSize: '1.8rem', fontWeight: '800', color: '#fff',
-            boxShadow: '0 0 30px rgba(79,195,247,0.25)',
-            overflow: 'hidden', flexShrink: 0,
-          }}>
-            {avatar
-              ? <img src={avatar} alt={fullName} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-              : getInitials(fullName)
-            }
+          {/* Avatar with glow ring */}
+          <div className="profile-card__avatar-wrap">
+            <div className="profile-card__avatar">
+              {avatar
+                ? <img src={avatar} alt={fullName} />
+                : <span>{getInitials(fullName)}</span>
+              }
+            </div>
+            {/* Online indicator */}
+            <div className="profile-card__online" title="Online" />
           </div>
 
-          {/* Name */}
-          <div>
-            <div style={{
-              fontFamily: 'var(--font-display)',
-              fontSize: '1.2rem', fontWeight: '700',
-              color: 'var(--text-white)', marginBottom: 'var(--s1)',
-            }}>
-              {fullName}
-            </div>
-            <div style={{ fontSize: '0.78rem', color: 'var(--text-secondary)' }}>
-              {title}
-            </div>
+          {/* Name and title */}
+          <div className="profile-card__info">
+            <div className="profile-card__name">{fullName}</div>
+            <div className="profile-card__title">{title}</div>
           </div>
 
           {/* Stats row */}
-          <div style={{
-            display: 'flex', gap: 'var(--s4)', width: '100%',
-            padding: 'var(--s4) 0',
-            borderTop: '1px solid var(--border-subtle)',
-            borderBottom: '1px solid var(--border-subtle)',
-          }}>
-            {/* Experience stat */}
-            <div style={{ flex: 1, textAlign: 'center' }}>
-              <div style={{ fontFamily: 'var(--font-display)', fontSize: '1.6rem', fontWeight: '800', color: 'var(--cyan)' }}>
+          <div className="profile-card__stats">
+            <div className="profile-stat">
+              <div className="profile-stat__num" style={{ color: 'var(--cyan)' }}>
                 {formatExperience(expYears)}
               </div>
-              <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.6rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
-                Yrs Exp
-              </div>
+              <div className="profile-stat__label">Yrs Exp</div>
             </div>
-
-            {/* Divider */}
-            <div style={{ width: '1px', background: 'var(--border-subtle)', alignSelf: 'stretch' }} />
-
-            {/* Score stat */}
-            <div style={{ flex: 1, textAlign: 'center' }}>
-              <div style={{ fontFamily: 'var(--font-display)', fontSize: '1.6rem', fontWeight: '800', color: 'var(--blue)' }}>
+            <div className="profile-stat__divider" />
+            <div className="profile-stat">
+              <div className="profile-stat__num" style={{ color: 'var(--blue)' }}>
                 {Math.round(score)}
               </div>
-              <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.6rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
-                Skill Score
+              <div className="profile-stat__label">Score</div>
+            </div>
+            <div className="profile-stat__divider" />
+            <div className="profile-stat">
+              <div className="profile-stat__num" style={{ color: 'var(--green)' }}>
+                {counts.projects || 0}
               </div>
+              <div className="profile-stat__label">Projects</div>
             </div>
           </div>
 
-          {/* Bio */}
+          {/* Bio text */}
           {bio && (
-            <p style={{ fontSize: '0.80rem', color: 'var(--text-secondary)', lineHeight: '1.7', textAlign: 'left' }}>
-              {bio.length > 150 ? bio.slice(0, 150) + '...' : bio}
+            <p className="profile-card__bio">
+              {bio.length > 160 ? bio.slice(0, 160) + '…' : bio}
             </p>
           )}
 
           {/* CTA buttons */}
-          <div style={{ display: 'flex', gap: 'var(--s2)', width: '100%' }}>
-            <a href="#contact" className="btn btn--cta btn--sm" style={{ flex: 1, justifyContent: 'center' }}>
+          <div className="profile-card__actions">
+            <a href="#contact" className="btn btn--cta btn--sm profile-card__btn">
               Hire Me
             </a>
-            <a href="#projects" className="btn btn--ghost btn--sm" style={{ flex: 1, justifyContent: 'center' }}>
-              Projects
+            <a href="#projects" className="btn btn--ghost btn--sm profile-card__btn">
+              Projects →
             </a>
           </div>
         </div>
 
-        {/* ── KPI Grid (right) ── */}
-        <div>
+        {/* ── Right column: KPI grid + top skills ── */}
+        <div className="overview-right">
+
+          {/* KPI Cards */}
           <div className="kpi-grid">
             {kpis.map((kpi, i) => (
               <AnimatedKpiCard
@@ -187,19 +147,19 @@ export default function OverviewSection({ profile, analytics }) {
                 value={kpi.value}
                 icon={kpi.icon}
                 color={kpi.color}
-                delay={i * 80}                               /* Staggered entrance */
+                delay={i * 90}                               // Staggered entrance
               />
             ))}
           </div>
 
-          {/* Top skills quick view */}
+          {/* Top skills quick view panel */}
           {topSkills.length > 0 && (
-            <div className="panel" style={{ marginTop: 0 }}>
-              <div className="panel__header">
-                <span className="panel__title">Top Skills</span>
+            <div className="top-skills-panel">
+              <div className="top-skills-panel__header">
+                <span className="top-skills-panel__title">Top Skills</span>
                 <a href="#skills" className="btn btn--ghost btn--sm">View All →</a>
               </div>
-              <div>
+              <div className="top-skills-panel__list">
                 {topSkills.slice(0, 5).map((skill, i) => (
                   <div key={skill.skill_name} className="skill-row">
                     <span className="skill-row__name">{skill.skill_name}</span>
@@ -207,11 +167,11 @@ export default function OverviewSection({ profile, analytics }) {
                       <div
                         className="skill-row__fill"
                         style={{
-                          width: `${skill.score}%`,
+                          width:      `${skill.score}%`,
                           background: skill.color
-                            ? `linear-gradient(90deg, ${skill.color}, var(--blue))`
-                            : `linear-gradient(90deg, ${CHART_COLORS[i % CHART_COLORS.length]}, var(--blue))`,
-                          transform: 'scaleX(1)',             /* Already animated by CSS above */
+                            ? `linear-gradient(90deg, ${skill.color}, var(--cyan))`
+                            : `linear-gradient(90deg, ${CHART_COLORS[i % CHART_COLORS.length]}, var(--cyan))`,
+                          transform:  'scaleX(1)',           // Already visible in overview
                         }}
                       />
                     </div>
@@ -228,45 +188,41 @@ export default function OverviewSection({ profile, analytics }) {
 }
 
 /**
- * AnimatedKpiCard — individual KPI count card with count-up animation.
+ * AnimatedKpiCard — count card with count-up animation.
  * @param {{ label, value, icon, color, delay }} props
  */
 function AnimatedKpiCard({ label, value, icon, color, delay = 0 }) {
-  const numRef = useRef(null);                                // DOM ref for animated number
+  const numRef = useRef(null);                                // DOM ref for number
 
-  // Count-up animation using requestAnimationFrame
   useEffect(() => {
     if (!numRef.current || value === 0) return;
 
-    const duration = 1400;                                    // Animation length in ms
-    const start    = performance.now();                       // Starting timestamp
+    const duration = 1400;
+    const start    = performance.now();
 
     const tick = (now) => {
       const progress = Math.min((now - start) / duration, 1); // Normalize 0→1
-      const eased    = 1 - Math.pow(1 - progress, 3);         // Cubic ease-out
-      const current  = Math.round(eased * value);             // Current display value
+      const eased    = 1 - Math.pow(1 - progress, 3);          // Cubic ease-out
+      const current  = Math.round(eased * value);
 
       if (numRef.current) numRef.current.textContent = current;
-      if (progress < 1) requestAnimationFrame(tick);          // Continue until done
+      if (progress < 1) requestAnimationFrame(tick);
     };
 
-    // Respect stagger delay before starting animation
     const timer = setTimeout(() => requestAnimationFrame(tick), delay);
-    return () => clearTimeout(timer);                         // Cleanup timeout
+    return () => clearTimeout(timer);                          // Cleanup timer
   }, [value, delay]);
 
   return (
     <div
       className="kpi-card"
       style={{
-        '--kpi-color': color,                                 /* CSS variable for glow color */
-        animation: `fadeUp 0.5s ease ${delay}ms both`,       /* Staggered entrance */
+        '--kpi-color': color,
+        animation:     `fadeUp 0.5s ease ${delay}ms both`,
       }}
     >
       <div className="kpi-card__icon" style={{ color }}>{icon}</div>
-      <div ref={numRef} className="kpi-card__num" style={{ color }}>
-        {value}                                               {/* Will be animated */}
-      </div>
+      <div ref={numRef} className="kpi-card__num" style={{ color }}>{value}</div>
       <div className="kpi-card__label">{label}</div>
     </div>
   );

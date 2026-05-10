@@ -1,73 +1,83 @@
 /**
- * Navbar.jsx — Fixed top navigation bar
- * Features: scroll-aware background, active link highlight,
- * availability badge pulled from profile data.
+ * Navbar.jsx — Fixed Top Navigation Bar
+ * ─────────────────────────────────────────────────────────
+ * Features: scroll-aware glassmorphism background,
+ * active link highlight via IntersectionObserver,
+ * availability badge from profile data.
+ * ─────────────────────────────────────────────────────────
  */
-import { useState, useEffect }  from 'react';                 // React state and lifecycle hooks
-import { NAV_LINKS }            from '../../utils/constants'; // Centralised navigation links array
-import { useProfile }           from '../../hooks/useProfile'; // Profile hook for availability badge
-import '../../styles/components/Navbar.css';                  // Component-specific styles
+import { useState, useEffect }  from 'react';                 // React hooks
+import { NAV_LINKS }            from '../../utils/constants'; // Centralised nav links
+import { useProfile }           from '../../hooks/useProfile'; // Profile hook
+import '../../styles/components/Navbar.css';                  // Component styles
 
 /**
- * Navbar — renders a fixed top bar with:
+ * Navbar — renders a fixed floating pill navigation bar with:
  * - Logo on the left
  * - Navigation links in the center
- * - Availability badge on the right (shown only when is_available_for_hire is true)
+ * - Availability badge on the right (when is_available_for_hire)
  */
 export default function Navbar() {
-  const [stuck,         setStuck]         = useState(false);  // true when page is scrolled down
-  const [activeSection, setActiveSection] = useState('');     // ID of the currently visible section
+  const [stuck,         setStuck]         = useState(false);  // Scrolled-down state
+  const [activeSection, setActiveSection] = useState('');     // Currently visible section ID
 
-  const { profile } = useProfile();                           // Fetch profile for availability badge
+  const { profile } = useProfile();                           // Fetch profile for badge
 
-  // ── Scroll listener — adds 'stuck' class after 20px scroll ──────────────
+  // ── Scroll listener: adds 'stuck' style after 20px ──────────────────────
   useEffect(() => {
-    const handleScroll = () => setStuck(window.scrollY > 20); // Toggle stuck state on scroll
-    window.addEventListener('scroll', handleScroll);          // Attach listener
-    return () => window.removeEventListener('scroll', handleScroll); // Cleanup on unmount
+    const handleScroll = () => setStuck(window.scrollY > 20);
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // ── IntersectionObserver — tracks which section is in viewport ───────────
+  // ── IntersectionObserver: tracks visible section ─────────────────────────
   useEffect(() => {
-    // Build an array of section IDs from NAV_LINKS (strip the '#' prefix)
-    const ids = NAV_LINKS.map(l => l.href.replace('#', ''));
+    const ids = NAV_LINKS.map(l => l.href.replace('#', ''));  // Strip '#' prefix
 
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach(entry => {
-          if (entry.isIntersecting) setActiveSection(entry.target.id); // Mark as active
+          if (entry.isIntersecting) setActiveSection(entry.target.id);
         });
       },
-      { rootMargin: '-40% 0px -55% 0px' }                    // Trigger near center of viewport
+      { rootMargin: '-40% 0px -55% 0px' }                    // Trigger near viewport center
     );
 
     ids.forEach(id => {
       const el = document.getElementById(id);
-      if (el) observer.observe(el);                           // Observe each section element
+      if (el) observer.observe(el);
     });
 
-    return () => observer.disconnect();                       // Cleanup observer on unmount
+    return () => observer.disconnect();
   }, []);
 
   return (
-    <nav className={`navbar ${stuck ? 'navbar--stuck' : ''}`}> {/* Apply blur on scroll */}
-
+    <nav
+      className={`navbar ${stuck ? 'navbar--stuck' : ''}`}
+      role="navigation"
+      aria-label="Main navigation"
+    >
       {/* ── Logo ── */}
-      <a href="#" className="navbar__logo">
-        HA<em>.</em>Dev                                       {/* Lime accent on the dot */}
+      <a href="#" className="navbar__logo" aria-label="Home">
+        HA<em>.</em>Dev
       </a>
 
       {/* ── Navigation links ── */}
-      <ul className="navbar__menu">
+      <ul className="navbar__menu" role="list">
         {NAV_LINKS.map(link => (
           <li key={link.href}>
             <a
               href={link.href}
               className={`navbar__link ${
-                activeSection === link.href.replace('#', '')   // Highlight active section
+                activeSection === link.href.replace('#', '')
                   ? 'navbar__link--active'
                   : ''
               }`}
+              aria-current={
+                activeSection === link.href.replace('#', '')
+                  ? 'page'
+                  : undefined
+              }
             >
               {link.label}
             </a>
@@ -75,10 +85,10 @@ export default function Navbar() {
         ))}
       </ul>
 
-      {/* ── Availability badge (only shown when profile says available) ── */}
+      {/* ── Availability badge (only when available for hire) ── */}
       {profile?.is_available_for_hire && (
-        <span className="navbar__badge">
-          Available for hire                                  {/* Pulsing dot via CSS */}
+        <span className="navbar__badge" aria-label="Status: Available for hire">
+          Available for hire
         </span>
       )}
     </nav>
