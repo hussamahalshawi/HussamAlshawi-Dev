@@ -1,47 +1,49 @@
-/* ═══════════════════════════════════════════════════
-   DashboardLayout.css — Devoryn-Grade Glass Shell
-   Sidebar + Topbar + Content Area
-   Deep frosted glass · Water droplets · Cyan accents
-   ═══════════════════════════════════════════════════ */
+/* ═══════════════════════════════════════════════════════════════
+   DashboardLayout.css — Devoryn-Grade Glassmorphism Shell
+   Fixed sidebar + sticky topbar + scrollable content area
+   ═══════════════════════════════════════════════════════════════ */
 
-/* ── Root wrapper ─────────────────────────────────── */
+/* ── Root wrapper ─────────────────────────────────────────────── */
 .dashboard-root {
   display:    flex;
   min-height: 100vh;
+  background: var(--bg-primary);
   position:   relative;
-  background: var(--bg-scene);  /* Outermost dark scene color */
-}
-
-/* ══════════════════════════════════════
-   SIDEBAR — Devoryn frosted glass panel
-══════════════════════════════════════ */
-.sidebar {
-  width:         var(--sidebar-width);      /* Fixed 260px width */
-  min-height:    100vh;
-  position:      fixed;
-  top:           0;
-  left:          0;
-  z-index:       200;
-  display:       flex;
-  flex-direction:column;
-
-  /* Deep frosted glass — key Devoryn look */
-  background:              rgba(11, 16, 34, 0.82);
-  backdrop-filter:         var(--blur-2xl);           /* Heavy blur for frosted effect */
-  -webkit-backdrop-filter: var(--blur-2xl);
-  border-right:            1px solid var(--border-subtle);
-  box-shadow:              var(--shadow-sidebar);
-
-  padding:    var(--s5) var(--s4) var(--s6);
-  transition: transform var(--t-slow);
-  overflow-y: auto;
   overflow-x: hidden;
 }
 
-/* Scrollbar inside sidebar */
-.sidebar::-webkit-scrollbar { width: 2px; }
+/* ═══════════════════════════════════════════════════
+   SIDEBAR — Deep Frosted Glass Panel
+   ═══════════════════════════════════════════════════ */
+.sidebar {
+  width:          var(--sidebar-width, 260px);
+  min-height:     100vh;
+  position:       fixed;
+  top:            0;
+  left:           0;
+  z-index:        200;
+  display:        flex;
+  flex-direction: column;
+  padding:        var(--space-5) var(--space-4) var(--space-6);
+  overflow-y:     auto;
+  overflow-x:     hidden;
+  transition:     transform var(--transition-slow);
 
-/* Right edge glow — Devoryn signature detail */
+  /* Deep frosted glass — Devoryn signature */
+  background:              rgba(11, 16, 34, 0.82);
+  backdrop-filter:         blur(40px) saturate(1.8);
+  -webkit-backdrop-filter: blur(40px) saturate(1.8);
+  border-right:            1px solid rgba(255, 255, 255, 0.09);
+  box-shadow:              8px 0 40px rgba(0, 0, 0, 0.55),
+                           inset -1px 0 0 rgba(255, 255, 255, 0.04);
+}
+
+/* Thin scrollbar inside sidebar */
+.sidebar::-webkit-scrollbar       { width: 2px; }
+.sidebar::-webkit-scrollbar-track { background: transparent; }
+.sidebar::-webkit-scrollbar-thumb { background: rgba(79, 195, 247, 0.25); border-radius: 9999px; }
+
+/* Right-edge glow line — Devoryn detail */
 .sidebar::after {
   content:  '';
   position: absolute;
@@ -51,16 +53,207 @@
   width:    1px;
   background: linear-gradient(
     to bottom,
-    transparent,
-    rgba(79,195,247,0.20),
-    rgba(79,195,247,0.10),
-    transparent
+    transparent 0%,
+    rgba(79, 195, 247, 0.25) 35%,
+    rgba(79, 195, 247, 0.12) 65%,
+    transparent 100%
   );
   pointer-events: none;
 }
 
-/* Top glass gloss line */
+/* Top gloss shine */
 .sidebar::before {
+  content:    '';
+  position:   absolute;
+  top:        0;
+  left:       0;
+  right:      0;
+  height:     1px;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.14), transparent);
+  pointer-events: none;
+}
+
+/* Water-droplet texture overlay */
+.sidebar__texture {
+  position:         absolute;
+  inset:            0;
+  pointer-events:   none;
+  z-index:          0;
+  background-image:
+    radial-gradient(circle at 18% 28%, rgba(255,255,255,0.035) 1.5px, transparent 1.5px),
+    radial-gradient(circle at 72% 14%, rgba(255,255,255,0.025) 1px,   transparent 1px),
+    radial-gradient(circle at 84% 60%, rgba(255,255,255,0.03)  2px,   transparent 2px),
+    radial-gradient(circle at 33% 76%, rgba(255,255,255,0.02)  1.5px, transparent 1.5px),
+    radial-gradient(circle at 55% 42%, rgba(255,255,255,0.015) 1px,   transparent 1px);
+  border-radius: inherit;
+}
+
+/* Ensure all sidebar content sits above texture */
+.sidebar > *:not(.sidebar__texture) { position: relative; z-index: 1; }
+
+/* ── Logo ─────────────────────────────────────────── */
+.sidebar__logo {
+  display:         flex;
+  align-items:     center;
+  gap:             var(--space-3);
+  padding:         var(--space-3) var(--space-2);
+  margin-bottom:   var(--space-6);
+  text-decoration: none;
+  border-radius:   var(--radius-lg);
+  transition:      background var(--transition-fast);
+  position:        relative;
+}
+
+.sidebar__logo:hover { background: rgba(255, 255, 255, 0.05); }
+
+/* Brand square */
+.sidebar__logo-mark {
+  width:           38px;
+  height:          38px;
+  border-radius:   var(--radius-md);
+  background:      linear-gradient(135deg, var(--accent-cyan) 0%, var(--accent-blue) 100%);
+  display:         flex;
+  align-items:     center;
+  justify-content: center;
+  font-family:     var(--font-display);
+  font-size:       0.82rem;
+  font-weight:     800;
+  color:           #fff;
+  letter-spacing:  -0.02em;
+  flex-shrink:     0;
+  box-shadow:      0 0 20px rgba(79, 195, 247, 0.35),
+                   0 4px 12px rgba(0, 0, 0, 0.4);
+  animation:       glowPulse 4s ease-in-out infinite;
+}
+
+@keyframes glowPulse {
+  0%, 100% { box-shadow: 0 0 18px rgba(79,195,247,0.28), 0 4px 12px rgba(0,0,0,0.4); }
+  50%       { box-shadow: 0 0 30px rgba(79,195,247,0.48), 0 4px 16px rgba(0,0,0,0.4); }
+}
+
+.sidebar__logo-text {
+  font-family:     var(--font-display);
+  font-size:       1.22rem;
+  font-weight:     800;
+  color:           var(--text-white);
+  letter-spacing:  0.01em;
+  line-height:     1;
+}
+
+.sidebar__logo-text em {
+  color:      var(--accent-cyan);
+  font-style: normal;
+}
+
+/* ── Section label ────────────────────────────────── */
+.sidebar__nav-label {
+  font-family:    var(--font-mono);
+  font-size:      0.56rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color:          var(--text-muted);
+  padding:        0 var(--space-3);
+  margin-bottom:  var(--space-2);
+  display:        block;
+}
+
+/* ── Nav ──────────────────────────────────────────── */
+.sidebar__nav {
+  display:        flex;
+  flex-direction: column;
+  gap:            2px;
+  flex:           1;
+}
+
+/* Nav item */
+.nav-item {
+  display:         flex;
+  align-items:     center;
+  gap:             var(--space-3);
+  padding:         0.6rem var(--space-3);
+  border-radius:   var(--radius-md);
+  color:           var(--text-secondary);
+  font-size:       0.85rem;
+  font-weight:     500;
+  text-decoration: none;
+  border:          1px solid transparent;
+  transition:      all var(--transition-base);
+  position:        relative;
+  cursor:          pointer;
+}
+
+.nav-item:hover {
+  background:   rgba(255, 255, 255, 0.06);
+  color:        var(--text-primary);
+  border-color: rgba(255, 255, 255, 0.06);
+}
+
+/* Active state — cyan glass */
+.nav-item--active {
+  background:   rgba(79, 195, 247, 0.10);
+  color:        #7DD8FC;
+  border-color: rgba(79, 195, 247, 0.18);
+  box-shadow:   inset 0 0 0 1px rgba(79, 195, 247, 0.08);
+}
+
+/* Left accent bar — Devoryn signature detail */
+.nav-item--active::before {
+  content:       '';
+  position:      absolute;
+  left:          -1px;
+  top:           20%;
+  height:        60%;
+  width:         3px;
+  background:    var(--accent-cyan);
+  border-radius: 0 var(--radius-xs) var(--radius-xs) 0;
+  box-shadow:    0 0 10px var(--accent-cyan),
+                 0 0 20px rgba(79, 195, 247, 0.4);
+}
+
+.nav-item__icon {
+  width:           22px;
+  height:          22px;
+  display:         flex;
+  align-items:     center;
+  justify-content: center;
+  font-size:       1.05rem;
+  flex-shrink:     0;
+  opacity:         0.75;
+  transition:      opacity var(--transition-fast);
+}
+
+.nav-item--active .nav-item__icon,
+.nav-item:hover   .nav-item__icon { opacity: 1; }
+
+.nav-item__label {
+  font-size:   0.84rem;
+  font-weight: 500;
+  flex:        1;
+}
+
+/* ── User card (bottom) ───────────────────────────── */
+.sidebar__user {
+  margin-top:  auto;
+  padding-top: var(--space-5);
+  border-top:  1px solid rgba(255, 255, 255, 0.07);
+}
+
+.sidebar__user-card {
+  display:       flex;
+  align-items:   center;
+  gap:           var(--space-3);
+  padding:       var(--space-3);
+  border-radius: var(--radius-lg);
+  background:    rgba(255, 255, 255, 0.05);
+  border:        1px solid rgba(255, 255, 255, 0.08);
+  cursor:        pointer;
+  transition:    all var(--transition-base);
+  position:      relative;
+  overflow:      hidden;
+}
+
+/* Gloss on user card */
+.sidebar__user-card::before {
   content:    '';
   position:   absolute;
   top:        0;
@@ -71,177 +264,27 @@
   pointer-events: none;
 }
 
-/* ── Sidebar Logo ─────────────────────────────────── */
-.sidebar__logo {
-  display:         flex;
-  align-items:     center;
-  gap:             var(--s3);
-  padding:         var(--s3);
-  margin-bottom:   var(--s6);
-  text-decoration: none;
-  border-radius:   var(--r-lg);
-  transition:      background var(--t-fast);
-  position:        relative;
-}
-
-.sidebar__logo:hover {
-  background: var(--glass-light);
-}
-
-/* Brand square with gradient */
-.sidebar__logo-mark {
-  width:          36px;
-  height:         36px;
-  border-radius:  var(--r-md);
-  background:     linear-gradient(135deg, var(--cyan), var(--blue));
-  display:        flex;
-  align-items:    center;
-  justify-content:center;
-  font-family:    var(--font-display);
-  font-size:      0.80rem;
-  font-weight:    800;
-  color:          #fff;
-  box-shadow:     0 0 20px rgba(79,195,247,0.30), 0 4px 12px rgba(0,0,0,0.40);
-  flex-shrink:    0;
-  letter-spacing: -0.02em;
-}
-
-.sidebar__logo-text {
-  font-family:    var(--font-display);
-  font-size:      1.22rem;
-  font-weight:    800;
-  color:          var(--text-white);
-  letter-spacing: 0.01em;
-}
-
-.sidebar__logo-text em {
-  color:      var(--cyan);
-  font-style: normal;
-}
-
-/* ── Nav Section Label ────────────────────────────── */
-.sidebar__nav-label {
-  font-family:    var(--font-mono);
-  font-size:      0.56rem;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color:          var(--text-muted);
-  padding:        0 var(--s3);
-  margin-bottom:  var(--s2);
-  margin-top:     var(--s1);
-}
-
-/* ── Nav Items ────────────────────────────────────── */
-.sidebar__nav {
-  display:        flex;
-  flex-direction: column;
-  gap:            2px;           /* Tight spacing between items */
-  flex:           1;
-}
-
-.nav-item {
-  display:         flex;
-  align-items:     center;
-  gap:             var(--s3);
-  padding:         0.58rem var(--s3);
-  border-radius:   var(--r-md);
-  color:           var(--text-secondary);
-  font-size:       0.85rem;
-  font-weight:     500;
-  cursor:          pointer;
-  transition:      all var(--t-base);
-  position:        relative;
-  text-decoration: none;
-  border:          1px solid transparent;
-}
-
-.nav-item:hover {
-  background:   var(--glass-light);
-  color:        var(--text-primary);
-  border-color: var(--border-faint);
-}
-
-/* Active state — cyan tint like Devoryn */
-.nav-item--active {
-  background:   rgba(79,195,247,0.10);
-  color:        var(--cyan-bright);
-  border-color: rgba(79,195,247,0.20);
-  box-shadow:   inset 0 0 0 1px rgba(79,195,247,0.10);
-}
-
-/* Left accent bar on active */
-.nav-item--active::before {
-  content:      '';
-  position:     absolute;
-  left:         -2px;            /* Extends slightly beyond border */
-  top:          20%;
-  height:       60%;
-  width:        3px;
-  background:   var(--cyan);
-  border-radius:0 var(--r-xs) var(--r-xs) 0;
-  box-shadow:   0 0 10px var(--cyan), 0 0 20px rgba(79,195,247,0.4);
-}
-
-.nav-item__icon {
-  width:       20px;
-  height:      20px;
-  display:     flex;
-  align-items: center;
-  justify-content:center;
-  font-size:   1rem;
-  flex-shrink: 0;
-  opacity:     0.8;
-}
-
-.nav-item--active .nav-item__icon {
-  opacity: 1;
-}
-
-.nav-item__label {
-  font-size:   0.84rem;
-  font-weight: 500;
-  flex:        1;
-}
-
-/* ── Sidebar User Card ────────────────────────────── */
-.sidebar__user {
-  margin-top:  auto;             /* Push to bottom */
-  padding-top: var(--s5);
-  border-top:  1px solid var(--border-subtle);
-}
-
-.sidebar__user-card {
-  display:       flex;
-  align-items:   center;
-  gap:           var(--s3);
-  padding:       var(--s3);
-  border-radius: var(--r-lg);
-  background:    var(--glass-light);
-  border:        1px solid var(--border-subtle);
-  cursor:        pointer;
-  transition:    all var(--t-base);
-}
-
 .sidebar__user-card:hover {
-  background:   var(--glass-medium);
-  border-color: var(--border-medium);
+  background:   rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.12);
 }
 
+/* Avatar */
 .sidebar__avatar {
-  width:          36px;
-  height:         36px;
-  border-radius:  var(--r-md);
-  background:     linear-gradient(135deg, var(--cyan), var(--violet));
-  display:        flex;
-  align-items:    center;
-  justify-content:center;
-  font-family:    var(--font-display);
-  font-size:      0.80rem;
-  font-weight:    700;
-  color:          #fff;
-  flex-shrink:    0;
-  overflow:       hidden;
-  box-shadow:     0 2px 8px rgba(0,0,0,0.35);
+  width:           38px;
+  height:          38px;
+  border-radius:   var(--radius-md);
+  background:      linear-gradient(135deg, var(--accent-cyan), var(--accent-violet));
+  display:         flex;
+  align-items:     center;
+  justify-content: center;
+  font-family:     var(--font-display);
+  font-size:       0.82rem;
+  font-weight:     700;
+  color:           #fff;
+  flex-shrink:     0;
+  overflow:        hidden;
+  box-shadow:      0 2px 8px rgba(0, 0, 0, 0.35);
 }
 
 .sidebar__avatar img {
@@ -250,18 +293,16 @@
   object-fit: cover;
 }
 
-.sidebar__user-info {
-  flex:      1;
-  min-width: 0;                  /* Allows text truncation */
-}
+.sidebar__user-info { flex: 1; min-width: 0; }
 
 .sidebar__user-name {
-  font-size:     0.80rem;
+  font-size:     0.82rem;
   font-weight:   600;
   color:         var(--text-primary);
   white-space:   nowrap;
   overflow:      hidden;
   text-overflow: ellipsis;
+  line-height:   1.2;
 }
 
 .sidebar__user-role {
@@ -269,50 +310,59 @@
   font-size:      0.58rem;
   color:          var(--text-muted);
   letter-spacing: 0.04em;
-  margin-top:     2px;
+  margin-top:     3px;
+  white-space:    nowrap;
+  overflow:       hidden;
+  text-overflow:  ellipsis;
 }
 
+/* Online dot */
 .sidebar__online-dot {
-  width:         7px;
-  height:        7px;
+  width:         8px;
+  height:        8px;
   border-radius: 50%;
-  background:    var(--green);
-  box-shadow:    0 0 8px var(--green);
+  background:    var(--accent-green);
+  box-shadow:    0 0 8px var(--accent-green);
   animation:     pulseDot 2.5s ease infinite;
   flex-shrink:   0;
 }
 
-/* ══════════════════════════════════════
+@keyframes pulseDot {
+  0%, 100% { transform: scale(1);    opacity: 1;   }
+  50%       { transform: scale(1.45); opacity: 0.65; }
+}
+
+/* ═══════════════════════════════════════════════════
    MAIN CONTENT AREA
-══════════════════════════════════════ */
+   ═══════════════════════════════════════════════════ */
 .dashboard-main {
-  margin-left:    var(--sidebar-width);   /* Offset for fixed sidebar */
+  margin-left:    var(--sidebar-width, 260px);
   flex:           1;
   min-height:     100vh;
   display:        flex;
   flex-direction: column;
-  min-width:      0;                      /* Prevents overflow */
+  min-width:      0;
 }
 
-/* ══════════════════════════════════════
-   TOP BAR — Devoryn sticky glass bar
-══════════════════════════════════════ */
+/* ═══════════════════════════════════════════════════
+   TOPBAR — Sticky Frosted Glass Bar
+   ═══════════════════════════════════════════════════ */
 .topbar {
-  height:          var(--topbar-height);
+  height:          64px;
   position:        sticky;
   top:             0;
   z-index:         100;
   display:         flex;
   align-items:     center;
   justify-content: space-between;
-  padding:         0 var(--s8);
+  padding:         0 var(--space-8);
 
-  /* Frosted glass topbar */
-  background:              rgba(11, 16, 34, 0.75);
-  backdrop-filter:         var(--blur-xl);
-  -webkit-backdrop-filter: var(--blur-xl);
-  border-bottom:           1px solid var(--border-subtle);
-  box-shadow:              0 2px 20px rgba(0,0,0,0.30);
+  /* Frosted glass */
+  background:              rgba(11, 16, 34, 0.78);
+  backdrop-filter:         blur(32px) saturate(1.6);
+  -webkit-backdrop-filter: blur(32px) saturate(1.6);
+  border-bottom:           1px solid rgba(255, 255, 255, 0.08);
+  box-shadow:              0 2px 24px rgba(0, 0, 0, 0.28);
 }
 
 /* Bottom gloss line on topbar */
@@ -320,107 +370,109 @@
   content:    '';
   position:   absolute;
   bottom:     0;
-  left:       5%;
-  right:      5%;
+  left:       4%;
+  right:      4%;
   height:     1px;
-  background: linear-gradient(90deg, transparent, rgba(79,195,247,0.15), transparent);
+  background: linear-gradient(90deg, transparent, rgba(79, 195, 247, 0.18), transparent);
   pointer-events: none;
 }
 
-/* Greeting text */
+/* Greeting */
 .topbar__greeting-hi {
   font-family:    var(--font-display);
   font-size:      1.05rem;
   font-weight:    700;
   color:          var(--text-white);
   line-height:    1.2;
+  letter-spacing: -0.01em;
 }
 
 .topbar__greeting-sub {
   font-family:    var(--font-mono);
-  font-size:      0.68rem;
+  font-size:      0.66rem;
   color:          var(--text-muted);
   letter-spacing: 0.04em;
-  margin-top:     1px;
+  margin-top:     2px;
 }
 
-/* Right actions */
+/* Actions row */
 .topbar__actions {
   display:     flex;
   align-items: center;
-  gap:         var(--s3);
+  gap:         var(--space-3);
 }
 
-/* Icon button (bell, settings) */
+/* Icon button */
 .topbar__icon-btn {
-  width:         36px;
-  height:        36px;
-  border-radius: var(--r-md);
-  background:    var(--glass-light);
-  border:        1px solid var(--border-subtle);
-  display:       flex;
-  align-items:   center;
-  justify-content:center;
-  font-size:     1rem;
-  color:         var(--text-secondary);
-  cursor:        pointer;
-  transition:    all var(--t-fast);
-  position:      relative;
-  flex-shrink:   0;
+  width:           38px;
+  height:          38px;
+  border-radius:   var(--radius-md);
+  background:      rgba(255, 255, 255, 0.05);
+  border:          1px solid rgba(255, 255, 255, 0.08);
+  display:         flex;
+  align-items:     center;
+  justify-content: center;
+  font-size:       1rem;
+  color:           var(--text-secondary);
+  cursor:          pointer;
+  transition:      all var(--transition-fast);
+  position:        relative;
+  flex-shrink:     0;
+  font-family:     var(--font-body);
 }
 
 .topbar__icon-btn:hover {
-  background:   var(--glass-medium);
+  background:   rgba(255, 255, 255, 0.09);
   color:        var(--text-primary);
-  border-color: var(--border-medium);
+  border-color: rgba(255, 255, 255, 0.14);
   transform:    translateY(-1px);
 }
 
-/* Notification dot on bell */
+/* Notification red dot */
 .topbar__notif-dot {
-  position:     absolute;
-  top:          7px;
-  right:        7px;
-  width:        6px;
-  height:       6px;
-  border-radius:50%;
-  background:   var(--cyan);
-  box-shadow:   0 0 6px var(--cyan);
-  animation:    pulseDot 2s ease infinite;
+  position:      absolute;
+  top:           8px;
+  right:         8px;
+  width:         6px;
+  height:        6px;
+  border-radius: 50%;
+  background:    var(--accent-cyan);
+  box-shadow:    0 0 6px var(--accent-cyan);
+  animation:     pulseDot 2s ease infinite;
 }
 
-/* User pill — Devoryn style */
+/* User pill */
 .topbar__user {
   display:       flex;
   align-items:   center;
-  gap:           var(--s2);
-  padding:       0.38rem 0.75rem 0.38rem 0.38rem;
-  background:    var(--glass-light);
-  border:        1px solid var(--border-subtle);
-  border-radius: var(--r-full);        /* Full pill shape */
+  gap:           var(--space-2);
+  padding:       0.40rem 0.80rem 0.40rem 0.40rem;
+  background:    rgba(255, 255, 255, 0.05);
+  border:        1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 9999px;
   cursor:        pointer;
-  transition:    all var(--t-base);
+  transition:    all var(--transition-base);
 }
 
 .topbar__user:hover {
-  background:   var(--glass-medium);
-  border-color: var(--border-medium);
+  background:   rgba(255, 255, 255, 0.09);
+  border-color: rgba(255, 255, 255, 0.15);
 }
 
 .topbar__user-avatar {
-  width:          28px;
-  height:         28px;
-  border-radius:  var(--r-full);
-  background:     linear-gradient(135deg, var(--cyan), var(--blue));
-  display:        flex;
-  align-items:    center;
-  justify-content:center;
-  font-family:    var(--font-display);
-  font-size:      0.65rem;
-  font-weight:    700;
-  color:          #fff;
-  overflow:       hidden;
-  flex-shrink:    0;
+  width:           30px;
+  height:          30px;
+  border-radius:   50%;
+  background:      linear-gradient(135deg, var(--accent-cyan), var(--accent-blue));
+  display:         flex;
+  align-items:     center;
+  justify-content: center;
+  font-family:     var(--font-display);
+  font-size:       0.68rem;
+  font-weight:     700;
+  color:           #fff;
+  overflow:        hidden;
+  flex-shrink:     0;
 }
 
 .topbar__user-avatar img {
@@ -430,82 +482,88 @@
 }
 
 .topbar__user-name {
-  font-size:   0.80rem;
+  font-size:   0.82rem;
   font-weight: 500;
   color:       var(--text-secondary);
   white-space: nowrap;
 }
 
 .topbar__user-chevron {
-  font-size:  0.60rem;
-  color:      var(--text-muted);
-  margin-left:var(--s1);
+  font-size:   0.62rem;
+  color:       var(--text-muted);
+  margin-left: 2px;
 }
 
-/* Hamburger — shown on mobile only */
-.topbar__hamburger {
-  display: none;
-}
+/* Hamburger — mobile only */
+.topbar__hamburger { display: none; }
 
-/* ── Page Content ─────────────────────────────────── */
+/* ═══════════════════════════════════════════════════
+   PAGE CONTENT
+   ═══════════════════════════════════════════════════ */
 .page-content {
   flex:       1;
-  padding:    var(--s8);
-  max-width:  var(--content-max);
-  animation:  fadeIn 0.4s ease;
+  padding:    var(--space-8);
+  animation:  fadeIn 0.4s ease both;
 }
 
-/* ── Mobile overlay ───────────────────────────────── */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(18px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideInLeft {
+  from { transform: translateX(-100%); }
+  to   { transform: translateX(0); }
+}
+
+/* ═══════════════════════════════════════════════════
+   MOBILE OVERLAY
+   ═══════════════════════════════════════════════════ */
 .sidebar-overlay {
   position:        fixed;
   inset:           0;
   z-index:         150;
-  background:      rgba(0,0,0,0.65);
+  background:      rgba(0, 0, 0, 0.65);
   backdrop-filter: blur(6px);
   -webkit-backdrop-filter: blur(6px);
   animation:       fadeIn 0.2s ease;
 }
 
-/* ══════════════════════════════════════
-   RESPONSIVE — Mobile
-══════════════════════════════════════ */
+/* ═══════════════════════════════════════════════════
+   RESPONSIVE
+   ═══════════════════════════════════════════════════ */
 @media (max-width: 1024px) {
-  /* Sidebar hidden off-screen on mobile */
+  /* Sidebar slides off-screen */
   .sidebar {
     transform:  translateX(-100%);
     box-shadow: none;
   }
 
-  /* Slide in when open */
   .sidebar--open {
     transform:  translateX(0);
-    box-shadow: var(--shadow-sidebar);
-    animation:  slideInLeft 0.35s ease;
+    box-shadow: 8px 0 40px rgba(0, 0, 0, 0.6);
+    animation:  slideInLeft 0.35s cubic-bezier(0.16, 1, 0.3, 1);
   }
 
-  /* No sidebar offset on mobile */
-  .dashboard-main {
-    margin-left: 0;
-  }
+  /* No sidebar offset */
+  .dashboard-main { margin-left: 0; }
 
   /* Show hamburger */
-  .topbar__hamburger {
-    display: flex;
-  }
+  .topbar__hamburger { display: flex; }
 
-  .page-content {
-    padding: var(--s5);
-  }
-
-  .topbar {
-    padding: 0 var(--s5);
-  }
+  .page-content { padding: var(--space-5); }
+  .topbar       { padding: 0 var(--space-5); }
 }
 
-@media (max-width: 600px) {
+@media (max-width: 640px) {
   .topbar__greeting-sub { display: none; }
   .topbar__user-name    { display: none; }
   .topbar__user-chevron { display: none; }
-  .topbar { padding: 0 var(--s4); }
-  .page-content { padding: var(--s4); }
+  .topbar               { padding: 0 var(--space-4); }
+  .page-content         { padding: var(--space-4); }
 }
