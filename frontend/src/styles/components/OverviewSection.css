@@ -1,40 +1,40 @@
-/* ═══════════════════════════════════════════════════
+/* ═══════════════════════════════════════════════════════════════
    OverviewSection.css — Dashboard Overview Panel
-   Devoryn-grade glassmorphism with deep shadows
-   ═══════════════════════════════════════════════════ */
+   Bento grid · Profile card · KPI cards · Top skills
+   ═══════════════════════════════════════════════════════════════ */
 
-/* ── Section wrapper ──────────────────────────────── */
+/* ── Section wrapper ──────────────────────────────────────────── */
 .overview-section {
-  margin-bottom: var(--s10);
-  animation:     fadeIn 0.5s ease both;
+  margin-bottom: var(--space-10);
+  animation:     fadeUp 0.5s ease both;
 }
 
-/* ══════════════════════════════════════
+/* ═══════════════════════════════════════════════════
    PAGE HEADER
-══════════════════════════════════════ */
+   ═══════════════════════════════════════════════════ */
 .page-header {
   display:         flex;
   align-items:     flex-start;
   justify-content: space-between;
-  margin-bottom:   var(--s8);
+  margin-bottom:   var(--space-8);
   flex-wrap:       wrap;
-  gap:             var(--s4);
-  animation:       fadeUp 0.5s ease 0.1s both;
+  gap:             var(--space-4);
+  animation:       fadeUp 0.5s ease 0.08s both;
 }
 
 .page-header__title {
   font-family:    var(--font-display);
-  font-size:      clamp(1.6rem, 2.8vw, 2.2rem);
+  font-size:      clamp(1.5rem, 2.5vw, 2.1rem);
   font-weight:    800;
   color:          var(--text-white);
   letter-spacing: -0.025em;
   line-height:    1.1;
-  margin-bottom:  var(--s1);
+  margin-bottom:  var(--space-1);
 }
 
 .page-header__sub {
   font-family:    var(--font-mono);
-  font-size:      0.70rem;
+  font-size:      0.68rem;
   color:          var(--text-muted);
   letter-spacing: 0.04em;
 }
@@ -43,23 +43,23 @@
 .availability-pill {
   display:        flex;
   align-items:    center;
-  gap:            var(--s2);
-  padding:        var(--s2) var(--s4);
-  background:     var(--glass-light);
-  border:         1px solid var(--border-subtle);
-  border-radius:  var(--r-full);
+  gap:            var(--space-2);
+  padding:        var(--space-2) var(--space-4);
+  background:     rgba(255, 255, 255, 0.05);
+  border:         1px solid rgba(255, 255, 255, 0.10);
+  border-radius:  9999px;
   font-family:    var(--font-mono);
-  font-size:      0.66rem;
+  font-size:      0.64rem;
   letter-spacing: 0.08em;
   color:          var(--text-muted);
   white-space:    nowrap;
-  transition:     all var(--t-base);
+  transition:     all 0.25s ease;
 }
 
 .availability-pill--open {
-  background:   rgba(78,204,163,0.10);
-  border-color: rgba(78,204,163,0.25);
-  color:        var(--green);
+  background:   rgba(76, 175, 140, 0.10);
+  border-color: rgba(76, 175, 140, 0.25);
+  color:        var(--accent-green);
 }
 
 .availability-pill__dot {
@@ -68,56 +68,59 @@
   border-radius: 50%;
   background:    var(--text-muted);
   flex-shrink:   0;
+  transition:    all 0.25s ease;
 }
 
-.availability-pill__dot--pulse {
-  background: var(--green);
-  box-shadow: 0 0 8px var(--green);
+.availability-pill--open .availability-pill__dot {
+  background: var(--accent-green);
+  box-shadow: 0 0 8px var(--accent-green);
   animation:  pulseDot 2s ease infinite;
 }
 
-/* ══════════════════════════════════════
-   OVERVIEW TWO-COLUMN ROW
-══════════════════════════════════════ */
+/* ═══════════════════════════════════════════════════
+   OVERVIEW ROW — Profile card + right column
+   ═══════════════════════════════════════════════════ */
 .overview-row {
   display:               grid;
-  grid-template-columns: 280px 1fr;     /* Fixed profile card + flexible right */
-  gap:                   var(--s6);
+  grid-template-columns: 280px 1fr;
+  gap:                   var(--space-6);
   align-items:           start;
-  animation:             fadeUp 0.5s ease 0.15s both;
+  animation:             fadeUp 0.5s ease 0.14s both;
 }
 
 .overview-right {
   display:        flex;
   flex-direction: column;
-  gap:            var(--s5);
+  gap:            var(--space-5);
   min-width:      0;
 }
 
-/* ══════════════════════════════════════
-   PROFILE CARD — Deep Devoryn glass
-══════════════════════════════════════ */
+/* ═══════════════════════════════════════════════════
+   PROFILE CARD — Devoryn frosted panel
+   ═══════════════════════════════════════════════════ */
 .profile-card {
-  display:        flex;
-  flex-direction: column;
-  align-items:    center;
-  text-align:     center;
-  gap:            var(--s4);
-  padding:        var(--s6);
+  display:         flex;
+  flex-direction:  column;
+  align-items:     center;
+  text-align:      center;
+  gap:             var(--space-4);
+  padding:         var(--space-6);
+  border-radius:   var(--radius-2xl);
+  position:        relative;
+  overflow:        hidden;
+  transition:      border-color 0.25s ease;
 
-  /* Devoryn-grade frosted panel */
-  background:              rgba(14, 19, 38, 0.80);
-  backdrop-filter:         var(--blur-xl);
-  -webkit-backdrop-filter: var(--blur-xl);
-  border:                  1px solid var(--border-subtle);
-  border-radius:           var(--r-2xl);
-  box-shadow:              var(--shadow-panel);
-  position:                relative;
-  overflow:                hidden;
-  transition:              border-color var(--t-base);
+  /* Deep frosted glass */
+  background:              rgba(14, 19, 38, 0.82);
+  backdrop-filter:         blur(32px) saturate(1.6);
+  -webkit-backdrop-filter: blur(32px) saturate(1.6);
+  border:                  1px solid rgba(255, 255, 255, 0.09);
+  box-shadow:              0 16px 48px rgba(0, 0, 0, 0.55),
+                           0 0 0 1px rgba(255, 255, 255, 0.06),
+                           inset 0 1px 0 rgba(255, 255, 255, 0.08);
 }
 
-/* Top gloss line */
+/* Top gloss shine */
 .profile-card::before {
   content:    '';
   position:   absolute;
@@ -125,54 +128,54 @@
   left:       12%;
   right:      12%;
   height:     1px;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.18), transparent);
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.20), transparent);
   pointer-events: none;
 }
 
-/* Corner glow */
+/* Corner glow orb */
 .profile-card::after {
   content:    '';
   position:   absolute;
-  top:        -60px;
+  top:        -70px;
   left:       50%;
   transform:  translateX(-50%);
-  width:      200px;
-  height:     200px;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(79,195,247,0.08) 0%, transparent 70%);
+  width:      220px;
+  height:     220px;
+  background: radial-gradient(circle, rgba(79,195,247,0.07) 0%, transparent 70%);
   pointer-events: none;
+  border-radius: 50%;
 }
 
-.profile-card:hover {
-  border-color: var(--border-medium);
-}
+.profile-card:hover { border-color: rgba(255, 255, 255, 0.14); }
 
-/* Avatar wrap */
+/* ── Avatar ───────────────────────────────────────── */
 .profile-card__avatar-wrap {
   position: relative;
   display:  inline-block;
   z-index:  1;
 }
 
-/* Avatar circle */
+/* Glow ring around avatar */
 .profile-card__avatar {
-  width:          80px;
-  height:         80px;
-  border-radius:  var(--r-xl);
-  background:     linear-gradient(135deg, var(--cyan), var(--blue), var(--violet));
-  display:        flex;
-  align-items:    center;
-  justify-content:center;
-  font-family:    var(--font-display);
-  font-size:      1.6rem;
-  font-weight:    800;
-  color:          #fff;
-  overflow:       hidden;
-  flex-shrink:    0;
-  /* Glowing ring effect */
-  box-shadow:     0 0 0 2px rgba(79,195,247,0.15),
-                  0 0 0 5px rgba(79,195,247,0.08),
-                  0 8px 24px rgba(0,0,0,0.45);
+  width:           84px;
+  height:          84px;
+  border-radius:   var(--radius-xl);
+  background:      linear-gradient(135deg, var(--accent-cyan), var(--accent-blue), var(--accent-violet));
+  display:         flex;
+  align-items:     center;
+  justify-content: center;
+  font-family:     var(--font-display);
+  font-size:       1.7rem;
+  font-weight:     800;
+  color:           #fff;
+  overflow:        hidden;
+  flex-shrink:     0;
+  /* Triple glow ring */
+  box-shadow:
+    0 0 0 2px  rgba(79, 195, 247, 0.18),
+    0 0 0 6px  rgba(79, 195, 247, 0.08),
+    0 0 0 12px rgba(79, 195, 247, 0.04),
+    0 10px 28px rgba(0, 0, 0, 0.48);
 }
 
 .profile-card__avatar img {
@@ -181,67 +184,64 @@
   object-fit: cover;
 }
 
-/* Online green dot */
+/* Green online dot */
 .profile-card__online {
-  position:     absolute;
-  bottom:       2px;
-  right:        2px;
-  width:        13px;
-  height:       13px;
-  border-radius:50%;
-  background:   var(--green);
-  border:       2px solid rgba(14, 19, 38, 0.90);
-  box-shadow:   0 0 10px var(--green);
-  animation:    pulseDot 2.5s ease infinite;
+  position:      absolute;
+  bottom:        3px;
+  right:         3px;
+  width:         14px;
+  height:        14px;
+  border-radius: 50%;
+  background:    var(--accent-green);
+  border:        2.5px solid rgba(14, 19, 38, 0.90);
+  box-shadow:    0 0 10px var(--accent-green);
+  animation:     pulseDot 2.5s ease infinite;
 }
 
-.profile-card__info {
-  z-index: 1;    /* Above the after glow */
-}
+.profile-card__info { position: relative; z-index: 1; }
 
 .profile-card__name {
   font-family:    var(--font-display);
-  font-size:      1.18rem;
+  font-size:      1.2rem;
   font-weight:    700;
   color:          var(--text-white);
   letter-spacing: -0.01em;
+  margin-bottom:  var(--space-1);
 }
 
 .profile-card__title {
-  font-size:   0.76rem;
+  font-size:   0.78rem;
   color:       var(--text-secondary);
-  margin-top:  var(--s1);
-  line-height: 1.4;
+  line-height: 1.5;
 }
 
-/* Stats strip */
+/* ── Stats strip ──────────────────────────────────── */
 .profile-card__stats {
   display:       flex;
   align-items:   center;
-  gap:           var(--s3);
+  gap:           var(--space-3);
   width:         100%;
-  padding:       var(--s4) 0;
-  border-top:    1px solid var(--border-subtle);
-  border-bottom: 1px solid var(--border-subtle);
+  padding:       var(--space-4) 0;
+  border-top:    1px solid rgba(255, 255, 255, 0.07);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+  position:      relative;
   z-index:       1;
 }
 
-.profile-stat {
-  flex:       1;
-  text-align: center;
-}
+.profile-stat { flex: 1; text-align: center; }
 
 .profile-stat__num {
   font-family:    var(--font-display);
-  font-size:      1.45rem;
+  font-size:      1.5rem;
   font-weight:    800;
   line-height:    1;
-  margin-bottom:  var(--s1);
+  margin-bottom:  var(--space-1);
+  letter-spacing: -0.02em;
 }
 
 .profile-stat__label {
   font-family:    var(--font-mono);
-  font-size:      0.56rem;
+  font-size:      0.55rem;
   color:          var(--text-muted);
   text-transform: uppercase;
   letter-spacing: 0.10em;
@@ -249,49 +249,125 @@
 
 .profile-stat__divider {
   width:      1px;
-  height:     36px;
-  background: var(--border-subtle);
+  height:     40px;
+  background: rgba(255, 255, 255, 0.08);
   flex-shrink:0;
 }
 
+/* ── Bio ──────────────────────────────────────────── */
 .profile-card__bio {
-  font-size:   0.78rem;
+  font-size:   0.80rem;
   color:       var(--text-secondary);
-  line-height: 1.7;
+  line-height: 1.75;
   text-align:  left;
   width:       100%;
+  position:    relative;
   z-index:     1;
 }
 
+/* ── CTA buttons ──────────────────────────────────── */
 .profile-card__actions {
-  display: flex;
-  gap:     var(--s2);
-  width:   100%;
-  z-index: 1;
+  display:  flex;
+  gap:      var(--space-2);
+  width:    100%;
+  z-index:  1;
+  position: relative;
 }
 
-.profile-card__btn {
-  flex:            1;
-  justify-content: center;
+.profile-card__btn { flex: 1; justify-content: center; }
+
+/* ═══════════════════════════════════════════════════
+   KPI GRID — Bento-style with dividers
+   ═══════════════════════════════════════════════════ */
+.kpi-grid {
+  display:               grid;
+  grid-template-columns: repeat(auto-fill, minmax(148px, 1fr));
+  gap:                   1px;                       /* The gap IS the border color */
+  background:            rgba(255, 255, 255, 0.07); /* Fills the 1px gaps */
+  border:                1px solid rgba(255, 255, 255, 0.09);
+  border-radius:         var(--radius-xl);
+  overflow:              hidden;
+  margin-bottom:         var(--space-6);
 }
 
-/* ══════════════════════════════════════
-   TOP SKILLS PANEL
-══════════════════════════════════════ */
+/* Individual KPI cell */
+.kpi-card {
+  background:     rgba(14, 20, 40, 0.88);
+  backdrop-filter:blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  padding:        1.5rem 1.4rem;
+  display:        flex;
+  flex-direction: column;
+  gap:            var(--space-2);
+  position:       relative;
+  overflow:       hidden;
+  transition:     background 0.15s ease;
+  cursor:         default;
+}
+
+.kpi-card:hover {
+  background: rgba(20, 28, 52, 0.95);
+}
+
+/* Corner glow on hover using CSS variable for color */
+.kpi-card::after {
+  content:    '';
+  position:   absolute;
+  bottom:     -22px;
+  right:      -22px;
+  width:      72px;
+  height:     72px;
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--kpi-color, var(--accent-cyan)) 0%, transparent 70%);
+  opacity:    0.06;
+  pointer-events: none;
+  transition: opacity 0.25s ease;
+}
+
+.kpi-card:hover::after { opacity: 0.18; }
+
+.kpi-card__icon {
+  font-size:   1.2rem;
+  line-height: 1;
+  margin-bottom: var(--space-1);
+}
+
+.kpi-card__num {
+  font-family:    var(--font-display);
+  font-size:      2.4rem;
+  font-weight:    800;
+  line-height:    1;
+  letter-spacing: -0.025em;
+}
+
+.kpi-card__label {
+  font-family:    var(--font-mono);
+  font-size:      0.58rem;
+  font-weight:    500;
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+  color:          var(--text-muted);
+}
+
+/* ═══════════════════════════════════════════════════
+   TOP SKILLS PANEL — Glass panel below KPI grid
+   ═══════════════════════════════════════════════════ */
 .top-skills-panel {
-  background:              rgba(14, 19, 38, 0.75);
-  backdrop-filter:         var(--blur-lg);
-  -webkit-backdrop-filter: var(--blur-lg);
-  border:                  1px solid var(--border-subtle);
-  border-radius:           var(--r-xl);
-  padding:                 var(--s5) var(--s6);
-  box-shadow:              var(--shadow-card);
-  transition:              border-color var(--t-base);
-  position:                relative;
-  overflow:                hidden;
+  position:   relative;
+  overflow:   hidden;
+  border-radius: var(--radius-xl);
+  padding:    var(--space-5) var(--space-6);
+  transition: border-color 0.25s ease;
+
+  background:              rgba(14, 20, 40, 0.78);
+  backdrop-filter:         blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border:                  1px solid rgba(255, 255, 255, 0.09);
+  box-shadow:              0 8px 32px rgba(0, 0, 0, 0.40),
+                           0 0 0 1px rgba(255, 255, 255, 0.05);
 }
 
-/* Top gloss line */
+/* Gloss shine */
 .top-skills-panel::before {
   content:    '';
   position:   absolute;
@@ -299,24 +375,22 @@
   left:       10%;
   right:      10%;
   height:     1px;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.12), transparent);
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.14), transparent);
   pointer-events: none;
 }
 
-.top-skills-panel:hover {
-  border-color: var(--border-medium);
-}
+.top-skills-panel:hover { border-color: rgba(255, 255, 255, 0.14); }
 
 .top-skills-panel__header {
   display:         flex;
   align-items:     center;
   justify-content: space-between;
-  margin-bottom:   var(--s5);
+  margin-bottom:   var(--space-5);
 }
 
 .top-skills-panel__title {
   font-family:    var(--font-display);
-  font-size:      0.98rem;
+  font-size:      0.96rem;
   font-weight:    700;
   color:          var(--text-white);
   letter-spacing: -0.01em;
@@ -325,21 +399,79 @@
 .top-skills-panel__list {
   display:        flex;
   flex-direction: column;
-  gap:            var(--s1);
+  gap:            var(--space-1);
 }
 
-/* ══════════════════════════════════════
+/* ── Skill rows inside panel ──────────────────────── */
+.skill-row {
+  display:       flex;
+  align-items:   center;
+  gap:           var(--space-3);
+  margin-bottom: var(--space-3);
+}
+
+.skill-row:last-child { margin-bottom: 0; }
+
+.skill-row__name {
+  font-size:     0.82rem;
+  font-weight:   500;
+  color:         var(--text-primary);
+  min-width:     108px;
+  white-space:   nowrap;
+  overflow:      hidden;
+  text-overflow: ellipsis;
+}
+
+.skill-row__track {
+  flex:          1;
+  height:        4px;
+  background:    rgba(255, 255, 255, 0.07);
+  border-radius: 9999px;
+  overflow:      hidden;
+}
+
+.skill-row__fill {
+  height:           100%;
+  border-radius:    9999px;
+  transform:        scaleX(0);
+  transform-origin: left;
+  transition:       transform 1.4s cubic-bezier(0.16, 1, 0.3, 1);
+  position:         relative;
+}
+
+/* Glowing tip at end of bar */
+.skill-row__fill::after {
+  content:       '';
+  position:      absolute;
+  right:         -3px;
+  top:           50%;
+  transform:     translateY(-50%);
+  width:         8px;
+  height:        8px;
+  border-radius: 50%;
+  background:    inherit;
+  filter:        brightness(1.6);
+  box-shadow:    0 0 8px currentColor;
+}
+
+.skill-row__pct {
+  font-family: var(--font-mono);
+  font-size:   0.66rem;
+  color:       var(--text-muted);
+  min-width:   32px;
+  text-align:  right;
+}
+
+/* ═══════════════════════════════════════════════════
    RESPONSIVE
-══════════════════════════════════════ */
+   ═══════════════════════════════════════════════════ */
 @media (max-width: 1100px) {
-  .overview-row {
-    grid-template-columns: 240px 1fr;
-  }
+  .overview-row { grid-template-columns: 240px 1fr; }
 }
 
 @media (max-width: 880px) {
   .overview-row {
-    grid-template-columns: 1fr;       /* Stack vertically */
+    grid-template-columns: 1fr;
   }
 
   .profile-card {
@@ -348,13 +480,15 @@
   }
 }
 
-@media (max-width: 480px) {
+@media (max-width: 520px) {
   .page-header {
     flex-direction: column;
     align-items:    flex-start;
   }
 
-  .profile-card__stats {
-    gap: var(--s2);
+  .kpi-grid {
+    grid-template-columns: repeat(2, 1fr);
   }
+
+  .profile-card__stats { gap: var(--space-2); }
 }
