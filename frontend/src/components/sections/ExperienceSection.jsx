@@ -1,38 +1,36 @@
 /**
  * ExperienceSection.jsx — Work Experience Timeline
  * ─────────────────────────────────────────────────────────
- * Renders a vertical timeline of career experience entries.
- * Each entry shows: role, company, date range, description,
- * and technology badges.
- * Data is fetched internally from the experience API.
+ * Features:
+ * - Vertical timeline with glowing cyan dots + connector lines
+ * - Glass content cards with left accent bar + hover slide
+ * - IntersectionObserver for staggered entrance animation
+ * - Role, company, date, description, responsibilities, tech tags
  * ─────────────────────────────────────────────────────────
  */
-import { useState, useEffect } from 'react';                // State and lifecycle
-import Badge                   from '../ui/Badge';           // Reusable badge component
-import { SkeletonTimelineItem } from '../ui/SkeletonLoader'; // Loading skeleton
-import { formatDateRange }     from '../../utils/formatters'; // Date formatting
-import apiClient               from '../../services/api';    // Central Axios instance
-import '../../styles/components/ExperienceSection.css';      // Component styles
+import { useState, useEffect, useRef } from 'react';
+import Badge                           from '../ui/Badge';
+import { SkeletonTimelineItem }        from '../ui/SkeletonLoader';
+import { formatDateRange }             from '../../utils/formatters';
+import apiClient                       from '../../services/api';
+import '../../styles/components/ExperienceSection.css';
 
-/**
- * ExperienceSection — career timeline section.
- * Fetches experience data internally on mount.
- */
 export default function ExperienceSection() {
-  const [experience, setExperience] = useState(null);       // Experience data from API
-  const [loading,    setLoading]    = useState(true);        // Loading state
-  const [error,      setError]      = useState(null);        // Error state
 
-  // ── Fetch experience on mount ──────────────────────────────────────────
+  const [experience, setExperience] = useState(null);
+  const [loading,    setLoading]    = useState(true);
+  const [error,      setError]      = useState(null);
+  const timelineRef                 = useRef(null); /* Ref for stagger observer */
+
+  /* ── Fetch on mount ───────────────────────────────────────────── */
   useEffect(() => {
-    let cancelled = false;                                   // Prevent stale updates
+    let cancelled = false;
 
     async function fetchExperience() {
       setLoading(true);
       setError(null);
-
       try {
-        const data = await apiClient.get('/portfolio/experience'); // GET /portfolio/experience
+        const data = await apiClient.get('/portfolio/experience');
         if (!cancelled) setExperience(data);
       } catch (err) {
         if (!cancelled) setError(err.message || 'Failed to load experience.');
@@ -42,13 +40,44 @@ export default function ExperienceSection() {
     }
 
     fetchExperience();
-    return () => { cancelled = true; };                      // Cleanup on unmount
+    return () => { cancelled = true; };
   }, []);
 
-  // ── Loading state ─────────────────────────────────────────────────────
+  /* ── Stagger entrance via IntersectionObserver ────────────────── */
+  useEffect(() => {
+    if (!timelineRef.current || loading) return;
+
+    const items = timelineRef.current.querySelectorAll('.timeline__item');
+    if (!items.length) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.style.opacity   = '1';
+            entry.target.style.transform = 'translateY(0)';
+            observer.unobserve(entry.target);
+          }
+        });
+      },
+      { threshold: 0.15 }
+    );
+
+    /* Set initial hidden state then observe */
+    items.forEach((item, i) => {
+      item.style.opacity    = '0';
+      item.style.transform  = 'translateY(20px)';
+      item.style.transition = `opacity 0.55s ease ${i * 80}ms, transform 0.55s ease ${i * 80}ms`;
+      observer.observe(item);
+    });
+
+    return () => observer.disconnect();
+  }, [loading, experience]);
+
+  /* ── Loading ──────────────────────────────────────────────────── */
   if (loading) {
     return (
-      <section id="experience" className="section">
+      <section id="experience" className="section section--alt">
         <div className="container">
           <div className="s-head">
             <span className="s-tag">Career</span>
@@ -56,7 +85,7 @@ export default function ExperienceSection() {
           </div>
           <div className="timeline">
             {Array.from({ length: 3 }, (_, i) => (
-              <SkeletonTimelineItem key={i} />              // 3 skeleton placeholders
+              <SkeletonTimelineItem key={i} />
             ))}
           </div>
         </div>
@@ -64,18 +93,20 @@ export default function ExperienceSection() {
     );
   }
 
-  // ── Error state ───────────────────────────────────────────────────────
+  /* ── Error ────────────────────────────────────────────────────── */
   if (error) {
     return (
-      <section id="experience" className="section">
+      <section id="experience" className="section section--alt">
         <div className="container">
-          <p style={{ color: 'var(--text-muted)' }}>Experience data unavailable.</p>
+          <p style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-mono)', fontSize: '0.82rem' }}>
+            Experience data unavailable.
+          </p>
         </div>
       </section>
     );
   }
 
-  const entries = experience?.experience || [];             // Extract experience array
+  const entries = experience?.experience || [];
 
   return (
     <section id="experience" className="section section--alt">
@@ -91,19 +122,24 @@ export default function ExperienceSection() {
         </div>
 
         {/* ── Timeline ── */}
-        <div className="timeline">
+        <div className="timeline" ref={timelineRef}>
           {entries.map((entry, index) => (
             <ExperienceEntry
               key={entry.id || index}
               entry={entry}
-              isLast={index === entries.length - 1}        // Style last item differently
+              isLast={index === entries.length - 1}
             />
           ))}
         </div>
 
-        {/* Empty state */}
         {entries.length === 0 && (
-          <p style={{ color: 'var(--text-muted)', textAlign: 'center', padding: '3rem 0' }}>
+          <p style={{
+            color:      'var(--text-muted)',
+            textAlign:  'center',
+            padding:    '3rem 0',
+            fontFamily: 'var(--font-mono)',
+            fontSize:   '0.82rem',
+          }}>
             No experience entries configured yet.
           </p>
         )}
@@ -112,40 +148,48 @@ export default function ExperienceSection() {
   );
 }
 
+/* ─────────────────────────────────────────────────────────────
+   ExperienceEntry — single timeline item
+───────────────────────────────────────────────────────────── */
 /**
- * ExperienceEntry — single timeline card with left accent line.
  * @param {{ entry: object, isLast: boolean }} props
  */
 function ExperienceEntry({ entry, isLast }) {
-  const dateRange = formatDateRange(                        // e.g. "2021 — Present"
+
+  const dateRange = formatDateRange(
     entry.start_date,
     entry.end_date,
     entry.is_current
   );
 
-  return (
-    <div className={`timeline__item ${isLast ? 'timeline__item--last' : ''}`}>
+  /* Mark past roles for muted dot style */
+  const isPast = !entry.is_current;
 
-      {/* ── Left: timeline dot and line ── */}
-      <div className="timeline__marker">
-        <div className="timeline__dot" />                  {/* Pulsing dot */}
-        {!isLast && <div className="timeline__line" />}    {/* Vertical connector */}
+  return (
+    <div className={`timeline__item ${isLast ? 'timeline__item--last' : ''} ${isPast ? 'timeline__item--past' : ''}`}>
+
+      {/* ── Left: dot + line ── */}
+      <div className="timeline__marker" aria-hidden="true">
+        <div className="timeline__dot" />
+        {!isLast && <div className="timeline__line" />}
       </div>
 
-      {/* ── Right: content card ── */}
+      {/* ── Right: glass content card ── */}
       <div className="timeline__content">
 
-        {/* Date range badge */}
+        {/* Date */}
         <div className="timeline__date">{dateRange}</div>
 
         {/* Role title */}
-        <h3 className="timeline__title">{entry.job_title || entry.title}</h3>
+        <h3 className="timeline__title">
+          {entry.job_title || entry.title}
+        </h3>
 
-        {/* Company name */}
+        {/* Company + location + badge */}
         <div className="timeline__company">
-          {entry.company_name}
+          <span>{entry.company_name}</span>
           {entry.location && (
-            <span className="timeline__location"> · {entry.location}</span>
+            <span className="timeline__location">· {entry.location}</span>
           )}
           {entry.is_current && (
             <Badge label="Current" variant="lime" className="timeline__badge" />
@@ -157,16 +201,16 @@ function ExperienceEntry({ entry, isLast }) {
           <p className="timeline__desc">{entry.description}</p>
         )}
 
-        {/* Responsibilities list */}
+        {/* Responsibilities — max 3 */}
         {entry.responsibilities?.length > 0 && (
           <ul className="timeline__list">
-            {entry.responsibilities.slice(0, 3).map((item, i) => ( // Max 3 items
+            {entry.responsibilities.slice(0, 3).map((item, i) => (
               <li key={i} className="timeline__list-item">{item}</li>
             ))}
           </ul>
         )}
 
-        {/* Tech stack tags */}
+        {/* Tech stack badges */}
         {entry.technologies?.length > 0 && (
           <div className="timeline__tags">
             {entry.technologies.map(tech => (
