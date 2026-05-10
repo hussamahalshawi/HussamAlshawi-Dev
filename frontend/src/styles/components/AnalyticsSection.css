@@ -1,86 +1,315 @@
-/* ═══════════════════════════════════════════════════
-   AnalyticsSection.css — KPI cards and analytics layout
-   Devoryn-grade glass panels
-   ═══════════════════════════════════════════════════ */
+/* ═══════════════════════════════════════════════════════════════
+   AnalyticsSection.css — Analytics Dashboard Panels
+   Bento glass layout · KPI grid · Skills bars · Distribution
+   ═══════════════════════════════════════════════════════════════ */
 
-/* ── Analytics skills bar container ──────────────── */
-.analytics-skills {
-  background:              rgba(14, 19, 38, 0.75);
-  backdrop-filter:         var(--blur-lg);
-  -webkit-backdrop-filter: var(--blur-lg);
-  border:                  1px solid var(--border-subtle);
-  border-radius:           var(--r-xl);
-  padding:                 var(--s6);
-  box-shadow:              var(--shadow-card);
-  position:                relative;
-  overflow:                hidden;
-  transition:              border-color var(--t-base);
+/* ── Shared glass panel mixin ─────────────────────────────────── */
+.analytics-glass-panel {
+  position:   relative;
+  overflow:   hidden;
+  border-radius: var(--radius-xl);
+  transition: border-color 0.25s ease;
+
+  background:              rgba(14, 20, 40, 0.78);
+  backdrop-filter:         blur(24px) saturate(1.5);
+  -webkit-backdrop-filter: blur(24px) saturate(1.5);
+  border:                  1px solid rgba(255, 255, 255, 0.09);
+  box-shadow:              0 8px 32px rgba(0, 0, 0, 0.40),
+                           0 0 0 1px rgba(255, 255, 255, 0.04),
+                           inset 0 1px 0 rgba(255, 255, 255, 0.06);
 }
 
-/* Gloss line */
-.analytics-skills::before {
+/* Top gloss line on every panel */
+.analytics-glass-panel::before {
   content:    '';
   position:   absolute;
   top:        0;
   left:       10%;
   right:      10%;
   height:     1px;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.12), transparent);
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.16), transparent);
   pointer-events: none;
 }
 
-.analytics-skills:hover {
-  border-color: var(--border-medium);
+/* Water-droplet texture */
+.analytics-glass-panel::after {
+  content:    '';
+  position:   absolute;
+  inset:      0;
+  background-image:
+    radial-gradient(circle at 18% 28%, rgba(255,255,255,0.030) 1.5px, transparent 1.5px),
+    radial-gradient(circle at 72% 14%, rgba(255,255,255,0.022) 1px,   transparent 1px),
+    radial-gradient(circle at 84% 62%, rgba(255,255,255,0.028) 2px,   transparent 2px),
+    radial-gradient(circle at 34% 78%, rgba(255,255,255,0.018) 1.5px, transparent 1.5px);
+  pointer-events: none;
+  border-radius:  inherit;
 }
 
-/* ── Bottom two-column layout ─────────────────────── */
+.analytics-glass-panel:hover { border-color: rgba(255, 255, 255, 0.14); }
+
+/* ── All content above pseudo-elements ────────────────────────── */
+.analytics-glass-panel > * { position: relative; z-index: 1; }
+
+/* ── Panel header ─────────────────────────────────────────────── */
+.analytics-panel__header {
+  display:         flex;
+  align-items:     center;
+  justify-content: space-between;
+  margin-bottom:   var(--space-5);
+}
+
+.analytics-panel__title {
+  font-family:    var(--font-display);
+  font-size:      0.96rem;
+  font-weight:    700;
+  color:          var(--text-white);
+  letter-spacing: -0.01em;
+}
+
+/* ═══════════════════════════════════════════════════
+   KPI SECTION — same bento approach as Overview
+   ═══════════════════════════════════════════════════ */
+.analytics-kpi-grid {
+  display:               grid;
+  grid-template-columns: repeat(auto-fill, minmax(145px, 1fr));
+  gap:                   1px;
+  background:            rgba(255, 255, 255, 0.07);
+  border:                1px solid rgba(255, 255, 255, 0.09);
+  border-radius:         var(--radius-xl);
+  overflow:              hidden;
+  margin-bottom:         var(--space-6);
+}
+
+.analytics-kpi-card {
+  background:     rgba(14, 20, 40, 0.88);
+  backdrop-filter:blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  padding:        1.4rem 1.3rem;
+  display:        flex;
+  flex-direction: column;
+  gap:            var(--space-2);
+  position:       relative;
+  overflow:       hidden;
+  transition:     background 0.15s ease;
+}
+
+.analytics-kpi-card:hover { background: rgba(20, 28, 55, 0.95); }
+
+/* Per-card color glow */
+.analytics-kpi-card::after {
+  content:       '';
+  position:      absolute;
+  bottom:        -20px;
+  right:         -20px;
+  width:         68px;
+  height:        68px;
+  border-radius: 50%;
+  background:    radial-gradient(circle, var(--kpi-color, var(--accent-cyan)) 0%, transparent 70%);
+  opacity:       0.06;
+  pointer-events:none;
+  transition:    opacity 0.25s ease;
+}
+
+.analytics-kpi-card:hover::after { opacity: 0.20; }
+
+.analytics-kpi-card__icon {
+  font-size:   1.1rem;
+  line-height: 1;
+}
+
+.analytics-kpi-card__num {
+  font-family:    var(--font-display);
+  font-size:      2.3rem;
+  font-weight:    800;
+  line-height:    1;
+  letter-spacing: -0.025em;
+}
+
+.analytics-kpi-card__label {
+  font-family:    var(--font-mono);
+  font-size:      0.57rem;
+  font-weight:    500;
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+  color:          var(--text-muted);
+}
+
+/* ═══════════════════════════════════════════════════
+   BOTTOM TWO-COLUMN — skills bars + distribution
+   ═══════════════════════════════════════════════════ */
 .analytics-bottom {
   display:               grid;
-  grid-template-columns: 1.2fr 1fr;
-  gap:                   var(--s6);
+  grid-template-columns: 1.25fr 1fr;
+  gap:                   var(--space-5);
   align-items:           start;
+}
+
+/* ── Top skills panel ─────────────────────────────── */
+.analytics-skills {
+  padding: var(--space-6);
+}
+
+/* Skill rows */
+.analytics-skill-row {
+  display:       flex;
+  align-items:   center;
+  gap:           var(--space-3);
+  margin-bottom: var(--space-4);
+}
+
+.analytics-skill-row:last-child { margin-bottom: 0; }
+
+.analytics-skill-row__name {
+  font-size:     0.84rem;
+  font-weight:   500;
+  color:         var(--text-primary);
+  min-width:     110px;
+  white-space:   nowrap;
+  overflow:      hidden;
+  text-overflow: ellipsis;
+}
+
+.analytics-skill-row__track {
+  flex:          1;
+  height:        4px;
+  background:    rgba(255, 255, 255, 0.07);
+  border-radius: 9999px;
+  overflow:      hidden;
+}
+
+.analytics-skill-row__fill {
+  height:        100%;
+  border-radius: 9999px;
+  position:      relative;
+}
+
+/* Glowing tip dot */
+.analytics-skill-row__fill::after {
+  content:       '';
+  position:      absolute;
+  right:         -3px;
+  top:           50%;
+  transform:     translateY(-50%);
+  width:         8px;
+  height:        8px;
+  border-radius: 50%;
+  background:    inherit;
+  filter:        brightness(1.6);
+  box-shadow:    0 0 8px currentColor;
+}
+
+.analytics-skill-row__pct {
+  font-family: var(--font-mono);
+  font-size:   0.66rem;
+  color:       var(--text-muted);
+  min-width:   32px;
+  text-align:  right;
 }
 
 /* ── Distribution panel ───────────────────────────── */
 .analytics-dist {
-  background:              rgba(14, 19, 38, 0.75);
-  backdrop-filter:         var(--blur-lg);
-  -webkit-backdrop-filter: var(--blur-lg);
-  border:                  1px solid var(--border-subtle);
-  border-radius:           var(--r-xl);
-  padding:                 var(--s6);
-  box-shadow:              var(--shadow-card);
-  position:                relative;
-  overflow:                hidden;
-  transition:              border-color var(--t-base);
+  padding: var(--space-6);
 }
 
-/* Gloss line */
-.analytics-dist::before {
-  content:    '';
-  position:   absolute;
-  top:        0;
-  left:       10%;
-  right:      10%;
+/* Band row */
+.dist-row {
+  display:       flex;
+  align-items:   center;
+  gap:           var(--space-4);
+  margin-bottom: var(--space-4);
+}
+
+.dist-row:last-of-type { margin-bottom: 0; }
+
+.dist-row__label {
+  min-width: 90px;
+}
+
+.dist-row__track {
+  flex:          1;
+  height:        4px;
+  background:    rgba(255, 255, 255, 0.06);
+  border-radius: 9999px;
+  overflow:      hidden;
+}
+
+.dist-row__fill {
+  height:        100%;
+  border-radius: 9999px;
+  transition:    width 1.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.dist-row__count {
+  font-family: var(--font-mono);
+  font-size:   0.66rem;
+  color:       var(--text-muted);
+  min-width:   28px;
+  text-align:  right;
+}
+
+/* Divider inside dist panel */
+.analytics-divider {
   height:     1px;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.12), transparent);
-  pointer-events: none;
+  background: rgba(255, 255, 255, 0.07);
+  margin:     var(--space-5) 0;
 }
 
-.analytics-dist:hover {
-  border-color: var(--border-medium);
+/* Category averages list */
+.cat-avg-row {
+  display:         flex;
+  justify-content: space-between;
+  align-items:     center;
+  padding:         var(--space-2) 0;
+  border-bottom:   1px solid rgba(255, 255, 255, 0.04);
 }
 
-/* ── Responsive ───────────────────────────────────── */
-@media (max-width: 900px) {
+.cat-avg-row:last-child { border-bottom: none; }
+
+.cat-avg-row__name {
+  font-size:   0.82rem;
+  color:       var(--text-secondary);
+}
+
+.cat-avg-row__score {
+  font-family: var(--font-mono);
+  font-size:   0.72rem;
+  font-weight: 600;
+}
+
+/* ── Category group title (shared) ───────────────── */
+.skill-group__title {
+  font-family:    var(--font-mono);
+  font-size:      0.64rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color:          var(--accent-cyan);
+  display:        flex;
+  align-items:    center;
+  gap:            var(--space-2);
+  margin-bottom:  var(--space-4);
+}
+
+.skill-group__title::before {
+  content:    '';
+  width:      18px;
+  height:     1px;
+  background: var(--accent-cyan);
+  opacity:    0.55;
+  flex-shrink:0;
+}
+
+/* ═══════════════════════════════════════════════════
+   RESPONSIVE
+   ═══════════════════════════════════════════════════ */
+@media (max-width: 960px) {
   .analytics-bottom {
     grid-template-columns: 1fr;
-    gap: var(--s5);
+    gap:                   var(--space-4);
   }
 }
 
-@media (max-width: 480px) {
-  .kpi-card__num {
-    font-size: 1.9rem;
+@media (max-width: 560px) {
+  .analytics-kpi-grid {
+    grid-template-columns: repeat(2, 1fr);
   }
 }

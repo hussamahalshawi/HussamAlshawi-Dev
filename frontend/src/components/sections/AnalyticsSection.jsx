@@ -1,25 +1,30 @@
 /**
- * AnalyticsSection.jsx — Portfolio Analytics Overview
+ * AnalyticsSection.jsx
  * ─────────────────────────────────────────────────────────
- * Displays: KPI count cards, top skills horizontal bars,
- * goals progress summary, and skills distribution legend.
- * All data comes from the analytics prop (no internal fetching).
+ * Devoryn-style analytics dashboard:
+ * - Animated bento KPI grid (count-up numbers)
+ * - Top skills horizontal bars (glass panel)
+ * - Skill proficiency distribution bands
+ * - Category score averages list
+ * All data from analytics prop — no internal fetching.
  * ─────────────────────────────────────────────────────────
  */
-import { useRef, useEffect }  from 'react';                   // Refs for count-up animation
-import { CHART_COLORS,
-         SKILL_BANDS }        from '../../utils/constants';   // Chart colours + bands
-import { SkeletonKPI }        from '../ui/SkeletonLoader';    // KPI loading skeleton
-import Badge                  from '../ui/Badge';             // Distribution band badges
-import '../../styles/components/AnalyticsSection.css';        // Component-specific styles
+import { useRef, useEffect } from 'react';
+import {
+  CHART_COLORS,
+  SKILL_BANDS,
+}                            from '../../utils/constants';
+import { SkeletonKPI }       from '../ui/SkeletonLoader';
+import Badge                 from '../ui/Badge';
+import '../../styles/components/AnalyticsSection.css';
 
 /**
  * @param {object}      props
- * @param {object|null} props.analytics - Analytics object from /api/portfolio/analytics
+ * @param {object|null} props.analytics - From /api/portfolio/analytics
  */
 export default function AnalyticsSection({ analytics }) {
 
-  // Show skeletons while loading
+  /* ── Loading skeleton ─────────────────────────────────────────── */
   if (!analytics) {
     return (
       <section id="analytics" className="section">
@@ -28,20 +33,23 @@ export default function AnalyticsSection({ analytics }) {
             <span className="s-tag">Analytics</span>
             <h2 className="s-title">By the Numbers</h2>
           </div>
-          <div className="kpi-grid">
-            {Array.from({ length: 6 }, (_, i) => <SkeletonKPI key={i} />)}
+          <div className="analytics-kpi-grid">
+            {Array.from({ length: 8 }, (_, i) => (
+              <SkeletonKPI key={i} />
+            ))}
           </div>
         </div>
       </section>
     );
   }
 
-  const counts    = analytics.counts             || {};        // Entity counts object
-  const topSkills = analytics.top_skills         || [];        // Top 10 skills array
-  const radar     = analytics.skills_radar       || [];        // Category averages
-  const dist      = analytics.skills_distribution || {};       // Band distribution
+  /* ── Data extraction ──────────────────────────────────────────── */
+  const counts    = analytics.counts              || {};
+  const topSkills = analytics.top_skills          || [];
+  const radar     = analytics.skills_radar        || [];
+  const dist      = analytics.skills_distribution || {};
 
-  // KPI cards configuration
+  /* ── KPI config ───────────────────────────────────────────────── */
   const kpis = [
     { key: 'skills',       label: 'Skills',       icon: '⚙',  color: CHART_COLORS[0] },
     { key: 'projects',     label: 'Projects',     icon: '⊡',  color: CHART_COLORS[1] },
@@ -66,118 +74,103 @@ export default function AnalyticsSection({ analytics }) {
           </p>
         </div>
 
-        {/* ── KPI count cards ── */}
-        <div className="kpi-grid">
-          {kpis.map(kpi => (
-            <KpiCard
+        {/* ── KPI bento grid ── */}
+        <div className="analytics-kpi-grid" role="list">
+          {kpis.map((kpi, i) => (
+            <AnimatedKpiCard
               key={kpi.key}
               label={kpi.label}
-              value={counts[kpi.key] || 0}                    // Safely access count
+              value={counts[kpi.key] || 0}
               icon={kpi.icon}
               color={kpi.color}
+              delay={i * 70}
             />
           ))}
         </div>
 
-        {/* ── Two-column layout: top skills + distribution ── */}
+        {/* ── Bottom two-column ── */}
         <div className="analytics-bottom">
 
-          {/* ── Top skills horizontal bars ── */}
-          <div className="analytics-skills">
-            <p className="skill-group__title" style={{ marginBottom: 'var(--s5)' }}>
-              Top Skills
-            </p>
-            {topSkills.slice(0, 8).map((skill, index) => (    // Show top 8
-              <div key={skill.skill_name} className="skill-row">
-                <span className="skill-row__name">{skill.skill_name}</span>
-                <div className="skill-row__track">
-                  <div
-                    className="skill-row__fill"
-                    style={{
-                      width: `${skill.score}%`,               // Bar width = score
-                      background: skill.color
-                        ? `linear-gradient(90deg, ${skill.color}, #4FC3F7)`
-                        : `linear-gradient(90deg, ${CHART_COLORS[index % CHART_COLORS.length]}, #4FC3F7)`,
-                      transform: 'scaleX(1)',                  // Visible by default in analytics
-                    }}
-                  />
-                </div>
-                <span className="skill-row__pct">{skill.score}%</span>
-              </div>
-            ))}
+          {/* ── Top skills bars panel ── */}
+          <div className="analytics-glass-panel analytics-skills">
+            {/* Panel title */}
+            <div className="analytics-panel__header">
+              <p className="skill-group__title" style={{ margin: 0 }}>
+                Top Skills
+              </p>
+            </div>
+
+            {/* Skill rows — top 8 */}
+            <SkillBarList
+              skills={topSkills.slice(0, 8)}
+              colors={CHART_COLORS}
+            />
           </div>
 
-          {/* ── Skill distribution bands ── */}
-          <div className="analytics-dist">
-            <p className="skill-group__title" style={{ marginBottom: 'var(--s5)' }}>
-              Proficiency Distribution
-            </p>
+          {/* ── Distribution + category averages panel ── */}
+          <div className="analytics-glass-panel analytics-dist">
+            {/* Title */}
+            <div className="analytics-panel__header">
+              <p className="skill-group__title" style={{ margin: 0 }}>
+                Proficiency Distribution
+              </p>
+            </div>
 
-            {/* Each proficiency band as a row */}
-            {Object.entries(SKILL_BANDS).map(([key, band]) => (
-              <div key={key} style={{ display: 'flex', alignItems: 'center', gap: 'var(--s4)', marginBottom: 'var(--s4)' }}>
-                {/* Band label */}
-                <div style={{ width: '90px' }}>
-                  <Badge label={band.label} style={{ color: band.color }} variant="muted" />
-                </div>
-                {/* Progress bar */}
-                <div style={{
-                  flex:         1,
-                  height:       '4px',
-                  background:   'rgba(255,255,255,0.06)',
-                  borderRadius: 'var(--r-full)',
-                  overflow:     'hidden',
-                }}>
-                  <div style={{
-                    height:       '100%',
-                    width:        `${calcBandWidth(dist[key], counts.skills)}%`,
-                    background:   band.color,
-                    borderRadius: 'var(--r-full)',
-                    transition:   'width 1.2s cubic-bezier(0.16,1,0.3,1)',
-                  }} />
-                </div>
-                {/* Count */}
-                <span style={{
-                  fontFamily: 'var(--font-mono)',
-                  fontSize:   '0.68rem',
-                  color:      'var(--text-muted)',
-                  minWidth:   '28px',
-                  textAlign:  'right',
-                }}>
-                  {dist[key] || 0}
-                </span>
-              </div>
-            ))}
+            {/* Band rows */}
+            {Object.entries(SKILL_BANDS).map(([key, band]) => {
+              const count = dist[key] || 0;
+              const total = counts.skills || 1;
+              const pct   = Math.round((count / total) * 100);
 
-            {/* Category averages summary */}
+              return (
+                <div key={key} className="dist-row">
+                  {/* Band badge */}
+                  <div className="dist-row__label">
+                    <Badge
+                      label={band.label}
+                      style={{ color: band.color }}
+                      variant="muted"
+                    />
+                  </div>
+
+                  {/* Progress track */}
+                  <div className="dist-row__track">
+                    <div
+                      className="dist-row__fill"
+                      style={{
+                        width:      `${pct}%`,
+                        background: band.color,
+                      }}
+                    />
+                  </div>
+
+                  {/* Count */}
+                  <span className="dist-row__count">{count}</span>
+                </div>
+              );
+            })}
+
+            {/* Divider */}
+            <div className="analytics-divider" aria-hidden="true" />
+
+            {/* Category averages */}
             {radar.length > 0 && (
-              <div style={{ marginTop: 'var(--s6)', paddingTop: 'var(--s5)', borderTop: '1px solid var(--border-subtle)' }}>
-                <p className="skill-group__title" style={{ marginBottom: 'var(--s4)' }}>
+              <>
+                <p className="skill-group__title" style={{ marginBottom: 'var(--space-4)' }}>
                   Category Averages
                 </p>
-                {radar.slice(0, 5).map((cat, i) => (          // Top 5 categories
-                  <div key={cat.category} style={{
-                    display:        'flex',
-                    justifyContent: 'space-between',
-                    alignItems:     'center',
-                    marginBottom:   'var(--s2)',
-                    padding:        'var(--s2) 0',
-                    borderBottom:   '1px solid rgba(255,255,255,0.04)',
-                  }}>
-                    <span style={{ fontSize: '0.80rem', color: 'var(--text-secondary)' }}>
-                      {cat.category}
-                    </span>
-                    <span style={{
-                      fontFamily: 'var(--font-mono)',
-                      fontSize:   '0.72rem',
-                      color:      CHART_COLORS[i % CHART_COLORS.length],
-                      fontWeight: 600,
-                    }}>
+                {radar.slice(0, 5).map((cat, i) => (
+                  <div key={cat.category} className="cat-avg-row">
+                    <span className="cat-avg-row__name">{cat.category}</span>
+                    <span
+                      className="cat-avg-row__score"
+                      style={{ color: CHART_COLORS[i % CHART_COLORS.length] }}
+                    >
                       {cat.avg_score}
                     </span>
                   </div>
                 ))}
-              </div>
+              </>
             )}
           </div>
         </div>
@@ -186,50 +179,128 @@ export default function AnalyticsSection({ analytics }) {
   );
 }
 
+/* ─────────────────────────────────────────────────────────────
+   SkillBarList — animated horizontal skill bars
+───────────────────────────────────────────────────────────── */
 /**
- * KpiCard — count card with icon, animated number, and label.
- * @param {{ label, value, icon, color }} props
+ * @param {{ skills: Array, colors: Array }} props
  */
-function KpiCard({ label, value, icon, color }) {
-  const numRef = useRef(null);                                // Ref for count-up animation
+function SkillBarList({ skills, colors }) {
+  const listRef = useRef(null);
 
-  // ── Count-up animation on mount ─────────────────────────────────────────
+  /* Trigger fill animation on scroll-into-view */
   useEffect(() => {
-    if (!numRef.current || value === 0) return;               // Skip if zero
+    if (!listRef.current) return;
 
-    const duration = 1200;                                    // Animation duration ms
-    const start    = performance.now();
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach(entry => {
+          if (!entry.isIntersecting) return;
+          const fills = entry.target.querySelectorAll('.analytics-skill-row__fill');
+          fills.forEach(fill => {
+            fill.style.width = fill.dataset.pct; /* Set to data-pct value */
+          });
+          observer.unobserve(entry.target);
+        });
+      },
+      { threshold: 0.25 }
+    );
 
-    const tick = (now) => {
-      const progress = Math.min((now - start) / duration, 1); // 0 → 1
-      const eased    = 1 - Math.pow(1 - progress, 3);         // Cubic ease-out
-      const current  = Math.round(eased * value);             // Current value
-
-      if (numRef.current) numRef.current.textContent = current;
-      if (progress < 1) requestAnimationFrame(tick);          // Continue animation
-    };
-
-    requestAnimationFrame(tick);
-  }, [value]);
+    observer.observe(listRef.current);
+    return () => observer.disconnect();
+  }, [skills]);
 
   return (
-    <div className="kpi-card">
-      <div className="kpi-card__icon" style={{ color }}>{icon}</div>
-      <div ref={numRef} className="kpi-card__num" style={{ color }}>
-        {value}                                               // Animated by useEffect
-      </div>
-      <div className="kpi-card__label">{label}</div>
+    <div ref={listRef}>
+      {skills.map((skill, i) => {
+        const gradient = skill.color
+          ? `linear-gradient(90deg, ${skill.color}, var(--accent-cyan))`
+          : `linear-gradient(90deg, ${colors[i % colors.length]}, var(--accent-cyan))`;
+
+        return (
+          <div key={skill.skill_name} className="analytics-skill-row">
+            {/* Name */}
+            <span className="analytics-skill-row__name">
+              {skill.skill_name}
+            </span>
+
+            {/* Track */}
+            <div className="analytics-skill-row__track">
+              <div
+                className="analytics-skill-row__fill"
+                data-pct={`${skill.score}%`}  /* Used by IntersectionObserver */
+                style={{
+                  width:      '0%',           /* Starts at 0, animated to data-pct */
+                  background: gradient,
+                  transition: 'width 1.3s cubic-bezier(0.16, 1, 0.3, 1)',
+                }}
+              />
+            </div>
+
+            {/* Score */}
+            <span className="analytics-skill-row__pct">{skill.score}%</span>
+          </div>
+        );
+      })}
     </div>
   );
 }
 
+/* ─────────────────────────────────────────────────────────────
+   AnimatedKpiCard — count-up on mount with stagger delay
+───────────────────────────────────────────────────────────── */
 /**
- * Calculates percentage width for a distribution band bar.
- * @param {number} bandCount   - Count in this band
- * @param {number} totalSkills - Total skills count
- * @returns {number} - 0-100
+ * @param {{ label, value, icon, color, delay }} props
  */
-function calcBandWidth(bandCount = 0, totalSkills = 1) {
-  if (!totalSkills) return 0;                                 // Avoid division by zero
-  return Math.round((bandCount / totalSkills) * 100);
+function AnimatedKpiCard({ label, value, icon, color, delay = 0 }) {
+  const numRef = useRef(null);
+
+  useEffect(() => {
+    if (!numRef.current || value === 0) return;
+
+    const duration = 1300;
+    const start    = performance.now();
+
+    const tick = (now) => {
+      const progress = Math.min((now - start) / duration, 1);
+      const eased    = 1 - Math.pow(1 - progress, 3); /* Cubic ease-out */
+      const current  = Math.round(eased * value);
+
+      if (numRef.current) numRef.current.textContent = current;
+      if (progress < 1) requestAnimationFrame(tick);
+    };
+
+    const timer = setTimeout(() => requestAnimationFrame(tick), delay);
+    return () => clearTimeout(timer);
+  }, [value, delay]);
+
+  return (
+    <div
+      className="analytics-kpi-card"
+      role="listitem"
+      style={{
+        '--kpi-color': color,
+        animation:     `fadeUp 0.45s ease ${delay}ms both`,
+      }}
+      aria-label={`${label}: ${value}`}
+    >
+      {/* Icon */}
+      <div className="analytics-kpi-card__icon" aria-hidden="true">
+        {icon}
+      </div>
+
+      {/* Animated number */}
+      <div
+        ref={numRef}
+        className="analytics-kpi-card__num"
+        style={{ color }}
+        aria-live="polite"
+      >
+        {value}
+      </div>
+
+      {/* Label */}
+      <div className="analytics-kpi-card__label">{label}</div>
+    </div>
+  );
 }
