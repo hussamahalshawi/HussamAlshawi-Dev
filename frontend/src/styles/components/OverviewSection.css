@@ -1,12 +1,12 @@
 /* ═══════════════════════════════════════════════════
    OverviewSection.css — Dashboard Overview Panel
-   Devoryn-style glassmorphism with animated accents
+   Devoryn-grade glassmorphism with deep shadows
    ═══════════════════════════════════════════════════ */
 
 /* ── Section wrapper ──────────────────────────────── */
 .overview-section {
-  margin-bottom: var(--s8);
-  animation:     fadeIn 0.4s ease both;
+  margin-bottom: var(--s10);
+  animation:     fadeIn 0.5s ease both;
 }
 
 /* ══════════════════════════════════════
@@ -16,7 +16,7 @@
   display:         flex;
   align-items:     flex-start;
   justify-content: space-between;
-  margin-bottom:   var(--s6);
+  margin-bottom:   var(--s8);
   flex-wrap:       wrap;
   gap:             var(--s4);
   animation:       fadeUp 0.5s ease 0.1s both;
@@ -27,49 +27,47 @@
   font-size:      clamp(1.6rem, 2.8vw, 2.2rem);
   font-weight:    800;
   color:          var(--text-white);
-  letter-spacing: -0.02em;
+  letter-spacing: -0.025em;
   line-height:    1.1;
   margin-bottom:  var(--s1);
 }
 
 .page-header__sub {
   font-family:    var(--font-mono);
-  font-size:      0.72rem;
+  font-size:      0.70rem;
   color:          var(--text-muted);
-  letter-spacing: 0.05em;
+  letter-spacing: 0.04em;
 }
 
 /* ── Availability pill ────────────────────────────── */
 .availability-pill {
-  display:       flex;
-  align-items:   center;
-  gap:           var(--s2);
-  padding:       var(--s2) var(--s4);
-  background:    var(--glass-light);
-  border:        1px solid var(--border-subtle);
-  border-radius: var(--r-full);
-  font-family:   var(--font-mono);
-  font-size:     0.68rem;
-  letter-spacing:0.08em;
-  color:         var(--text-muted);
-  white-space:   nowrap;
-  transition:    all var(--t-base);
+  display:        flex;
+  align-items:    center;
+  gap:            var(--s2);
+  padding:        var(--s2) var(--s4);
+  background:     var(--glass-light);
+  border:         1px solid var(--border-subtle);
+  border-radius:  var(--r-full);
+  font-family:    var(--font-mono);
+  font-size:      0.66rem;
+  letter-spacing: 0.08em;
+  color:          var(--text-muted);
+  white-space:    nowrap;
+  transition:     all var(--t-base);
 }
 
-/* Open-for-hire state */
 .availability-pill--open {
-  background:  rgba(78,204,163,0.10);
-  border-color:rgba(78,204,163,0.25);
-  color:       var(--green);
+  background:   rgba(78,204,163,0.10);
+  border-color: rgba(78,204,163,0.25);
+  color:        var(--green);
 }
 
-/* Status dot */
 .availability-pill__dot {
-  width:        6px;
-  height:       6px;
-  border-radius:50%;
-  background:   var(--text-muted);
-  flex-shrink:  0;
+  width:         6px;
+  height:        6px;
+  border-radius: 50%;
+  background:    var(--text-muted);
+  flex-shrink:   0;
 }
 
 .availability-pill__dot--pulse {
@@ -83,13 +81,12 @@
 ══════════════════════════════════════ */
 .overview-row {
   display:               grid;
-  grid-template-columns: 280px 1fr;    /* Fixed profile card + flexible right */
-  gap:                   var(--s5);
+  grid-template-columns: 280px 1fr;     /* Fixed profile card + flexible right */
+  gap:                   var(--s6);
   align-items:           start;
   animation:             fadeUp 0.5s ease 0.15s both;
 }
 
-/* ── Right column ─────────────────────────────────── */
 .overview-right {
   display:        flex;
   flex-direction: column;
@@ -98,7 +95,7 @@
 }
 
 /* ══════════════════════════════════════
-   PROFILE CARD
+   PROFILE CARD — Deep Devoryn glass
 ══════════════════════════════════════ */
 .profile-card {
   display:        flex;
@@ -107,54 +104,75 @@
   text-align:     center;
   gap:            var(--s4);
   padding:        var(--s6);
-  background:     rgba(13, 17, 32, 0.7);
-  border:         1px solid var(--border-subtle);
-  border-radius:  var(--r-2xl);
-  backdrop-filter:blur(20px);
-  -webkit-backdrop-filter:blur(20px);
-  position:       relative;
-  overflow:       hidden;
-  transition:     border-color var(--t-base);
+
+  /* Devoryn-grade frosted panel */
+  background:              rgba(14, 19, 38, 0.80);
+  backdrop-filter:         var(--blur-xl);
+  -webkit-backdrop-filter: var(--blur-xl);
+  border:                  1px solid var(--border-subtle);
+  border-radius:           var(--r-2xl);
+  box-shadow:              var(--shadow-panel);
+  position:                relative;
+  overflow:                hidden;
+  transition:              border-color var(--t-base);
 }
 
-/* Top accent glow line */
+/* Top gloss line */
 .profile-card::before {
   content:    '';
   position:   absolute;
   top:        0;
-  left:       15%;
-  right:      15%;
+  left:       12%;
+  right:      12%;
   height:     1px;
-  background: linear-gradient(90deg, transparent, var(--cyan), transparent);
-  opacity:    0.6;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.18), transparent);
+  pointer-events: none;
+}
+
+/* Corner glow */
+.profile-card::after {
+  content:    '';
+  position:   absolute;
+  top:        -60px;
+  left:       50%;
+  transform:  translateX(-50%);
+  width:      200px;
+  height:     200px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(79,195,247,0.08) 0%, transparent 70%);
+  pointer-events: none;
 }
 
 .profile-card:hover {
   border-color: var(--border-medium);
 }
 
-/* Avatar wrap with ring */
+/* Avatar wrap */
 .profile-card__avatar-wrap {
   position: relative;
   display:  inline-block;
+  z-index:  1;
 }
 
 /* Avatar circle */
 .profile-card__avatar {
-  width:         80px;
-  height:        80px;
-  border-radius: var(--r-xl);
-  background:    linear-gradient(135deg, var(--cyan), var(--violet));
-  display:       flex;
-  align-items:   center;
+  width:          80px;
+  height:         80px;
+  border-radius:  var(--r-xl);
+  background:     linear-gradient(135deg, var(--cyan), var(--blue), var(--violet));
+  display:        flex;
+  align-items:    center;
   justify-content:center;
-  font-family:   var(--font-display);
-  font-size:     1.6rem;
-  font-weight:   800;
-  color:         #fff;
-  box-shadow:    0 0 30px rgba(79,195,247,0.25), 0 0 0 3px rgba(79,195,247,0.12);
-  overflow:      hidden;
-  flex-shrink:   0;
+  font-family:    var(--font-display);
+  font-size:      1.6rem;
+  font-weight:    800;
+  color:          #fff;
+  overflow:       hidden;
+  flex-shrink:    0;
+  /* Glowing ring effect */
+  box-shadow:     0 0 0 2px rgba(79,195,247,0.15),
+                  0 0 0 5px rgba(79,195,247,0.08),
+                  0 8px 24px rgba(0,0,0,0.45);
 }
 
 .profile-card__avatar img {
@@ -166,29 +184,31 @@
 /* Online green dot */
 .profile-card__online {
   position:     absolute;
-  bottom:       3px;
-  right:        3px;
-  width:        12px;
-  height:       12px;
+  bottom:       2px;
+  right:        2px;
+  width:        13px;
+  height:       13px;
   border-radius:50%;
   background:   var(--green);
-  border:       2px solid var(--bg-secondary);
-  box-shadow:   0 0 8px var(--green);
+  border:       2px solid rgba(14, 19, 38, 0.90);
+  box-shadow:   0 0 10px var(--green);
   animation:    pulseDot 2.5s ease infinite;
 }
 
-/* Name */
+.profile-card__info {
+  z-index: 1;    /* Above the after glow */
+}
+
 .profile-card__name {
   font-family:    var(--font-display);
-  font-size:      1.2rem;
+  font-size:      1.18rem;
   font-weight:    700;
   color:          var(--text-white);
   letter-spacing: -0.01em;
 }
 
-/* Job title */
 .profile-card__title {
-  font-size:   0.78rem;
+  font-size:   0.76rem;
   color:       var(--text-secondary);
   margin-top:  var(--s1);
   line-height: 1.4;
@@ -203,17 +223,17 @@
   padding:       var(--s4) 0;
   border-top:    1px solid var(--border-subtle);
   border-bottom: 1px solid var(--border-subtle);
+  z-index:       1;
 }
 
-/* Individual stat */
 .profile-stat {
-  flex: 1;
+  flex:       1;
   text-align: center;
 }
 
 .profile-stat__num {
   font-family:    var(--font-display);
-  font-size:      1.5rem;
+  font-size:      1.45rem;
   font-weight:    800;
   line-height:    1;
   margin-bottom:  var(--s1);
@@ -221,7 +241,7 @@
 
 .profile-stat__label {
   font-family:    var(--font-mono);
-  font-size:      0.58rem;
+  font-size:      0.56rem;
   color:          var(--text-muted);
   text-transform: uppercase;
   letter-spacing: 0.10em;
@@ -234,20 +254,20 @@
   flex-shrink:0;
 }
 
-/* Bio text */
 .profile-card__bio {
-  font-size:   0.80rem;
+  font-size:   0.78rem;
   color:       var(--text-secondary);
   line-height: 1.7;
   text-align:  left;
   width:       100%;
+  z-index:     1;
 }
 
-/* Action buttons */
 .profile-card__actions {
   display: flex;
   gap:     var(--s2);
   width:   100%;
+  z-index: 1;
 }
 
 .profile-card__btn {
@@ -259,13 +279,28 @@
    TOP SKILLS PANEL
 ══════════════════════════════════════ */
 .top-skills-panel {
-  background:    rgba(13, 17, 32, 0.6);
-  border:        1px solid var(--border-subtle);
-  border-radius: var(--r-xl);
-  padding:       var(--s5) var(--s6);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  transition:    border-color var(--t-base);
+  background:              rgba(14, 19, 38, 0.75);
+  backdrop-filter:         var(--blur-lg);
+  -webkit-backdrop-filter: var(--blur-lg);
+  border:                  1px solid var(--border-subtle);
+  border-radius:           var(--r-xl);
+  padding:                 var(--s5) var(--s6);
+  box-shadow:              var(--shadow-card);
+  transition:              border-color var(--t-base);
+  position:                relative;
+  overflow:                hidden;
+}
+
+/* Top gloss line */
+.top-skills-panel::before {
+  content:    '';
+  position:   absolute;
+  top:        0;
+  left:       10%;
+  right:      10%;
+  height:     1px;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.12), transparent);
+  pointer-events: none;
 }
 
 .top-skills-panel:hover {
@@ -281,7 +316,7 @@
 
 .top-skills-panel__title {
   font-family:    var(--font-display);
-  font-size:      1rem;
+  font-size:      0.98rem;
   font-weight:    700;
   color:          var(--text-white);
   letter-spacing: -0.01em;
@@ -304,11 +339,11 @@
 
 @media (max-width: 880px) {
   .overview-row {
-    grid-template-columns: 1fr;       /* Stack on tablet */
+    grid-template-columns: 1fr;       /* Stack vertically */
   }
 
   .profile-card {
-    max-width: 400px;
+    max-width: 420px;
     margin:    0 auto;
   }
 }

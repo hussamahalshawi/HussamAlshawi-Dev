@@ -1,6 +1,7 @@
 /* ═══════════════════════════════════════════════════
-   DashboardLayout.css — Sidebar + Topbar + Content
-   Devoryn-inspired glassmorphism dark dashboard
+   DashboardLayout.css — Devoryn-Grade Glass Shell
+   Sidebar + Topbar + Content Area
+   Deep frosted glass · Water droplets · Cyan accents
    ═══════════════════════════════════════════════════ */
 
 /* ── Root wrapper ─────────────────────────────────── */
@@ -8,45 +9,65 @@
   display:    flex;
   min-height: 100vh;
   position:   relative;
+  background: var(--bg-scene);  /* Outermost dark scene color */
 }
 
 /* ══════════════════════════════════════
-   SIDEBAR
+   SIDEBAR — Devoryn frosted glass panel
 ══════════════════════════════════════ */
 .sidebar {
-  width:        var(--sidebar-width);
-  min-height:   100vh;
-  position:     fixed;
-  top:          0;
-  left:         0;
-  z-index:      200;
-  display:      flex;
+  width:         var(--sidebar-width);      /* Fixed 260px width */
+  min-height:    100vh;
+  position:      fixed;
+  top:           0;
+  left:          0;
+  z-index:       200;
+  display:       flex;
   flex-direction:column;
 
-  /* Heavy glass effect */
-  background:       rgba(8, 10, 22, 0.88);
-  backdrop-filter:  var(--blur-xl);
-  -webkit-backdrop-filter: var(--blur-xl);
-  border-right:     1px solid var(--border-subtle);
+  /* Deep frosted glass — key Devoryn look */
+  background:              rgba(11, 16, 34, 0.82);
+  backdrop-filter:         var(--blur-2xl);           /* Heavy blur for frosted effect */
+  -webkit-backdrop-filter: var(--blur-2xl);
+  border-right:            1px solid var(--border-subtle);
+  box-shadow:              var(--shadow-sidebar);
 
-  padding:    var(--s6) var(--s4);
+  padding:    var(--s5) var(--s4) var(--s6);
   transition: transform var(--t-slow);
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
-/* Subtle inner glow on sidebar right edge */
+/* Scrollbar inside sidebar */
+.sidebar::-webkit-scrollbar { width: 2px; }
+
+/* Right edge glow — Devoryn signature detail */
 .sidebar::after {
   content:  '';
   position: absolute;
   right:    0;
-  top:      10%;
-  bottom:   10%;
+  top:      8%;
+  bottom:   8%;
   width:    1px;
   background: linear-gradient(
     to bottom,
     transparent,
-    rgba(79,195,247,0.15),
+    rgba(79,195,247,0.20),
+    rgba(79,195,247,0.10),
     transparent
   );
+  pointer-events: none;
+}
+
+/* Top glass gloss line */
+.sidebar::before {
+  content:    '';
+  position:   absolute;
+  top:        0;
+  left:       0;
+  right:      0;
+  height:     1px;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.12), transparent);
   pointer-events: none;
 }
 
@@ -55,41 +76,42 @@
   display:         flex;
   align-items:     center;
   gap:             var(--s3);
-  padding:         var(--s2) var(--s3);
-  margin-bottom:   var(--s8);
+  padding:         var(--s3);
+  margin-bottom:   var(--s6);
   text-decoration: none;
-  border-radius:   var(--r-md);
+  border-radius:   var(--r-lg);
   transition:      background var(--t-fast);
+  position:        relative;
 }
 
 .sidebar__logo:hover {
   background: var(--glass-light);
 }
 
-/* Brand badge — gradient square */
+/* Brand square with gradient */
 .sidebar__logo-mark {
-  width:         36px;
-  height:        36px;
-  border-radius: var(--r-md);
-  background:    linear-gradient(135deg, var(--cyan), var(--blue));
-  display:       flex;
-  align-items:   center;
+  width:          36px;
+  height:         36px;
+  border-radius:  var(--r-md);
+  background:     linear-gradient(135deg, var(--cyan), var(--blue));
+  display:        flex;
+  align-items:    center;
   justify-content:center;
-  font-family:   var(--font-display);
-  font-size:     0.82rem;
-  font-weight:   800;
-  color:         #fff;
-  box-shadow:    0 0 20px rgba(79,195,247,0.25);
-  flex-shrink:   0;
+  font-family:    var(--font-display);
+  font-size:      0.80rem;
+  font-weight:    800;
+  color:          #fff;
+  box-shadow:     0 0 20px rgba(79,195,247,0.30), 0 4px 12px rgba(0,0,0,0.40);
+  flex-shrink:    0;
+  letter-spacing: -0.02em;
 }
 
-/* Logo text */
 .sidebar__logo-text {
   font-family:    var(--font-display);
-  font-size:      1.2rem;
+  font-size:      1.22rem;
   font-weight:    800;
   color:          var(--text-white);
-  letter-spacing: 0.02em;
+  letter-spacing: 0.01em;
 }
 
 .sidebar__logo-text em {
@@ -97,34 +119,34 @@
   font-style: normal;
 }
 
-/* ── Nav section label ────────────────────────────── */
+/* ── Nav Section Label ────────────────────────────── */
 .sidebar__nav-label {
   font-family:    var(--font-mono);
-  font-size:      0.58rem;
-  letter-spacing: 0.16em;
+  font-size:      0.56rem;
+  letter-spacing: 0.18em;
   text-transform: uppercase;
   color:          var(--text-muted);
   padding:        0 var(--s3);
   margin-bottom:  var(--s2);
+  margin-top:     var(--s1);
 }
 
-/* ── Nav items list ───────────────────────────────── */
+/* ── Nav Items ────────────────────────────────────── */
 .sidebar__nav {
   display:        flex;
   flex-direction: column;
-  gap:            2px;
+  gap:            2px;           /* Tight spacing between items */
   flex:           1;
 }
 
-/* Nav item */
 .nav-item {
   display:         flex;
   align-items:     center;
   gap:             var(--s3);
-  padding:         0.6rem var(--s3);
+  padding:         0.58rem var(--s3);
   border-radius:   var(--r-md);
   color:           var(--text-secondary);
-  font-size:       0.855rem;
+  font-size:       0.85rem;
   font-weight:     500;
   cursor:          pointer;
   transition:      all var(--t-base);
@@ -136,30 +158,30 @@
 .nav-item:hover {
   background:   var(--glass-light);
   color:        var(--text-primary);
-  border-color: var(--border-subtle);
+  border-color: var(--border-faint);
 }
 
-/* Active state */
+/* Active state — cyan tint like Devoryn */
 .nav-item--active {
   background:   rgba(79,195,247,0.10);
-  color:        var(--cyan);
-  border-color: rgba(79,195,247,0.18);
+  color:        var(--cyan-bright);
+  border-color: rgba(79,195,247,0.20);
+  box-shadow:   inset 0 0 0 1px rgba(79,195,247,0.10);
 }
 
-/* Active left accent bar */
+/* Left accent bar on active */
 .nav-item--active::before {
   content:      '';
   position:     absolute;
-  left:         0;
-  top:          25%;
-  height:       50%;
-  width:        2px;
+  left:         -2px;            /* Extends slightly beyond border */
+  top:          20%;
+  height:       60%;
+  width:        3px;
   background:   var(--cyan);
   border-radius:0 var(--r-xs) var(--r-xs) 0;
-  box-shadow:   0 0 10px var(--cyan);
+  box-shadow:   0 0 10px var(--cyan), 0 0 20px rgba(79,195,247,0.4);
 }
 
-/* Nav icon */
 .nav-item__icon {
   width:       20px;
   height:      20px;
@@ -168,18 +190,24 @@
   justify-content:center;
   font-size:   1rem;
   flex-shrink: 0;
+  opacity:     0.8;
 }
 
-/* Nav label */
+.nav-item--active .nav-item__icon {
+  opacity: 1;
+}
+
 .nav-item__label {
-  font-size: 0.85rem;
+  font-size:   0.84rem;
+  font-weight: 500;
+  flex:        1;
 }
 
-/* ── Sidebar Bottom: User Card ────────────────────── */
+/* ── Sidebar User Card ────────────────────────────── */
 .sidebar__user {
-  margin-top:   auto;
-  padding-top:  var(--s5);
-  border-top:   1px solid var(--border-subtle);
+  margin-top:  auto;             /* Push to bottom */
+  padding-top: var(--s5);
+  border-top:  1px solid var(--border-subtle);
 }
 
 .sidebar__user-card {
@@ -199,7 +227,6 @@
   border-color: var(--border-medium);
 }
 
-/* Avatar */
 .sidebar__avatar {
   width:          36px;
   height:         36px;
@@ -209,11 +236,12 @@
   align-items:    center;
   justify-content:center;
   font-family:    var(--font-display);
-  font-size:      0.82rem;
+  font-size:      0.80rem;
   font-weight:    700;
   color:          #fff;
   flex-shrink:    0;
   overflow:       hidden;
+  box-shadow:     0 2px 8px rgba(0,0,0,0.35);
 }
 
 .sidebar__avatar img {
@@ -222,10 +250,9 @@
   object-fit: cover;
 }
 
-/* User info text */
 .sidebar__user-info {
   flex:      1;
-  min-width: 0;
+  min-width: 0;                  /* Allows text truncation */
 }
 
 .sidebar__user-name {
@@ -239,13 +266,12 @@
 
 .sidebar__user-role {
   font-family:    var(--font-mono);
-  font-size:      0.60rem;
+  font-size:      0.58rem;
   color:          var(--text-muted);
-  letter-spacing: 0.05em;
-  margin-top:     1px;
+  letter-spacing: 0.04em;
+  margin-top:     2px;
 }
 
-/* Online indicator */
 .sidebar__online-dot {
   width:         7px;
   height:        7px;
@@ -260,16 +286,16 @@
    MAIN CONTENT AREA
 ══════════════════════════════════════ */
 .dashboard-main {
-  margin-left:    var(--sidebar-width);
+  margin-left:    var(--sidebar-width);   /* Offset for fixed sidebar */
   flex:           1;
   min-height:     100vh;
   display:        flex;
   flex-direction: column;
-  min-width:      0;                    /* Prevent overflow */
+  min-width:      0;                      /* Prevents overflow */
 }
 
 /* ══════════════════════════════════════
-   TOP BAR
+   TOP BAR — Devoryn sticky glass bar
 ══════════════════════════════════════ */
 .topbar {
   height:          var(--topbar-height);
@@ -281,16 +307,30 @@
   justify-content: space-between;
   padding:         0 var(--s8);
 
-  background:       rgba(8, 10, 22, 0.82);
-  backdrop-filter:  var(--blur-lg);
-  -webkit-backdrop-filter: var(--blur-lg);
-  border-bottom:    1px solid var(--border-subtle);
+  /* Frosted glass topbar */
+  background:              rgba(11, 16, 34, 0.75);
+  backdrop-filter:         var(--blur-xl);
+  -webkit-backdrop-filter: var(--blur-xl);
+  border-bottom:           1px solid var(--border-subtle);
+  box-shadow:              0 2px 20px rgba(0,0,0,0.30);
 }
 
-/* Greeting */
+/* Bottom gloss line on topbar */
+.topbar::after {
+  content:    '';
+  position:   absolute;
+  bottom:     0;
+  left:       5%;
+  right:      5%;
+  height:     1px;
+  background: linear-gradient(90deg, transparent, rgba(79,195,247,0.15), transparent);
+  pointer-events: none;
+}
+
+/* Greeting text */
 .topbar__greeting-hi {
   font-family:    var(--font-display);
-  font-size:      1.08rem;
+  font-size:      1.05rem;
   font-weight:    700;
   color:          var(--text-white);
   line-height:    1.2;
@@ -298,22 +338,23 @@
 
 .topbar__greeting-sub {
   font-family:    var(--font-mono);
-  font-size:      0.70rem;
+  font-size:      0.68rem;
   color:          var(--text-muted);
-  letter-spacing: 0.05em;
+  letter-spacing: 0.04em;
+  margin-top:     1px;
 }
 
-/* Right actions area */
+/* Right actions */
 .topbar__actions {
   display:     flex;
   align-items: center;
   gap:         var(--s3);
 }
 
-/* Icon button */
+/* Icon button (bell, settings) */
 .topbar__icon-btn {
-  width:         38px;
-  height:        38px;
+  width:         36px;
+  height:        36px;
   border-radius: var(--r-md);
   background:    var(--glass-light);
   border:        1px solid var(--border-subtle);
@@ -332,6 +373,7 @@
   background:   var(--glass-medium);
   color:        var(--text-primary);
   border-color: var(--border-medium);
+  transform:    translateY(-1px);
 }
 
 /* Notification dot on bell */
@@ -344,18 +386,18 @@
   border-radius:50%;
   background:   var(--cyan);
   box-shadow:   0 0 6px var(--cyan);
-  animation:    pulse 2s ease infinite;
+  animation:    pulseDot 2s ease infinite;
 }
 
-/* User pill */
+/* User pill — Devoryn style */
 .topbar__user {
   display:       flex;
   align-items:   center;
   gap:           var(--s2);
-  padding:       var(--s2) var(--s3);
+  padding:       0.38rem 0.75rem 0.38rem 0.38rem;
   background:    var(--glass-light);
   border:        1px solid var(--border-subtle);
-  border-radius: var(--r-full);
+  border-radius: var(--r-full);        /* Full pill shape */
   cursor:        pointer;
   transition:    all var(--t-base);
 }
@@ -365,17 +407,16 @@
   border-color: var(--border-medium);
 }
 
-/* User avatar in topbar */
 .topbar__user-avatar {
   width:          28px;
   height:         28px;
-  border-radius:  var(--r-sm);
+  border-radius:  var(--r-full);
   background:     linear-gradient(135deg, var(--cyan), var(--blue));
   display:        flex;
   align-items:    center;
   justify-content:center;
   font-family:    var(--font-display);
-  font-size:      0.68rem;
+  font-size:      0.65rem;
   font-weight:    700;
   color:          #fff;
   overflow:       hidden;
@@ -389,55 +430,57 @@
 }
 
 .topbar__user-name {
-  font-size:  0.82rem;
-  font-weight:500;
-  color:      var(--text-secondary);
-  white-space:nowrap;
+  font-size:   0.80rem;
+  font-weight: 500;
+  color:       var(--text-secondary);
+  white-space: nowrap;
 }
 
 .topbar__user-chevron {
-  font-size: 0.68rem;
-  color:     var(--text-muted);
+  font-size:  0.60rem;
+  color:      var(--text-muted);
+  margin-left:var(--s1);
 }
 
-/* Hamburger — hidden by default, shown on mobile */
+/* Hamburger — shown on mobile only */
 .topbar__hamburger {
   display: none;
 }
 
-/* ── Page Content Container ───────────────────────── */
+/* ── Page Content ─────────────────────────────────── */
 .page-content {
   flex:       1;
   padding:    var(--s8);
-  max-width:  1400px;
+  max-width:  var(--content-max);
   animation:  fadeIn 0.4s ease;
 }
 
-/* ── Mobile Overlay ───────────────────────────────── */
+/* ── Mobile overlay ───────────────────────────────── */
 .sidebar-overlay {
-  position:   fixed;
-  inset:      0;
-  z-index:    150;
-  background: rgba(0, 0, 0, 0.55);
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
-  animation:  fadeIn 0.2s ease;
+  position:        fixed;
+  inset:           0;
+  z-index:         150;
+  background:      rgba(0,0,0,0.65);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  animation:       fadeIn 0.2s ease;
 }
 
 /* ══════════════════════════════════════
-   RESPONSIVE — Mobile sidebar
+   RESPONSIVE — Mobile
 ══════════════════════════════════════ */
 @media (max-width: 1024px) {
-  /* Sidebar hidden by default on mobile */
+  /* Sidebar hidden off-screen on mobile */
   .sidebar {
-    transform: translateX(-100%);
+    transform:  translateX(-100%);
     box-shadow: none;
   }
 
   /* Slide in when open */
   .sidebar--open {
-    transform: translateX(0);
-    box-shadow: 8px 0 40px rgba(0,0,0,0.5);
+    transform:  translateX(0);
+    box-shadow: var(--shadow-sidebar);
+    animation:  slideInLeft 0.35s ease;
   }
 
   /* No sidebar offset on mobile */
@@ -445,40 +488,24 @@
     margin-left: 0;
   }
 
-  /* Show hamburger button */
+  /* Show hamburger */
   .topbar__hamburger {
     display: flex;
   }
 
-  /* Tighter content padding */
   .page-content {
     padding: var(--s5);
   }
 
-  /* Topbar horizontal padding */
   .topbar {
     padding: 0 var(--s5);
   }
 }
 
 @media (max-width: 600px) {
-  /* Hide topbar sub-text on small screens */
-  .topbar__greeting-sub {
-    display: none;
-  }
-
-  /* Hide user name in pill — show only avatar */
-  .topbar__user-name,
-  .topbar__user-chevron {
-    display: none;
-  }
-
-  /* Tighter topbar */
-  .topbar {
-    padding: 0 var(--s4);
-  }
-
-  .page-content {
-    padding: var(--s4);
-  }
+  .topbar__greeting-sub { display: none; }
+  .topbar__user-name    { display: none; }
+  .topbar__user-chevron { display: none; }
+  .topbar { padding: 0 var(--s4); }
+  .page-content { padding: var(--s4); }
 }

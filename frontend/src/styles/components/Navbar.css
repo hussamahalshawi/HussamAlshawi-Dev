@@ -1,8 +1,7 @@
 /* ═══════════════════════════════════════════════════
-   Navbar.css — Glassmorphism Floating Navigation Bar
+   Navbar.css — Devoryn-style Floating Glass Navbar
    ═══════════════════════════════════════════════════ */
 
-/* ── Container ────────────────────────────────────── */
 .navbar {
   position:        fixed;
   top:             var(--s4);
@@ -12,67 +11,71 @@
   display:         flex;
   align-items:     center;
   justify-content: space-between;
-  padding:         0.8rem var(--s6);
+  padding:         0.75rem var(--s6);
   width:           calc(100% - var(--s8));
   max-width:       1100px;
 
-  /* Floating glass pill */
-  background:       rgba(10, 13, 26, 0.72);
-  backdrop-filter:  var(--blur-xl);
+  /* Deep frosted glass pill */
+  background:              rgba(11, 16, 34, 0.78);
+  backdrop-filter:         var(--blur-xl);
   -webkit-backdrop-filter: var(--blur-xl);
-  border:           1px solid var(--border-subtle);
-  border-radius:    var(--r-2xl);
-  box-shadow:       0 8px 32px rgba(0,0,0,0.4), 0 1px 0 rgba(255,255,255,0.04) inset;
-  transition:       all var(--t-slow);
-  animation:        fadeUp 0.6s ease 0.1s both;
+  border:                  1px solid var(--border-subtle);
+  border-radius:           var(--r-2xl);
+  box-shadow:              0 8px 40px rgba(0,0,0,0.50),
+                           0 0 0 1px rgba(255,255,255,0.04) inset;
+  transition: all var(--t-slow);
+  animation:  fadeUp 0.6s ease 0.1s both;
 }
 
-/* ── Scrolled/stuck state ─────────────────────────── */
+/* Top gloss line */
+.navbar::before {
+  content:    '';
+  position:   absolute;
+  top:        0;
+  left:       8%;
+  right:      8%;
+  height:     1px;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.16), transparent);
+  pointer-events: none;
+  border-radius: var(--r-full);
+}
+
+/* Stuck/scrolled state */
 .navbar--stuck {
-  background:   rgba(8, 10, 22, 0.90);
+  background:   rgba(8, 12, 26, 0.92);
   border-color: var(--border-medium);
-  box-shadow:   0 8px 40px rgba(0,0,0,0.5),
-                0 0 0 1px rgba(79,195,247,0.05),
-                0 1px 0 rgba(255,255,255,0.04) inset;
+  box-shadow:   0 8px 40px rgba(0,0,0,0.60),
+                0 0 0 1px rgba(79,195,247,0.06) inset,
+                0 0 30px rgba(79,195,247,0.04);
 }
 
-/* ── Logo ─────────────────────────────────────────── */
+/* Logo */
 .navbar__logo {
   font-family:     var(--font-display);
-  font-size:       1.3rem;
+  font-size:       1.25rem;
   font-weight:     800;
-  letter-spacing:  0.02em;
+  letter-spacing:  0.01em;
   color:           var(--text-white);
   text-decoration: none;
-  display:         flex;
-  align-items:     center;
-  gap:             1px;
-  user-select:     none;
   transition:      opacity var(--t-fast);
 }
 
-.navbar__logo:hover {
-  opacity: 0.85;
-}
+.navbar__logo:hover { opacity: 0.82; }
 
 .navbar__logo em {
   color:      var(--cyan);
   font-style: normal;
 }
 
-/* ── Nav Menu ─────────────────────────────────────── */
+/* Nav menu */
 .navbar__menu {
   display:     flex;
   gap:         2px;
   align-items: center;
-  list-style:  none;
-  padding:     0;
-  margin:      0;
 }
 
-/* Nav link */
 .navbar__link {
-  font-size:       0.78rem;
+  font-size:       0.76rem;
   font-weight:     500;
   letter-spacing:  0.06em;
   text-transform:  uppercase;
@@ -89,17 +92,15 @@
   background: var(--glass-light);
 }
 
-/* Active link */
 .navbar__link--active {
-  color:      var(--cyan);
-  background: var(--cyan-glow);
+  color:      var(--cyan-bright);
+  background: var(--glass-cyan);
 }
 
-/* Active underline dot */
 .navbar__link--active::after {
   content:      '';
   position:     absolute;
-  bottom:       4px;
+  bottom:       3px;
   left:         50%;
   transform:    translateX(-50%);
   width:        4px;
@@ -109,24 +110,23 @@
   box-shadow:   0 0 6px var(--cyan);
 }
 
-/* ── Availability Badge ───────────────────────────── */
+/* Availability badge */
 .navbar__badge {
   display:        flex;
   align-items:    center;
   gap:            var(--s2);
   font-family:    var(--font-mono);
-  font-size:      0.66rem;
+  font-size:      0.64rem;
   font-weight:    500;
   letter-spacing: 0.08em;
   color:          var(--green);
   padding:        var(--s1) var(--s3);
-  background:     rgba(78,204,163,0.08);
-  border:         1px solid rgba(78,204,163,0.20);
+  background:     rgba(78,204,163,0.10);
+  border:         1px solid rgba(78,204,163,0.22);
   border-radius:  var(--r-full);
   white-space:    nowrap;
 }
 
-/* Pulsing green dot */
 .navbar__badge::before {
   content:       '';
   width:         6px;
@@ -138,22 +138,14 @@
   flex-shrink:   0;
 }
 
-/* ── Mobile ───────────────────────────────────────── */
+/* Mobile */
 @media (max-width: 768px) {
   .navbar {
     top:     var(--s3);
     width:   calc(100% - var(--s5));
-    padding: 0.7rem var(--s4);
+    padding: 0.65rem var(--s4);
   }
 
-  /* Hide nav links on mobile — dashboard has sidebar nav */
-  .navbar__menu {
-    display: none;
-  }
-
-  /* Smaller badge on mobile */
-  .navbar__badge {
-    font-size: 0.60rem;
-    padding:   var(--s1) var(--s2);
-  }
+  .navbar__menu  { display: none; }
+  .navbar__badge { font-size: 0.58rem; padding: var(--s1) var(--s2); }
 }

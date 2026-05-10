@@ -1,113 +1,86 @@
 /* ═══════════════════════════════════════════════════
    AnalyticsSection.css — KPI cards and analytics layout
-   Full glassmorphism dark theme
+   Devoryn-grade glass panels
    ═══════════════════════════════════════════════════ */
 
-/* ── KPI cards grid ───────────────────────────────── */
-.kpi-grid {
-  display:               grid;
-  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-  gap:                   1px;                              /* Gap acts as thin border */
-  background:            var(--border-subtle);             /* Shows between cards */
-  border:                1px solid var(--border-subtle);
-  border-radius:         var(--r-xl);
-  overflow:              hidden;
-  margin-bottom:         var(--s10);
+/* ── Analytics skills bar container ──────────────── */
+.analytics-skills {
+  background:              rgba(14, 19, 38, 0.75);
+  backdrop-filter:         var(--blur-lg);
+  -webkit-backdrop-filter: var(--blur-lg);
+  border:                  1px solid var(--border-subtle);
+  border-radius:           var(--r-xl);
+  padding:                 var(--s6);
+  box-shadow:              var(--shadow-card);
+  position:                relative;
+  overflow:                hidden;
+  transition:              border-color var(--t-base);
 }
 
-/* Individual KPI card */
-.kpi-card {
-  background:     rgba(13, 17, 32, 0.95);
-  padding:        1.6rem 1.4rem;
-  display:        flex;
-  flex-direction: column;
-  gap:            var(--s2);
-  transition:     background var(--t-fast);
-  position:       relative;
-  overflow:       hidden;
-}
-
-/* Hover glow effect */
-.kpi-card:hover {
-  background: rgba(20, 25, 42, 0.98);
-}
-
-/* Bottom-right glow orb */
-.kpi-card::after {
+/* Gloss line */
+.analytics-skills::before {
   content:    '';
   position:   absolute;
-  bottom:     -20px;
-  right:      -20px;
-  width:      70px;
-  height:     70px;
-  border-radius: 50%;
-  background: radial-gradient(circle, var(--cyan) 0%, transparent 70%);
-  opacity:    0.06;
-  transition: opacity var(--t-base);
+  top:        0;
+  left:       10%;
+  right:      10%;
+  height:     1px;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.12), transparent);
+  pointer-events: none;
 }
 
-.kpi-card:hover::after {
-  opacity: 0.12;
-}
-
-/* Icon */
-.kpi-card__icon {
-  font-size:   1.2rem;
-  line-height: 1;
-}
-
-/* Animated count number */
-.kpi-card__num {
-  font-family:    var(--font-display);
-  font-size:      2.6rem;
-  font-weight:    800;
-  line-height:    1;
-  letter-spacing: -0.02em;
-  color:          var(--text-white);
-}
-
-/* Label */
-.kpi-card__label {
-  font-family:    var(--font-mono);
-  font-size:      0.62rem;
-  font-weight:    500;
-  letter-spacing: 0.10em;
-  text-transform: uppercase;
-  color:          var(--text-muted);
+.analytics-skills:hover {
+  border-color: var(--border-medium);
 }
 
 /* ── Bottom two-column layout ─────────────────────── */
 .analytics-bottom {
   display:               grid;
   grid-template-columns: 1.2fr 1fr;
-  gap:                   var(--s10);
+  gap:                   var(--s6);
   align-items:           start;
 }
 
 /* ── Distribution panel ───────────────────────────── */
 .analytics-dist {
-  background:    rgba(13, 17, 32, 0.6);
-  border:        1px solid var(--border-subtle);
-  border-radius: var(--r-xl);
-  padding:       var(--s6);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
+  background:              rgba(14, 19, 38, 0.75);
+  backdrop-filter:         var(--blur-lg);
+  -webkit-backdrop-filter: var(--blur-lg);
+  border:                  1px solid var(--border-subtle);
+  border-radius:           var(--r-xl);
+  padding:                 var(--s6);
+  box-shadow:              var(--shadow-card);
+  position:                relative;
+  overflow:                hidden;
+  transition:              border-color var(--t-base);
+}
+
+/* Gloss line */
+.analytics-dist::before {
+  content:    '';
+  position:   absolute;
+  top:        0;
+  left:       10%;
+  right:      10%;
+  height:     1px;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.12), transparent);
+  pointer-events: none;
+}
+
+.analytics-dist:hover {
+  border-color: var(--border-medium);
 }
 
 /* ── Responsive ───────────────────────────────────── */
 @media (max-width: 900px) {
-  .kpi-grid {
-    grid-template-columns: repeat(2, 1fr);  /* 2 columns on tablet */
-  }
-
   .analytics-bottom {
-    grid-template-columns: 1fr;            /* Stack on mobile */
-    gap:                   var(--s6);
+    grid-template-columns: 1fr;
+    gap: var(--s5);
   }
 }
 
 @media (max-width: 480px) {
   .kpi-card__num {
-    font-size: 2rem;                       /* Smaller number on mobile */
+    font-size: 1.9rem;
   }
 }

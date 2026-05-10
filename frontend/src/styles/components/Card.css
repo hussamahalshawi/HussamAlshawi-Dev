@@ -1,160 +1,91 @@
 /* ═══════════════════════════════════════════════════
-   Card.css — Glassmorphism Card Component
+   Card.css — Devoryn-grade Glass Card Component
    ═══════════════════════════════════════════════════ */
 
 /* ── Base card ────────────────────────────────────── */
 .card {
-  background:      var(--bg-card);
-  border:          1px solid var(--border-glass);
-  border-radius:   var(--radius-xl);
-  padding:         var(--space-6);
-  position:        relative;
-  overflow:        hidden;
-  backdrop-filter: var(--blur-md);
-  -webkit-backdrop-filter: var(--blur-md);
-  transition:      border-color var(--transition-base),
-                   transform    var(--transition-base),
-                   box-shadow   var(--transition-base),
-                   background   var(--transition-base);
+  background:              rgba(14, 19, 38, 0.80);   /* Deep blue-glass base */
+  backdrop-filter:         var(--blur-lg);
+  -webkit-backdrop-filter: var(--blur-lg);
+  border:                  1px solid var(--border-subtle);
+  border-radius:           var(--r-xl);
+  padding:                 var(--s6);
+  position:                relative;
+  overflow:                hidden;
+  box-shadow:              var(--shadow-card);
+  transition:
+    border-color var(--t-base),
+    transform    var(--t-base),
+    box-shadow   var(--t-base),
+    background   var(--t-base);
 }
 
-/* ── Noise texture overlay ────────────────────────── */
+/* Top gloss line — key Devoryn detail */
 .card::before {
-  content:          '';
-  position:         absolute;
-  inset:            0;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
-  pointer-events:   none;
-  opacity:          0.4;
-  border-radius:    inherit;
+  content:    '';
+  position:   absolute;
+  top:        0;
+  left:       10%;
+  right:      10%;
+  height:     1px;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.14), transparent);
+  pointer-events: none;
 }
 
-/* ── Hover effect ─────────────────────────────────── */
-.card:hover {
-  border-color: var(--border-glass-md);
+/* Water droplet texture */
+.card::after {
+  content:    '';
+  position:   absolute;
+  inset:      0;
+  background-image:
+    radial-gradient(circle at 15% 25%, rgba(255,255,255,0.04) 1px, transparent 1px),
+    radial-gradient(circle at 70% 10%, rgba(255,255,255,0.03) 1px, transparent 1px),
+    radial-gradient(circle at 85% 60%, rgba(255,255,255,0.04) 2px, transparent 2px),
+    radial-gradient(circle at 30% 75%, rgba(255,255,255,0.03) 1px, transparent 1px);
+  pointer-events: none;
+  border-radius:  inherit;
 }
 
-/* ── Variant: interactive (lift on hover) ────────── */
+/* ── Interactive variant ──────────────────────────── */
 .card--interactive {
   cursor: pointer;
 }
 
 .card--interactive:hover {
-  transform:  translateY(-4px);
-  box-shadow: var(--shadow-card);
-  background: var(--bg-card-hover);
+  border-color: var(--border-medium);
+  transform:    translateY(-3px);
+  box-shadow:   var(--shadow-md),
+                0 0 0 1px var(--border-medium);
+  background:   rgba(18, 24, 46, 0.88);
 }
 
-/* ── Variant: accented top bar ───────────────────── */
-.card--accented::after {
+/* ── Reveal bottom bar ────────────────────────────── */
+.card--reveal-bar::after {
   content:    '';
   position:   absolute;
-  top:        0;
+  bottom:     0;
   left:       0;
   right:      0;
   height:     1px;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    var(--accent-cyan),
-    var(--accent-blue),
-    transparent
-  );
-}
-
-/* ── Variant: reveal bottom bar ──────────────────── */
-.card--reveal-bar {
-  overflow: hidden;
-}
-
-.card--reveal-bar::after {
-  content:         '';
-  position:        absolute;
-  bottom:          0;
-  left:            0;
-  right:           0;
-  height:          1px;
-  background:      linear-gradient(90deg, var(--accent-cyan), var(--accent-blue));
-  transform:       scaleX(0);
-  transform-origin:left;
-  transition:      transform 0.4s ease;
+  background: linear-gradient(90deg, var(--cyan), var(--blue));
+  transform:  scaleX(0);
+  transform-origin: left;
+  transition: transform 0.4s ease;
 }
 
 .card--reveal-bar:hover::after {
   transform: scaleX(1);
 }
 
-/* ── Variant: glow overlay on hover ──────────────── */
-.card--glow::before {
-  content:    '';
-  position:   absolute;
-  inset:      0;
-  background: radial-gradient(
-    ellipse at top left,
-    rgba(79,195,247,0.06),
-    transparent 60%
-  );
-  opacity:    0;
-  transition: opacity var(--transition-base);
-  pointer-events: none;
-  border-radius: inherit;
+/* ── Accented top bar ─────────────────────────────── */
+.card--accented::before {
+  left:    0;
+  right:   0;
+  height:  1px;
+  background: linear-gradient(90deg, transparent, var(--cyan), var(--blue), transparent);
 }
 
-.card--glow:hover::before {
-  opacity: 1;
-}
-
-/* ── Card Sub-elements ───────────────────────────── */
-.card__header {
-  display:         flex;
-  align-items:     flex-start;
-  justify-content: space-between;
-  margin-bottom:   var(--space-4);
-}
-
-.card__title {
-  font-family:    var(--font-display);
-  font-size:      1.3rem;
-  font-weight:    600;
-  letter-spacing: -0.01em;
-  line-height:    1.2;
-  color:          var(--text-white);
-}
-
-.card__subtitle {
-  font-size:   0.82rem;
-  color:       var(--text-secondary);
-  margin-top:  var(--space-1);
-  line-height: 1.6;
-}
-
-.card__body {
-  font-size:   0.88rem;
-  color:       var(--text-secondary);
-  line-height: 1.75;
-}
-
-.card__footer {
-  margin-top:  var(--space-5);
-  padding-top: var(--space-4);
-  border-top:  1px solid var(--border-glass);
-  display:     flex;
-  align-items: center;
-  gap:         var(--space-3);
-  flex-wrap:   wrap;
-}
-
-/* ── Badge/Tag inside card ───────────────────────── */
-.card__tag {
-  display:        inline-block;
-  font-family:    var(--font-mono);
-  font-size:      0.60rem;
-  font-weight:    500;
-  letter-spacing: 0.10em;
-  text-transform: uppercase;
-  padding:        0.20rem 0.60rem;
-  border-radius:  var(--radius-full);
-  background:     var(--accent-cyan-glow);
-  color:          var(--accent-cyan);
-  border:         1px solid rgba(79,195,247,0.20);
+/* ── Glow variant ─────────────────────────────────── */
+.card--glow:hover {
+  box-shadow: var(--shadow-md), var(--shadow-cyan);
 }
