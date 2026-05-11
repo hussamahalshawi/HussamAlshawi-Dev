@@ -1,0 +1,338 @@
+/* ═══════════════════════════════════════════════════════════════
+   SkeletonLoader.css — Shimmer Skeleton Loading Placeholders
+   Used when individual sections are loading their data.
+   Each skeleton mirrors the exact layout of its real component.
+   Theme-aware: uses CSS variables from index.css
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ── Base shimmer mixin ───────────────────────────────────────── */
+/* Applied to every skeleton block — creates the wave animation */
+.skeleton-block {
+  background:      linear-gradient(
+    90deg,
+    var(--glass-faint)  25%,   /* Dark trough */
+    var(--glass-medium) 50%,   /* Bright peak (shimmer) */
+    var(--glass-faint)  75%    /* Dark trough */
+  );
+  background-size: 400% 100%;              /* Extra wide for wave sweep */
+  animation:       skeletonShimmer 1.8s   /* Shimmer duration */
+                   ease-in-out            /* Smooth easing */
+                   infinite;              /* Loop forever */
+  border-radius:   var(--r-sm);           /* Soft corners on all blocks */
+  will-change:     background-position;   /* GPU hint for performance */
+}
+
+/* Shimmer sweep keyframes — moves gradient from right to left */
+@keyframes skeletonShimmer {
+  0%   { background-position:  200% 0; } /* Start: gradient off-screen right */
+  100% { background-position: -200% 0; } /* End: gradient off-screen left */
+}
+
+/* ══════════════════════════════════════════════════
+   KPI CARD SKELETON — mirrors .analytics-kpi-card
+   Used in AnalyticsSection and OverviewSection grids
+══════════════════════════════════════════════════ */
+
+/* Outer card shell */
+.skeleton-kpi {
+  background:     var(--card-bg);                   /* Match real card background */
+  border-radius:  var(--r-xl);                      /* Same radius as real card */
+  padding:        1.4rem 1.3rem;                    /* Same padding as real card */
+  display:        flex;                             /* Flex column layout */
+  flex-direction: column;                           /* Stack vertically */
+  gap:            var(--s3);                        /* Same gap as real card */
+  border:         1px solid var(--border-subtle);   /* Faint border */
+  overflow:       hidden;                           /* Clip shimmer overflow */
+}
+
+/* Icon placeholder — matches .analytics-kpi-card__icon */
+.skeleton-kpi__icon {
+  width:         28px;                              /* Icon width */
+  height:        28px;                              /* Icon height */
+  border-radius: var(--r-sm);                       /* Rounded icon box */
+}
+
+/* Number placeholder — matches .analytics-kpi-card__num */
+.skeleton-kpi__num {
+  width:         70px;                              /* Approximate number width */
+  height:        36px;                              /* Large number height */
+  border-radius: var(--r-xs);                       /* Tight corners */
+}
+
+/* Label placeholder — matches .analytics-kpi-card__label */
+.skeleton-kpi__label {
+  width:         55px;                              /* Short label width */
+  height:        10px;                              /* Small mono label height */
+  border-radius: 2px;                               /* Very tight corners */
+}
+
+/* ══════════════════════════════════════════════════
+   PROFILE CARD SKELETON — mirrors .profile-card
+   Used in OverviewSection left panel
+══════════════════════════════════════════════════ */
+
+/* Outer card shell */
+.skeleton-profile {
+  background:    var(--card-bg);                    /* Match real card */
+  border-radius: var(--r-xl);                       /* Same border radius */
+  padding:       var(--s6);                         /* Match real card padding */
+  border:        1px solid var(--border-subtle);    /* Faint border */
+  overflow:      hidden;                            /* Clip shimmer */
+  display:       flex;                              /* Flex column */
+  flex-direction:column;                            /* Stack vertically */
+  align-items:   center;                            /* Center horizontally */
+  gap:           var(--s4);                         /* Consistent gaps */
+}
+
+/* Avatar circle placeholder */
+.skeleton-profile__avatar {
+  width:         88px;                              /* Match real avatar size */
+  height:        88px;                              /* Match real avatar size */
+  border-radius: 50%;                               /* Perfect circle */
+  flex-shrink:   0;                                 /* Don't shrink */
+}
+
+/* Name text placeholder */
+.skeleton-profile__name {
+  width:         140px;                             /* Approximate name width */
+  height:        20px;                              /* Name text height */
+  border-radius: var(--r-xs);                       /* Tight corners */
+}
+
+/* Title/role text placeholder */
+.skeleton-profile__title {
+  width:         110px;                             /* Slightly narrower than name */
+  height:        14px;                              /* Smaller title text */
+  border-radius: var(--r-xs);                       /* Tight corners */
+}
+
+/* Stats strip placeholder */
+.skeleton-profile__stats {
+  width:         100%;                              /* Full width */
+  height:        48px;                              /* Stats row height */
+  border-radius: var(--r-sm);                       /* Rounded */
+}
+
+/* Bio text placeholder — three lines */
+.skeleton-profile__bio {
+  width:         100%;                              /* Full width */
+  height:        48px;                              /* Three lines height */
+  border-radius: var(--r-xs);                       /* Tight corners */
+}
+
+/* CTA buttons row placeholder */
+.skeleton-profile__actions {
+  width:         100%;                              /* Full width */
+  height:        36px;                              /* Button height */
+  border-radius: var(--r-sm);                       /* Button radius */
+}
+
+/* ══════════════════════════════════════════════════
+   SKILL ROW SKELETON — mirrors .skill-row / .analytics-skill-row
+   Used in SkillsSection, TopSkillsPanel, AnalyticsSection
+══════════════════════════════════════════════════ */
+
+/* Full skill row wrapper */
+.skeleton-skill-row {
+  display:       flex;                              /* Horizontal row */
+  align-items:   center;                            /* Vertical center */
+  gap:           var(--s3);                         /* Match real gap */
+  margin-bottom: var(--s4);                         /* Match real spacing */
+}
+
+/* Name placeholder — min-width mirrors .skill-row__name */
+.skeleton-skill-row__name {
+  width:      100px;                                /* Fixed name column width */
+  height:     14px;                                 /* Text height */
+  flex-shrink:0;                                    /* Don't shrink */
+}
+
+/* Track placeholder — flex fill like .skill-row__track */
+.skeleton-skill-row__track {
+  flex:          1;                                 /* Fill remaining space */
+  height:        4px;                               /* Match real track height */
+  border-radius: var(--r-full);                     /* Full pill */
+}
+
+/* Score placeholder — fixed width like .skill-row__pct */
+.skeleton-skill-row__pct {
+  width:      32px;                                 /* Score column width */
+  height:     12px;                                 /* Small mono text height */
+  flex-shrink:0;                                    /* Don't shrink */
+}
+
+/* ══════════════════════════════════════════════════
+   PROJECT CARD SKELETON — mirrors project grid cards
+   Used in ProjectsSection card grid
+══════════════════════════════════════════════════ */
+
+/* Card shell */
+.skeleton-project {
+  background:    var(--card-bg);                    /* Match card background */
+  border-radius: var(--r-xl);                       /* Same border radius */
+  border:        1px solid var(--border-subtle);    /* Faint border */
+  overflow:      hidden;                            /* Clip cover image */
+}
+
+/* Cover image placeholder */
+.skeleton-project__cover {
+  width:  100%;                                     /* Full width */
+  height: 180px;                                    /* Cover image height */
+  border-radius: 0;                                 /* No radius (fills to edge) */
+}
+
+/* Content block below cover */
+.skeleton-project__content {
+  padding:        var(--s4);                        /* Match card content padding */
+  display:        flex;                             /* Flex column */
+  flex-direction: column;                           /* Stack vertically */
+  gap:            var(--s3);                        /* Consistent gaps */
+}
+
+/* Project title placeholder */
+.skeleton-project__title {
+  width:  70%;                                      /* Partial width for natural look */
+  height: 20px;                                     /* Title text height */
+}
+
+/* Project description placeholder — two lines */
+.skeleton-project__desc {
+  width:  100%;                                     /* Full width */
+  height: 36px;                                     /* Two lines */
+}
+
+/* Tech badge row placeholder */
+.skeleton-project__tags {
+  display: flex;                                    /* Horizontal tag row */
+  gap:     var(--s2);                               /* Tag spacing */
+}
+
+.skeleton-project__tag {
+  width:         60px;                              /* Tag chip width */
+  height:        22px;                              /* Tag chip height */
+  border-radius: var(--r-full);                     /* Pill shape */
+}
+
+/* ══════════════════════════════════════════════════
+   EXPERIENCE CARD SKELETON — mirrors timeline cards
+   Used in ExperienceSection timeline
+══════════════════════════════════════════════════ */
+
+/* Timeline item wrapper */
+.skeleton-experience {
+  display:   flex;                                  /* Horizontal: dot + card */
+  gap:       var(--s4);                             /* Gap between dot and card */
+  padding:   var(--s4) 0;                           /* Vertical item spacing */
+}
+
+/* Timeline dot placeholder */
+.skeleton-experience__dot {
+  width:      16px;                                 /* Dot size */
+  height:     16px;                                 /* Dot size */
+  border-radius: 50%;                               /* Perfect circle */
+  flex-shrink:   0;                                 /* Don't shrink */
+  margin-top: 4px;                                  /* Align with first line of text */
+}
+
+/* Card content block */
+.skeleton-experience__card {
+  flex:           1;                                /* Fill remaining width */
+  background:     var(--card-bg);                   /* Card background */
+  border-radius:  var(--r-lg);                      /* Card radius */
+  border:         1px solid var(--border-subtle);   /* Faint border */
+  padding:        var(--s5);                        /* Card padding */
+  display:        flex;                             /* Flex column */
+  flex-direction: column;                           /* Stack vertically */
+  gap:            var(--s3);                        /* Consistent gaps */
+}
+
+/* Role title placeholder */
+.skeleton-experience__role {
+  width:  55%;                                      /* Partial width */
+  height: 20px;                                     /* Title height */
+}
+
+/* Company + date row placeholder */
+.skeleton-experience__meta {
+  width:  40%;                                      /* Narrower than title */
+  height: 14px;                                     /* Meta text height */
+}
+
+/* Description placeholder — three lines */
+.skeleton-experience__desc {
+  width:  100%;                                     /* Full width */
+  height: 52px;                                     /* Three description lines */
+}
+
+/* ══════════════════════════════════════════════════
+   GLASS PANEL SKELETON — generic panel placeholder
+   Used as a fallback for any panel-based section
+══════════════════════════════════════════════════ */
+
+/* Outer panel shell */
+.skeleton-panel {
+  background:     var(--card-bg);                   /* Match panel background */
+  border-radius:  var(--r-xl);                      /* Panel border radius */
+  border:         1px solid var(--border-subtle);   /* Faint border */
+  padding:        var(--s6);                        /* Panel padding */
+  display:        flex;                             /* Flex column */
+  flex-direction: column;                           /* Stack vertically */
+  gap:            var(--s4);                        /* Consistent gaps */
+  overflow:       hidden;                           /* Clip shimmer */
+  position:       relative;                        /* Context for pseudo-element */
+}
+
+/* Panel header placeholder */
+.skeleton-panel__header {
+  width:  50%;                                      /* Panel title width */
+  height: 20px;                                     /* Title height */
+}
+
+/* Panel content rows */
+.skeleton-panel__line {
+  width:  100%;                                     /* Full width */
+  height: 12px;                                     /* Line text height */
+}
+
+.skeleton-panel__line--short {
+  width: 65%;                                       /* Shorter line for variation */
+}
+
+.skeleton-panel__line--medium {
+  width: 80%;                                       /* Medium line for variation */
+}
+
+/* ══════════════════════════════════════════════════
+   SECTION HEAD SKELETON — mirrors .s-head block
+   Used as placeholder for section headers
+══════════════════════════════════════════════════ */
+
+/* Wrapper matches .s-head margin */
+.skeleton-section-head {
+  margin-bottom: var(--s10);                        /* Match .s-head margin */
+  display:       flex;                              /* Flex column */
+  flex-direction:column;                            /* Stack vertically */
+  gap:           var(--s3);                         /* Consistent gaps */
+}
+
+/* Tag pill placeholder — matches .s-tag */
+.skeleton-section-head__tag {
+  width:         80px;                              /* Short tag pill width */
+  height:        24px;                              /* Tag height */
+  border-radius: var(--r-full);                     /* Pill shape */
+}
+
+/* Section title placeholder — matches .s-title */
+.skeleton-section-head__title {
+  width:  260px;                                    /* Approximate title width */
+  height: 44px;                                     /* Large heading height */
+  border-radius: var(--r-xs);                       /* Tight corners */
+}
+
+/* Section subtitle placeholder — matches .s-sub */
+.skeleton-section-head__sub {
+  width:  380px;                                    /* Subtitle max width */
+  height: 16px;                                     /* Subtitle height */
+  max-width: 100%;                                  /* Never overflow */
+  border-radius: var(--r-xs);                       /* Tight corners */
+}
