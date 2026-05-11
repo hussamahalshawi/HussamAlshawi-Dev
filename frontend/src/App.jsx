@@ -1,35 +1,31 @@
 /**
- * App.jsx — Root application component
+ * App.jsx — Root application component.
+ *
  * Defines all client-side routes using React Router v6.
- * Each page is a lazy-loaded or direct import to keep the bundle lean.
+ * The Devoryn dashboard uses DashboardLayout (sidebar + topbar)
+ * as the persistent shell — there is NO separate Navbar or Footer
+ * at this level. Both are embedded inside DashboardLayout.
+ *
+ * Routes:
+ *   /       → Home    (main portfolio dashboard — Devoryn style)
+ *   *       → NotFound (404 fallback)
  */
-import { Routes, Route }  from 'react-router-dom';            // Declarative routing primitives
-import Navbar             from './components/layout/Navbar';  // Fixed top navigation bar
-import Footer             from './components/layout/Footer';  // Bottom footer strip
-import Home               from './pages/Home';                // Main portfolio landing page
-import NotFound           from './pages/NotFound';            // 404 fallback page
+import { Routes, Route } from 'react-router-dom'; // Declarative routing primitives
+import Home              from '@/pages/Home';      // Main dashboard page
+import NotFound          from '@/pages/NotFound';  // 404 fallback page
 
 /**
- * App — the routing shell.
- * Navbar and Footer are rendered on every route.
- * The <Routes> block swaps the page content based on the URL.
+ * App — routing shell.
+ * No Navbar / Footer here; DashboardLayout owns the persistent UI.
  */
 export default function App() {
   return (
-    <>
-      {/* ── Persistent navigation ── */}
-      <Navbar />
+    <Routes>
+      {/* ── Main portfolio dashboard ── */}
+      <Route path="/"  element={<Home />} />
 
-      {/* ── Page content area ── */}
-      <main>
-        <Routes>
-          <Route path="/"  element={<Home />} />              {/* Portfolio home page */}
-          <Route path="*"  element={<NotFound />} />          {/* Catch-all 404 route */}
-        </Routes>
-      </main>
-
-      {/* ── Persistent footer ── */}
-      <Footer />
-    </>
+      {/* ── Catch-all 404 ── */}
+      <Route path="*"  element={<NotFound />} />
+    </Routes>
   );
 }
