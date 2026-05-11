@@ -1,0 +1,217 @@
+/* ═══════════════════════════════════════════════════════════════
+   PageLoader.css — Full-Screen Animated Page Loader
+   Shown while usePortfolioData() fetches initial data.
+   Supports: visible state | hidden state (fade-out)
+   Theme-aware: uses CSS variables from index.css
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ── Outer overlay ────────────────────────────────────────────── */
+/* Covers the entire viewport with a blurred, themed background */
+.page-loader {
+  position:        fixed;                       /* Lock to viewport, not scroll */
+  inset:           0;                           /* Cover all four edges */
+  z-index:         9999;                        /* Above all other content */
+  display:         flex;                        /* Flex container for centering */
+  flex-direction:  column;                      /* Stack children vertically */
+  align-items:     center;                      /* Center horizontally */
+  justify-content: center;                      /* Center vertically */
+  gap:             var(--s6);                   /* 24px gap between elements */
+  background:      var(--bg-scene);             /* Theme-aware deepest background */
+
+  /* Smooth fade transition when hidden class is applied */
+  transition:      opacity     0.55s cubic-bezier(0.4, 0, 0.2, 1),
+                   visibility  0.55s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ── Radial ambient glow behind the spinner ───────────────────── */
+.page-loader::before {
+  content:        '';                           /* Required pseudo-element */
+  position:       absolute;                     /* Remove from flow */
+  inset:          0;                            /* Cover entire loader */
+  background:
+    radial-gradient(ellipse 900px 600px at 30% 20%, var(--body-bg-blob1) 0%, transparent 60%),
+    radial-gradient(ellipse 700px 500px at 75% 80%, var(--body-bg-blob2) 0%, transparent 55%);
+  pointer-events: none;                         /* Don't intercept clicks */
+  z-index:        0;                            /* Behind content */
+}
+
+/* All direct children above the pseudo glow */
+.page-loader > * { position: relative; z-index: 1; }
+
+/* ── Hidden state ─────────────────────────────────────────────── */
+/* Added via JS when data finishes loading (from Home.jsx) */
+.page-loader--hidden {
+  opacity:        0;                            /* Fade to transparent */
+  visibility:     hidden;                       /* Remove from accessibility tree */
+  pointer-events: none;                         /* Prevent click interception */
+}
+
+/* ══════════════════════════════════════════════════
+   SPINNER — Triple concentric ring animation
+   Three rings spin at different speeds and directions
+══════════════════════════════════════════════════ */
+
+/* Outer container — defines the bounding box for all rings */
+.page-loader__spinner {
+  position: relative;                           /* Positioning context for rings */
+  width:    72px;                               /* Total spinner diameter */
+  height:   72px;                               /* Total spinner diameter */
+}
+
+/* ── Shared ring styles ───────────────────────────────────────── */
+/* Applied to all three ring elements */
+.loader-ring {
+  position:      absolute;                      /* Stack rings on top of each other */
+  border-radius: 50%;                           /* Perfect circles */
+  border:        2px solid transparent;         /* Base transparent border */
+}
+
+/* ── Ring 1 — outer cyan ──────────────────────────────────────── */
+/* Largest ring, rotates clockwise slowly */
+.loader-ring--1 {
+  inset:        0;                              /* Fill the spinner container */
+  border-top:   2px solid var(--cyan);          /* Visible cyan segment (top) */
+  border-right: 2px solid rgba(79,195,247,0.3); /* Fading trail (right) */
+  animation:    loaderSpin1 1.2s linear infinite; /* Clockwise rotation */
+}
+
+/* ── Ring 2 — middle blue ─────────────────────────────────────── */
+/* Medium ring, rotates counter-clockwise faster */
+.loader-ring--2 {
+  inset:         10px;                          /* 10px inset from outer ring */
+  border-bottom: 2px solid var(--blue);         /* Visible blue segment (bottom) */
+  border-left:   2px solid rgba(91,141,239,0.3);/* Fading trail (left) */
+  animation:     loaderSpin2 0.9s linear infinite; /* Counter-clockwise */
+}
+
+/* ── Ring 3 — inner violet ────────────────────────────────────── */
+/* Smallest ring, rotates clockwise fastest */
+.loader-ring--3 {
+  inset:        20px;                           /* 20px inset from outer ring */
+  border-top:   2px solid var(--violet);        /* Visible violet segment (top) */
+  border-right: 2px solid rgba(155,127,234,0.3);/* Fading trail (right) */
+  animation:    loaderSpin1 0.65s linear infinite; /* Fastest clockwise rotation */
+}
+
+/* ── Center glow dot ──────────────────────────────────────────── */
+/* Subtle pulsing dot at the exact center of the spinner */
+.loader-ring__center {
+  position:      absolute;                      /* Center within spinner */
+  inset:         0;                             /* Fill spinner container */
+  display:       flex;                          /* Flex for centering */
+  align-items:   center;                        /* Vertical center */
+  justify-content: center;                      /* Horizontal center */
+}
+
+.loader-ring__center::after {
+  content:       '';                            /* Pseudo-element for dot */
+  width:         8px;                           /* Dot size */
+  height:        8px;                           /* Dot size */
+  border-radius: 50%;                           /* Perfect circle */
+  background:    var(--cyan);                   /* Cyan dot */
+  box-shadow:    0 0 12px var(--cyan),          /* Inner glow */
+                 0 0 24px var(--cyan-dim);      /* Outer glow */
+  animation:     pulseDot 1.8s ease infinite;   /* Pulsing from index.css */
+}
+
+/* ══════════════════════════════════════════════════
+   MESSAGE TEXT — Animated cycling messages
+══════════════════════════════════════════════════ */
+
+/* Wrapper for all text content below the spinner */
+.page-loader__text {
+  display:        flex;                         /* Flex column for message + brand */
+  flex-direction: column;                       /* Stack vertically */
+  align-items:    center;                       /* Center horizontally */
+  gap:            var(--s3);                    /* 12px between message and dots */
+}
+
+/* Current loading message — cycles through LOADER_MESSAGES */
+.page-loader__message {
+  font-family:    var(--font-mono);             /* Mono font for technical feel */
+  font-size:      0.72rem;                      /* Small, subtle label */
+  letter-spacing: 0.18em;                       /* Wide tracking */
+  text-transform: uppercase;                    /* All caps */
+  color:          var(--text-secondary);        /* Muted theme text */
+  animation:      loaderMsgFade 0.45s ease;     /* Fade-in when message changes */
+  text-align:     center;                       /* Center multi-line messages */
+  max-width:      260px;                        /* Prevent very long messages */
+  transition:     color 0.35s ease;            /* Smooth theme switch */
+}
+
+/* ── Progress dots row ────────────────────────────────────────── */
+/* Three animated dots that indicate loading progress */
+.page-loader__dots {
+  display:     flex;                            /* Horizontal row of dots */
+  gap:         var(--s2);                       /* 8px between dots */
+  align-items: center;                          /* Vertical alignment */
+}
+
+/* Individual progress dot */
+.loader-dot {
+  width:         6px;                           /* Dot diameter */
+  height:        6px;                           /* Dot diameter */
+  border-radius: 50%;                           /* Perfect circle */
+  background:    var(--cyan-dim);               /* Dim cyan by default */
+  transition:    background 0.3s ease,          /* Smooth color change */
+                 transform  0.3s ease,          /* Smooth scale change */
+                 box-shadow 0.3s ease;          /* Smooth glow change */
+}
+
+/* Active dot — highlighted current step */
+.loader-dot--active {
+  background:  var(--cyan);                     /* Full cyan when active */
+  transform:   scale(1.4);                      /* Slightly larger */
+  box-shadow:  0 0 8px var(--cyan);             /* Glow effect */
+}
+
+/* Completed dot — shows progress */
+.loader-dot--done {
+  background:  var(--green);                    /* Green for completed steps */
+  box-shadow:  0 0 6px var(--green-dim);        /* Subtle green glow */
+}
+
+/* ══════════════════════════════════════════════════
+   BRAND WATERMARK — bottom of loader
+══════════════════════════════════════════════════ */
+
+/* Brand text at the bottom of the loader overlay */
+.page-loader__brand {
+  position:       absolute;                     /* Pin to bottom of viewport */
+  bottom:         var(--s8);                    /* 32px from bottom edge */
+  font-family:    var(--font-display);          /* Display font for brand */
+  font-size:      1.15rem;                      /* Medium brand size */
+  font-weight:    800;                          /* Heavy weight */
+  letter-spacing: 0.04em;                       /* Slight tracking */
+  color:          rgba(255, 255, 255, 0.12);    /* Very subtle in dark mode */
+  transition:     color 0.35s ease;            /* Smooth theme switch */
+  user-select:    none;                         /* Non-interactive */
+  pointer-events: none;                         /* Not clickable */
+}
+
+/* Cyan accent on the dot separator */
+.page-loader__brand em {
+  color:      var(--cyan);                      /* Cyan dot accent */
+  font-style: normal;                           /* Override browser italic */
+  opacity:    0.60;                             /* Slightly muted */
+}
+
+/* ══════════════════════════════════════════════════
+   KEYFRAME ANIMATIONS
+══════════════════════════════════════════════════ */
+
+/* Clockwise spinner rotation */
+@keyframes loaderSpin1 {
+  to { transform: rotate(360deg); }             /* Full clockwise rotation */
+}
+
+/* Counter-clockwise spinner rotation */
+@keyframes loaderSpin2 {
+  to { transform: rotate(-360deg); }            /* Full counter-clockwise rotation */
+}
+
+/* Message fade-in when text changes */
+@keyframes loaderMsgFade {
+  from { opacity: 0; transform: translateY(6px); }  /* Start below and transparent */
+  to   { opacity: 1; transform: translateY(0); }    /* End at position and visible */
+}
