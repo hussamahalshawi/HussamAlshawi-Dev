@@ -1,17 +1,18 @@
 /* ═══════════════════════════════════════════════════════════════
    OverviewSection.css — Devoryn-Style Dashboard Overview
-   Light frosted-glass panels · Sky-blue scene · Water-drop drops
-   Bento grid: Performance · Active Projects · Tasks · Activity
+   Matches: screenshot with glassmorphism bento layout
+   Sky-blue frosted panels · Water-drop decorations · KPI grid
+   Performance chart · Active Projects · Tasks Donut · Activity
    ═══════════════════════════════════════════════════════════════ */
 
 /* ── Section wrapper ──────────────────────────────────────────── */
 .overview-section {
-  padding-bottom: var(--s10);                   /* Space before next section */
-  animation:      fadeUp 0.4s ease both;        /* Entrance animation */
+  padding-bottom: var(--s10);                               /* Space before next section */
+  animation:      fadeUp 0.4s ease both;                    /* Entrance animation */
 }
 
 /* ── Page header row ──────────────────────────────────────────── */
-.ov-header {
+.page-header {
   display:         flex;
   align-items:     center;
   justify-content: space-between;
@@ -21,113 +22,437 @@
   animation:       fadeUp 0.45s ease 0.05s both;
 }
 
-.ov-header__title {
+.page-header__title {
   font-family:    var(--font-display);
   font-size:      clamp(1.35rem, 2.5vw, 1.75rem);
   font-weight:    800;
-  color:          var(--text-white);            /* Light mode: --text-white = #1a2332 */
+  color:          var(--text-white);
   letter-spacing: -0.022em;
   line-height:    1.1;
 }
 
-/* Right-side header actions */
-.ov-header__actions {
-  display:     flex;
-  align-items: center;
-  gap:         var(--s2);
+.page-header__sub {
+  font-family:    var(--font-mono);
+  font-size:      0.70rem;
+  color:          var(--text-muted);
+  letter-spacing: 0.06em;
+  margin-top:     var(--s1);
 }
 
-/* Small icon button (settings, etc.) */
-.ov-icon-btn {
-  width:           34px;
-  height:          34px;
-  border-radius:   var(--r-sm);
-  background:      var(--glass-light);
-  border:          1px solid var(--border-subtle);
+/* ── Availability status pill ─────────────────────────────────── */
+.availability-pill {
+  display:        flex;
+  align-items:    center;
+  gap:            var(--s2);
+  padding:        var(--s2) var(--s4);
+  background:     rgba(255, 255, 255, 0.08);
+  border:         1px solid var(--border-subtle);
+  border-radius:  var(--r-full);
+  font-family:    var(--font-mono);
+  font-size:      0.64rem;
+  font-weight:    500;
+  letter-spacing: 0.08em;
+  color:          var(--text-muted);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  transition:     all var(--t-base);
+}
+
+/* Availability indicator dot — grey by default */
+.availability-pill__dot {
+  width:         7px;
+  height:        7px;
+  border-radius: 50%;
+  background:    var(--text-muted);
+  flex-shrink:   0;
+}
+
+/* Open-to-hire state — green glow */
+.availability-pill--open {
+  background:   rgba(78, 204, 163, 0.10);
+  border-color: rgba(78, 204, 163, 0.28);
+  color:        var(--green);
+}
+
+.availability-pill--open .availability-pill__dot {
+  background: var(--green);
+  box-shadow: 0 0 8px var(--green);
+  animation:  pulseDot 2s ease infinite;
+}
+
+/* ══════════════════════════════════════════════════════
+   MAIN OVERVIEW ROW — Profile card + Right column
+══════════════════════════════════════════════════════ */
+.overview-row {
+  display:               grid;
+  grid-template-columns: 320px 1fr;                         /* Fixed profile + flexible right */
+  gap:                   var(--s5);
+  align-items:           start;
+  margin-bottom:         var(--s5);
+}
+
+/* ══════════════════════════════════════════════════════
+   PROFILE CARD — left panel
+══════════════════════════════════════════════════════ */
+.profile-card {
+  display:        flex;
+  flex-direction: column;
+  align-items:    center;
+  gap:            var(--s4);
+  padding:        var(--s8) var(--s6);
+  position:       relative;
+  overflow:       hidden;
+  border-radius:  var(--r-2xl);
+  text-align:     center;
+
+  /* Deep glass surface */
+  background:              rgba(14, 20, 40, 0.82);
+  backdrop-filter:         blur(32px) saturate(1.6);
+  -webkit-backdrop-filter: blur(32px) saturate(1.6);
+  border:                  1px solid rgba(255, 255, 255, 0.10);
+  box-shadow:              0 12px 48px rgba(0, 0, 0, 0.50),
+                           0 0 0 1px rgba(255, 255, 255, 0.04),
+                           inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  animation:               fadeUp 0.50s ease 0.10s both;
+}
+
+/* Top gloss line */
+.profile-card::before {
+  content:    '';
+  position:   absolute;
+  top:        0;
+  left:       8%;
+  right:      8%;
+  height:     1px;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.22), transparent);
+  pointer-events: none;
+}
+
+/* Radial ambient glow behind avatar */
+.profile-card::after {
+  content:    '';
+  position:   absolute;
+  top:        -60px;
+  left:       50%;
+  transform:  translateX(-50%);
+  width:      280px;
+  height:     280px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(79, 195, 247, 0.12) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+/* All content above pseudo-elements */
+.profile-card > * { position: relative; z-index: 1; }
+
+/* ── Avatar wrap — triple ring stack ─────────────────────────── */
+.profile-card__avatar-wrap {
+  position:  relative;
+  flex-shrink: 0;
+}
+
+/* Avatar circle */
+.profile-card__avatar {
+  width:           100px;
+  height:          100px;
+  border-radius:   50%;
+  overflow:        hidden;
   display:         flex;
   align-items:     center;
   justify-content: center;
-  font-size:       0.92rem;
-  color:           var(--text-secondary);
-  cursor:          pointer;
-  transition:      all var(--t-fast);
+  font-family:     var(--font-display);
+  font-size:       2rem;
+  font-weight:     800;
+  color:           #fff;
+
+  /* Gradient background for initials fallback */
+  background:      linear-gradient(135deg, var(--cyan) 0%, var(--blue) 50%, var(--violet) 100%);
+  border:          3px solid rgba(79, 195, 247, 0.35);
+  box-shadow:      0 0 0 6px rgba(79, 195, 247, 0.08),
+                   0 0 0 12px rgba(79, 195, 247, 0.04),
+                   0 8px 32px rgba(0, 0, 0, 0.40);
 }
 
-.ov-icon-btn:hover {
-  background:  var(--glass-medium);
-  color:       var(--text-white);
-  transform:   translateY(-1px);
-  box-shadow:  var(--shadow-sm);
+/* Avatar image fills the circle */
+.profile-card__avatar img {
+  width:      100%;
+  height:     100%;
+  object-fit: cover;
+  display:    block;
 }
 
-/* Dark/light mode toggle pill */
-.ov-toggle {
+/* ── Online dot — bottom-right of avatar ─────────────────────── */
+.profile-card__online {
+  position:      absolute;
+  bottom:        4px;
+  right:         4px;
+  width:         16px;
+  height:        16px;
+  border-radius: 50%;
+  background:    var(--green);
+  border:        2.5px solid rgba(14, 20, 40, 0.95);    /* Matches card bg */
+  box-shadow:    0 0 10px var(--green);
+  animation:     pulseDot 2.5s ease infinite;
+}
+
+/* ── Name + title ─────────────────────────────────────────────── */
+.profile-card__info {
+  display:        flex;
+  flex-direction: column;
+  gap:            var(--s1);
+}
+
+.profile-card__name {
+  font-family:    var(--font-display);
+  font-size:      1.35rem;
+  font-weight:    800;
+  color:          var(--text-white);
+  letter-spacing: -0.015em;
+  line-height:    1.15;
+}
+
+.profile-card__title {
+  font-family:    var(--font-mono);
+  font-size:      0.68rem;
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+  color:          var(--cyan);
+}
+
+/* ── Stats strip ──────────────────────────────────────────────── */
+.profile-card__stats {
   display:       flex;
   align-items:   center;
-  padding:       4px;
-  background:    var(--glass-light);
-  border:        1px solid var(--border-subtle);
-  border-radius: var(--r-full);
-  gap:           2px;
+  gap:           var(--s4);
+  padding:       var(--s4) var(--s5);
+  width:         100%;
+  background:    rgba(255, 255, 255, 0.04);
+  border:        1px solid rgba(255, 255, 255, 0.07);
+  border-radius: var(--r-lg);
 }
 
-.ov-toggle__btn {
-  padding:       4px 10px;
-  border-radius: var(--r-full);
-  font-size:     0.78rem;
-  color:         var(--text-muted);
-  cursor:        pointer;
-  transition:    all var(--t-fast);
-  line-height:   1;
+/* Individual stat item */
+.profile-stat {
+  display:        flex;
+  flex-direction: column;
+  align-items:    center;
+  gap:            2px;
+  flex:           1;
 }
 
-.ov-toggle__btn--active {
-  background: rgba(255, 255, 255, 0.90);
-  color:      var(--text-white);
-  box-shadow: 0 1px 4px rgba(79, 100, 145, 0.12);
+.profile-stat__num {
+  font-family:    var(--font-display);
+  font-size:      1.40rem;
+  font-weight:    800;
+  line-height:    1;
+  letter-spacing: -0.02em;
 }
 
-/* ── BENTO GRID ───────────────────────────────────────────────── */
-/*
-  Layout (3 columns, 2 rows + 1 full-width):
-  ┌─────────────────────┬────────────┬────────────┐
-  │  Performance (2col) │  Tasks     │            │
-  │                     │  Donut     │            │
-  ├────────────┬─────── ┼────────────┤            │
-  │  Active    │  Tasks │            │            │
-  │  Projects  │  List  │ (donut     │            │
-  │            │        │  spans     │            │
-  └────────────┴────────┴────────────┘            │
-  └────────────────────────────────────────────────┘
-       Team Activity (full width)
-*/
+.profile-stat__label {
+  font-family:    var(--font-mono);
+  font-size:      0.56rem;
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+  color:          var(--text-muted);
+}
+
+/* Vertical divider between stats */
+.profile-stat__divider {
+  width:      1px;
+  height:     32px;
+  background: rgba(255, 255, 255, 0.08);
+  flex-shrink:0;
+}
+
+/* ── Bio text ─────────────────────────────────────────────────── */
+.profile-card__bio {
+  font-size:   0.83rem;
+  color:       var(--text-secondary);
+  line-height: 1.75;
+  text-align:  center;
+  max-width:   260px;
+}
+
+/* ── CTA buttons row ──────────────────────────────────────────── */
+.profile-card__actions {
+  display:    flex;
+  gap:        var(--s3);
+  width:      100%;
+  margin-top: var(--s1);
+}
+
+.profile-card__btn {
+  flex: 1;
+  justify-content: center;
+}
+
+/* ══════════════════════════════════════════════════════
+   RIGHT COLUMN — KPI bento + Top skills
+══════════════════════════════════════════════════════ */
+.overview-right {
+  display:        flex;
+  flex-direction: column;
+  gap:            var(--s4);
+}
+
+/* ══════════════════════════════════════════════════════
+   KPI BENTO GRID — 3×2 animated count-up cards
+══════════════════════════════════════════════════════ */
+.kpi-grid {
+  display:               grid;
+  grid-template-columns: repeat(3, 1fr);                    /* 3 equal columns */
+  gap:                   1px;
+  background:            rgba(255, 255, 255, 0.07);          /* Gap color = border */
+  border:                1px solid rgba(255, 255, 255, 0.09);
+  border-radius:         var(--r-xl);
+  overflow:              hidden;
+}
+
+/* ── Individual KPI card ──────────────────────────────────────── */
+.kpi-card {
+  background:     rgba(14, 19, 38, 0.88);
+  backdrop-filter:blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  padding:        1.4rem 1.3rem;
+  display:        flex;
+  flex-direction: column;
+  gap:            var(--s2);
+  position:       relative;
+  overflow:       hidden;
+  transition:     background var(--t-fast);
+  cursor:         default;
+}
+
+.kpi-card:hover { background: rgba(20, 28, 55, 0.95); }
+
+/* Corner radial glow using --kpi-color custom property */
+.kpi-card::after {
+  content:       '';
+  position:      absolute;
+  bottom:        -24px;
+  right:         -24px;
+  width:         80px;
+  height:        80px;
+  border-radius: 50%;
+  background:    radial-gradient(circle, var(--kpi-color, var(--cyan)) 0%, transparent 70%);
+  opacity:       0.07;
+  pointer-events:none;
+  transition:    opacity var(--t-base);
+}
+
+.kpi-card:hover::after { opacity: 0.20; }
+
+/* Icon row */
+.kpi-card__icon {
+  font-size:   1.10rem;
+  line-height: 1;
+}
+
+/* Large animated number */
+.kpi-card__num {
+  font-family:    var(--font-display);
+  font-size:      2.20rem;
+  font-weight:    800;
+  line-height:    1;
+  letter-spacing: -0.025em;
+}
+
+/* Label below number */
+.kpi-card__label {
+  font-family:    var(--font-mono);
+  font-size:      0.58rem;
+  font-weight:    500;
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+  color:          var(--text-muted);
+}
+
+/* ══════════════════════════════════════════════════════
+   TOP SKILLS PANEL — glass card with animated bars
+══════════════════════════════════════════════════════ */
+.top-skills-panel {
+  position:   relative;
+  overflow:   hidden;
+  padding:    var(--s5) var(--s6);
+  border-radius: var(--r-xl);
+
+  background:              rgba(14, 20, 40, 0.78);
+  backdrop-filter:         blur(24px) saturate(1.5);
+  -webkit-backdrop-filter: blur(24px) saturate(1.5);
+  border:                  1px solid rgba(255, 255, 255, 0.09);
+  box-shadow:              0 8px 32px rgba(0, 0, 0, 0.40),
+                           0 0 0 1px rgba(255, 255, 255, 0.04),
+                           inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+/* Top gloss line */
+.top-skills-panel::before {
+  content:    '';
+  position:   absolute;
+  top:        0;
+  left:       8%;
+  right:      8%;
+  height:     1px;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.16), transparent);
+  pointer-events: none;
+}
+
+/* Header row — title + link */
+.top-skills-panel__header {
+  display:         flex;
+  align-items:     center;
+  justify-content: space-between;
+  margin-bottom:   var(--s4);
+  position:        relative;
+  z-index:         1;
+}
+
+.top-skills-panel__title {
+  font-family:    var(--font-display);
+  font-size:      0.90rem;
+  font-weight:    700;
+  color:          var(--text-white);
+  letter-spacing: -0.01em;
+}
+
+/* Skill bars list container */
+.top-skills-panel__list {
+  position: relative;
+  z-index:  1;
+}
+
+/* ══════════════════════════════════════════════════════
+   BENTO GRID — Performance / Projects / Tasks / Activity
+   Matches the Devoryn screenshot layout precisely
+══════════════════════════════════════════════════════ */
 .ov-bento {
   display:               grid;
-  grid-template-columns: 1fr 1fr 1fr;           /* 3 equal columns */
-  grid-template-rows:    auto auto auto;         /* 3 rows: row1, row2, activity */
-  gap:                   var(--s4);             /* Gap between all panels */
+  grid-template-columns: 1.5fr 1fr 1fr;                     /* Perf wide, Tasks, Donut */
+  grid-template-rows:    auto auto auto;
+  gap:                   var(--s4);
 }
 
-/* ── PANEL BASE — shared glass card ─────────────────────────── */
+/* ── Shared glass panel base ──────────────────────────────────── */
 .ov-panel {
   position:   relative;
   overflow:   hidden;
   border-radius: var(--r-xl);
   padding:    var(--s5) var(--s5);
 
-  /* Frosted glass — matches Devoryn light theme */
-  background:              var(--glass-card, rgba(255,255,255,0.38));
-  backdrop-filter:         blur(28px) saturate(1.8) brightness(1.06);
-  -webkit-backdrop-filter: blur(28px) saturate(1.8) brightness(1.06);
-  border:                  1px solid var(--border-card, rgba(255,255,255,0.55));
-  box-shadow:              0 4px 24px rgba(79,100,145,0.13),
-                           0 1px 0   rgba(255,255,255,0.85) inset;
+  background:              rgba(14, 20, 40, 0.80);
+  backdrop-filter:         blur(28px) saturate(1.6);
+  -webkit-backdrop-filter: blur(28px) saturate(1.6);
+  border:                  1px solid rgba(255, 255, 255, 0.09);
+  box-shadow:              0 8px 32px rgba(0, 0, 0, 0.45),
+                           0 0 0 1px rgba(255, 255, 255, 0.04),
+                           inset 0 1px 0 rgba(255, 255, 255, 0.07);
   transition:              border-color var(--t-base),
                            box-shadow   var(--t-base),
                            transform    var(--t-base);
+  animation:               fadeUp 0.5s ease both;
 }
 
-/* Top gloss highlight line */
+/* Top gloss line on every panel */
 .ov-panel::before {
   content:    '';
   position:   absolute;
@@ -135,14 +460,15 @@
   left:       6%;
   right:      6%;
   height:     1px;
-  background: rgba(255, 255, 255, 0.95);        /* Strong gloss line */
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.18), transparent);
   pointer-events: none;
 }
 
 .ov-panel:hover {
-  border-color: rgba(255, 255, 255, 0.72);
-  box-shadow:   0 8px 36px rgba(79,100,145,0.18),
-                0 1px 0   rgba(255,255,255,0.90) inset;
+  border-color: rgba(255, 255, 255, 0.14);
+  box-shadow:   0 12px 48px rgba(0, 0, 0, 0.55),
+                0 0 0 1px rgba(79, 195, 247, 0.08),
+                inset 0 1px 0 rgba(255, 255, 255, 0.08);
 }
 
 /* All content above pseudo-elements */
@@ -157,27 +483,34 @@
 }
 
 .ov-panel__title {
+  font-family:    var(--font-display);
   font-size:      0.90rem;
   font-weight:    700;
   color:          var(--text-white);
   letter-spacing: -0.01em;
-  font-family:    var(--font-display);
 }
 
 .ov-panel__menu {
-  font-size:     0.82rem;
+  font-size:     1rem;
   color:         var(--text-muted);
   cursor:        pointer;
   padding:       2px 6px;
   border-radius: var(--r-sm);
-  transition:    background var(--t-fast);
+  transition:    background var(--t-fast), color var(--t-fast);
   line-height:   1;
+  background:    transparent;
+  border:        none;
 }
 
-.ov-panel__menu:hover { background: rgba(255,255,255,0.65); }
+.ov-panel__menu:hover {
+  background: rgba(255, 255, 255, 0.07);
+  color:      var(--text-primary);
+}
 
-/* ── WATER DROP DECORATIONS ─────────────────────────────────── */
-/* Absolutely positioned SVG-style drops — key Devoryn detail */
+/* ══════════════════════════════════════════════════════
+   WATER DROP DECORATIONS — key Devoryn signature detail
+   Absolutely positioned teardrop shapes with blur
+══════════════════════════════════════════════════════ */
 .ov-drops {
   position:       absolute;
   inset:          0;
@@ -187,68 +520,97 @@
   z-index:        0;
 }
 
+/* Base water drop shape */
 .ov-drop {
-  position:      absolute;
-  border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
-  background:    rgba(255, 255, 255, 0.30);
-  border:        1px solid rgba(255, 255, 255, 0.55);
-  backdrop-filter: blur(4px);
-  animation:     ovDropFall 2.4s ease forwards;
+  position:        absolute;
+  border-radius:   50% 50% 50% 50% / 60% 60% 40% 40%;     /* Teardrop shape */
+  background:      rgba(255, 255, 255, 0.14);
+  border:          1px solid rgba(255, 255, 255, 0.32);
+  backdrop-filter: blur(3px);
+  animation:       ovDropFall 2.8s cubic-bezier(0.16,1,0.3,1) forwards;
 }
 
+/* Drop fall-in animation */
 @keyframes ovDropFall {
-  0%   { transform: translateY(-12px) scale(0.85); opacity: 0; }
-  60%  { transform: translateY(3px)   scale(1.04); opacity: 0.65; }
-  100% { transform: translateY(0)     scale(1);    opacity: 0.48; }
+  0%   { transform: translateY(-16px) scale(0.80); opacity: 0;    }
+  55%  { transform: translateY(5px)   scale(1.05); opacity: 0.55; }
+  100% { transform: translateY(0)     scale(1);    opacity: 0.40; }
 }
 
-/* ═══════════════════════════════════════════════════
+/* ── Drop size/position variants — matches screenshot positions ── */
+.ov-drop--a {
+  width:  16px;  height: 20px;
+  top:    12%;   right:  14%;
+  animation-delay: 0.20s;
+}
+
+.ov-drop--b {
+  width:  11px;  height: 14px;
+  top:    52%;   left:   62%;
+  animation-delay: 0.55s;
+}
+
+.ov-drop--c {
+  width:  20px;  height: 26px;
+  top:    28%;   right:  28%;
+  animation-delay: 0.90s;
+}
+
+.ov-drop--d {
+  width:  9px;   height: 12px;
+  bottom: 20%;   right:  40%;
+  animation-delay: 1.20s;
+}
+
+/* ══════════════════════════════════════════════════════
    GRID PLACEMENT — which panel goes where
-═══════════════════════════════════════════════════ */
+   Matches the Devoryn screenshot bento layout
+══════════════════════════════════════════════════════ */
 
-/* Row 1, col 1–2 (wide) */
+/* Row 1 col 1 — Performance Metrics (tall, spans rows 1-2) */
 .ov-panel--perf {
-  grid-column:      1 / 3;                      /* Spans 2 columns */
-  grid-row:         1;
-  animation-delay:  0.10s;
+  grid-column:     1;
+  grid-row:        1 / 3;                                   /* Spans both rows */
+  animation-delay: 0.08s;
 }
 
-/* Row 1–2, col 3 (tall — donut spans both rows) */
-.ov-panel--donut {
-  grid-column:      3;
-  grid-row:         1 / 3;                      /* Spans 2 rows */
-  animation-delay:  0.26s;
-}
-
-/* Row 2, col 1 */
+/* Row 1 col 2 — Active Projects */
 .ov-panel--projects {
-  grid-column:      1;
-  grid-row:         2;
-  animation-delay:  0.18s;
+  grid-column:     2;
+  grid-row:        1;
+  animation-delay: 0.16s;
 }
 
-/* Row 2, col 2 */
+/* Row 1 col 3 — Tasks Status Donut (spans rows 1-2) */
+.ov-panel--donut {
+  grid-column:     3;
+  grid-row:        1 / 3;                                   /* Spans both rows = tall */
+  animation-delay: 0.24s;
+}
+
+/* Row 2 col 2 — Tasks List */
 .ov-panel--tasks {
-  grid-column:      2;
-  grid-row:         2;
-  animation-delay:  0.34s;
+  grid-column:     2;
+  grid-row:        2;
+  animation-delay: 0.32s;
 }
 
-/* Row 3, all 3 cols (full width) */
+/* Row 3 — Team Activity full width */
 .ov-panel--activity {
-  grid-column:      1 / 4;                      /* Full width */
-  grid-row:         3;
-  animation-delay:  0.42s;
+  grid-column:     1 / 4;                                   /* Full 3-column width */
+  grid-row:        3;
+  animation-delay: 0.40s;
 }
 
-/* ═══════════════════════════════════════════════════
-   PERFORMANCE METRICS PANEL
-═══════════════════════════════════════════════════ */
+/* ══════════════════════════════════════════════════════
+   PERFORMANCE METRICS PANEL — left tall panel
+   SVG line chart + bar chart + KPI numbers
+══════════════════════════════════════════════════════ */
 
-/* SVG line chart wrapper */
+/* SVG line chart area */
 .ov-chart-area {
   position:      relative;
-  height:        108px;
+  height:        115px;
   margin-bottom: var(--s4);
   overflow:      hidden;
 }
@@ -258,40 +620,41 @@
   height: 100%;
 }
 
-/* Animated line — draws from left to right on mount */
+/* Gradient fill under the line */
+.ov-chart-fill {
+  fill:    url(#ovGrad);
+  opacity: 0.22;
+}
+
+/* Animated trend line — draws from left to right */
 .ov-chart-line {
   fill:              none;
-  stroke:            #4f91f7;
+  stroke:            var(--cyan);
   stroke-width:      2.5;
   stroke-linecap:    round;
   stroke-linejoin:   round;
   stroke-dasharray:  350;
   stroke-dashoffset: 350;
-  animation:         ovLineDraw 1.8s cubic-bezier(0.16,1,0.3,1) 0.4s forwards;
-  filter:            drop-shadow(0 2px 10px rgba(79,145,247,0.50));
+  animation:         ovLineDraw 2s cubic-bezier(0.16, 1, 0.3, 1) 0.5s forwards;
+  filter:            drop-shadow(0 2px 12px rgba(79, 145, 247, 0.55));
 }
 
 @keyframes ovLineDraw {
-  to { stroke-dashoffset: 0; }
+  to { stroke-dashoffset: 0; }                              /* Fully reveal the line */
 }
 
-/* Gradient fill under the line */
-.ov-chart-fill {
-  fill:    url(#ovGrad);
-  opacity: 0.20;
-}
-
-/* Bar chart row inside performance panel */
+/* ── Bar chart row ────────────────────────────────────────────── */
 .ov-bars {
-  display:         flex;
-  align-items:     flex-end;
-  gap:             5px;
-  height:          50px;
-  padding-top:     6px;
-  margin-bottom:   var(--s4);
-  border-top:      1px solid rgba(255, 255, 255, 0.55);
+  display:       flex;
+  align-items:   flex-end;
+  gap:           5px;
+  height:        55px;
+  padding-top:   8px;
+  margin-bottom: var(--s4);
+  border-top:    1px solid rgba(255, 255, 255, 0.07);
 }
 
+/* Pair of bars (cyan + orange) per month */
 .ov-bar-group {
   display:     flex;
   gap:         3px;
@@ -299,48 +662,95 @@
   flex:        1;
 }
 
+/* Bar track column */
 .ov-bar {
   flex:          1;
   border-radius: 4px 4px 0 0;
   min-width:     5px;
-  transition:    transform var(--t-base);
+  transition:    transform var(--t-base), opacity var(--t-base);
   cursor:        default;
+  position:      relative;
+  overflow:      hidden;
 }
 
-.ov-bar:hover {
-  transform:        scaleY(1.10);
+/* Bar fill animation — grows upward from 0 */
+.ov-bar::after {
+  content:    '';
+  position:   absolute;
+  inset:      0;
+  background: inherit;
+  transform:        scaleY(0);
   transform-origin: bottom;
+  animation:        ovBarGrow 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
-/* KPI numbers row */
+@keyframes ovBarGrow {
+  to { transform: scaleY(1); }
+}
+
+/* Stagger each bar group */
+.ov-bar-group:nth-child(1)  .ov-bar::after { animation-delay: 0.40s; }
+.ov-bar-group:nth-child(2)  .ov-bar::after { animation-delay: 0.48s; }
+.ov-bar-group:nth-child(3)  .ov-bar::after { animation-delay: 0.56s; }
+.ov-bar-group:nth-child(4)  .ov-bar::after { animation-delay: 0.64s; }
+.ov-bar-group:nth-child(5)  .ov-bar::after { animation-delay: 0.72s; }
+.ov-bar-group:nth-child(6)  .ov-bar::after { animation-delay: 0.80s; }
+.ov-bar-group:nth-child(7)  .ov-bar::after { animation-delay: 0.88s; }
+
+/* Hover scale effect on bars */
+.ov-bar:hover {
+  transform:        scaleY(1.08);
+  transform-origin: bottom;
+  opacity:          0.9;
+}
+
+/* Color variants for bars */
+.ov-bar--cyan   { background: var(--cyan);   opacity: 0.85; }
+.ov-bar--orange { background: var(--orange); opacity: 0.72; }
+
+/* ── KPI numbers row ──────────────────────────────────────────── */
 .ov-kpis {
   display:     flex;
   align-items: center;
-  gap:         var(--s6);
+  gap:         var(--s5);
+}
+
+/* Single KPI item */
+.ov-kpi {
+  display:        flex;
+  flex-direction: column;
+  gap:            3px;
 }
 
 .ov-kpi__num {
   font-family:    var(--font-display);
-  font-size:      1.45rem;
+  font-size:      1.55rem;
   font-weight:    800;
-  color:          var(--text-white);
-  letter-spacing: -0.025em;
   line-height:    1;
-  animation:      fadeUp 0.5s ease 0.7s both;
+  letter-spacing: -0.028em;
 }
 
 .ov-kpi__label {
   font-family:    var(--font-mono);
-  font-size:      0.58rem;
-  color:          var(--text-muted);
-  letter-spacing: 0.08em;
+  font-size:      0.57rem;
+  font-weight:    500;
+  letter-spacing: 0.10em;
   text-transform: uppercase;
-  margin-top:     3px;
+  color:          var(--text-muted);
 }
 
-/* ═══════════════════════════════════════════════════
-   ACTIVE PROJECTS PANEL — skill-style bars
-═══════════════════════════════════════════════════ */
+/* Vertical separator between KPIs */
+.ov-kpi__sep {
+  width:      1px;
+  height:     36px;
+  background: rgba(255, 255, 255, 0.07);
+  flex-shrink:0;
+}
+
+/* ══════════════════════════════════════════════════════
+   ACTIVE PROJECTS PANEL — center top
+   Horizontal progress bars like in screenshot
+══════════════════════════════════════════════════════ */
 .ov-proj-row {
   display:       flex;
   align-items:   center;
@@ -350,150 +760,97 @@
 
 .ov-proj-row:last-child { margin-bottom: 0; }
 
+/* Project name label */
 .ov-proj-row__name {
   font-size:     0.82rem;
   font-weight:   500;
   color:         var(--text-primary);
-  min-width:     98px;
+  min-width:     105px;
   white-space:   nowrap;
   overflow:      hidden;
   text-overflow: ellipsis;
 }
 
+/* Track background */
 .ov-proj-row__track {
   flex:          1;
-  height:        7px;
-  background:    rgba(79, 100, 145, 0.10);
+  height:        6px;
+  background:    rgba(255, 255, 255, 0.06);
   border-radius: var(--r-full);
   overflow:      hidden;
 }
 
+/* Animated fill — starts 0%, JS sets to data-pct */
 .ov-proj-row__fill {
   height:           100%;
   border-radius:    var(--r-full);
-  width:            0;                          /* Starts at 0 — animated by JS */
-  transition:       width 1.3s cubic-bezier(0.16, 1, 0.3, 1);
+  width:            0;
+  transition:       width 1.4s cubic-bezier(0.16, 1, 0.3, 1);
   position:         relative;
 }
 
-/* Glowing tip dot at the end of each bar */
+/* Glowing tip dot at bar end */
 .ov-proj-row__fill::after {
   content:       '';
   position:      absolute;
-  right:         -3px;
+  right:         -4px;
   top:           50%;
   transform:     translateY(-50%);
   width:         9px;
   height:        9px;
   border-radius: 50%;
   background:    inherit;
-  filter:        brightness(1.3);
-  box-shadow:    0 0 6px currentColor;
+  filter:        brightness(1.4);
+  box-shadow:    0 0 8px currentColor;
 }
 
+/* Percentage label */
 .ov-proj-row__pct {
   font-family: var(--font-mono);
-  font-size:   0.72rem;
+  font-size:   0.74rem;
   font-weight: 600;
   color:       var(--text-secondary);
-  min-width:   32px;
+  min-width:   34px;
   text-align:  right;
 }
 
-/* ═══════════════════════════════════════════════════
-   TASKS STATUS (LIST) PANEL
-═══════════════════════════════════════════════════ */
-.ov-task-row {
-  display:       flex;
-  align-items:   center;
-  gap:           var(--s3);
-  padding:       var(--s2) 0;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.48);
-  transition:    background var(--t-fast);
-}
+/* ══════════════════════════════════════════════════════
+   TASKS DONUT — right tall panel
+   SVG donut chart with legend rows
+══════════════════════════════════════════════════════ */
 
-.ov-task-row:first-child { padding-top: 0; }
-
-.ov-task-row:last-child {
-  border-bottom: none;
-  padding-bottom: 0;
-}
-
-/* Circular avatar with initial letter */
-.ov-task-avatar {
-  width:           30px;
-  height:          30px;
-  border-radius:   50%;
-  display:         flex;
-  align-items:     center;
-  justify-content: center;
-  font-size:       0.70rem;
-  font-weight:     700;
-  color:           #fff;
-  flex-shrink:     0;
-  box-shadow:      0 2px 8px rgba(0,0,0,0.14);
-}
-
-.ov-task-name {
-  font-size:   0.82rem;
-  font-weight: 500;
-  color:       var(--text-primary);
-  flex:        1;
-  white-space: nowrap;
-  overflow:    hidden;
-  text-overflow: ellipsis;
-}
-
-.ov-task-pct {
-  font-family: var(--font-mono);
-  font-size:   0.76rem;
-  font-weight: 600;
-  color:       var(--text-white);
-  min-width:   36px;
-  text-align:  right;
-}
-
-.ov-task-dot {
-  width:         8px;
-  height:        8px;
-  border-radius: 50%;
-  flex-shrink:   0;
-}
-
-/* ═══════════════════════════════════════════════════
-   TASKS STATUS (DONUT) PANEL — tall right panel
-═══════════════════════════════════════════════════ */
+/* SVG donut container */
 .ov-donut-wrap {
   display:         flex;
   align-items:     center;
   justify-content: center;
-  margin-bottom:   var(--s4);
+  margin-bottom:   var(--s5);
   position:        relative;
 }
 
 .ov-donut-svg {
-  width:     150px;
-  height:    150px;
-  transform: rotate(-90deg);                    /* Start from top */
+  width:     170px;
+  height:    170px;
+  transform: rotate(-90deg);                                /* Start from 12 o'clock */
   overflow:  visible;
 }
 
-/* Track ring — full circle background */
+/* Track — full circle background ring */
 .ov-donut-track {
   fill:         none;
-  stroke:       rgba(79, 100, 145, 0.10);
-  stroke-width: 20;
+  stroke:       rgba(255, 255, 255, 0.06);
+  stroke-width: 22;
 }
 
 /* Colored segment ring */
 .ov-donut-ring {
   fill:            none;
-  stroke-width:    20;
+  stroke-width:    22;
   stroke-linecap:  round;
-  transition:      stroke-dashoffset 1.5s cubic-bezier(0.16,1,0.3,1) 0.3s;
+  transition:      stroke-dashoffset 1.6s cubic-bezier(0.16, 1, 0.3, 1) 0.4s;
 }
 
-/* Center label absolutely positioned over the SVG */
+/* Center label — absolutely positioned over SVG */
 .ov-donut-center {
   position:       absolute;
   display:        flex;
@@ -506,27 +863,27 @@
 
 .ov-donut-center__num {
   font-family:    var(--font-display);
-  font-size:      1.30rem;
+  font-size:      1.50rem;
   font-weight:    800;
   color:          var(--text-white);
-  letter-spacing: -0.02em;
+  letter-spacing: -0.025em;
   line-height:    1;
 }
 
 .ov-donut-center__sub {
   font-family:    var(--font-mono);
-  font-size:      0.60rem;
+  font-size:      0.58rem;
   color:          var(--text-muted);
-  letter-spacing: 0.06em;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
-  margin-top:     2px;
+  margin-top:     3px;
 }
 
 /* Legend rows below donut */
 .ov-donut-legend {
   display:        flex;
   flex-direction: column;
-  gap:            var(--s2);
+  gap:            var(--s3);
 }
 
 .ov-legend-row {
@@ -536,6 +893,7 @@
   gap:             var(--s2);
 }
 
+/* Color dot */
 .ov-legend-dot {
   width:         8px;
   height:        8px;
@@ -544,23 +902,90 @@
 }
 
 .ov-legend-label {
-  font-size: 0.82rem;
-  color:     var(--text-secondary);
-  flex:      1;
+  font-size:   0.82rem;
+  color:       var(--text-secondary);
+  flex:        1;
 }
 
 .ov-legend-pct {
   font-family: var(--font-mono);
   font-size:   0.78rem;
-  font-weight: 600;
+  font-weight: 700;
   color:       var(--text-white);
+  min-width:   36px;
+  text-align:  right;
 }
 
-/* ═══════════════════════════════════════════════════
-   TEAM ACTIVITY PANEL — full-width bottom slider
-═══════════════════════════════════════════════════ */
+/* ══════════════════════════════════════════════════════
+   TASKS LIST PANEL — center bottom
+   Avatar + name + percentage + status dot
+══════════════════════════════════════════════════════ */
+.ov-task-row {
+  display:       flex;
+  align-items:   center;
+  gap:           var(--s3);
+  padding:       var(--s2) 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  transition:    background var(--t-fast);
+}
 
-/* Header: title + slider controls + menu */
+.ov-task-row:first-child { padding-top: 0; }
+
+.ov-task-row:last-child {
+  border-bottom:  none;
+  padding-bottom: 0;
+}
+
+/* Avatar circle with first letter */
+.ov-task-avatar {
+  width:           30px;
+  height:          30px;
+  border-radius:   50%;
+  display:         flex;
+  align-items:     center;
+  justify-content: center;
+  font-family:     var(--font-display);
+  font-size:       0.68rem;
+  font-weight:     700;
+  color:           #fff;
+  flex-shrink:     0;
+  box-shadow:      0 2px 8px rgba(0, 0, 0, 0.20);
+}
+
+.ov-task-name {
+  font-size:     0.82rem;
+  font-weight:   500;
+  color:         var(--text-primary);
+  flex:          1;
+  white-space:   nowrap;
+  overflow:      hidden;
+  text-overflow: ellipsis;
+}
+
+.ov-task-pct {
+  font-family:  var(--font-mono);
+  font-size:    0.76rem;
+  font-weight:  700;
+  color:        var(--text-white);
+  min-width:    36px;
+  text-align:   right;
+}
+
+/* Status dot */
+.ov-task-dot {
+  width:         8px;
+  height:        8px;
+  border-radius: 50%;
+  flex-shrink:   0;
+  box-shadow:    0 0 6px currentColor;
+}
+
+/* ══════════════════════════════════════════════════════
+   TEAM ACTIVITY — full-width bottom panel
+   Slider with prev/next arrows + dot indicators
+══════════════════════════════════════════════════════ */
+
+/* Activity panel header */
 .ov-activity-header {
   display:         flex;
   align-items:     center;
@@ -569,12 +994,12 @@
 }
 
 .ov-activity-title {
+  font-family:    var(--font-display);
   font-size:      0.90rem;
   font-weight:    700;
   color:          var(--text-white);
-  font-family:    var(--font-display);
   letter-spacing: -0.01em;
-  flex:           1;                            /* Push controls to center/right */
+  flex:           1;                                        /* Push controls right */
 }
 
 /* Prev / Next arrow buttons */
@@ -582,12 +1007,12 @@
   width:           28px;
   height:          28px;
   border-radius:   50%;
-  background:      var(--glass-light);
-  border:          1px solid var(--border-subtle);
+  background:      rgba(255, 255, 255, 0.07);
+  border:          1px solid rgba(255, 255, 255, 0.10);
   display:         flex;
   align-items:     center;
   justify-content: center;
-  font-size:       0.88rem;
+  font-size:       0.92rem;
   color:           var(--text-secondary);
   cursor:          pointer;
   transition:      all var(--t-fast);
@@ -596,23 +1021,24 @@
 }
 
 .ov-slider-btn:hover {
-  background:  var(--glass-medium);
+  background:  rgba(255, 255, 255, 0.12);
   color:       var(--text-white);
   box-shadow:  var(--shadow-sm);
 }
 
-/* Dot indicators */
+/* Dot indicators row */
 .ov-slider-dots {
   display:     flex;
   align-items: center;
   gap:         5px;
 }
 
+/* Single dot */
 .ov-slider-dot {
   width:         7px;
   height:        7px;
   border-radius: 50%;
-  background:    rgba(79, 100, 145, 0.22);
+  background:    rgba(255, 255, 255, 0.15);
   cursor:        pointer;
   border:        none;
   padding:       0;
@@ -622,34 +1048,34 @@
 
 .ov-slider-dot:hover:not(.ov-slider-dot--active) {
   background: var(--text-muted);
-  transform:  scale(1.2);
+  transform:  scale(1.25);
 }
 
-/* Active dot expands into a pill */
+/* Active dot — expands to pill + cyan glow */
 .ov-slider-dot--active {
-  background:    var(--cyan, #38bdf8);
+  background:    var(--cyan);
   width:         20px;
   border-radius: var(--r-full);
-  box-shadow:    0 0 8px rgba(56,189,248,0.40);
+  box-shadow:    0 0 8px rgba(79, 195, 247, 0.45);
 }
 
-/* Activity slide content */
+/* Slide content row */
 .ov-activity-content {
   display:     flex;
   align-items: center;
   gap:         var(--s4);
-  min-height:  46px;
+  min-height:  48px;
 
-  /* Slide entrance animation */
-  animation:  ovSlideIn 0.35s cubic-bezier(0.16,1,0.3,1) both;
+  /* Entrance slide-in animation */
+  animation: ovSlideIn 0.38s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
 @keyframes ovSlideIn {
-  from { opacity: 0; transform: translateX(14px); }
+  from { opacity: 0; transform: translateX(18px); }
   to   { opacity: 1; transform: translateX(0); }
 }
 
-/* Activity avatar */
+/* Activity avatar square */
 .ov-activity-avatar {
   width:           40px;
   height:          40px;
@@ -662,9 +1088,10 @@
   font-weight:     700;
   color:           #fff;
   flex-shrink:     0;
-  box-shadow:      0 4px 12px rgba(0,0,0,0.16);
+  box-shadow:      0 4px 12px rgba(0, 0, 0, 0.22);
 }
 
+/* Activity description */
 .ov-activity-text {
   font-size:   0.84rem;
   color:       var(--text-primary);
@@ -672,6 +1099,7 @@
   flex:        1;
 }
 
+/* Timestamp */
 .ov-activity-time {
   font-family:    var(--font-mono);
   font-size:      0.62rem;
@@ -681,37 +1109,82 @@
   flex-shrink:    0;
 }
 
-/* ═══════════════════════════════════════════════════
-   RESPONSIVE
-═══════════════════════════════════════════════════ */
-@media (max-width: 1100px) {
-  /* Collapse to 2 columns on medium screens */
+/* ══════════════════════════════════════════════════════
+   RESPONSIVE BREAKPOINTS
+══════════════════════════════════════════════════════ */
+
+/* ── Tablet: 2 columns ────────────────────────────────────────── */
+@media (max-width: 1200px) {
+
+  /* Stack profile + right column */
+  .overview-row {
+    grid-template-columns: 1fr;
+  }
+
+  .profile-card {
+    flex-direction: row;
+    flex-wrap:      wrap;
+    text-align:     left;
+    align-items:    flex-start;
+  }
+
+  .profile-card__avatar-wrap { flex-shrink: 0; }
+
+  .profile-card__bio { text-align: left; max-width: 100%; }
+
+  /* 2-column bento on tablet */
   .ov-bento {
     grid-template-columns: 1fr 1fr;
     grid-template-rows:    auto;
   }
 
   .ov-panel--perf     { grid-column: 1 / 3; grid-row: auto; }
-  .ov-panel--donut    { grid-column: 2;      grid-row: auto; }
   .ov-panel--projects { grid-column: 1;      grid-row: auto; }
-  .ov-panel--tasks    { grid-column: 2;      grid-row: auto; }
+  .ov-panel--donut    { grid-column: 2;      grid-row: auto; }
+  .ov-panel--tasks    { grid-column: 1;      grid-row: auto; }
   .ov-panel--activity { grid-column: 1 / 3;  grid-row: auto; }
+
+  /* 3 KPI columns still ok */
 }
 
+/* ── Mobile: 1 column ─────────────────────────────────────────── */
 @media (max-width: 768px) {
-  /* Single column on mobile */
+
+  .overview-row { gap: var(--s4); }
+
+  .profile-card {
+    flex-direction: column;
+    align-items:    center;
+    text-align:     center;
+  }
+
+  .profile-card__bio { text-align: center; }
+
+  /* 2 KPI columns on mobile */
+  .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+
+  /* 1 column bento */
   .ov-bento {
     grid-template-columns: 1fr;
   }
 
   .ov-panel--perf,
-  .ov-panel--donut,
   .ov-panel--projects,
+  .ov-panel--donut,
   .ov-panel--tasks,
   .ov-panel--activity {
     grid-column: 1;
     grid-row:    auto;
   }
 
-  .ov-header { flex-direction: column; align-items: flex-start; }
+  .ov-panel--perf { grid-row: auto; }                      /* No longer spans 2 rows */
+
+  .page-header { flex-direction: column; align-items: flex-start; }
+}
+
+/* ── Very small screens ────────────────────────────────────────── */
+@media (max-width: 480px) {
+  .kpi-grid               { grid-template-columns: repeat(2, 1fr); }
+  .profile-card__stats    { flex-wrap: wrap; justify-content: center; }
+  .profile-card__actions  { flex-direction: column; }
 }
