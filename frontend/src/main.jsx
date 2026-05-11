@@ -1,30 +1,45 @@
 /**
  * main.jsx — React 18 application entry point.
  *
- * Render order (outermost → innermost):
- *   StrictMode → ThemeProvider → BrowserRouter → App
+ * Import order matters here:
+ *   1. boot.css     → First import — prevents FOUC by styling
+ *                     #boot-loader and body background before
+ *                     any component renders.
+ *   2. index.css    → Global design tokens, resets, shared classes.
+ *   3. ThemeProvider → Reads saved theme from localStorage and
+ *                      sets data-theme on <html> immediately.
+ *   4. BrowserRouter → Provides routing context to all pages.
+ *   5. App          → Root component with route definitions.
  *
- * Also hides the #boot-loader overlay after React mounts,
- * so the user sees the Devoryn glass UI instead of a blank
- * screen during the initial bundle download.
+ * Boot loader dismissal:
+ *   After React's first render, we use requestAnimationFrame +
+ *   setTimeout(200ms) to ensure the glass UI is visible before
+ *   fading out the boot loader overlay.
  */
-import { StrictMode }    from 'react';            // Highlights potential issues in dev mode
-import { createRoot }    from 'react-dom/client'; // React 18 concurrent rendering API
-import { BrowserRouter } from 'react-router-dom'; // Client-side routing context
 
-import { ThemeProvider } from '@/context/ThemeContext'; // Global dark / light mode state
-import App               from './App.jsx';               // Root application component
+// ── CSS imports (order matters) ───────────────────────────────────
+import '@/styles/boot.css';                     // Boot loader + body background (FIRST)
+import '@/styles/index.css';                    // Global design tokens + CSS reset
 
-import '@/styles/index.css';                            // Global design tokens + reset
+// ── React core ───────────────────────────────────────────────────
+import { StrictMode }    from 'react';          // Dev-mode double-render checks
+import { createRoot }    from 'react-dom/client'; // React 18 concurrent API
+
+// ── Router ───────────────────────────────────────────────────────
+import { BrowserRouter } from 'react-router-dom'; // Enables <Routes>, <Link>, useNavigate
+
+// ── App providers ────────────────────────────────────────────────
+import { ThemeProvider } from '@/context/ThemeContext'; // Dark / light mode global state
+import App               from './App.jsx';              // Root routing component
 
 // ── Mount React ──────────────────────────────────────────────────
-const rootElement = document.getElementById('root');    // Target div in index.html
+const rootEl = document.getElementById('root');         // Target <div id="root"> in index.html
 
-createRoot(rootElement).render(
+createRoot(rootEl).render(
   <StrictMode>
-    {/* ThemeProvider — sets data-theme on <html>, persists to localStorage */}
+    {/* ThemeProvider — sets data-theme="light|dark" on <html>, persists to localStorage */}
     <ThemeProvider>
-      {/* BrowserRouter — enables <Routes> and <Link> throughout the tree */}
+      {/* BrowserRouter — wraps the whole app with routing context */}
       <BrowserRouter>
         <App />
       </BrowserRouter>
@@ -33,15 +48,28 @@ createRoot(rootElement).render(
 );
 
 // ── Dismiss boot loader after React hydrates ─────────────────────
-// Uses requestAnimationFrame + setTimeout to ensure the first
-// paint of the React UI is visible before the loader fades out.
+/**
+ * We use a two-step delay:
+ *   1. requestAnimationFrame — waits for browser to commit first React paint
+ *   2. setTimeout(200ms)     — small buffer so the glass UI is visible
+ *                              before the loader starts fading
+ *
+ * After transition ends (500ms per boot.css), the element is removed
+ * from the DOM entirely to free memory.
+ */
 requestAnimationFrame(() => {
   setTimeout(() => {
-    const loader = document.getElementById('boot-loader'); // The inline loader in index.html
+    const loader = document.getElementById('boot-loader'); // The overlay div in index.html
+
     if (loader) {
-      loader.classList.add('hidden');                      // Triggers CSS opacity fade-out
-      // Remove from DOM after transition ends (500ms) to free memory
-      loader.addEventListener('transitionend', () => loader.remove(), { once: true });
+      loader.classList.add('hidden');                      // Triggers opacity/visibility fade
+
+      // Remove from DOM after CSS transition completes (500ms in boot.css)
+      loader.addEventListener(
+        'transitionend',
+        () => loader.remove(),
+        { once: true }                                     // Auto-removes this listener after firing
+      );
     }
-  }, 200);                                                 // 200ms delay ensures first frame is painted
+  }, 200);                                                 // 200ms: enough for first React frame
 });
