@@ -1,1190 +1,813 @@
-/* ═══════════════════════════════════════════════════════════════
-   OverviewSection.css — Devoryn-Style Dashboard Overview
-   Matches: screenshot with glassmorphism bento layout
-   Sky-blue frosted panels · Water-drop decorations · KPI grid
-   Performance chart · Active Projects · Tasks Donut · Activity
-   ═══════════════════════════════════════════════════════════════ */
-
-/* ── Section wrapper ──────────────────────────────────────────── */
-.overview-section {
-  padding-bottom: var(--s10);                               /* Space before next section */
-  animation:      fadeUp 0.4s ease both;                    /* Entrance animation */
-}
-
-/* ── Page header row ──────────────────────────────────────────── */
-.page-header {
-  display:         flex;
-  align-items:     center;
-  justify-content: space-between;
-  margin-bottom:   var(--s6);
-  flex-wrap:       wrap;
-  gap:             var(--s3);
-  animation:       fadeUp 0.45s ease 0.05s both;
-}
-
-.page-header__title {
-  font-family:    var(--font-display);
-  font-size:      clamp(1.35rem, 2.5vw, 1.75rem);
-  font-weight:    800;
-  color:          var(--text-white);
-  letter-spacing: -0.022em;
-  line-height:    1.1;
-}
-
-.page-header__sub {
-  font-family:    var(--font-mono);
-  font-size:      0.70rem;
-  color:          var(--text-muted);
-  letter-spacing: 0.06em;
-  margin-top:     var(--s1);
-}
-
-/* ── Availability status pill ─────────────────────────────────── */
-.availability-pill {
-  display:        flex;
-  align-items:    center;
-  gap:            var(--s2);
-  padding:        var(--s2) var(--s4);
-  background:     rgba(255, 255, 255, 0.08);
-  border:         1px solid var(--border-subtle);
-  border-radius:  var(--r-full);
-  font-family:    var(--font-mono);
-  font-size:      0.64rem;
-  font-weight:    500;
-  letter-spacing: 0.08em;
-  color:          var(--text-muted);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  transition:     all var(--t-base);
-}
-
-/* Availability indicator dot — grey by default */
-.availability-pill__dot {
-  width:         7px;
-  height:        7px;
-  border-radius: 50%;
-  background:    var(--text-muted);
-  flex-shrink:   0;
-}
-
-/* Open-to-hire state — green glow */
-.availability-pill--open {
-  background:   rgba(78, 204, 163, 0.10);
-  border-color: rgba(78, 204, 163, 0.28);
-  color:        var(--green);
-}
-
-.availability-pill--open .availability-pill__dot {
-  background: var(--green);
-  box-shadow: 0 0 8px var(--green);
-  animation:  pulseDot 2s ease infinite;
-}
-
-/* ══════════════════════════════════════════════════════
-   MAIN OVERVIEW ROW — Profile card + Right column
-══════════════════════════════════════════════════════ */
-.overview-row {
-  display:               grid;
-  grid-template-columns: 320px 1fr;                         /* Fixed profile + flexible right */
-  gap:                   var(--s5);
-  align-items:           start;
-  margin-bottom:         var(--s5);
-}
-
-/* ══════════════════════════════════════════════════════
-   PROFILE CARD — left panel
-══════════════════════════════════════════════════════ */
-.profile-card {
-  display:        flex;
-  flex-direction: column;
-  align-items:    center;
-  gap:            var(--s4);
-  padding:        var(--s8) var(--s6);
-  position:       relative;
-  overflow:       hidden;
-  border-radius:  var(--r-2xl);
-  text-align:     center;
-
-  /* Deep glass surface */
-  background:              rgba(14, 20, 40, 0.82);
-  backdrop-filter:         blur(32px) saturate(1.6);
-  -webkit-backdrop-filter: blur(32px) saturate(1.6);
-  border:                  1px solid rgba(255, 255, 255, 0.10);
-  box-shadow:              0 12px 48px rgba(0, 0, 0, 0.50),
-                           0 0 0 1px rgba(255, 255, 255, 0.04),
-                           inset 0 1px 0 rgba(255, 255, 255, 0.08);
-  animation:               fadeUp 0.50s ease 0.10s both;
-}
-
-/* Top gloss line */
-.profile-card::before {
-  content:    '';
-  position:   absolute;
-  top:        0;
-  left:       8%;
-  right:      8%;
-  height:     1px;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.22), transparent);
-  pointer-events: none;
-}
-
-/* Radial ambient glow behind avatar */
-.profile-card::after {
-  content:    '';
-  position:   absolute;
-  top:        -60px;
-  left:       50%;
-  transform:  translateX(-50%);
-  width:      280px;
-  height:     280px;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(79, 195, 247, 0.12) 0%, transparent 70%);
-  pointer-events: none;
-}
-
-/* All content above pseudo-elements */
-.profile-card > * { position: relative; z-index: 1; }
-
-/* ── Avatar wrap — triple ring stack ─────────────────────────── */
-.profile-card__avatar-wrap {
-  position:  relative;
-  flex-shrink: 0;
-}
-
-/* Avatar circle */
-.profile-card__avatar {
-  width:           100px;
-  height:          100px;
-  border-radius:   50%;
-  overflow:        hidden;
-  display:         flex;
-  align-items:     center;
-  justify-content: center;
-  font-family:     var(--font-display);
-  font-size:       2rem;
-  font-weight:     800;
-  color:           #fff;
-
-  /* Gradient background for initials fallback */
-  background:      linear-gradient(135deg, var(--cyan) 0%, var(--blue) 50%, var(--violet) 100%);
-  border:          3px solid rgba(79, 195, 247, 0.35);
-  box-shadow:      0 0 0 6px rgba(79, 195, 247, 0.08),
-                   0 0 0 12px rgba(79, 195, 247, 0.04),
-                   0 8px 32px rgba(0, 0, 0, 0.40);
-}
-
-/* Avatar image fills the circle */
-.profile-card__avatar img {
-  width:      100%;
-  height:     100%;
-  object-fit: cover;
-  display:    block;
-}
-
-/* ── Online dot — bottom-right of avatar ─────────────────────── */
-.profile-card__online {
-  position:      absolute;
-  bottom:        4px;
-  right:         4px;
-  width:         16px;
-  height:        16px;
-  border-radius: 50%;
-  background:    var(--green);
-  border:        2.5px solid rgba(14, 20, 40, 0.95);    /* Matches card bg */
-  box-shadow:    0 0 10px var(--green);
-  animation:     pulseDot 2.5s ease infinite;
-}
-
-/* ── Name + title ─────────────────────────────────────────────── */
-.profile-card__info {
-  display:        flex;
-  flex-direction: column;
-  gap:            var(--s1);
-}
-
-.profile-card__name {
-  font-family:    var(--font-display);
-  font-size:      1.35rem;
-  font-weight:    800;
-  color:          var(--text-white);
-  letter-spacing: -0.015em;
-  line-height:    1.15;
-}
-
-.profile-card__title {
-  font-family:    var(--font-mono);
-  font-size:      0.68rem;
-  letter-spacing: 0.10em;
-  text-transform: uppercase;
-  color:          var(--cyan);
-}
-
-/* ── Stats strip ──────────────────────────────────────────────── */
-.profile-card__stats {
-  display:       flex;
-  align-items:   center;
-  gap:           var(--s4);
-  padding:       var(--s4) var(--s5);
-  width:         100%;
-  background:    rgba(255, 255, 255, 0.04);
-  border:        1px solid rgba(255, 255, 255, 0.07);
-  border-radius: var(--r-lg);
-}
-
-/* Individual stat item */
-.profile-stat {
-  display:        flex;
-  flex-direction: column;
-  align-items:    center;
-  gap:            2px;
-  flex:           1;
-}
-
-.profile-stat__num {
-  font-family:    var(--font-display);
-  font-size:      1.40rem;
-  font-weight:    800;
-  line-height:    1;
-  letter-spacing: -0.02em;
-}
-
-.profile-stat__label {
-  font-family:    var(--font-mono);
-  font-size:      0.56rem;
-  letter-spacing: 0.10em;
-  text-transform: uppercase;
-  color:          var(--text-muted);
-}
-
-/* Vertical divider between stats */
-.profile-stat__divider {
-  width:      1px;
-  height:     32px;
-  background: rgba(255, 255, 255, 0.08);
-  flex-shrink:0;
-}
-
-/* ── Bio text ─────────────────────────────────────────────────── */
-.profile-card__bio {
-  font-size:   0.83rem;
-  color:       var(--text-secondary);
-  line-height: 1.75;
-  text-align:  center;
-  max-width:   260px;
-}
-
-/* ── CTA buttons row ──────────────────────────────────────────── */
-.profile-card__actions {
-  display:    flex;
-  gap:        var(--s3);
-  width:      100%;
-  margin-top: var(--s1);
-}
-
-.profile-card__btn {
-  flex: 1;
-  justify-content: center;
-}
-
-/* ══════════════════════════════════════════════════════
-   RIGHT COLUMN — KPI bento + Top skills
-══════════════════════════════════════════════════════ */
-.overview-right {
-  display:        flex;
-  flex-direction: column;
-  gap:            var(--s4);
-}
-
-/* ══════════════════════════════════════════════════════
-   KPI BENTO GRID — 3×2 animated count-up cards
-══════════════════════════════════════════════════════ */
-.kpi-grid {
-  display:               grid;
-  grid-template-columns: repeat(3, 1fr);                    /* 3 equal columns */
-  gap:                   1px;
-  background:            rgba(255, 255, 255, 0.07);          /* Gap color = border */
-  border:                1px solid rgba(255, 255, 255, 0.09);
-  border-radius:         var(--r-xl);
-  overflow:              hidden;
-}
-
-/* ── Individual KPI card ──────────────────────────────────────── */
-.kpi-card {
-  background:     rgba(14, 19, 38, 0.88);
-  backdrop-filter:blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  padding:        1.4rem 1.3rem;
-  display:        flex;
-  flex-direction: column;
-  gap:            var(--s2);
-  position:       relative;
-  overflow:       hidden;
-  transition:     background var(--t-fast);
-  cursor:         default;
-}
-
-.kpi-card:hover { background: rgba(20, 28, 55, 0.95); }
-
-/* Corner radial glow using --kpi-color custom property */
-.kpi-card::after {
-  content:       '';
-  position:      absolute;
-  bottom:        -24px;
-  right:         -24px;
-  width:         80px;
-  height:        80px;
-  border-radius: 50%;
-  background:    radial-gradient(circle, var(--kpi-color, var(--cyan)) 0%, transparent 70%);
-  opacity:       0.07;
-  pointer-events:none;
-  transition:    opacity var(--t-base);
-}
-
-.kpi-card:hover::after { opacity: 0.20; }
-
-/* Icon row */
-.kpi-card__icon {
-  font-size:   1.10rem;
-  line-height: 1;
-}
-
-/* Large animated number */
-.kpi-card__num {
-  font-family:    var(--font-display);
-  font-size:      2.20rem;
-  font-weight:    800;
-  line-height:    1;
-  letter-spacing: -0.025em;
-}
-
-/* Label below number */
-.kpi-card__label {
-  font-family:    var(--font-mono);
-  font-size:      0.58rem;
-  font-weight:    500;
-  letter-spacing: 0.10em;
-  text-transform: uppercase;
-  color:          var(--text-muted);
-}
-
-/* ══════════════════════════════════════════════════════
-   TOP SKILLS PANEL — glass card with animated bars
-══════════════════════════════════════════════════════ */
-.top-skills-panel {
-  position:   relative;
-  overflow:   hidden;
-  padding:    var(--s5) var(--s6);
-  border-radius: var(--r-xl);
-
-  background:              rgba(14, 20, 40, 0.78);
-  backdrop-filter:         blur(24px) saturate(1.5);
-  -webkit-backdrop-filter: blur(24px) saturate(1.5);
-  border:                  1px solid rgba(255, 255, 255, 0.09);
-  box-shadow:              0 8px 32px rgba(0, 0, 0, 0.40),
-                           0 0 0 1px rgba(255, 255, 255, 0.04),
-                           inset 0 1px 0 rgba(255, 255, 255, 0.06);
-}
-
-/* Top gloss line */
-.top-skills-panel::before {
-  content:    '';
-  position:   absolute;
-  top:        0;
-  left:       8%;
-  right:      8%;
-  height:     1px;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.16), transparent);
-  pointer-events: none;
-}
-
-/* Header row — title + link */
-.top-skills-panel__header {
-  display:         flex;
-  align-items:     center;
-  justify-content: space-between;
-  margin-bottom:   var(--s4);
-  position:        relative;
-  z-index:         1;
-}
-
-.top-skills-panel__title {
-  font-family:    var(--font-display);
-  font-size:      0.90rem;
-  font-weight:    700;
-  color:          var(--text-white);
-  letter-spacing: -0.01em;
-}
-
-/* Skill bars list container */
-.top-skills-panel__list {
-  position: relative;
-  z-index:  1;
-}
-
-/* ══════════════════════════════════════════════════════
-   BENTO GRID — Performance / Projects / Tasks / Activity
-   Matches the Devoryn screenshot layout precisely
-══════════════════════════════════════════════════════ */
-.ov-bento {
-  display:               grid;
-  grid-template-columns: 1.5fr 1fr 1fr;                     /* Perf wide, Tasks, Donut */
-  grid-template-rows:    auto auto auto;
-  gap:                   var(--s4);
-}
-
-/* ── Shared glass panel base ──────────────────────────────────── */
-.ov-panel {
-  position:   relative;
-  overflow:   hidden;
-  border-radius: var(--r-xl);
-  padding:    var(--s5) var(--s5);
-
-  background:              rgba(14, 20, 40, 0.80);
-  backdrop-filter:         blur(28px) saturate(1.6);
-  -webkit-backdrop-filter: blur(28px) saturate(1.6);
-  border:                  1px solid rgba(255, 255, 255, 0.09);
-  box-shadow:              0 8px 32px rgba(0, 0, 0, 0.45),
-                           0 0 0 1px rgba(255, 255, 255, 0.04),
-                           inset 0 1px 0 rgba(255, 255, 255, 0.07);
-  transition:              border-color var(--t-base),
-                           box-shadow   var(--t-base),
-                           transform    var(--t-base);
-  animation:               fadeUp 0.5s ease both;
-}
-
-/* Top gloss line on every panel */
-.ov-panel::before {
-  content:    '';
-  position:   absolute;
-  top:        0;
-  left:       6%;
-  right:      6%;
-  height:     1px;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.18), transparent);
-  pointer-events: none;
-}
-
-.ov-panel:hover {
-  border-color: rgba(255, 255, 255, 0.14);
-  box-shadow:   0 12px 48px rgba(0, 0, 0, 0.55),
-                0 0 0 1px rgba(79, 195, 247, 0.08),
-                inset 0 1px 0 rgba(255, 255, 255, 0.08);
-}
-
-/* All content above pseudo-elements */
-.ov-panel > *:not(.ov-drops) { position: relative; z-index: 1; }
-
-/* ── Panel header (title + menu dots) ───────────────────────── */
-.ov-panel__header {
-  display:         flex;
-  align-items:     center;
-  justify-content: space-between;
-  margin-bottom:   var(--s4);
-}
-
-.ov-panel__title {
-  font-family:    var(--font-display);
-  font-size:      0.90rem;
-  font-weight:    700;
-  color:          var(--text-white);
-  letter-spacing: -0.01em;
-}
-
-.ov-panel__menu {
-  font-size:     1rem;
-  color:         var(--text-muted);
-  cursor:        pointer;
-  padding:       2px 6px;
-  border-radius: var(--r-sm);
-  transition:    background var(--t-fast), color var(--t-fast);
-  line-height:   1;
-  background:    transparent;
-  border:        none;
-}
-
-.ov-panel__menu:hover {
-  background: rgba(255, 255, 255, 0.07);
-  color:      var(--text-primary);
-}
-
-/* ══════════════════════════════════════════════════════
-   WATER DROP DECORATIONS — key Devoryn signature detail
-   Absolutely positioned teardrop shapes with blur
-══════════════════════════════════════════════════════ */
-.ov-drops {
-  position:       absolute;
-  inset:          0;
-  pointer-events: none;
-  overflow:       hidden;
-  border-radius:  inherit;
-  z-index:        0;
-}
-
-/* Base water drop shape */
-.ov-drop {
-  position:        absolute;
-  border-radius:   50% 50% 50% 50% / 60% 60% 40% 40%;     /* Teardrop shape */
-  background:      rgba(255, 255, 255, 0.14);
-  border:          1px solid rgba(255, 255, 255, 0.32);
-  backdrop-filter: blur(3px);
-  animation:       ovDropFall 2.8s cubic-bezier(0.16,1,0.3,1) forwards;
-}
-
-/* Drop fall-in animation */
-@keyframes ovDropFall {
-  0%   { transform: translateY(-16px) scale(0.80); opacity: 0;    }
-  55%  { transform: translateY(5px)   scale(1.05); opacity: 0.55; }
-  100% { transform: translateY(0)     scale(1);    opacity: 0.40; }
-}
-
-/* ── Drop size/position variants — matches screenshot positions ── */
-.ov-drop--a {
-  width:  16px;  height: 20px;
-  top:    12%;   right:  14%;
-  animation-delay: 0.20s;
-}
-
-.ov-drop--b {
-  width:  11px;  height: 14px;
-  top:    52%;   left:   62%;
-  animation-delay: 0.55s;
-}
-
-.ov-drop--c {
-  width:  20px;  height: 26px;
-  top:    28%;   right:  28%;
-  animation-delay: 0.90s;
-}
-
-.ov-drop--d {
-  width:  9px;   height: 12px;
-  bottom: 20%;   right:  40%;
-  animation-delay: 1.20s;
-}
-
-/* ══════════════════════════════════════════════════════
-   GRID PLACEMENT — which panel goes where
-   Matches the Devoryn screenshot bento layout
-══════════════════════════════════════════════════════ */
-
-/* Row 1 col 1 — Performance Metrics (tall, spans rows 1-2) */
-.ov-panel--perf {
-  grid-column:     1;
-  grid-row:        1 / 3;                                   /* Spans both rows */
-  animation-delay: 0.08s;
-}
-
-/* Row 1 col 2 — Active Projects */
-.ov-panel--projects {
-  grid-column:     2;
-  grid-row:        1;
-  animation-delay: 0.16s;
-}
-
-/* Row 1 col 3 — Tasks Status Donut (spans rows 1-2) */
-.ov-panel--donut {
-  grid-column:     3;
-  grid-row:        1 / 3;                                   /* Spans both rows = tall */
-  animation-delay: 0.24s;
-}
-
-/* Row 2 col 2 — Tasks List */
-.ov-panel--tasks {
-  grid-column:     2;
-  grid-row:        2;
-  animation-delay: 0.32s;
-}
-
-/* Row 3 — Team Activity full width */
-.ov-panel--activity {
-  grid-column:     1 / 4;                                   /* Full 3-column width */
-  grid-row:        3;
-  animation-delay: 0.40s;
-}
-
-/* ══════════════════════════════════════════════════════
-   PERFORMANCE METRICS PANEL — left tall panel
-   SVG line chart + bar chart + KPI numbers
-══════════════════════════════════════════════════════ */
-
-/* SVG line chart area */
-.ov-chart-area {
-  position:      relative;
-  height:        115px;
-  margin-bottom: var(--s4);
-  overflow:      hidden;
-}
-
-.ov-chart-svg {
-  width:  100%;
-  height: 100%;
-}
-
-/* Gradient fill under the line */
-.ov-chart-fill {
-  fill:    url(#ovGrad);
-  opacity: 0.22;
-}
-
-/* Animated trend line — draws from left to right */
-.ov-chart-line {
-  fill:              none;
-  stroke:            var(--cyan);
-  stroke-width:      2.5;
-  stroke-linecap:    round;
-  stroke-linejoin:   round;
-  stroke-dasharray:  350;
-  stroke-dashoffset: 350;
-  animation:         ovLineDraw 2s cubic-bezier(0.16, 1, 0.3, 1) 0.5s forwards;
-  filter:            drop-shadow(0 2px 12px rgba(79, 145, 247, 0.55));
-}
-
-@keyframes ovLineDraw {
-  to { stroke-dashoffset: 0; }                              /* Fully reveal the line */
-}
-
-/* ── Bar chart row ────────────────────────────────────────────── */
-.ov-bars {
-  display:       flex;
-  align-items:   flex-end;
-  gap:           5px;
-  height:        55px;
-  padding-top:   8px;
-  margin-bottom: var(--s4);
-  border-top:    1px solid rgba(255, 255, 255, 0.07);
-}
-
-/* Pair of bars (cyan + orange) per month */
-.ov-bar-group {
-  display:     flex;
-  gap:         3px;
-  align-items: flex-end;
-  flex:        1;
-}
-
-/* Bar track column */
-.ov-bar {
-  flex:          1;
-  border-radius: 4px 4px 0 0;
-  min-width:     5px;
-  transition:    transform var(--t-base), opacity var(--t-base);
-  cursor:        default;
-  position:      relative;
-  overflow:      hidden;
-}
-
-/* Bar fill animation — grows upward from 0 */
-.ov-bar::after {
-  content:    '';
-  position:   absolute;
-  inset:      0;
-  background: inherit;
-  transform:        scaleY(0);
-  transform-origin: bottom;
-  animation:        ovBarGrow 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-}
-
-@keyframes ovBarGrow {
-  to { transform: scaleY(1); }
-}
-
-/* Stagger each bar group */
-.ov-bar-group:nth-child(1)  .ov-bar::after { animation-delay: 0.40s; }
-.ov-bar-group:nth-child(2)  .ov-bar::after { animation-delay: 0.48s; }
-.ov-bar-group:nth-child(3)  .ov-bar::after { animation-delay: 0.56s; }
-.ov-bar-group:nth-child(4)  .ov-bar::after { animation-delay: 0.64s; }
-.ov-bar-group:nth-child(5)  .ov-bar::after { animation-delay: 0.72s; }
-.ov-bar-group:nth-child(6)  .ov-bar::after { animation-delay: 0.80s; }
-.ov-bar-group:nth-child(7)  .ov-bar::after { animation-delay: 0.88s; }
-
-/* Hover scale effect on bars */
-.ov-bar:hover {
-  transform:        scaleY(1.08);
-  transform-origin: bottom;
-  opacity:          0.9;
-}
-
-/* Color variants for bars */
-.ov-bar--cyan   { background: var(--cyan);   opacity: 0.85; }
-.ov-bar--orange { background: var(--orange); opacity: 0.72; }
-
-/* ── KPI numbers row ──────────────────────────────────────────── */
-.ov-kpis {
-  display:     flex;
-  align-items: center;
-  gap:         var(--s5);
-}
-
-/* Single KPI item */
-.ov-kpi {
-  display:        flex;
-  flex-direction: column;
-  gap:            3px;
-}
-
-.ov-kpi__num {
-  font-family:    var(--font-display);
-  font-size:      1.55rem;
-  font-weight:    800;
-  line-height:    1;
-  letter-spacing: -0.028em;
-}
-
-.ov-kpi__label {
-  font-family:    var(--font-mono);
-  font-size:      0.57rem;
-  font-weight:    500;
-  letter-spacing: 0.10em;
-  text-transform: uppercase;
-  color:          var(--text-muted);
-}
-
-/* Vertical separator between KPIs */
-.ov-kpi__sep {
-  width:      1px;
-  height:     36px;
-  background: rgba(255, 255, 255, 0.07);
-  flex-shrink:0;
-}
-
-/* ══════════════════════════════════════════════════════
-   ACTIVE PROJECTS PANEL — center top
-   Horizontal progress bars like in screenshot
-══════════════════════════════════════════════════════ */
-.ov-proj-row {
-  display:       flex;
-  align-items:   center;
-  gap:           var(--s3);
-  margin-bottom: var(--s3);
-}
-
-.ov-proj-row:last-child { margin-bottom: 0; }
-
-/* Project name label */
-.ov-proj-row__name {
-  font-size:     0.82rem;
-  font-weight:   500;
-  color:         var(--text-primary);
-  min-width:     105px;
-  white-space:   nowrap;
-  overflow:      hidden;
-  text-overflow: ellipsis;
-}
-
-/* Track background */
-.ov-proj-row__track {
-  flex:          1;
-  height:        6px;
-  background:    rgba(255, 255, 255, 0.06);
-  border-radius: var(--r-full);
-  overflow:      hidden;
-}
-
-/* Animated fill — starts 0%, JS sets to data-pct */
-.ov-proj-row__fill {
-  height:           100%;
-  border-radius:    var(--r-full);
-  width:            0;
-  transition:       width 1.4s cubic-bezier(0.16, 1, 0.3, 1);
-  position:         relative;
-}
-
-/* Glowing tip dot at bar end */
-.ov-proj-row__fill::after {
-  content:       '';
-  position:      absolute;
-  right:         -4px;
-  top:           50%;
-  transform:     translateY(-50%);
-  width:         9px;
-  height:        9px;
-  border-radius: 50%;
-  background:    inherit;
-  filter:        brightness(1.4);
-  box-shadow:    0 0 8px currentColor;
-}
-
-/* Percentage label */
-.ov-proj-row__pct {
-  font-family: var(--font-mono);
-  font-size:   0.74rem;
-  font-weight: 600;
-  color:       var(--text-secondary);
-  min-width:   34px;
-  text-align:  right;
-}
-
-/* ══════════════════════════════════════════════════════
-   TASKS DONUT — right tall panel
-   SVG donut chart with legend rows
-══════════════════════════════════════════════════════ */
-
-/* SVG donut container */
-.ov-donut-wrap {
-  display:         flex;
-  align-items:     center;
-  justify-content: center;
-  margin-bottom:   var(--s5);
-  position:        relative;
-}
-
-.ov-donut-svg {
-  width:     170px;
-  height:    170px;
-  transform: rotate(-90deg);                                /* Start from 12 o'clock */
-  overflow:  visible;
-}
-
-/* Track — full circle background ring */
-.ov-donut-track {
-  fill:         none;
-  stroke:       rgba(255, 255, 255, 0.06);
-  stroke-width: 22;
-}
-
-/* Colored segment ring */
-.ov-donut-ring {
-  fill:            none;
-  stroke-width:    22;
-  stroke-linecap:  round;
-  transition:      stroke-dashoffset 1.6s cubic-bezier(0.16, 1, 0.3, 1) 0.4s;
-}
-
-/* Center label — absolutely positioned over SVG */
-.ov-donut-center {
-  position:       absolute;
-  display:        flex;
-  flex-direction: column;
-  align-items:    center;
-  justify-content:center;
-  text-align:     center;
-  pointer-events: none;
-}
-
-.ov-donut-center__num {
-  font-family:    var(--font-display);
-  font-size:      1.50rem;
-  font-weight:    800;
-  color:          var(--text-white);
-  letter-spacing: -0.025em;
-  line-height:    1;
-}
-
-.ov-donut-center__sub {
-  font-family:    var(--font-mono);
-  font-size:      0.58rem;
-  color:          var(--text-muted);
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  margin-top:     3px;
-}
-
-/* Legend rows below donut */
-.ov-donut-legend {
-  display:        flex;
-  flex-direction: column;
-  gap:            var(--s3);
-}
-
-.ov-legend-row {
-  display:         flex;
-  align-items:     center;
-  justify-content: space-between;
-  gap:             var(--s2);
-}
-
-/* Color dot */
-.ov-legend-dot {
-  width:         8px;
-  height:        8px;
-  border-radius: 50%;
-  flex-shrink:   0;
-}
-
-.ov-legend-label {
-  font-size:   0.82rem;
-  color:       var(--text-secondary);
-  flex:        1;
-}
-
-.ov-legend-pct {
-  font-family: var(--font-mono);
-  font-size:   0.78rem;
-  font-weight: 700;
-  color:       var(--text-white);
-  min-width:   36px;
-  text-align:  right;
-}
-
-/* ══════════════════════════════════════════════════════
-   TASKS LIST PANEL — center bottom
-   Avatar + name + percentage + status dot
-══════════════════════════════════════════════════════ */
-.ov-task-row {
-  display:       flex;
-  align-items:   center;
-  gap:           var(--s3);
-  padding:       var(--s2) 0;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-  transition:    background var(--t-fast);
-}
-
-.ov-task-row:first-child { padding-top: 0; }
-
-.ov-task-row:last-child {
-  border-bottom:  none;
-  padding-bottom: 0;
-}
-
-/* Avatar circle with first letter */
-.ov-task-avatar {
-  width:           30px;
-  height:          30px;
-  border-radius:   50%;
-  display:         flex;
-  align-items:     center;
-  justify-content: center;
-  font-family:     var(--font-display);
-  font-size:       0.68rem;
-  font-weight:     700;
-  color:           #fff;
-  flex-shrink:     0;
-  box-shadow:      0 2px 8px rgba(0, 0, 0, 0.20);
-}
-
-.ov-task-name {
-  font-size:     0.82rem;
-  font-weight:   500;
-  color:         var(--text-primary);
-  flex:          1;
-  white-space:   nowrap;
-  overflow:      hidden;
-  text-overflow: ellipsis;
-}
-
-.ov-task-pct {
-  font-family:  var(--font-mono);
-  font-size:    0.76rem;
-  font-weight:  700;
-  color:        var(--text-white);
-  min-width:    36px;
-  text-align:   right;
-}
-
-/* Status dot */
-.ov-task-dot {
-  width:         8px;
-  height:        8px;
-  border-radius: 50%;
-  flex-shrink:   0;
-  box-shadow:    0 0 6px currentColor;
-}
-
-/* ══════════════════════════════════════════════════════
-   TEAM ACTIVITY — full-width bottom panel
-   Slider with prev/next arrows + dot indicators
-══════════════════════════════════════════════════════ */
-
-/* Activity panel header */
-.ov-activity-header {
-  display:         flex;
-  align-items:     center;
-  gap:             var(--s3);
-  margin-bottom:   var(--s4);
-}
-
-.ov-activity-title {
-  font-family:    var(--font-display);
-  font-size:      0.90rem;
-  font-weight:    700;
-  color:          var(--text-white);
-  letter-spacing: -0.01em;
-  flex:           1;                                        /* Push controls right */
-}
-
-/* Prev / Next arrow buttons */
-.ov-slider-btn {
-  width:           28px;
-  height:          28px;
-  border-radius:   50%;
-  background:      rgba(255, 255, 255, 0.07);
-  border:          1px solid rgba(255, 255, 255, 0.10);
-  display:         flex;
-  align-items:     center;
-  justify-content: center;
-  font-size:       0.92rem;
-  color:           var(--text-secondary);
-  cursor:          pointer;
-  transition:      all var(--t-fast);
-  line-height:     1;
-  flex-shrink:     0;
-}
-
-.ov-slider-btn:hover {
-  background:  rgba(255, 255, 255, 0.12);
-  color:       var(--text-white);
-  box-shadow:  var(--shadow-sm);
-}
-
-/* Dot indicators row */
-.ov-slider-dots {
-  display:     flex;
-  align-items: center;
-  gap:         5px;
-}
-
-/* Single dot */
-.ov-slider-dot {
-  width:         7px;
-  height:        7px;
-  border-radius: 50%;
-  background:    rgba(255, 255, 255, 0.15);
-  cursor:        pointer;
-  border:        none;
-  padding:       0;
-  transition:    all var(--t-base);
-  flex-shrink:   0;
-}
-
-.ov-slider-dot:hover:not(.ov-slider-dot--active) {
-  background: var(--text-muted);
-  transform:  scale(1.25);
-}
-
-/* Active dot — expands to pill + cyan glow */
-.ov-slider-dot--active {
-  background:    var(--cyan);
-  width:         20px;
-  border-radius: var(--r-full);
-  box-shadow:    0 0 8px rgba(79, 195, 247, 0.45);
-}
-
-/* Slide content row */
-.ov-activity-content {
-  display:     flex;
-  align-items: center;
-  gap:         var(--s4);
-  min-height:  48px;
-
-  /* Entrance slide-in animation */
-  animation: ovSlideIn 0.38s cubic-bezier(0.16, 1, 0.3, 1) both;
-}
-
-@keyframes ovSlideIn {
-  from { opacity: 0; transform: translateX(18px); }
-  to   { opacity: 1; transform: translateX(0); }
-}
-
-/* Activity avatar square */
-.ov-activity-avatar {
-  width:           40px;
-  height:          40px;
-  border-radius:   var(--r-sm);
-  display:         flex;
-  align-items:     center;
-  justify-content: center;
-  font-family:     var(--font-display);
-  font-size:       0.84rem;
-  font-weight:     700;
-  color:           #fff;
-  flex-shrink:     0;
-  box-shadow:      0 4px 12px rgba(0, 0, 0, 0.22);
-}
-
-/* Activity description */
-.ov-activity-text {
-  font-size:   0.84rem;
-  color:       var(--text-primary);
-  line-height: 1.5;
-  flex:        1;
-}
-
-/* Timestamp */
-.ov-activity-time {
-  font-family:    var(--font-mono);
-  font-size:      0.62rem;
-  color:          var(--text-muted);
-  letter-spacing: 0.04em;
-  white-space:    nowrap;
-  flex-shrink:    0;
-}
-
-/* ══════════════════════════════════════════════════════
-   RESPONSIVE BREAKPOINTS
-══════════════════════════════════════════════════════ */
-
-/* ── Tablet: 2 columns ────────────────────────────────────────── */
-@media (max-width: 1200px) {
-
-  /* Stack profile + right column */
-  .overview-row {
-    grid-template-columns: 1fr;
-  }
-
-  .profile-card {
-    flex-direction: row;
-    flex-wrap:      wrap;
-    text-align:     left;
-    align-items:    flex-start;
-  }
-
-  .profile-card__avatar-wrap { flex-shrink: 0; }
-
-  .profile-card__bio { text-align: left; max-width: 100%; }
-
-  /* 2-column bento on tablet */
-  .ov-bento {
-    grid-template-columns: 1fr 1fr;
-    grid-template-rows:    auto;
-  }
-
-  .ov-panel--perf     { grid-column: 1 / 3; grid-row: auto; }
-  .ov-panel--projects { grid-column: 1;      grid-row: auto; }
-  .ov-panel--donut    { grid-column: 2;      grid-row: auto; }
-  .ov-panel--tasks    { grid-column: 1;      grid-row: auto; }
-  .ov-panel--activity { grid-column: 1 / 3;  grid-row: auto; }
-
-  /* 3 KPI columns still ok */
-}
-
-/* ── Mobile: 1 column ─────────────────────────────────────────── */
-@media (max-width: 768px) {
-
-  .overview-row { gap: var(--s4); }
-
-  .profile-card {
-    flex-direction: column;
-    align-items:    center;
-    text-align:     center;
-  }
-
-  .profile-card__bio { text-align: center; }
-
-  /* 2 KPI columns on mobile */
-  .kpi-grid { grid-template-columns: repeat(2, 1fr); }
-
-  /* 1 column bento */
-  .ov-bento {
-    grid-template-columns: 1fr;
-  }
-
-  .ov-panel--perf,
-  .ov-panel--projects,
-  .ov-panel--donut,
-  .ov-panel--tasks,
-  .ov-panel--activity {
-    grid-column: 1;
-    grid-row:    auto;
-  }
-
-  .ov-panel--perf { grid-row: auto; }                      /* No longer spans 2 rows */
-
-  .page-header { flex-direction: column; align-items: flex-start; }
-}
-
-/* ── Very small screens ────────────────────────────────────────── */
-@media (max-width: 480px) {
-  .kpi-grid               { grid-template-columns: repeat(2, 1fr); }
-  .profile-card__stats    { flex-wrap: wrap; justify-content: center; }
-  .profile-card__actions  { flex-direction: column; }
+/**
+ * OverviewSection.jsx
+ * ─────────────────────────────────────────────────────────
+ * Devoryn-style dashboard overview — redesigned to match screenshot:
+ *
+ *  ┌─────────────────────────────────────────────────────────────┐
+ *  │  Page Header: "Hi, Hussam!" + subtitle                      │
+ *  ├──────────────────┬──────────────────┬──────────────────────┤
+ *  │  Performance     │  Score           │  Skill Scores        │
+ *  │  Metrics (tall)  │  Distribution    │  Top 12 list (tall)  │
+ *  │                  ├──────────────────┤                      │
+ *  │                  │  Skills by       │                      │
+ *  │                  │  Category        │                      │
+ *  ├──────────────────┴──────────────────┤                      │
+ *  │  Portfolio Records (full width)     │                      │
+ *  ├─────────────────────────────────────┤                      │
+ *  │  Languages Panel                    │                      │
+ *  └─────────────────────────────────────┴──────────────────────┘
+ *
+ * Data flow:
+ *   - profile   → name / title / avatar / stats
+ *   - analytics → counts / top skills / category averages
+ *   - skills    → score distribution / skill scores list
+ * ─────────────────────────────────────────────────────────
+ */
+
+import { useRef, useEffect, useState, useCallback } from 'react'; // React hooks
+import { formatExperience, getInitials, scoreToBand } from '../../utils/formatters'; // Pure helpers
+import { CHART_COLORS, ANIMATION, SKILL_BANDS }       from '../../utils/constants';  // Global tokens
+import '../../styles/components/OverviewSection.css';                                 // Section styles
+
+/* ── SVG donut math constants ─────────────────────────────────── */
+const DONUT_RADIUS = 54;                                       // px — radius of donut ring
+const DONUT_CIRCUMF = 2 * Math.PI * DONUT_RADIUS;             // Full circumference
+
+/* ── Score band segments for distribution donut ──────────────── */
+const BAND_SEGMENTS = [
+  { label: 'Excellent', key: 'expert',       color: SKILL_BANDS.expert.color,       range: '80-100%' },
+  { label: 'Good',      key: 'advanced',     color: SKILL_BANDS.advanced.color,     range: '60-79%'  },
+  { label: 'Growing',   key: 'intermediate', color: SKILL_BANDS.intermediate.color, range: '40-59%'  },
+  { label: 'Learning',  key: 'beginner',     color: SKILL_BANDS.beginner.color,     range: '0-39%'   },
+];
+
+/* ── Bar chart data for performance panel ────────────────────── */
+const BAR_DATA = [
+  { a: 65, b: 45 },
+  { a: 80, b: 55 },
+  { a: 50, b: 70 },
+  { a: 90, b: 40 },
+  { a: 60, b: 85 },
+  { a: 75, b: 50 },
+  { a: 55, b: 65 },
+];
+
+/* ── Maximum bar height in px ────────────────────────────────── */
+const BAR_MAX_PX = 48;
+
+/* ════════════════════════════════════════════════════════════════
+   MAIN COMPONENT
+════════════════════════════════════════════════════════════════ */
+/**
+ * OverviewSection — Devoryn analytics dashboard overview.
+ * @param {object}      props
+ * @param {object|null} props.profile   - Profile data from API
+ * @param {object|null} props.analytics - Analytics data from API
+ * @param {Array}       props.skills    - Skills array from API
+ */
+export default function OverviewSection({ profile, analytics, skills = [] }) {
+
+  /* ── Safe display values with fallbacks ───────────────────── */
+  const fullName  = profile?.full_name            || 'Hussam Alshawi'; // Full name fallback
+  const firstName = fullName.split(' ')[0];                            // Extract first name
+  const title     = profile?.title                || 'Full Stack Developer'; // Title fallback
+  const avatar    = profile?.primary_avatar       || null;             // Avatar URL or null
+  const available = profile?.is_available_for_hire || false;           // Hire availability
+
+  /* ── Analytics counts with safe fallbacks ────────────────── */
+  const counts    = analytics?.counts    || {};                        // All entity counts
+  const topSkills = analytics?.top_skills || [];                       // Top skills array
+
+  /* ── Score distribution from skills array ────────────────── */
+  const distribution = buildDistribution(skills);                     // Calculate band counts
+
+  /* ── Category averages from analytics ───────────────────── */
+  const categoryAverages = analytics?.category_averages || buildFallbackCategories(topSkills);
+
+  /* ── Languages from profile ──────────────────────────────── */
+  const languages = analytics?.languages || [];                        // Languages list
+
+  /* ── Portfolio records row config ───────────────────────── */
+  const records = [
+    { label: 'Skills',       value: counts.skills       || 0 },
+    { label: 'Goals',        value: counts.goals         || 0 },
+    { label: 'Experience',   value: counts.experience    || 0 },
+    { label: 'Courses',      value: counts.courses       || 0 },
+    { label: 'Projects',     value: counts.projects      || 0 },
+    { label: 'Education',    value: counts.education     || 0 },
+    { label: 'Self Study',   value: counts.self_study    || 0 },
+    { label: 'Languages',    value: counts.languages     || 0 },
+    { label: 'Feedback',     value: counts.feedback      || 0 },
+    { label: 'Achievements', value: counts.achievements  || 0 },
+  ];
+
+  return (
+    <section id="overview" className="overview-section" aria-label="Dashboard Overview">
+
+      {/* ══════════════════════════════════════
+          PAGE HEADER
+      ══════════════════════════════════════ */}
+      <div className="page-header">
+        <div>
+          <h1 className="page-header__title">
+            Dashboard Overview
+          </h1>
+          <p className="page-header__sub">
+            {title} · Portfolio Analytics
+          </p>
+        </div>
+
+        {/* Availability pill — open/employed */}
+        <div
+          className={`availability-pill ${available ? 'availability-pill--open' : ''}`}
+          role="status"
+          aria-label={available ? 'Available for hire' : 'Currently employed'}
+        >
+          <span className="availability-pill__dot" aria-hidden="true" />
+          {available ? 'Available for Hire' : 'Currently Employed'}
+        </div>
+      </div>
+
+      {/* ══════════════════════════════════════
+          MAIN BENTO GRID — 3-column layout
+      ══════════════════════════════════════ */}
+      <div className="ov-main-grid" aria-label="Dashboard widgets">
+
+        {/* ── COL 1: Performance Metrics (tall, spans rows 1-3) ── */}
+        <PerformancePanel
+          profile={profile}
+          analytics={analytics}
+        />
+
+        {/* ── COL 2 TOP: Score Distribution donut ── */}
+        <ScoreDistributionPanel
+          distribution={distribution}
+          totalSkills={skills.length || counts.skills || 0}
+        />
+
+        {/* ── COL 3: Skill Scores list (tall, spans rows 1-3) ── */}
+        <SkillScoresPanel skills={topSkills} />
+
+        {/* ── COL 2 BOTTOM: Skills by Category ── */}
+        <SkillsByCategoryPanel categories={categoryAverages} />
+
+      </div>
+
+      {/* ══════════════════════════════════════
+          PORTFOLIO RECORDS — full width bar
+      ══════════════════════════════════════ */}
+      <PortfolioRecordsPanel records={records} />
+
+      {/* ══════════════════════════════════════
+          LANGUAGES PANEL
+      ══════════════════════════════════════ */}
+      {languages.length > 0 && (
+        <LanguagesPanel languages={languages} />
+      )}
+
+    </section>
+  );
+}
+
+/* ════════════════════════════════════════════════════════════════
+   HELPER: buildDistribution
+   Counts skills per band from the skills array
+════════════════════════════════════════════════════════════════ */
+/**
+ * @param {Array} skills - Skills with score property
+ * @returns {{ expert, advanced, intermediate, beginner }}
+ */
+function buildDistribution(skills) {
+  const result = { expert: 0, advanced: 0, intermediate: 0, beginner: 0 }; // Init counts
+  if (!skills?.length) return result;                                        // Guard empty
+
+  skills.forEach(skill => {
+    const score = skill.score || 0;                          // Get score safely
+    if      (score >= 80) result.expert++;                   // 80-100 → expert
+    else if (score >= 60) result.advanced++;                 // 60-79  → advanced
+    else if (score >= 40) result.intermediate++;             // 40-59  → intermediate
+    else                  result.beginner++;                 // 0-39   → beginner
+  });
+
+  return result; // Return counts object
+}
+
+/* ════════════════════════════════════════════════════════════════
+   HELPER: buildFallbackCategories
+   Builds category averages from top skills if API doesn't provide
+════════════════════════════════════════════════════════════════ */
+/**
+ * @param {Array} topSkills - Top skills with category field
+ * @returns {Array} - [{ category, average }]
+ */
+function buildFallbackCategories(topSkills) {
+  if (!topSkills?.length) return [];                         // Guard empty
+
+  const grouped = {};                                        // Group by category
+
+  topSkills.forEach(skill => {
+    const cat = skill.category || 'Other';                   // Default category
+    if (!grouped[cat]) grouped[cat] = [];                    // Init array
+    grouped[cat].push(skill.score || 0);                     // Push score
+  });
+
+  return Object.entries(grouped)                             // Convert to array
+    .map(([category, scores]) => ({
+      category,
+      average: Math.round(scores.reduce((s, n) => s + n, 0) / scores.length), // Mean
+    }))
+    .sort((a, b) => b.average - a.average)                   // Sort descending
+    .slice(0, 5);                                            // Top 5 only
+}
+
+/* ════════════════════════════════════════════════════════════════
+   PANEL 1: PerformancePanel
+   SVG line chart + bar chart + 3 KPI numbers
+   Left tall panel — matches screenshot
+════════════════════════════════════════════════════════════════ */
+/**
+ * @param {{ profile, analytics }} props
+ */
+function PerformancePanel({ profile, analytics }) {
+
+  const barsRef = useRef(null);                              // Ref for bar animation
+
+  /* Extract KPI values safely */
+  const expYears    = profile?.experience_years || 0;        // Years of experience
+  const score       = profile?.overall_score    || 0;        // Skill score 0-100
+  const projectCount= analytics?.counts?.projects || 0;      // Total projects
+
+  /* Animate bar heights on mount */
+  useEffect(() => {
+    if (!barsRef.current) return;                            // Guard no ref
+
+    const bars = barsRef.current.querySelectorAll('.ov-bar'); // All bar divs
+    bars.forEach((bar, i) => {
+      bar.style.height = '0px';                              // Start collapsed
+      setTimeout(() => {
+        bar.style.transition = 'height 0.9s cubic-bezier(0.16,1,0.3,1)'; // Smooth grow
+        bar.style.height     = bar.dataset.height;           // Animate to target
+      }, 450 + i * 80);                                      // Stagger each bar
+    });
+  }, []);                                                    // Run once on mount
+
+  return (
+    <div className="ov-panel ov-panel--perf" aria-label="Performance metrics">
+
+      {/* Water drop decorations — Devoryn signature */}
+      <div className="ov-drops" aria-hidden="true">
+        <div className="ov-drop ov-drop--a" />
+        <div className="ov-drop ov-drop--b" />
+        <div className="ov-drop ov-drop--c" />
+        <div className="ov-drop ov-drop--d" />
+      </div>
+
+      {/* Panel header */}
+      <div className="ov-panel__header">
+        <span className="ov-panel__title">Performance Metrics</span>
+        <button className="ov-panel__menu" aria-label="Panel options">···</button>
+      </div>
+
+      {/* SVG Animated Line Chart */}
+      <div className="ov-chart-area" role="img" aria-label="Performance trend">
+        <svg className="ov-chart-svg" viewBox="0 0 400 110" preserveAspectRatio="none">
+          <defs>
+            {/* Cyan gradient fill under the line */}
+            <linearGradient id="ovGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%"   stopColor="var(--cyan)" stopOpacity="0.55" />
+              <stop offset="100%" stopColor="var(--cyan)" stopOpacity="0"    />
+            </linearGradient>
+          </defs>
+
+          {/* Area fill under curve */}
+          <path
+            className="ov-chart-fill"
+            d="M0,88 C30,82 55,68 80,63
+               C105,58 130,48 160,36
+               C190,24 215,28 240,23
+               C265,18 290,33 320,26
+               C350,20 375,15 400,10
+               L400,110 L0,110 Z"
+          />
+
+          {/* Animated draw-in trend line */}
+          <path
+            className="ov-chart-line"
+            d="M0,88 C30,82 55,68 80,63
+               C105,58 130,48 160,36
+               C190,24 215,28 240,23
+               C265,18 290,33 320,26
+               C350,20 375,15 400,10"
+          />
+        </svg>
+      </div>
+
+      {/* Bar chart — 7 groups of cyan + orange */}
+      <div className="ov-bars" ref={barsRef} role="img" aria-label="Monthly bars">
+        {BAR_DATA.map((group, i) => (
+          <div key={i} className="ov-bar-group">
+            {/* Cyan bar */}
+            <div
+              className="ov-bar ov-bar--cyan"
+              data-height={`${Math.round((group.a / 100) * BAR_MAX_PX)}px`}
+              style={{ height: '0px' }}
+              aria-hidden="true"
+            />
+            {/* Orange bar */}
+            <div
+              className="ov-bar ov-bar--orange"
+              data-height={`${Math.round((group.b / 100) * BAR_MAX_PX)}px`}
+              style={{ height: '0px' }}
+              aria-hidden="true"
+            />
+          </div>
+        ))}
+      </div>
+
+      {/* KPI numbers row */}
+      <div className="ov-kpis" role="list">
+
+        {/* Experience years */}
+        <div className="ov-kpi" role="listitem">
+          <div className="ov-kpi__num" style={{ color: 'var(--cyan)' }}>
+            {expYears > 0 ? `${expYears}+` : '—'}
+          </div>
+          <div className="ov-kpi__label">Yrs Exp</div>
+        </div>
+
+        <div className="ov-kpi__sep" aria-hidden="true" />
+
+        {/* Skill score */}
+        <div className="ov-kpi" role="listitem">
+          <div className="ov-kpi__num" style={{ color: 'var(--blue)' }}>
+            {score > 0 ? `${Math.round(score)}%` : '—'}
+          </div>
+          <div className="ov-kpi__label">Score</div>
+        </div>
+
+        <div className="ov-kpi__sep" aria-hidden="true" />
+
+        {/* Total projects */}
+        <div className="ov-kpi" role="listitem">
+          <div className="ov-kpi__num" style={{ color: 'var(--green)' }}>
+            {projectCount}
+          </div>
+          <div className="ov-kpi__label">Projects</div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ════════════════════════════════════════════════════════════════
+   PANEL 2: ScoreDistributionPanel
+   Donut chart — Skills spread across bands
+   Top-center panel — matches screenshot
+════════════════════════════════════════════════════════════════ */
+/**
+ * @param {{ distribution, totalSkills }} props
+ */
+function ScoreDistributionPanel({ distribution, totalSkills }) {
+
+  const total = totalSkills || 1;                            // Avoid division by zero
+
+  let cumulativePct = 0;                                     // Running total for offsets
+
+  return (
+    <div className="ov-panel ov-panel--score-dist" aria-label="Score distribution">
+
+      {/* Water drops */}
+      <div className="ov-drops" aria-hidden="true">
+        <div className="ov-drop ov-drop--a" />
+        <div className="ov-drop ov-drop--b" />
+      </div>
+
+      {/* Panel header */}
+      <div className="ov-panel__header">
+        <span className="ov-panel__title">Score Distribution</span>
+        <button className="ov-panel__menu" aria-label="Panel options">···</button>
+      </div>
+
+      {/* Subtitle */}
+      <p className="ov-panel__subtitle">Skills spread across bands</p>
+
+      {/* SVG Donut */}
+      <div className="ov-donut-wrap" aria-hidden="true">
+        <svg className="ov-donut-svg" viewBox="0 0 120 120">
+
+          {/* Background track ring */}
+          <circle
+            className="ov-donut-track"
+            cx="60" cy="60"
+            r={DONUT_RADIUS}
+          />
+
+          {/* Colored band segments */}
+          {BAND_SEGMENTS.map((seg, i) => {
+            const count   = distribution[seg.key] || 0;      // Skill count for band
+            const pct     = count / total;                    // Fraction 0-1
+            const dashArr = pct * DONUT_CIRCUMF;              // Filled arc length
+            const dashOff = DONUT_CIRCUMF - (cumulativePct * DONUT_CIRCUMF); // Start pos
+            cumulativePct += pct;                             // Advance running total
+
+            return (
+              <circle
+                key={seg.key}
+                className="ov-donut-ring"
+                cx="60" cy="60"
+                r={DONUT_RADIUS}
+                stroke={seg.color}
+                strokeDasharray={`${dashArr} ${DONUT_CIRCUMF}`}
+                strokeDashoffset={dashOff}
+                style={{
+                  transition: `stroke-dashoffset 1.4s cubic-bezier(0.16,1,0.3,1) ${0.3 + i * 0.15}s`,
+                }}
+              />
+            );
+          })}
+        </svg>
+
+        {/* Center label */}
+        <div className="ov-donut-center">
+          <div className="ov-donut-center__num">{totalSkills}</div>
+          <div className="ov-donut-center__sub">Skills</div>
+        </div>
+      </div>
+
+      {/* Legend rows */}
+      <div className="ov-donut-legend" role="list">
+        {BAND_SEGMENTS.map(seg => {
+          const count = distribution[seg.key] || 0;           // Count for this band
+          return (
+            <div key={seg.key} className="ov-legend-row" role="listitem">
+              <div
+                className="ov-legend-dot"
+                style={{ background: seg.color, boxShadow: `0 0 6px ${seg.color}` }}
+                aria-hidden="true"
+              />
+              <span className="ov-legend-label">{seg.label}</span>
+              <span className="ov-legend-range">{seg.range}</span>
+              <span className="ov-legend-pct" style={{ color: seg.color }}>
+                {count}
+              </span>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+/* ════════════════════════════════════════════════════════════════
+   PANEL 3: SkillScoresPanel
+   Top 12 skills sorted by proficiency
+   Right tall panel — matches screenshot
+════════════════════════════════════════════════════════════════ */
+/**
+ * @param {{ skills: Array }} props
+ */
+function SkillScoresPanel({ skills }) {
+
+  const listRef = useRef(null);                              // Ref for IntersectionObserver
+
+  const displaySkills = skills.slice(0, 12);                 // Max 12 items per screenshot
+
+  /* Animate bars when panel enters viewport */
+  useEffect(() => {
+    if (!listRef.current) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach(entry => {
+          if (!entry.isIntersecting) return;                 // Skip if not visible
+          entry.target
+            .querySelectorAll('.ov-skill-fill')
+            .forEach((fill, i) => {
+              setTimeout(() => {
+                fill.style.transform = 'scaleX(1)';          // Animate bar in
+              }, i * ANIMATION.BAR_DELAY);                   // Stagger each bar
+            });
+          observer.unobserve(entry.target);                  // Animate once only
+        });
+      },
+      { threshold: 0.2 }                                     // 20% visible to trigger
+    );
+
+    observer.observe(listRef.current);
+    return () => observer.disconnect();                      // Cleanup observer
+  }, [skills]);
+
+  return (
+    <div className="ov-panel ov-panel--skill-scores" aria-label="Skill scores top 12">
+
+      {/* Panel header */}
+      <div className="ov-panel__header">
+        <span className="ov-panel__title">Skill Scores</span>
+        <button className="ov-panel__menu" aria-label="Panel options">···</button>
+      </div>
+
+      {/* Subtitle description */}
+      <p className="ov-panel__subtitle">
+        Top {displaySkills.length} · Sorted by proficiency
+      </p>
+
+      {/* Band legend pills */}
+      <div className="ov-score-legend" aria-label="Score bands">
+        {BAND_SEGMENTS.map(seg => (
+          <span
+            key={seg.key}
+            className="ov-score-band-pill"
+            style={{ borderColor: seg.color, color: seg.color }}
+          >
+            {seg.label} ({seg.range})
+          </span>
+        ))}
+      </div>
+
+      {/* Skill rows list */}
+      <div className="ov-skill-list" ref={listRef} role="list">
+        {displaySkills.map((skill, i) => {
+          const band  = scoreToBand(skill.score || 0);        // Get proficiency band label
+          const color = getBandColor(skill.score || 0);        // Get band color
+          return (
+            <div key={skill.skill_name || i} className="ov-skill-row" role="listitem">
+
+              {/* Skill name */}
+              <span className="ov-skill-row__name" title={skill.skill_name}>
+                {skill.skill_name}
+              </span>
+
+              {/* Progress track + animated fill */}
+              <div className="ov-skill-row__track">
+                <div
+                  className="ov-skill-fill"
+                  style={{
+                    width:           `${skill.score || 0}%`,  // CSS width = score %
+                    background:      color,                    // Band color
+                    transform:       'scaleX(0)',              // Start hidden
+                    transformOrigin: 'left',                   // Grow from left
+                    transition:      'transform 1.1s cubic-bezier(0.16,1,0.3,1)',
+                  }}
+                />
+              </div>
+
+              {/* Score + band label */}
+              <span className="ov-skill-row__score" style={{ color }}>
+                {skill.score || 0}%
+              </span>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+/* ════════════════════════════════════════════════════════════════
+   PANEL 4: SkillsByCategoryPanel
+   Horizontal bars — average score per domain
+   Bottom-center panel — matches screenshot
+════════════════════════════════════════════════════════════════ */
+/**
+ * @param {{ categories: Array }} props
+ */
+function SkillsByCategoryPanel({ categories }) {
+
+  const listRef = useRef(null);                              // Ref for animation trigger
+
+  /* Animate bars when panel enters viewport */
+  useEffect(() => {
+    if (!listRef.current) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach(entry => {
+          if (!entry.isIntersecting) return;
+          entry.target
+            .querySelectorAll('.ov-cat-fill')
+            .forEach((fill, i) => {
+              setTimeout(() => {
+                fill.style.width = fill.dataset.pct;          // Trigger width transition
+              }, i * 120);                                    // Stagger by 120ms
+            });
+          observer.unobserve(entry.target);
+        });
+      },
+      { threshold: 0.2 }
+    );
+
+    observer.observe(listRef.current);
+    return () => observer.disconnect();
+  }, [categories]);
+
+  /* Fallback when no data */
+  const displayCats = categories?.length > 0
+    ? categories.slice(0, 5)                                 // Max 5 categories
+    : [
+        { category: 'Backend',  average: 75 },               // Demo data fallback
+        { category: 'Frontend', average: 68 },
+        { category: 'DevOps',   average: 55 },
+        { category: 'Database', average: 70 },
+        { category: 'Mobile',   average: 45 },
+      ];
+
+  return (
+    <div className="ov-panel ov-panel--cat" aria-label="Skills by category">
+
+      {/* Water drops */}
+      <div className="ov-drops" aria-hidden="true">
+        <div className="ov-drop ov-drop--b" />
+      </div>
+
+      {/* Panel header */}
+      <div className="ov-panel__header">
+        <span className="ov-panel__title">Skills by Category</span>
+        <button className="ov-panel__menu" aria-label="Panel options">···</button>
+      </div>
+
+      {/* Subtitle */}
+      <p className="ov-panel__subtitle">Average score per domain</p>
+
+      {/* Category bar rows */}
+      <div ref={listRef}>
+        {displayCats.map((cat, i) => {
+          const color = CHART_COLORS[i % CHART_COLORS.length]; // Cycle colors
+          return (
+            <div key={cat.category} className="ov-proj-row">
+
+              {/* Category name */}
+              <span className="ov-proj-row__name">{cat.category}</span>
+
+              {/* Animated progress track */}
+              <div className="ov-proj-row__track">
+                <div
+                  className="ov-cat-fill ov-proj-row__fill"
+                  data-pct={`${cat.average}%`}               // Target width
+                  style={{
+                    width:      '0%',                        // Start at 0
+                    background: color,
+                    transition: 'width 1.2s cubic-bezier(0.16, 1, 0.3, 1)',
+                  }}
+                />
+              </div>
+
+              {/* Average score */}
+              <span className="ov-proj-row__pct">{cat.average}%</span>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+/* ════════════════════════════════════════════════════════════════
+   PANEL 5: PortfolioRecordsPanel
+   Full-width row showing total docs per model
+   Matches "Portfolio Records" in screenshot
+════════════════════════════════════════════════════════════════ */
+/**
+ * @param {{ records: Array }} props
+ */
+function PortfolioRecordsPanel({ records }) {
+
+  const countersRef = useRef(null);                          // Ref for count-up animation
+
+  /* Run count-up animation when panel enters viewport */
+  useEffect(() => {
+    if (!countersRef.current) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach(entry => {
+          if (!entry.isIntersecting) return;
+
+          /* Animate each counter from 0 to target */
+          entry.target.querySelectorAll('[data-target]').forEach((el, i) => {
+            const target   = parseInt(el.dataset.target, 10); // Target value
+            const duration = ANIMATION.COUNTER_DURATION;      // 1800ms
+            const start    = performance.now();               // Start timestamp
+
+            const tick = (now) => {
+              const progress = Math.min((now - start) / duration, 1); // 0 → 1
+              const eased    = 1 - Math.pow(1 - progress, 3);         // Cubic ease-out
+              el.textContent = Math.round(eased * target);             // Update display
+              if (progress < 1) requestAnimationFrame(tick);           // Continue loop
+            };
+
+            setTimeout(() => requestAnimationFrame(tick), i * 60);    // Stagger start
+          });
+
+          observer.unobserve(entry.target);                   // Animate once
+        });
+      },
+      { threshold: 0.3 }
+    );
+
+    observer.observe(countersRef.current);
+    return () => observer.disconnect();
+  }, [records]);
+
+  return (
+    <div className="ov-panel ov-panel--records" aria-label="Portfolio records">
+
+      {/* Panel header */}
+      <div className="ov-panel__header">
+        <span className="ov-panel__title">Portfolio Records</span>
+        <span className="ov-panel__subtitle--inline">Total documents per model</span>
+        <button className="ov-panel__menu" aria-label="Panel options">···</button>
+      </div>
+
+      {/* Records grid — all counts in one row */}
+      <div className="ov-records-grid" ref={countersRef} role="list">
+        {records.map((rec, i) => (
+          <div key={rec.label} className="ov-record-item" role="listitem">
+
+            {/* Count with animated number */}
+            <div
+              className="ov-record-item__num"
+              data-target={rec.value}                        // Used by count-up
+              style={{ color: CHART_COLORS[i % CHART_COLORS.length] }}
+            >
+              {rec.value}
+            </div>
+
+            {/* Label */}
+            <div className="ov-record-item__label">{rec.label}</div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/* ════════════════════════════════════════════════════════════════
+   PANEL 6: LanguagesPanel
+   Language cards with proficiency level
+   Bottom panel — matches screenshot
+════════════════════════════════════════════════════════════════ */
+/**
+ * @param {{ languages: Array }} props
+ */
+function LanguagesPanel({ languages }) {
+
+  /* Demo fallback data matching screenshot */
+  const displayLangs = languages.length > 0
+    ? languages
+    : [
+        { name: 'Arabic',  level: 'Native',  flag: '🇸🇦', color: CHART_COLORS[1] },
+        { name: 'English', level: 'Fluent',  flag: '🇬🇧', color: CHART_COLORS[0] },
+      ];
+
+  return (
+    <div className="ov-panel ov-panel--languages" aria-label="Languages">
+
+      {/* Panel header */}
+      <div className="ov-panel__header">
+        <span className="ov-panel__title">Languages</span>
+        <span className="ov-panel__subtitle--inline">
+          Connectors of belonging
+        </span>
+        <button className="ov-panel__menu" aria-label="Panel options">···</button>
+      </div>
+
+      {/* Language cards row */}
+      <div className="ov-lang-grid" role="list">
+        {displayLangs.map((lang, i) => (
+          <div
+            key={lang.name}
+            className="ov-lang-card"
+            role="listitem"
+            style={{ '--lang-color': lang.color || CHART_COLORS[i % CHART_COLORS.length] }}
+          >
+            {/* Flag emoji */}
+            <div className="ov-lang-card__flag" aria-hidden="true">
+              {lang.flag || '🌐'}
+            </div>
+
+            {/* Language name */}
+            <div className="ov-lang-card__name">{lang.name}</div>
+
+            {/* Proficiency level */}
+            <div className="ov-lang-card__level">{lang.level}</div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/* ════════════════════════════════════════════════════════════════
+   HELPER: getBandColor
+   Returns CSS color for a given score
+════════════════════════════════════════════════════════════════ */
+/**
+ * @param {number} score - 0-100
+ * @returns {string} - CSS color value
+ */
+function getBandColor(score) {
+  if (score >= 80) return SKILL_BANDS.expert.color;          // Lime
+  if (score >= 60) return SKILL_BANDS.advanced.color;        // Cyan
+  if (score >= 40) return SKILL_BANDS.intermediate.color;    // Violet
+  return SKILL_BANDS.beginner.color;                         // Orange
 }
