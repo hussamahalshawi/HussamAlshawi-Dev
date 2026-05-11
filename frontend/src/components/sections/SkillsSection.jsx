@@ -2,7 +2,8 @@
  * SkillsSection.jsx — Skills Grid with Animated Bars and Radar Chart
  * ─────────────────────────────────────────────────────────
  * Left column: skill bars grouped by category (top 6 per category)
- * Right column: RadarChart showing category averages
+ * Right column: Glassmorphism panel with RadarChart showing category averages
+ * IntersectionObserver triggers scaleX(1) on bars when section scrolls in.
  * All data comes from the skills prop (no internal fetching).
  * ─────────────────────────────────────────────────────────
  */
@@ -29,7 +30,7 @@ export default function SkillsSection({ skills }) {
         entries.forEach(entry => {
           if (!entry.isIntersecting) return;                  // Only when visible
 
-          // Find all fill bars and trigger the CSS scale animation
+          // Find all fill bars and trigger CSS scaleX animation
           const fills = entry.target.querySelectorAll('.skill-row__fill');
           fills.forEach(fill => {
             fill.style.transform = 'scaleX(1)';              // Animate from 0 → 1
@@ -46,12 +47,12 @@ export default function SkillsSection({ skills }) {
   }, [skills]);                                               // Re-run when data arrives
 
   // ── Derive display data from skills prop ────────────────────────────────
-  const grouped   = skills?.grouped   || {};                  // { "Backend": [...] }
+  const grouped   = skills?.grouped || {};                    // { "Backend": [...] }
   const radarData = skills?.grouped
-    ? buildRadarData(skills.grouped)                          // Build from grouped
+    ? buildRadarData(skills.grouped)                          // Build from grouped data
     : [];
 
-  // Show skeletons while loading
+  // ── Loading skeleton ─────────────────────────────────────────────────────
   if (!skills) {
     return (
       <section id="skills" className="section section--alt">
@@ -108,7 +109,7 @@ export default function SkillsSection({ skills }) {
                       <div
                         className="skill-row__fill"
                         style={{
-                          width:      `${skill.score}%`,      // Bar width = score
+                          width:      `${skill.score}%`,      // Bar width = score value
                           background: skill.color
                             ? `linear-gradient(90deg, ${skill.color}, #4FC3F7)` // API color
                             : 'linear-gradient(90deg, #4ECCA3, #4FC3F7)',        // Default
@@ -118,7 +119,7 @@ export default function SkillsSection({ skills }) {
 
                     {/* Score percentage */}
                     <span className="skill-row__pct">
-                      {formatScore(skill.score)}              // "92%"
+                      {formatScore(skill.score)}              {/* "92%" */}
                     </span>
                   </div>
                 ))}
@@ -126,13 +127,16 @@ export default function SkillsSection({ skills }) {
             ))}
           </div>
 
-          {/* ── RIGHT: radar chart ── */}
+          {/* ── RIGHT: glassmorphism radar panel ── */}
           <div className="radar-wrap">
-            <p className="skill-group__title" style={{ marginBottom: 'var(--s5)' }}>
+            <p
+              className="skill-group__title"
+              style={{ marginBottom: 'var(--s5)' }}
+            >
               Category Overview
             </p>
             <SkillRadarChart
-              data={radarData}                                // Category averages
+              data={radarData}                                // Category averages array
               height={300}
             />
           </div>
@@ -144,14 +148,14 @@ export default function SkillsSection({ skills }) {
 
 /**
  * Builds radar chart data from grouped skills.
- * Calculates average score per category.
+ * Calculates average score per category for the radar axes.
  * @param {object} grouped - { category: skill[] }
  * @returns {{ category: string, avg_score: number }[]}
  */
 function buildRadarData(grouped = {}) {
   return Object.entries(grouped).map(([category, skillsList]) => ({
-    category,                                                 // Category name for axis label
-    avg_score: Math.round(                                    // Rounded integer average
+    category,                                                 // Category name for axis
+    avg_score: Math.round(                                    // Integer average score
       skillsList.reduce((sum, s) => sum + s.score, 0) / skillsList.length
     ),
   }));

@@ -1,0 +1,205 @@
+/* ═══════════════════════════════════════════════════════════════
+   ActivitySlider.css — Team Activity Slider Panel
+   Theme-aware: uses CSS variables from index.css
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ── Container ────────────────────────────────────────────────── */
+.activity-slider {
+  position:   relative;
+  overflow:   hidden;
+  padding:    var(--s5) var(--s6);
+  border-radius: var(--r-xl);
+
+  background:              var(--card-bg);
+  backdrop-filter:         blur(28px) saturate(1.6);
+  -webkit-backdrop-filter: blur(28px) saturate(1.6);
+  border:                  1px solid var(--border-subtle);
+  box-shadow:              var(--shadow-card);
+  transition:              background 0.35s ease,
+                           border-color 0.35s ease;
+}
+
+/* Top gloss line */
+.activity-slider::before {
+  content:    '';
+  position:   absolute;
+  top:        0;
+  left:       8%;
+  right:      8%;
+  height:     1px;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.20), transparent);
+  pointer-events: none;
+}
+
+/* ── Panel header ─────────────────────────────────────────────── */
+.activity-slider__header {
+  display:         flex;
+  align-items:     center;
+  gap:             var(--s3);
+  margin-bottom:   var(--s4);
+  position:        relative;
+  z-index:         1;
+}
+
+.activity-slider__title {
+  font-family:    var(--font-display);
+  font-size:      0.96rem;
+  font-weight:    700;
+  color:          var(--text-white);
+  letter-spacing: -0.01em;
+  flex:           1;                                         /* Push nav to center */
+  transition:     color 0.35s ease;
+}
+
+.activity-slider__menu {
+  font-size:     0.9rem;
+  color:         var(--text-muted);
+  cursor:        pointer;
+  padding:       2px 6px;
+  border-radius: var(--r-sm);
+  background:    transparent;
+  border:        none;
+  transition:    background var(--t-fast), color var(--t-fast);
+  margin-left:   auto;                                       /* Push to far right */
+}
+
+.activity-slider__menu:hover {
+  background: var(--glass-medium);
+  color:      var(--text-primary);
+}
+
+/* ── Navigation group ─────────────────────────────────────────── */
+.activity-slider__nav {
+  display:     flex;
+  align-items: center;
+  gap:         var(--s2);
+}
+
+/* Prev / Next arrow buttons */
+.slider-nav-btn {
+  width:           28px;
+  height:          28px;
+  border-radius:   50%;
+  background:      var(--glass-light);
+  border:          1px solid var(--border-subtle);
+  display:         flex;
+  align-items:     center;
+  justify-content: center;
+  font-size:       0.90rem;
+  color:           var(--text-secondary);
+  cursor:          pointer;
+  transition:      all var(--t-fast);
+  line-height:     1;
+  flex-shrink:     0;
+}
+
+.slider-nav-btn:hover:not(:disabled) {
+  background:   var(--glass-medium);
+  color:        var(--text-primary);
+  border-color: var(--border-medium);
+  box-shadow:   var(--shadow-sm);
+}
+
+.slider-nav-btn:disabled {
+  opacity: 0.40;
+  cursor:  not-allowed;
+}
+
+/* ── Dot indicators ───────────────────────────────────────────── */
+.slider-dots {
+  display:     flex;
+  align-items: center;
+  gap:         5px;
+}
+
+/* Individual dot */
+.slider-dot {
+  width:         7px;
+  height:        7px;
+  border-radius: 50%;
+  background:    var(--border-medium);                       /* Inactive dots: muted */
+  cursor:        pointer;
+  border:        none;
+  padding:       0;
+  transition:    all var(--t-base);
+  flex-shrink:   0;
+}
+
+.slider-dot:hover:not(.slider-dot--active) {
+  background: var(--text-muted);
+  transform:  scale(1.2);
+}
+
+/* Active dot — expands into a pill + uses accent color */
+.slider-dot--active {
+  background:    var(--cyan);
+  width:         20px;                                       /* Wider = pill shape */
+  border-radius: var(--r-full);
+  box-shadow:    0 0 8px var(--cyan-dim);
+}
+
+/* ── Slide content area ───────────────────────────────────────── */
+.activity-slider__content {
+  display:     flex;
+  align-items: center;
+  gap:         var(--s4);
+  min-height:  48px;
+  position:    relative;
+  z-index:     1;
+
+  /* Entrance animation — slides in from right */
+  animation:  slideIn 0.35s cubic-bezier(0.16,1,0.3,1) both;
+}
+
+/* Fade-out state during transition */
+.activity-slider__content--animating {
+  animation: slideIn 0.35s cubic-bezier(0.16,1,0.3,1) both reverse;
+}
+
+/* Slide entrance animation */
+@keyframes slideIn {
+  from {
+    opacity:   0;
+    transform: translateX(16px);
+  }
+  to {
+    opacity:   1;
+    transform: translateX(0);
+  }
+}
+
+/* ── Activity avatar ──────────────────────────────────────────── */
+.activity-slider__avatar {
+  width:           40px;
+  height:          40px;
+  border-radius:   var(--r-md);
+  display:         flex;
+  align-items:     center;
+  justify-content: center;
+  font-family:     var(--font-display);
+  font-size:       0.86rem;
+  font-weight:     700;
+  color:           #fff;
+  flex-shrink:     0;
+  box-shadow:      0 4px 12px rgba(0,0,0,0.20);
+}
+
+/* ── Activity text description ────────────────────────────────── */
+.activity-slider__text {
+  font-size:   0.86rem;
+  color:       var(--text-primary);
+  line-height: 1.5;
+  flex:        1;
+  transition:  color 0.35s ease;
+}
+
+/* ── Timestamp ────────────────────────────────────────────────── */
+.activity-slider__time {
+  font-family:    var(--font-mono);
+  font-size:      0.62rem;
+  color:          var(--text-muted);
+  letter-spacing: 0.04em;
+  white-space:    nowrap;
+  flex-shrink:    0;
+  transition:     color 0.35s ease;
+}

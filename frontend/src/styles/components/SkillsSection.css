@@ -1,16 +1,17 @@
-/* ═══════════════════════════════════════════════════
+/* ═══════════════════════════════════════════════════════════════
    SkillsSection.css — Skills Bars + Radar Layout
-   ═══════════════════════════════════════════════════ */
+   Glassmorphism radar panel · Animated fill bars · Category titles
+   ═══════════════════════════════════════════════════════════════ */
 
-/* ── Two-column layout ────────────────────────────── */
+/* ── Two-column layout ────────────────────────────────────────── */
 .skills-layout {
-  display:     grid;
-  grid-template-columns: 1.2fr 1fr;  /* Bars wider than radar */
-  gap:         var(--s10);
-  align-items: start;
+  display:               grid;
+  grid-template-columns: 1.2fr 1fr;                         /* Bars wider than radar */
+  gap:                   var(--s10);
+  align-items:           start;
 }
 
-/* ── Skill groups column ──────────────────────────── */
+/* ── Skill groups column ──────────────────────────────────────── */
 .skill-groups {
   display:        flex;
   flex-direction: column;
@@ -20,7 +21,7 @@
 /* Category group title */
 .skill-group__title {
   font-family:    var(--font-mono);
-  font-size:      0.65rem;
+  font-size:      0.62rem;
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color:          var(--cyan);
@@ -30,36 +31,143 @@
   gap:            var(--s2);
 }
 
-/* Title left accent line */
+/* Left accent line before title */
 .skill-group__title::before {
   content:    '';
   width:      20px;
   height:     1px;
   background: var(--cyan);
-  opacity:    0.5;
+  opacity:    0.55;
   flex-shrink:0;
 }
 
-/* ── Radar chart wrapper ──────────────────────────── */
-.radar-wrap {
-  background:    rgba(13, 17, 32, 0.6);
-  border:        1px solid var(--border-subtle);
-  border-radius: var(--r-xl);
-  padding:       var(--s6);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  position:      sticky;
-  top:           calc(var(--topbar-height) + var(--s4));  /* Stick below topbar */
+/* ── Skill bar row ────────────────────────────────────────────── */
+.skill-row {
+  display:       flex;
+  align-items:   center;
+  gap:           var(--s3);
+  margin-bottom: var(--s3);
 }
 
-/* ── Responsive ───────────────────────────────────── */
+.skill-row:last-child { margin-bottom: 0; }
+
+/* Skill name label */
+.skill-row__name {
+  font-size:     0.82rem;
+  font-weight:   500;
+  color:         var(--text-primary);
+  min-width:     110px;
+  white-space:   nowrap;
+  overflow:      hidden;
+  text-overflow: ellipsis;
+}
+
+/* Bar track */
+.skill-row__track {
+  flex:          1;
+  height:        4px;
+  background:    rgba(255, 255, 255, 0.07);
+  border-radius: var(--r-full);
+  overflow:      hidden;
+}
+
+/* Animated fill bar — starts at scaleX(0), IntersectionObserver sets to scaleX(1) */
+.skill-row__fill {
+  height:           100%;
+  border-radius:    var(--r-full);
+  transform:        scaleX(0);
+  transform-origin: left;
+  transition:       transform 1.4s cubic-bezier(0.16, 1, 0.3, 1);
+  position:         relative;
+}
+
+/* Glowing tip dot at end of bar */
+.skill-row__fill::after {
+  content:       '';
+  position:      absolute;
+  right:         -3px;
+  top:           50%;
+  transform:     translateY(-50%);
+  width:         8px;
+  height:        8px;
+  border-radius: 50%;
+  background:    inherit;
+  filter:        brightness(1.6);
+  box-shadow:    0 0 8px currentColor;
+}
+
+/* Score percentage label */
+.skill-row__pct {
+  font-family: var(--font-mono);
+  font-size:   0.66rem;
+  color:       var(--text-muted);
+  min-width:   32px;
+  text-align:  right;
+}
+
+/* ── Radar chart wrapper ──────────────────────────────────────── */
+.radar-wrap {
+  position:   relative;
+  overflow:   hidden;
+  border-radius: var(--r-xl);
+  padding:    var(--s6);
+
+  /* Deep glass surface */
+  background:              rgba(14, 20, 40, 0.78);
+  backdrop-filter:         blur(24px) saturate(1.5);
+  -webkit-backdrop-filter: blur(24px) saturate(1.5);
+  border:                  1px solid rgba(255, 255, 255, 0.09);
+  box-shadow:              0 8px 32px rgba(0, 0, 0, 0.40),
+                           0 0 0 1px rgba(255, 255, 255, 0.04),
+                           inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  transition:              border-color 0.25s ease;
+
+  /* Stick below topbar while scrolling */
+  position: sticky;
+  top:      calc(var(--topbar-height) + var(--s4));
+}
+
+/* Top gloss line */
+.radar-wrap::before {
+  content:    '';
+  position:   absolute;
+  top:        0;
+  left:       8%;
+  right:      8%;
+  height:     1px;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.16), transparent);
+  pointer-events: none;
+}
+
+/* Water-droplet texture */
+.radar-wrap::after {
+  content:    '';
+  position:   absolute;
+  inset:      0;
+  background-image:
+    radial-gradient(circle at 20% 25%, rgba(255,255,255,0.030) 1.5px, transparent 1.5px),
+    radial-gradient(circle at 70% 12%, rgba(255,255,255,0.022) 1px,   transparent 1px),
+    radial-gradient(circle at 85% 60%, rgba(255,255,255,0.028) 2px,   transparent 2px),
+    radial-gradient(circle at 35% 75%, rgba(255,255,255,0.018) 1.5px, transparent 1.5px);
+  pointer-events: none;
+  border-radius:  inherit;
+}
+
+.radar-wrap:hover {
+  border-color: rgba(255, 255, 255, 0.14);                  /* Brighten on hover */
+}
+
+/* All content above pseudo-elements */
+.radar-wrap > * { position: relative; z-index: 1; }
+
+/* ── Responsive ───────────────────────────────────────────────── */
 @media (max-width: 900px) {
   .skills-layout {
-    grid-template-columns: 1fr;   /* Stack vertically */
+    grid-template-columns: 1fr;                             /* Stack vertically */
     gap:                   var(--s6);
   }
 
   .radar-wrap {
-    position: static;             /* Un-stick on mobile */
+    position: static;                                       /* Un-stick on mobile */
   }
 }

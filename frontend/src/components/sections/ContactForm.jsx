@@ -1,44 +1,45 @@
 /**
  * ContactForm.jsx — Contact Section with Form and Info Column
  * ─────────────────────────────────────────────────────────
- * Left: contact form with validation and submission feedback
- * Right: email, phone, address, social links from profile
+ * Left: glassmorphism form panel with validation and submission feedback
+ * Right: email, phone, address, social links from profile API
  * Submits to POST /api/feedback via feedbackService.
+ * Panel has gloss line, water-droplet texture, and focus glow on inputs.
  * ─────────────────────────────────────────────────────────
  */
-import { useState }        from 'react';                      // Form state management
-import Button              from '../ui/Button';               // Reusable button component
-import { useProfile }      from '../../hooks/useProfile';    // Profile data for contact info
-import feedbackService     from '../../services/feedbackService'; // Feedback API
-import { SOCIAL_PLATFORMS } from '../../utils/constants';    // Social platforms config
-import '../../styles/components/ContactForm.css';             // Component-specific styles
+import { useState }         from 'react';                    // Form state management
+import Button               from '../ui/Button';             // Reusable button component
+import { useProfile }       from '../../hooks/useProfile';  // Profile data for contact info
+import feedbackService      from '../../services/feedbackService'; // Feedback API calls
+import { SOCIAL_PLATFORMS } from '../../utils/constants';   // Social platforms config
+import '../../styles/components/ContactForm.css';            // Component-specific styles
 
 /**
  * ContactForm — full contact section component.
  * Handles: field state, validation, API submission, success/error feedback.
  */
 export default function ContactForm() {
-  const { profile } = useProfile();                           // Profile for contact info
+  const { profile } = useProfile();                         // Profile for contact info
 
   // ── Form field state ─────────────────────────────────────────────────────
   const [fields, setFields] = useState({
-    name:      '',                                            // Visitor's name
-    email:     '',                                            // Visitor's email
-    company:   '',                                            // Company (optional)
-    job_title: '',                                            // Job title (optional)
-    message:   '',                                            // Message body
+    name:      '',                                          // Visitor's name
+    email:     '',                                          // Visitor's email
+    company:   '',                                          // Company (optional)
+    job_title: '',                                          // Job title (optional)
+    message:   '',                                          // Message body
   });
 
-  const [errors,     setErrors]     = useState({});          // Validation error map
-  const [submitting, setSubmitting] = useState(false);       // True while API call in progress
-  const [submitted,  setSubmitted]  = useState(false);       // True after successful submit
-  const [apiError,   setApiError]   = useState(null);        // Server-side error message
+  const [errors,     setErrors]     = useState({});         // Validation error map
+  const [submitting, setSubmitting] = useState(false);      // True while API call in progress
+  const [submitted,  setSubmitted]  = useState(false);      // True after successful submit
+  const [apiError,   setApiError]   = useState(null);       // Server-side error message
 
   // ── Field change handler ─────────────────────────────────────────────────
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFields(prev => ({ ...prev, [name]: value }));          // Update single field
-    setErrors(prev => ({ ...prev, [name]: '' }));             // Clear field error on change
+    setFields(prev => ({ ...prev, [name]: value }));        // Update single field
+    setErrors(prev => ({ ...prev, [name]: '' }));           // Clear field error on change
   };
 
   // ── Client-side validation ───────────────────────────────────────────────
@@ -66,7 +67,7 @@ export default function ContactForm() {
     const validationErrors = validate();
 
     if (Object.keys(validationErrors).length > 0) {
-      setErrors(validationErrors);                            // Show all validation errors
+      setErrors(validationErrors);                          // Show all validation errors
       return;
     }
 
@@ -74,8 +75,8 @@ export default function ContactForm() {
     setApiError(null);
 
     try {
-      await feedbackService.submitFeedback(fields);           // POST /api/feedback
-      setSubmitted(true);                                     // Show success state
+      await feedbackService.submitFeedback(fields);         // POST /api/feedback
+      setSubmitted(true);                                   // Show success state
       setFields({ name: '', email: '', company: '', job_title: '', message: '' });
     } catch (err) {
       setApiError(err.message || 'Failed to send message. Please try again.');
@@ -110,31 +111,44 @@ export default function ContactForm() {
           ════════════════════════ */}
           {submitted ? (
             /* ── Success state ── */
-            <div style={{
-              display:        'flex',
-              flexDirection:  'column',
-              alignItems:     'center',
-              justifyContent: 'center',
-              textAlign:      'center',
-              padding:        'var(--s12)',
-              background:     'rgba(13, 17, 32, 0.6)',
-              border:         '1px solid var(--border-subtle)',
-              borderRadius:   'var(--r-2xl)',
-              backdropFilter: 'blur(16px)',
-            }}>
+            <div
+              style={{
+                display:         'flex',
+                flexDirection:   'column',
+                alignItems:      'center',
+                justifyContent:  'center',
+                textAlign:       'center',
+                padding:         'var(--s12)',
+                position:        'relative',
+                overflow:        'hidden',
+                borderRadius:    'var(--r-2xl)',
+                background:      'rgba(14, 20, 40, 0.80)',
+                backdropFilter:  'blur(24px)',
+                border:          '1px solid rgba(255,255,255,0.09)',
+                boxShadow:       '0 16px 48px rgba(0,0,0,0.45)',
+              }}
+            >
               <p style={{ fontSize: '2.5rem', marginBottom: 'var(--s4)' }}>✅</p>
               <h3 style={{
-                fontFamily:    'var(--font-display)',
-                fontSize:      '1.8rem',
-                marginBottom:  'var(--s2)',
-                color:         'var(--text-white)',
+                fontFamily:   'var(--font-display)',
+                fontSize:     '1.8rem',
+                marginBottom: 'var(--s2)',
+                color:        'var(--text-white)',
               }}>
                 Message Sent!
               </h3>
-              <p style={{ color: 'var(--text-secondary)', marginBottom: 'var(--s6)', fontSize: '0.88rem' }}>
+              <p style={{
+                color:        'var(--text-secondary)',
+                marginBottom: 'var(--s6)',
+                fontSize:     '0.88rem',
+              }}>
                 I'll get back to you as soon as possible.
               </p>
-              <Button variant="ghost" size="sm" onClick={() => setSubmitted(false)}>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setSubmitted(false)}           // Reset to form
+              >
                 Send Another
               </Button>
             </div>
@@ -144,8 +158,8 @@ export default function ContactForm() {
               {/* API-level error banner */}
               {apiError && (
                 <div style={{
-                  background:   'rgba(240,98,146,0.1)',
-                  border:       '1px solid rgba(240,98,146,0.3)',
+                  background:   'rgba(240, 98, 146, 0.10)',
+                  border:       '1px solid rgba(240, 98, 146, 0.30)',
                   borderRadius: 'var(--r-md)',
                   padding:      'var(--s3) var(--s4)',
                   color:        '#F06292',
@@ -215,7 +229,11 @@ export default function ContactForm() {
                   style={errors.message ? { borderColor: '#F06292' } : {}}
                 />
                 {errors.message && (
-                  <span style={{ color: '#F06292', fontSize: '0.72rem', marginTop: 'var(--s1)' }}>
+                  <span style={{
+                    color:     '#F06292',
+                    fontSize:  '0.72rem',
+                    marginTop: 'var(--s1)',
+                  }}>
                     {errors.message}
                   </span>
                 )}
@@ -278,6 +296,7 @@ export default function ContactForm() {
                     target="_blank"
                     rel="noopener noreferrer"
                     className="soc-btn"
+                    aria-label={`Visit ${platform.label} profile`}
                   >
                     {platform.icon} {platform.label}
                   </a>
@@ -292,7 +311,8 @@ export default function ContactForm() {
 }
 
 /**
- * FormField — labeled input with optional error message.
+ * FormField — labeled input with optional validation error message.
+ * @param {{ label, name, type, placeholder, value, error, onChange }} props
  */
 function FormField({ label, name, type, placeholder, value, error, onChange }) {
   return (
@@ -305,10 +325,14 @@ function FormField({ label, name, type, placeholder, value, error, onChange }) {
         className="form-group__input"
         value={value}
         onChange={onChange}
-        style={error ? { borderColor: '#F06292' } : {}}      // Red border on error
+        style={error ? { borderColor: '#F06292' } : {}}    // Red border on validation error
       />
       {error && (
-        <span style={{ color: '#F06292', fontSize: '0.72rem', marginTop: 'var(--s1)' }}>
+        <span style={{
+          color:     '#F06292',
+          fontSize:  '0.72rem',
+          marginTop: 'var(--s1)',
+        }}>
           {error}
         </span>
       )}
@@ -317,12 +341,13 @@ function FormField({ label, name, type, placeholder, value, error, onChange }) {
 }
 
 /**
- * ContactInfoItem — single contact detail row with icon.
+ * ContactInfoItem — single contact detail row with icon and glassmorphism card.
+ * @param {{ icon, label, value, href }} props
  */
 function ContactInfoItem({ icon, label, value, href }) {
   return (
     <div className="ci-item">
-      <div className="ci-item__icon">{icon}</div>
+      <div className="ci-item__icon" aria-hidden="true">{icon}</div>
       <div>
         <p className="ci-item__label">{label}</p>
         {href

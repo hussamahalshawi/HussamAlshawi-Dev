@@ -3,24 +3,26 @@
  * ─────────────────────────────────────────────────────────
  * Devoryn-style dashboard shell:
  * - Fixed frosted-glass sidebar with nav items + user card
- * - Sticky glass topbar with greeting, notification bell, user pill
+ * - Sticky glass topbar with greeting, theme toggle, notification bell, user pill
  * - Scrollable main content area
+ * - Fully theme-aware: reads from ThemeContext for dark/light
  * ─────────────────────────────────────────────────────────
  */
 import { useState }      from 'react';
-import { useProfile }    from '../../hooks/useProfile';
-import { getInitials }   from '../../utils/formatters';
-import '../../styles/layout/DashboardLayout.css';
+import { useProfile }    from '../../hooks/useProfile';      // Profile data for avatar/name
+import { useTheme }      from '../../context/ThemeContext';  // Dark/light mode context
+import { getInitials }   from '../../utils/formatters';      // Formats name → "HA"
+import '../../styles/layout/DashboardLayout.css';            // Component layout styles
 
 /** Navigation items — id must match each <section id="..."> */
 const NAV_ITEMS = [
-  { label: 'Dashboard',   href: '#overview',    icon: '⊞', id: 'overview'   },
-  { label: 'Analytics',   href: '#analytics',   icon: '↗', id: 'analytics'  },
-  { label: 'Skills',      href: '#skills',       icon: '◎', id: 'skills'     },
-  { label: 'Projects',    href: '#projects',     icon: '⊡', id: 'projects'   },
-  { label: 'Experience',  href: '#experience',   icon: '⊛', id: 'experience' },
-  { label: 'Goals',       href: '#goals',        icon: '◈', id: 'goals'      },
-  { label: 'Contact',     href: '#contact',      icon: '✉', id: 'contact'    },
+  { label: 'Dashboard',  href: '#overview',   icon: '⊞', id: 'overview'   },
+  { label: 'Analytics',  href: '#analytics',  icon: '↗', id: 'analytics'  },
+  { label: 'Skills',     href: '#skills',     icon: '◎', id: 'skills'     },
+  { label: 'Projects',   href: '#projects',   icon: '⊡', id: 'projects'   },
+  { label: 'Experience', href: '#experience', icon: '⊛', id: 'experience' },
+  { label: 'Goals',      href: '#goals',      icon: '◈', id: 'goals'      },
+  { label: 'Contact',    href: '#contact',    icon: '✉', id: 'contact'    },
 ];
 
 /**
@@ -30,30 +32,33 @@ const NAV_ITEMS = [
  * @param {object|null}     props.profile        - Profile data from API
  */
 export default function DashboardLayout({ children, activeSection = '', profile }) {
-  const [sidebarOpen, setSidebarOpen] = useState(false); // Mobile sidebar state
+  const [sidebarOpen, setSidebarOpen] = useState(false);  // Mobile sidebar open state
 
-  /* Safe display values with fallbacks */
-  const fullName  = profile?.full_name  || 'Hussam Alshawi';
-  const firstName = fullName.split(' ')[0];
-  const initials  = getInitials(fullName);
-  const title     = profile?.title      || 'Full Stack Developer';
-  const avatar    = profile?.primary_avatar || null;
-  const available = profile?.is_available_for_hire || false;
+  /* ── Theme context ────────────────────────────────────────────── */
+  const { isDark, toggleTheme } = useTheme();             // Read theme state + toggle fn
 
-  /** Close sidebar on link click (mobile) */
+  /* ── Safe display values with fallbacks ──────────────────────── */
+  const fullName  = profile?.full_name      || 'Hussam Alshawi';
+  const firstName = fullName.split(' ')[0];               // Extract first name for greeting
+  const initials  = getInitials(fullName);                // "HA" format for avatars
+  const title     = profile?.title          || 'Full Stack Developer';
+  const avatar    = profile?.primary_avatar || null;      // Cloudinary URL or null
+  const available = profile?.is_available_for_hire || false; // Hire status
+
+  /** Close sidebar when nav link is clicked on mobile */
   const closeOnMobile = () => setSidebarOpen(false);
 
   return (
     <div className="dashboard-root">
 
       {/* ══════════════════════════════════════════════
-          SIDEBAR — Fixed frosted glass navigation panel
+          SIDEBAR — Fixed frosted glass panel
       ══════════════════════════════════════════════ */}
       <aside
         className={`sidebar ${sidebarOpen ? 'sidebar--open' : ''}`}
         aria-label="Sidebar navigation"
       >
-        {/* Water-droplet texture overlay (purely visual) */}
+        {/* Decorative water-droplet texture (visual only) */}
         <div className="sidebar__texture" aria-hidden="true" />
 
         {/* ── Logo ── */}
@@ -63,17 +68,14 @@ export default function DashboardLayout({ children, activeSection = '', profile 
           onClick={closeOnMobile}
           aria-label="Go to dashboard overview"
         >
-          {/* Brand square with gradient */}
           <div className="sidebar__logo-mark" aria-hidden="true">HA</div>
           <span className="sidebar__logo-text">
             HA<em>.</em>Dev
           </span>
         </a>
 
-        {/* ── Nav label ── */}
-        <span className="sidebar__nav-label" aria-hidden="true">
-          Menu
-        </span>
+        {/* ── Section label above nav ── */}
+        <span className="sidebar__nav-label" aria-hidden="true">Menu</span>
 
         {/* ── Navigation links ── */}
         <nav
@@ -82,7 +84,7 @@ export default function DashboardLayout({ children, activeSection = '', profile 
           aria-label="Portfolio sections"
         >
           {NAV_ITEMS.map(item => {
-            const isActive = activeSection === item.id;
+            const isActive = activeSection === item.id;   // Is this the visible section?
             return (
               <a
                 key={item.id}
@@ -91,25 +93,21 @@ export default function DashboardLayout({ children, activeSection = '', profile 
                 onClick={closeOnMobile}
                 aria-current={isActive ? 'page' : undefined}
               >
-                {/* Icon */}
-                <span className="nav-item__icon" aria-hidden="true">
-                  {item.icon}
-                </span>
-                {/* Label */}
+                <span className="nav-item__icon" aria-hidden="true">{item.icon}</span>
                 <span className="nav-item__label">{item.label}</span>
               </a>
             );
           })}
         </nav>
 
-        {/* ── User card (bottom of sidebar) ── */}
+        {/* ── User card at bottom of sidebar ── */}
         <div className="sidebar__user">
           <div
             className="sidebar__user-card"
             role="complementary"
             aria-label="Signed-in user"
           >
-            {/* Avatar */}
+            {/* Avatar — shows image or initials fallback */}
             <div className="sidebar__avatar">
               {avatar
                 ? <img src={avatar} alt={`${fullName} avatar`} />
@@ -117,7 +115,7 @@ export default function DashboardLayout({ children, activeSection = '', profile 
               }
             </div>
 
-            {/* Name + role */}
+            {/* Name and role text */}
             <div className="sidebar__user-info">
               <div className="sidebar__user-name">{fullName}</div>
               <div className="sidebar__user-role">
@@ -125,7 +123,7 @@ export default function DashboardLayout({ children, activeSection = '', profile 
               </div>
             </div>
 
-            {/* Live green dot */}
+            {/* Pulsing green dot — online indicator */}
             <div
               className="sidebar__online-dot"
               title="Active"
@@ -136,14 +134,14 @@ export default function DashboardLayout({ children, activeSection = '', profile 
       </aside>
 
       {/* ══════════════════════════════════════════════
-          MAIN — Topbar + scrollable page content
+          MAIN CONTENT — Topbar + scrollable sections
       ══════════════════════════════════════════════ */}
       <div className="dashboard-main">
 
         {/* ── Sticky Topbar ── */}
         <header className="topbar" role="banner">
 
-          {/* Left: personal greeting */}
+          {/* Left side: personal greeting */}
           <div className="topbar__greeting" aria-live="polite">
             <div className="topbar__greeting-hi">
               Hi, {firstName}! 👋
@@ -153,24 +151,47 @@ export default function DashboardLayout({ children, activeSection = '', profile 
             </div>
           </div>
 
-          {/* Right: actions */}
+          {/* Right side: action buttons */}
           <div className="topbar__actions">
 
-            {/* Notification bell with live dot */}
+            {/* ── Theme Toggle — dark/light switch ── */}
+            <div
+              className="topbar__theme-toggle"
+              role="group"
+              aria-label="Theme switcher"
+            >
+              {/* Dark mode button */}
+              <button
+                className={`theme-btn ${isDark ? 'theme-btn--active' : ''}`}
+                onClick={() => !isDark && toggleTheme()}   // Only toggle if not already dark
+                aria-pressed={isDark}
+                title="Dark mode"
+              >
+                🌙
+              </button>
+
+              {/* Light mode button */}
+              <button
+                className={`theme-btn ${!isDark ? 'theme-btn--active' : ''}`}
+                onClick={() => isDark && toggleTheme()}    // Only toggle if not already light
+                aria-pressed={!isDark}
+                title="Light mode"
+              >
+                ☀️
+              </button>
+            </div>
+
+            {/* Notification bell with cyan dot */}
             <button
               className="topbar__icon-btn"
               aria-label="Notifications"
               title="Notifications"
             >
               🔔
-              {/* Cyan dot indicating new items */}
-              <span
-                className="topbar__notif-dot"
-                aria-hidden="true"
-              />
+              <span className="topbar__notif-dot" aria-hidden="true" />
             </button>
 
-            {/* Settings */}
+            {/* Settings button */}
             <button
               className="topbar__icon-btn"
               aria-label="Settings"
@@ -179,7 +200,7 @@ export default function DashboardLayout({ children, activeSection = '', profile 
               ⚙
             </button>
 
-            {/* User pill */}
+            {/* User pill — shows avatar + full name */}
             <div
               className="topbar__user"
               role="button"
@@ -187,22 +208,14 @@ export default function DashboardLayout({ children, activeSection = '', profile 
               aria-label="User menu"
               aria-haspopup="true"
             >
-              {/* Mini avatar */}
               <div className="topbar__user-avatar">
                 {avatar
                   ? <img src={avatar} alt="Profile" />
                   : <span>{initials}</span>
                 }
               </div>
-              {/* Name */}
               <span className="topbar__user-name">{fullName}</span>
-              {/* Chevron */}
-              <span
-                className="topbar__user-chevron"
-                aria-hidden="true"
-              >
-                ▾
-              </span>
+              <span className="topbar__user-chevron" aria-hidden="true">▾</span>
             </div>
 
             {/* Mobile hamburger — CSS shows only on small screens */}
@@ -218,7 +231,7 @@ export default function DashboardLayout({ children, activeSection = '', profile 
           </div>
         </header>
 
-        {/* ── Page sections ── */}
+        {/* ── Page sections (children from Home.jsx) ── */}
         <main
           className="page-content"
           id="main-content"
@@ -229,7 +242,7 @@ export default function DashboardLayout({ children, activeSection = '', profile 
         </main>
       </div>
 
-      {/* Mobile backdrop — closes sidebar on tap */}
+      {/* Mobile overlay — tapping it closes the sidebar */}
       {sidebarOpen && (
         <div
           className="sidebar-overlay"

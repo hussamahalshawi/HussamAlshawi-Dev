@@ -3,11 +3,12 @@
  * ─────────────────────────────────────────────────────────
  * Displays goal cards with progress bars, status badges,
  * and required skills match indicators.
- * Data is fetched internally from the goals API (not passed as prop).
+ * Glassmorphism cards with gloss lines, water-droplet
+ * texture, hover lift, and reveal bottom bar.
+ * Data fetched internally via goalsService.
  * ─────────────────────────────────────────────────────────
  */
 import { useState, useEffect }  from 'react';                 // State and lifecycle hooks
-import Card                     from '../ui/Card';            // Reusable card wrapper
 import Badge                    from '../ui/Badge';           // Status / priority badge
 import { SkeletonCardGrid }     from '../ui/SkeletonLoader';  // Loading skeleton
 import goalsService             from '../../services/goalsService'; // Goals API calls
@@ -53,7 +54,7 @@ export default function GoalsSection() {
             <span className="s-tag">Career Roadmap</span>
             <h2 className="s-title">Goals</h2>
           </div>
-          <SkeletonCardGrid count={4} height="220px" />
+          <SkeletonCardGrid count={4} height="240px" />
         </div>
       </section>
     );
@@ -64,13 +65,19 @@ export default function GoalsSection() {
     return (
       <section id="goals" className="section section--alt">
         <div className="container">
-          <p style={{ color: 'var(--text-muted)' }}>Goals data unavailable.</p>
+          <p style={{
+            color:      'var(--text-muted)',
+            fontFamily: 'var(--font-mono)',
+            fontSize:   '0.82rem',
+          }}>
+            Goals data unavailable.
+          </p>
         </div>
       </section>
     );
   }
 
-  const goalsList = goals?.goals || [];                       // Extract goals array
+  const goalsList = goals?.goals || [];                       // Extract goals array safely
 
   return (
     <section id="goals" className="section section--alt">
@@ -87,14 +94,24 @@ export default function GoalsSection() {
 
         {/* ── Goals grid ── */}
         <div className="goals-grid">
-          {goalsList.map(goal => (
-            <GoalCard key={goal.id} goal={goal} />
+          {goalsList.map((goal, index) => (
+            <GoalCard
+              key={goal.id || index}
+              goal={goal}
+              index={index}
+            />
           ))}
         </div>
 
         {/* Empty state */}
         {goalsList.length === 0 && (
-          <p style={{ color: 'var(--text-muted)', textAlign: 'center', padding: '3rem 0' }}>
+          <p style={{
+            color:      'var(--text-muted)',
+            textAlign:  'center',
+            padding:    '3rem 0',
+            fontFamily: 'var(--font-mono)',
+            fontSize:   '0.82rem',
+          }}>
             No goals configured yet.
           </p>
         )}
@@ -104,22 +121,22 @@ export default function GoalsSection() {
 }
 
 /**
- * GoalCard — renders a single goal card with progress bar and badges.
- * @param {{ goal: object }} props
+ * GoalCard — renders a single glassmorphism goal card.
+ * Includes gloss line, texture, hover lift, and reveal bar.
+ * @param {{ goal: object, index: number }} props
  */
-function GoalCard({ goal }) {
+function GoalCard({ goal, index }) {
   return (
-    <Card interactive className="goal-card">
+    <div
+      className="goal-card"
+      style={{ animation: `fadeUp 0.45s ease ${index * 70}ms both` }} // Stagger entrance
+    >
+      {/* Reveal bottom bar — shown on hover via CSS */}
+      <div className="goal-card__bar-reveal" aria-hidden="true" />
 
       {/* ── Header row: name + priority badge ── */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 'var(--s3)' }}>
-        <h3 style={{
-          fontFamily:    'var(--font-display)',
-          fontSize:      '1.2rem',
-          letterSpacing: '0.02em',
-          lineHeight:    1.1,
-          color:         'var(--text-white)',
-        }}>
+      <div className="goal-card__header">
+        <h3 className="goal-card__name">
           {goal.goal_name}
         </h3>
         {goal.priority && (
@@ -134,14 +151,12 @@ function GoalCard({ goal }) {
 
       {/* Sub-title */}
       {goal.sub_title && (
-        <p style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', marginBottom: 'var(--s3)', lineHeight: 1.6 }}>
-          {goal.sub_title}
-        </p>
+        <p className="goal-card__sub">{goal.sub_title}</p>
       )}
 
       {/* ── Status badge ── */}
       {goal.status && (
-        <div style={{ marginBottom: 'var(--s4)' }}>
+        <div style={{ marginBottom: 'var(--s2)' }}>
           <Badge
             label={goal.status}
             bg={goal.status_style?.bg}                        // API-provided colour tokens
@@ -152,22 +167,16 @@ function GoalCard({ goal }) {
       )}
 
       {/* ── Progress bar ── */}
-      <div style={{ marginBottom: 'var(--s4)' }}>
-        {/* Progress header row */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 'var(--s2)' }}>
-          <span style={{ fontSize: '0.70rem', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)', letterSpacing: '0.08em' }}>
-            PROGRESS
-          </span>
-          <span style={{
-            fontFamily:  'var(--font-mono)',
-            fontSize:    '0.72rem',
-            color:       'var(--cyan)',
-            fontWeight:  700,
-          }}>
+      <div>
+        {/* Progress label row */}
+        <div className="goal-card__progress-header">
+          <span className="goal-card__progress-label">Progress</span>
+          <span className="goal-card__progress-pct">
             {goal.progress_pct}%
           </span>
         </div>
-        {/* Track */}
+
+        {/* Track + fill */}
         <div className="goal-card__track">
           <div
             className="goal-card__fill"
@@ -178,26 +187,31 @@ function GoalCard({ goal }) {
 
       {/* ── Target year ── */}
       {goal.target_year && (
-        <p style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginBottom: 'var(--s3)' }}>
+        <p className="goal-card__year">
           Target:{' '}
-          <strong style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-mono)' }}>
-            {goal.target_year}
-          </strong>
+          <strong>{goal.target_year}</strong>
         </p>
       )}
 
       {/* ── Required skills tags ── */}
       {goal.required_skills?.length > 0 && (
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--s1)', marginTop: 'auto', paddingTop: 'var(--s3)' }}>
-          {goal.required_skills.slice(0, 5).map(skill => (    // Max 5 tags
+        <div className="goal-card__tags">
+          {goal.required_skills.slice(0, 5).map(skill => (    // Max 5 tags shown
             <Badge
               key={skill.skill_name}
               label={skill.skill_name}
-              variant={skill.matched ? 'lime' : 'muted'}      // Lime if skill matched
+              variant={skill.matched ? 'lime' : 'muted'}      // Lime = skill matched
             />
           ))}
+          {/* Show overflow count if more than 5 */}
+          {goal.required_skills.length > 5 && (
+            <Badge
+              label={`+${goal.required_skills.length - 5}`}
+              variant="muted"
+            />
+          )}
         </div>
       )}
-    </Card>
+    </div>
   );
 }

@@ -1,36 +1,73 @@
-/* ═══════════════════════════════════════════════════
+/* ═══════════════════════════════════════════════════════════════
    ContactForm.css — Contact Section Layout + Form
-   ═══════════════════════════════════════════════════ */
+   Glassmorphism form panel · Input focus glow · Info items
+   ═══════════════════════════════════════════════════════════════ */
 
-/* ── Two-column contact wrapper ───────────────────── */
+/* ── Two-column contact wrapper ───────────────────────────────── */
 .contact-wrap {
   display:               grid;
-  grid-template-columns: 1.4fr 1fr;    /* Form wider than info */
+  grid-template-columns: 1.4fr 1fr;                         /* Form wider than info */
   gap:                   var(--s10);
   align-items:           start;
 }
 
-/* ── Contact form ─────────────────────────────────── */
+/* ── Contact form panel ───────────────────────────────────────── */
 .contact-form {
   display:        flex;
   flex-direction: column;
   gap:            var(--s5);
-  background:     rgba(13, 17, 32, 0.6);
-  border:         1px solid var(--border-subtle);
+  position:       relative;
+  overflow:       hidden;
   border-radius:  var(--r-2xl);
   padding:        var(--s8);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
+
+  /* Deep glass surface */
+  background:              rgba(14, 20, 40, 0.80);
+  backdrop-filter:         blur(24px) saturate(1.5);
+  -webkit-backdrop-filter: blur(24px) saturate(1.5);
+  border:                  1px solid rgba(255, 255, 255, 0.09);
+  box-shadow:              0 16px 48px rgba(0, 0, 0, 0.45),
+                           0 0 0 1px rgba(255, 255, 255, 0.04),
+                           inset 0 1px 0 rgba(255, 255, 255, 0.07);
 }
 
-/* ── Form row (two inputs side by side) ───────────── */
+/* Top gloss line */
+.contact-form::before {
+  content:    '';
+  position:   absolute;
+  top:        0;
+  left:       8%;
+  right:      8%;
+  height:     1px;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.18), transparent);
+  pointer-events: none;
+}
+
+/* Water-droplet texture */
+.contact-form::after {
+  content:    '';
+  position:   absolute;
+  inset:      0;
+  background-image:
+    radial-gradient(circle at 18% 22%, rgba(255,255,255,0.028) 1.5px, transparent 1.5px),
+    radial-gradient(circle at 74% 14%, rgba(255,255,255,0.020) 1px,   transparent 1px),
+    radial-gradient(circle at 82% 64%, rgba(255,255,255,0.026) 2px,   transparent 2px),
+    radial-gradient(circle at 32% 78%, rgba(255,255,255,0.016) 1.5px, transparent 1.5px);
+  pointer-events: none;
+  border-radius:  inherit;
+}
+
+/* Ensure all form content sits above pseudo-elements */
+.contact-form > * { position: relative; z-index: 1; }
+
+/* ── Form row (two inputs side by side) ───────────────────────── */
 .form-row {
   display: grid;
-  grid-template-columns: 1fr 1fr;     /* Equal columns */
+  grid-template-columns: 1fr 1fr;                           /* Equal columns */
   gap:     var(--s4);
 }
 
-/* ── Form group ───────────────────────────────────── */
+/* ── Form group ───────────────────────────────────────────────── */
 .form-group {
   display:        flex;
   flex-direction: column;
@@ -40,7 +77,7 @@
 /* Field label */
 .form-group__label {
   font-family:    var(--font-mono);
-  font-size:      0.62rem;
+  font-size:      0.60rem;
   font-weight:    500;
   letter-spacing: 0.12em;
   text-transform: uppercase;
@@ -49,21 +86,21 @@
 
 /* Input field */
 .form-group__input {
-  background:    rgba(255,255,255,0.04);
+  background:    rgba(255, 255, 255, 0.04);
   border:        1px solid var(--border-subtle);
   border-radius: var(--r-md);
   padding:       var(--s3) var(--s4);
   color:         var(--text-primary);
   font-family:   var(--font-body);
   font-size:     0.88rem;
-  transition:    all var(--t-base);
+  transition:    all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
   width:         100%;
 }
 
 .form-group__input:focus {
-  border-color: rgba(79,195,247,0.4);
-  background:   rgba(79,195,247,0.04);
-  box-shadow:   0 0 0 3px rgba(79,195,247,0.08);
+  border-color: rgba(79, 195, 247, 0.45);                   /* Cyan focus ring */
+  background:   rgba(79, 195, 247, 0.05);
+  box-shadow:   0 0 0 3px rgba(79, 195, 247, 0.10);
   outline:      none;
 }
 
@@ -73,24 +110,24 @@
 
 /* Textarea */
 .form-group__textarea {
-  background:    rgba(255,255,255,0.04);
+  background:    rgba(255, 255, 255, 0.04);
   border:        1px solid var(--border-subtle);
   border-radius: var(--r-md);
   padding:       var(--s3) var(--s4);
   color:         var(--text-primary);
   font-family:   var(--font-body);
   font-size:     0.88rem;
-  transition:    all var(--t-base);
+  transition:    all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
   width:         100%;
   resize:        vertical;
-  min-height:    120px;
-  line-height:   1.6;
+  min-height:    130px;
+  line-height:   1.65;
 }
 
 .form-group__textarea:focus {
-  border-color: rgba(79,195,247,0.4);
-  background:   rgba(79,195,247,0.04);
-  box-shadow:   0 0 0 3px rgba(79,195,247,0.08);
+  border-color: rgba(79, 195, 247, 0.45);
+  background:   rgba(79, 195, 247, 0.05);
+  box-shadow:   0 0 0 3px rgba(79, 195, 247, 0.10);
   outline:      none;
 }
 
@@ -98,28 +135,47 @@
   color: var(--text-muted);
 }
 
-/* ── Contact info column ──────────────────────────── */
+/* ── Contact info column ──────────────────────────────────────── */
 .contact-info {
   display:        flex;
   flex-direction: column;
-  gap:            var(--s5);
+  gap:            var(--s4);
 }
 
 /* Individual info item */
 .ci-item {
-  display:     flex;
-  align-items: flex-start;
-  gap:         var(--s4);
-  padding:     var(--s4) var(--s5);
-  background:  rgba(13, 17, 32, 0.5);
-  border:      1px solid var(--border-subtle);
+  display:       flex;
+  align-items:   flex-start;
+  gap:           var(--s4);
+  padding:       var(--s4) var(--s5);
+  position:      relative;
+  overflow:      hidden;
   border-radius: var(--r-lg);
-  transition:  all var(--t-base);
+
+  /* Glass card */
+  background:    rgba(14, 20, 40, 0.60);
+  border:        1px solid rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  transition:    border-color 0.22s ease,
+                 background   0.22s ease;
+}
+
+/* Top gloss on info item */
+.ci-item::before {
+  content:    '';
+  position:   absolute;
+  top:        0;
+  left:       8%;
+  right:      8%;
+  height:     1px;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.10), transparent);
+  pointer-events: none;
 }
 
 .ci-item:hover {
-  border-color: var(--border-medium);
-  background:   var(--glass-light);
+  border-color: rgba(255, 255, 255, 0.14);
+  background:   rgba(14, 20, 40, 0.78);
 }
 
 /* Info icon */
@@ -132,8 +188,8 @@
 /* Info label */
 .ci-item__label {
   font-family:    var(--font-mono);
-  font-size:      0.62rem;
-  letter-spacing: 0.10em;
+  font-size:      0.58rem;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
   color:          var(--text-muted);
   margin-bottom:  var(--s1);
@@ -144,57 +200,61 @@
   font-size:   0.88rem;
   color:       var(--text-primary);
   font-weight: 500;
-  transition:  color var(--t-fast);
+  transition:  color 0.18s ease;
+  line-height: 1.5;
 }
 
-.ci-item a.ci-item__value:hover {
+/* Link version on hover */
+a.ci-item__value:hover {
   color: var(--cyan);
 }
 
-/* ── Social buttons row ───────────────────────────── */
+/* ── Social buttons row ───────────────────────────────────────── */
 .socials-row {
   display:   flex;
   flex-wrap: wrap;
   gap:       var(--s2);
+  margin-top:var(--s1);
 }
 
-/* Social button */
+/* Social pill button */
 .soc-btn {
-  display:       flex;
-  align-items:   center;
-  gap:           var(--s2);
-  padding:       var(--s2) var(--s4);
-  background:    var(--glass-light);
-  border:        1px solid var(--border-subtle);
-  border-radius: var(--r-full);
-  font-size:     0.78rem;
-  font-weight:   500;
-  color:         var(--text-secondary);
+  display:         flex;
+  align-items:     center;
+  gap:             var(--s2);
+  padding:         var(--s2) var(--s4);
+  background:      rgba(255, 255, 255, 0.05);
+  border:          1px solid rgba(255, 255, 255, 0.09);
+  border-radius:   var(--r-full);
+  font-size:       0.78rem;
+  font-weight:     500;
+  color:           var(--text-secondary);
   text-decoration: none;
-  transition:    all var(--t-base);
+  transition:      all 0.22s ease;
+  backdrop-filter: blur(8px);
 }
 
 .soc-btn:hover {
-  background:   var(--cyan-glow);
-  border-color: rgba(79,195,247,0.3);
+  background:   rgba(79, 195, 247, 0.10);                   /* Cyan tint on hover */
+  border-color: rgba(79, 195, 247, 0.30);
   color:        var(--cyan);
   transform:    translateY(-1px);
 }
 
-/* ── Responsive ───────────────────────────────────── */
+/* ── Responsive ───────────────────────────────────────────────── */
 @media (max-width: 900px) {
   .contact-wrap {
-    grid-template-columns: 1fr;    /* Stack on tablet */
+    grid-template-columns: 1fr;                             /* Stack on tablet */
     gap:                   var(--s6);
   }
 }
 
 @media (max-width: 600px) {
   .form-row {
-    grid-template-columns: 1fr;   /* Stack inputs on mobile */
+    grid-template-columns: 1fr;                             /* Stack inputs on mobile */
   }
 
   .contact-form {
-    padding: var(--s5);
+    padding: var(--s5);                                     /* Tighter padding */
   }
 }
