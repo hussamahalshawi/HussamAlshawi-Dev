@@ -1,0 +1,244 @@
+/* ═══════════════════════════════════════════════════════════════
+   PerformanceChart.css — Performance Metrics Panel
+   Theme-aware: uses CSS variables from index.css
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ── Outer container ──────────────────────────────────────────── */
+.perf-chart {
+  position:   relative;
+  overflow:   hidden;
+  padding:    var(--s5) var(--s6);
+  border-radius: var(--r-xl);
+
+  background:              var(--card-bg);                  /* Theme-aware background */
+  backdrop-filter:         blur(28px) saturate(1.6);
+  -webkit-backdrop-filter: blur(28px) saturate(1.6);
+  border:                  1px solid var(--border-subtle);
+  box-shadow:              var(--shadow-card);
+  transition:              background 0.35s ease,
+                           border-color 0.35s ease;
+}
+
+/* Top gloss line */
+.perf-chart::before {
+  content:    '';
+  position:   absolute;
+  top:        0;
+  left:       8%;
+  right:      8%;
+  height:     1px;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.20), transparent);
+  pointer-events: none;
+}
+
+/* ── Panel header ─────────────────────────────────────────────── */
+.perf-chart__header {
+  display:         flex;
+  align-items:     center;
+  justify-content: space-between;
+  margin-bottom:   var(--s4);
+  position:        relative;
+  z-index:         1;                                        /* Above drop decorations */
+}
+
+.perf-chart__title {
+  font-family:    var(--font-display);
+  font-size:      0.96rem;
+  font-weight:    700;
+  color:          var(--text-white);                         /* Inverted in light mode */
+  letter-spacing: -0.01em;
+  transition:     color 0.35s ease;
+}
+
+/* Three-dot menu button */
+.perf-chart__menu {
+  font-size:     0.9rem;
+  color:         var(--text-muted);
+  cursor:        pointer;
+  padding:       2px 6px;
+  border-radius: var(--r-sm);
+  transition:    background var(--t-fast), color var(--t-fast);
+  background:    transparent;
+  border:        none;
+  font-family:   var(--font-body);
+}
+
+.perf-chart__menu:hover {
+  background: var(--glass-medium);
+  color:      var(--text-primary);
+}
+
+/* ── Water drop decorations ───────────────────────────────────── */
+.perf-chart__drops {
+  position:       absolute;
+  inset:          0;
+  pointer-events: none;
+  overflow:       hidden;
+  border-radius:  inherit;
+  z-index:        0;
+}
+
+/* Base drop style */
+.drop {
+  position:      absolute;
+  border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+  background:    rgba(255,255,255,0.18);
+  border:        1px solid rgba(255,255,255,0.35);
+  backdrop-filter: blur(4px);
+  animation:     dropFall 2.2s ease forwards;
+}
+
+/* Individual drop positions and sizes */
+.drop--1 {
+  width:  18px;
+  height: 22px;
+  top:    15%;
+  right:  18%;
+  opacity: 0;
+  animation-delay: 0.3s;
+}
+
+.drop--2 {
+  width:  12px;
+  height: 16px;
+  top:    55%;
+  left:   60%;
+  opacity: 0;
+  animation-delay: 0.7s;
+}
+
+.drop--3 {
+  width:  22px;
+  height: 28px;
+  top:    30%;
+  right:  30%;
+  opacity: 0;
+  animation-delay: 1.0s;
+}
+
+/* Drop fall-in animation */
+@keyframes dropFall {
+  0%   { transform: translateY(-10px) scale(0.8); opacity: 0;    }
+  60%  { transform: translateY(4px)   scale(1.05); opacity: 0.50; }
+  100% { transform: translateY(0)     scale(1);    opacity: 0.40; }
+}
+
+/* ── SVG line chart area ──────────────────────────────────────── */
+.perf-chart__area {
+  position:      relative;
+  height:        110px;
+  margin-bottom: var(--s4);
+  overflow:      hidden;
+  z-index:       1;                                          /* Above drop decorations */
+}
+
+.perf-chart__svg {
+  width:  100%;
+  height: 100%;
+}
+
+/* Gradient fill area under line */
+.perf-chart__fill {
+  opacity:    0.25;
+  transition: opacity 0.35s ease;
+}
+
+/* Animated trend line */
+.perf-chart__line {
+  stroke-linecap:  round;
+  stroke-linejoin: round;
+  fill:            none;
+}
+
+/* ── Bar chart row ────────────────────────────────────────────── */
+.perf-chart__bars {
+  display:         flex;
+  align-items:     flex-end;
+  gap:             6px;
+  height:          56px;
+  padding-top:     8px;
+  margin-bottom:   var(--s4);
+  border-top:      1px solid var(--border-subtle);           /* Separator above bars */
+  position:        relative;
+  z-index:         1;
+  transition:      border-color 0.35s ease;
+}
+
+/* Group of two bars */
+.perf-bar-group {
+  display:     flex;
+  gap:         3px;
+  align-items: flex-end;
+  flex:        1;
+}
+
+/* Bar track (outer column) */
+.perf-bar {
+  flex:          1;
+  height:        48px;                                       /* Max bar height container */
+  display:       flex;
+  align-items:   flex-end;
+  border-radius: 4px 4px 0 0;
+  overflow:      hidden;
+  min-width:     6px;
+}
+
+/* Animated fill inside bar */
+.perf-bar__fill {
+  width:         100%;
+  border-radius: 4px 4px 0 0;
+  transition:    transform var(--t-base);
+}
+
+.perf-bar__fill:hover {
+  transform:        scaleY(1.08);
+  transform-origin: bottom;
+}
+
+/* Color variants */
+.perf-bar__fill--cyan   { background: var(--cyan);   opacity: 0.85; }
+.perf-bar__fill--orange { background: var(--orange); opacity: 0.70; }
+
+/* ── KPI numbers row ──────────────────────────────────────────── */
+.perf-chart__kpis {
+  display:     flex;
+  align-items: center;
+  gap:         var(--s6);
+  position:    relative;
+  z-index:     1;
+}
+
+/* Single KPI item */
+.perf-kpi {
+  display:        flex;
+  flex-direction: column;
+  gap:            2px;
+}
+
+.perf-kpi__num {
+  font-family:    var(--font-display);
+  font-size:      1.55rem;
+  font-weight:    800;
+  line-height:    1;
+  letter-spacing: -0.025em;
+  transition:     color 0.35s ease;
+}
+
+.perf-kpi__label {
+  font-family:    var(--font-mono);
+  font-size:      0.58rem;
+  font-weight:    500;
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+  color:          var(--text-muted);
+  transition:     color 0.35s ease;
+}
+
+/* Vertical divider between KPIs */
+.perf-kpi__divider {
+  width:      1px;
+  height:     36px;
+  background: var(--border-subtle);
+  flex-shrink:0;
+  transition: background 0.35s ease;
+}
