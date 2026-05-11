@@ -1,494 +1,717 @@
 /* ═══════════════════════════════════════════════════════════════
-   OverviewSection.css — Dashboard Overview Panel
-   Bento grid · Profile card · KPI cards · Top skills
+   OverviewSection.css — Devoryn-Style Dashboard Overview
+   Light frosted-glass panels · Sky-blue scene · Water-drop drops
+   Bento grid: Performance · Active Projects · Tasks · Activity
    ═══════════════════════════════════════════════════════════════ */
 
 /* ── Section wrapper ──────────────────────────────────────────── */
 .overview-section {
-  margin-bottom: var(--space-10);
-  animation:     fadeUp 0.5s ease both;
+  padding-bottom: var(--s10);                   /* Space before next section */
+  animation:      fadeUp 0.4s ease both;        /* Entrance animation */
 }
 
-/* ═══════════════════════════════════════════════════
-   PAGE HEADER
-   ═══════════════════════════════════════════════════ */
-.page-header {
+/* ── Page header row ──────────────────────────────────────────── */
+.ov-header {
   display:         flex;
-  align-items:     flex-start;
-  justify-content: space-between;
-  margin-bottom:   var(--space-8);
-  flex-wrap:       wrap;
-  gap:             var(--space-4);
-  animation:       fadeUp 0.5s ease 0.08s both;
-}
-
-.page-header__title {
-  font-family:    var(--font-display);
-  font-size:      clamp(1.5rem, 2.5vw, 2.1rem);
-  font-weight:    800;
-  color:          var(--text-white);
-  letter-spacing: -0.025em;
-  line-height:    1.1;
-  margin-bottom:  var(--space-1);
-}
-
-.page-header__sub {
-  font-family:    var(--font-mono);
-  font-size:      0.68rem;
-  color:          var(--text-muted);
-  letter-spacing: 0.04em;
-}
-
-/* ── Availability pill ────────────────────────────── */
-.availability-pill {
-  display:        flex;
-  align-items:    center;
-  gap:            var(--space-2);
-  padding:        var(--space-2) var(--space-4);
-  background:     rgba(255, 255, 255, 0.05);
-  border:         1px solid rgba(255, 255, 255, 0.10);
-  border-radius:  9999px;
-  font-family:    var(--font-mono);
-  font-size:      0.64rem;
-  letter-spacing: 0.08em;
-  color:          var(--text-muted);
-  white-space:    nowrap;
-  transition:     all 0.25s ease;
-}
-
-.availability-pill--open {
-  background:   rgba(76, 175, 140, 0.10);
-  border-color: rgba(76, 175, 140, 0.25);
-  color:        var(--accent-green);
-}
-
-.availability-pill__dot {
-  width:         6px;
-  height:        6px;
-  border-radius: 50%;
-  background:    var(--text-muted);
-  flex-shrink:   0;
-  transition:    all 0.25s ease;
-}
-
-.availability-pill--open .availability-pill__dot {
-  background: var(--accent-green);
-  box-shadow: 0 0 8px var(--accent-green);
-  animation:  pulseDot 2s ease infinite;
-}
-
-/* ═══════════════════════════════════════════════════
-   OVERVIEW ROW — Profile card + right column
-   ═══════════════════════════════════════════════════ */
-.overview-row {
-  display:               grid;
-  grid-template-columns: 280px 1fr;
-  gap:                   var(--space-6);
-  align-items:           start;
-  animation:             fadeUp 0.5s ease 0.14s both;
-}
-
-.overview-right {
-  display:        flex;
-  flex-direction: column;
-  gap:            var(--space-5);
-  min-width:      0;
-}
-
-/* ═══════════════════════════════════════════════════
-   PROFILE CARD — Devoryn frosted panel
-   ═══════════════════════════════════════════════════ */
-.profile-card {
-  display:         flex;
-  flex-direction:  column;
   align-items:     center;
-  text-align:      center;
-  gap:             var(--space-4);
-  padding:         var(--space-6);
-  border-radius:   var(--radius-2xl);
-  position:        relative;
-  overflow:        hidden;
-  transition:      border-color 0.25s ease;
-
-  /* Deep frosted glass */
-  background:              rgba(14, 19, 38, 0.82);
-  backdrop-filter:         blur(32px) saturate(1.6);
-  -webkit-backdrop-filter: blur(32px) saturate(1.6);
-  border:                  1px solid rgba(255, 255, 255, 0.09);
-  box-shadow:              0 16px 48px rgba(0, 0, 0, 0.55),
-                           0 0 0 1px rgba(255, 255, 255, 0.06),
-                           inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  justify-content: space-between;
+  margin-bottom:   var(--s6);
+  flex-wrap:       wrap;
+  gap:             var(--s3);
+  animation:       fadeUp 0.45s ease 0.05s both;
 }
 
-/* Top gloss shine */
-.profile-card::before {
-  content:    '';
-  position:   absolute;
-  top:        0;
-  left:       12%;
-  right:      12%;
-  height:     1px;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.20), transparent);
-  pointer-events: none;
+.ov-header__title {
+  font-family:    var(--font-display);
+  font-size:      clamp(1.35rem, 2.5vw, 1.75rem);
+  font-weight:    800;
+  color:          var(--text-white);            /* Light mode: --text-white = #1a2332 */
+  letter-spacing: -0.022em;
+  line-height:    1.1;
 }
 
-/* Corner glow orb */
-.profile-card::after {
-  content:    '';
-  position:   absolute;
-  top:        -70px;
-  left:       50%;
-  transform:  translateX(-50%);
-  width:      220px;
-  height:     220px;
-  background: radial-gradient(circle, rgba(79,195,247,0.07) 0%, transparent 70%);
-  pointer-events: none;
-  border-radius: 50%;
+/* Right-side header actions */
+.ov-header__actions {
+  display:     flex;
+  align-items: center;
+  gap:         var(--s2);
 }
 
-.profile-card:hover { border-color: rgba(255, 255, 255, 0.14); }
-
-/* ── Avatar ───────────────────────────────────────── */
-.profile-card__avatar-wrap {
-  position: relative;
-  display:  inline-block;
-  z-index:  1;
-}
-
-/* Glow ring around avatar */
-.profile-card__avatar {
-  width:           84px;
-  height:          84px;
-  border-radius:   var(--radius-xl);
-  background:      linear-gradient(135deg, var(--accent-cyan), var(--accent-blue), var(--accent-violet));
+/* Small icon button (settings, etc.) */
+.ov-icon-btn {
+  width:           34px;
+  height:          34px;
+  border-radius:   var(--r-sm);
+  background:      var(--glass-light);
+  border:          1px solid var(--border-subtle);
   display:         flex;
   align-items:     center;
   justify-content: center;
-  font-family:     var(--font-display);
-  font-size:       1.7rem;
-  font-weight:     800;
-  color:           #fff;
-  overflow:        hidden;
-  flex-shrink:     0;
-  /* Triple glow ring */
-  box-shadow:
-    0 0 0 2px  rgba(79, 195, 247, 0.18),
-    0 0 0 6px  rgba(79, 195, 247, 0.08),
-    0 0 0 12px rgba(79, 195, 247, 0.04),
-    0 10px 28px rgba(0, 0, 0, 0.48);
+  font-size:       0.92rem;
+  color:           var(--text-secondary);
+  cursor:          pointer;
+  transition:      all var(--t-fast);
 }
 
-.profile-card__avatar img {
-  width:      100%;
-  height:     100%;
-  object-fit: cover;
+.ov-icon-btn:hover {
+  background:  var(--glass-medium);
+  color:       var(--text-white);
+  transform:   translateY(-1px);
+  box-shadow:  var(--shadow-sm);
 }
 
-/* Green online dot */
-.profile-card__online {
-  position:      absolute;
-  bottom:        3px;
-  right:         3px;
-  width:         14px;
-  height:        14px;
-  border-radius: 50%;
-  background:    var(--accent-green);
-  border:        2.5px solid rgba(14, 19, 38, 0.90);
-  box-shadow:    0 0 10px var(--accent-green);
-  animation:     pulseDot 2.5s ease infinite;
-}
-
-.profile-card__info { position: relative; z-index: 1; }
-
-.profile-card__name {
-  font-family:    var(--font-display);
-  font-size:      1.2rem;
-  font-weight:    700;
-  color:          var(--text-white);
-  letter-spacing: -0.01em;
-  margin-bottom:  var(--space-1);
-}
-
-.profile-card__title {
-  font-size:   0.78rem;
-  color:       var(--text-secondary);
-  line-height: 1.5;
-}
-
-/* ── Stats strip ──────────────────────────────────── */
-.profile-card__stats {
+/* Dark/light mode toggle pill */
+.ov-toggle {
   display:       flex;
   align-items:   center;
-  gap:           var(--space-3);
-  width:         100%;
-  padding:       var(--space-4) 0;
-  border-top:    1px solid rgba(255, 255, 255, 0.07);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
-  position:      relative;
-  z-index:       1;
+  padding:       4px;
+  background:    var(--glass-light);
+  border:        1px solid var(--border-subtle);
+  border-radius: var(--r-full);
+  gap:           2px;
 }
 
-.profile-stat { flex: 1; text-align: center; }
-
-.profile-stat__num {
-  font-family:    var(--font-display);
-  font-size:      1.5rem;
-  font-weight:    800;
-  line-height:    1;
-  margin-bottom:  var(--space-1);
-  letter-spacing: -0.02em;
+.ov-toggle__btn {
+  padding:       4px 10px;
+  border-radius: var(--r-full);
+  font-size:     0.78rem;
+  color:         var(--text-muted);
+  cursor:        pointer;
+  transition:    all var(--t-fast);
+  line-height:   1;
 }
 
-.profile-stat__label {
-  font-family:    var(--font-mono);
-  font-size:      0.55rem;
-  color:          var(--text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.10em;
+.ov-toggle__btn--active {
+  background: rgba(255, 255, 255, 0.90);
+  color:      var(--text-white);
+  box-shadow: 0 1px 4px rgba(79, 100, 145, 0.12);
 }
 
-.profile-stat__divider {
-  width:      1px;
-  height:     40px;
-  background: rgba(255, 255, 255, 0.08);
-  flex-shrink:0;
-}
-
-/* ── Bio ──────────────────────────────────────────── */
-.profile-card__bio {
-  font-size:   0.80rem;
-  color:       var(--text-secondary);
-  line-height: 1.75;
-  text-align:  left;
-  width:       100%;
-  position:    relative;
-  z-index:     1;
-}
-
-/* ── CTA buttons ──────────────────────────────────── */
-.profile-card__actions {
-  display:  flex;
-  gap:      var(--space-2);
-  width:    100%;
-  z-index:  1;
-  position: relative;
-}
-
-.profile-card__btn { flex: 1; justify-content: center; }
-
-/* ═══════════════════════════════════════════════════
-   KPI GRID — Bento-style with dividers
-   ═══════════════════════════════════════════════════ */
-.kpi-grid {
+/* ── BENTO GRID ───────────────────────────────────────────────── */
+/*
+  Layout (3 columns, 2 rows + 1 full-width):
+  ┌─────────────────────┬────────────┬────────────┐
+  │  Performance (2col) │  Tasks     │            │
+  │                     │  Donut     │            │
+  ├────────────┬─────── ┼────────────┤            │
+  │  Active    │  Tasks │            │            │
+  │  Projects  │  List  │ (donut     │            │
+  │            │        │  spans     │            │
+  └────────────┴────────┴────────────┘            │
+  └────────────────────────────────────────────────┘
+       Team Activity (full width)
+*/
+.ov-bento {
   display:               grid;
-  grid-template-columns: repeat(auto-fill, minmax(148px, 1fr));
-  gap:                   1px;                       /* The gap IS the border color */
-  background:            rgba(255, 255, 255, 0.07); /* Fills the 1px gaps */
-  border:                1px solid rgba(255, 255, 255, 0.09);
-  border-radius:         var(--radius-xl);
-  overflow:              hidden;
-  margin-bottom:         var(--space-6);
+  grid-template-columns: 1fr 1fr 1fr;           /* 3 equal columns */
+  grid-template-rows:    auto auto auto;         /* 3 rows: row1, row2, activity */
+  gap:                   var(--s4);             /* Gap between all panels */
 }
 
-/* Individual KPI cell */
-.kpi-card {
-  background:     rgba(14, 20, 40, 0.88);
-  backdrop-filter:blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  padding:        1.5rem 1.4rem;
-  display:        flex;
-  flex-direction: column;
-  gap:            var(--space-2);
-  position:       relative;
-  overflow:       hidden;
-  transition:     background 0.15s ease;
-  cursor:         default;
-}
-
-.kpi-card:hover {
-  background: rgba(20, 28, 52, 0.95);
-}
-
-/* Corner glow on hover using CSS variable for color */
-.kpi-card::after {
-  content:    '';
-  position:   absolute;
-  bottom:     -22px;
-  right:      -22px;
-  width:      72px;
-  height:     72px;
-  border-radius: 50%;
-  background: radial-gradient(circle, var(--kpi-color, var(--accent-cyan)) 0%, transparent 70%);
-  opacity:    0.06;
-  pointer-events: none;
-  transition: opacity 0.25s ease;
-}
-
-.kpi-card:hover::after { opacity: 0.18; }
-
-.kpi-card__icon {
-  font-size:   1.2rem;
-  line-height: 1;
-  margin-bottom: var(--space-1);
-}
-
-.kpi-card__num {
-  font-family:    var(--font-display);
-  font-size:      2.4rem;
-  font-weight:    800;
-  line-height:    1;
-  letter-spacing: -0.025em;
-}
-
-.kpi-card__label {
-  font-family:    var(--font-mono);
-  font-size:      0.58rem;
-  font-weight:    500;
-  letter-spacing: 0.10em;
-  text-transform: uppercase;
-  color:          var(--text-muted);
-}
-
-/* ═══════════════════════════════════════════════════
-   TOP SKILLS PANEL — Glass panel below KPI grid
-   ═══════════════════════════════════════════════════ */
-.top-skills-panel {
+/* ── PANEL BASE — shared glass card ─────────────────────────── */
+.ov-panel {
   position:   relative;
   overflow:   hidden;
-  border-radius: var(--radius-xl);
-  padding:    var(--space-5) var(--space-6);
-  transition: border-color 0.25s ease;
+  border-radius: var(--r-xl);
+  padding:    var(--s5) var(--s5);
 
-  background:              rgba(14, 20, 40, 0.78);
-  backdrop-filter:         blur(24px);
-  -webkit-backdrop-filter: blur(24px);
-  border:                  1px solid rgba(255, 255, 255, 0.09);
-  box-shadow:              0 8px 32px rgba(0, 0, 0, 0.40),
-                           0 0 0 1px rgba(255, 255, 255, 0.05);
+  /* Frosted glass — matches Devoryn light theme */
+  background:              var(--glass-card, rgba(255,255,255,0.38));
+  backdrop-filter:         blur(28px) saturate(1.8) brightness(1.06);
+  -webkit-backdrop-filter: blur(28px) saturate(1.8) brightness(1.06);
+  border:                  1px solid var(--border-card, rgba(255,255,255,0.55));
+  box-shadow:              0 4px 24px rgba(79,100,145,0.13),
+                           0 1px 0   rgba(255,255,255,0.85) inset;
+  transition:              border-color var(--t-base),
+                           box-shadow   var(--t-base),
+                           transform    var(--t-base);
 }
 
-/* Gloss shine */
-.top-skills-panel::before {
+/* Top gloss highlight line */
+.ov-panel::before {
   content:    '';
   position:   absolute;
   top:        0;
-  left:       10%;
-  right:      10%;
+  left:       6%;
+  right:      6%;
   height:     1px;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.14), transparent);
+  background: rgba(255, 255, 255, 0.95);        /* Strong gloss line */
   pointer-events: none;
 }
 
-.top-skills-panel:hover { border-color: rgba(255, 255, 255, 0.14); }
+.ov-panel:hover {
+  border-color: rgba(255, 255, 255, 0.72);
+  box-shadow:   0 8px 36px rgba(79,100,145,0.18),
+                0 1px 0   rgba(255,255,255,0.90) inset;
+}
 
-.top-skills-panel__header {
+/* All content above pseudo-elements */
+.ov-panel > *:not(.ov-drops) { position: relative; z-index: 1; }
+
+/* ── Panel header (title + menu dots) ───────────────────────── */
+.ov-panel__header {
   display:         flex;
   align-items:     center;
   justify-content: space-between;
-  margin-bottom:   var(--space-5);
+  margin-bottom:   var(--s4);
 }
 
-.top-skills-panel__title {
-  font-family:    var(--font-display);
-  font-size:      0.96rem;
+.ov-panel__title {
+  font-size:      0.90rem;
   font-weight:    700;
   color:          var(--text-white);
   letter-spacing: -0.01em;
+  font-family:    var(--font-display);
 }
 
-.top-skills-panel__list {
-  display:        flex;
-  flex-direction: column;
-  gap:            var(--space-1);
+.ov-panel__menu {
+  font-size:     0.82rem;
+  color:         var(--text-muted);
+  cursor:        pointer;
+  padding:       2px 6px;
+  border-radius: var(--r-sm);
+  transition:    background var(--t-fast);
+  line-height:   1;
 }
 
-/* ── Skill rows inside panel ──────────────────────── */
-.skill-row {
+.ov-panel__menu:hover { background: rgba(255,255,255,0.65); }
+
+/* ── WATER DROP DECORATIONS ─────────────────────────────────── */
+/* Absolutely positioned SVG-style drops — key Devoryn detail */
+.ov-drops {
+  position:       absolute;
+  inset:          0;
+  pointer-events: none;
+  overflow:       hidden;
+  border-radius:  inherit;
+  z-index:        0;
+}
+
+.ov-drop {
+  position:      absolute;
+  border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+  background:    rgba(255, 255, 255, 0.30);
+  border:        1px solid rgba(255, 255, 255, 0.55);
+  backdrop-filter: blur(4px);
+  animation:     ovDropFall 2.4s ease forwards;
+}
+
+@keyframes ovDropFall {
+  0%   { transform: translateY(-12px) scale(0.85); opacity: 0; }
+  60%  { transform: translateY(3px)   scale(1.04); opacity: 0.65; }
+  100% { transform: translateY(0)     scale(1);    opacity: 0.48; }
+}
+
+/* ═══════════════════════════════════════════════════
+   GRID PLACEMENT — which panel goes where
+═══════════════════════════════════════════════════ */
+
+/* Row 1, col 1–2 (wide) */
+.ov-panel--perf {
+  grid-column:      1 / 3;                      /* Spans 2 columns */
+  grid-row:         1;
+  animation-delay:  0.10s;
+}
+
+/* Row 1–2, col 3 (tall — donut spans both rows) */
+.ov-panel--donut {
+  grid-column:      3;
+  grid-row:         1 / 3;                      /* Spans 2 rows */
+  animation-delay:  0.26s;
+}
+
+/* Row 2, col 1 */
+.ov-panel--projects {
+  grid-column:      1;
+  grid-row:         2;
+  animation-delay:  0.18s;
+}
+
+/* Row 2, col 2 */
+.ov-panel--tasks {
+  grid-column:      2;
+  grid-row:         2;
+  animation-delay:  0.34s;
+}
+
+/* Row 3, all 3 cols (full width) */
+.ov-panel--activity {
+  grid-column:      1 / 4;                      /* Full width */
+  grid-row:         3;
+  animation-delay:  0.42s;
+}
+
+/* ═══════════════════════════════════════════════════
+   PERFORMANCE METRICS PANEL
+═══════════════════════════════════════════════════ */
+
+/* SVG line chart wrapper */
+.ov-chart-area {
+  position:      relative;
+  height:        108px;
+  margin-bottom: var(--s4);
+  overflow:      hidden;
+}
+
+.ov-chart-svg {
+  width:  100%;
+  height: 100%;
+}
+
+/* Animated line — draws from left to right on mount */
+.ov-chart-line {
+  fill:              none;
+  stroke:            #4f91f7;
+  stroke-width:      2.5;
+  stroke-linecap:    round;
+  stroke-linejoin:   round;
+  stroke-dasharray:  350;
+  stroke-dashoffset: 350;
+  animation:         ovLineDraw 1.8s cubic-bezier(0.16,1,0.3,1) 0.4s forwards;
+  filter:            drop-shadow(0 2px 10px rgba(79,145,247,0.50));
+}
+
+@keyframes ovLineDraw {
+  to { stroke-dashoffset: 0; }
+}
+
+/* Gradient fill under the line */
+.ov-chart-fill {
+  fill:    url(#ovGrad);
+  opacity: 0.20;
+}
+
+/* Bar chart row inside performance panel */
+.ov-bars {
+  display:         flex;
+  align-items:     flex-end;
+  gap:             5px;
+  height:          50px;
+  padding-top:     6px;
+  margin-bottom:   var(--s4);
+  border-top:      1px solid rgba(255, 255, 255, 0.55);
+}
+
+.ov-bar-group {
+  display:     flex;
+  gap:         3px;
+  align-items: flex-end;
+  flex:        1;
+}
+
+.ov-bar {
+  flex:          1;
+  border-radius: 4px 4px 0 0;
+  min-width:     5px;
+  transition:    transform var(--t-base);
+  cursor:        default;
+}
+
+.ov-bar:hover {
+  transform:        scaleY(1.10);
+  transform-origin: bottom;
+}
+
+/* KPI numbers row */
+.ov-kpis {
+  display:     flex;
+  align-items: center;
+  gap:         var(--s6);
+}
+
+.ov-kpi__num {
+  font-family:    var(--font-display);
+  font-size:      1.45rem;
+  font-weight:    800;
+  color:          var(--text-white);
+  letter-spacing: -0.025em;
+  line-height:    1;
+  animation:      fadeUp 0.5s ease 0.7s both;
+}
+
+.ov-kpi__label {
+  font-family:    var(--font-mono);
+  font-size:      0.58rem;
+  color:          var(--text-muted);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-top:     3px;
+}
+
+/* ═══════════════════════════════════════════════════
+   ACTIVE PROJECTS PANEL — skill-style bars
+═══════════════════════════════════════════════════ */
+.ov-proj-row {
   display:       flex;
   align-items:   center;
-  gap:           var(--space-3);
-  margin-bottom: var(--space-3);
+  gap:           var(--s3);
+  margin-bottom: var(--s3);
 }
 
-.skill-row:last-child { margin-bottom: 0; }
+.ov-proj-row:last-child { margin-bottom: 0; }
 
-.skill-row__name {
+.ov-proj-row__name {
   font-size:     0.82rem;
   font-weight:   500;
   color:         var(--text-primary);
-  min-width:     108px;
+  min-width:     98px;
   white-space:   nowrap;
   overflow:      hidden;
   text-overflow: ellipsis;
 }
 
-.skill-row__track {
+.ov-proj-row__track {
   flex:          1;
-  height:        4px;
-  background:    rgba(255, 255, 255, 0.07);
-  border-radius: 9999px;
+  height:        7px;
+  background:    rgba(79, 100, 145, 0.10);
+  border-radius: var(--r-full);
   overflow:      hidden;
 }
 
-.skill-row__fill {
+.ov-proj-row__fill {
   height:           100%;
-  border-radius:    9999px;
-  transform:        scaleX(0);
-  transform-origin: left;
-  transition:       transform 1.4s cubic-bezier(0.16, 1, 0.3, 1);
+  border-radius:    var(--r-full);
+  width:            0;                          /* Starts at 0 — animated by JS */
+  transition:       width 1.3s cubic-bezier(0.16, 1, 0.3, 1);
   position:         relative;
 }
 
-/* Glowing tip at end of bar */
-.skill-row__fill::after {
+/* Glowing tip dot at the end of each bar */
+.ov-proj-row__fill::after {
   content:       '';
   position:      absolute;
   right:         -3px;
   top:           50%;
   transform:     translateY(-50%);
-  width:         8px;
-  height:        8px;
+  width:         9px;
+  height:        9px;
   border-radius: 50%;
   background:    inherit;
-  filter:        brightness(1.6);
-  box-shadow:    0 0 8px currentColor;
+  filter:        brightness(1.3);
+  box-shadow:    0 0 6px currentColor;
 }
 
-.skill-row__pct {
+.ov-proj-row__pct {
   font-family: var(--font-mono);
-  font-size:   0.66rem;
-  color:       var(--text-muted);
+  font-size:   0.72rem;
+  font-weight: 600;
+  color:       var(--text-secondary);
   min-width:   32px;
   text-align:  right;
 }
 
 /* ═══════════════════════════════════════════════════
-   RESPONSIVE
-   ═══════════════════════════════════════════════════ */
-@media (max-width: 1100px) {
-  .overview-row { grid-template-columns: 240px 1fr; }
+   TASKS STATUS (LIST) PANEL
+═══════════════════════════════════════════════════ */
+.ov-task-row {
+  display:       flex;
+  align-items:   center;
+  gap:           var(--s3);
+  padding:       var(--s2) 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.48);
+  transition:    background var(--t-fast);
 }
 
-@media (max-width: 880px) {
-  .overview-row {
+.ov-task-row:first-child { padding-top: 0; }
+
+.ov-task-row:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+/* Circular avatar with initial letter */
+.ov-task-avatar {
+  width:           30px;
+  height:          30px;
+  border-radius:   50%;
+  display:         flex;
+  align-items:     center;
+  justify-content: center;
+  font-size:       0.70rem;
+  font-weight:     700;
+  color:           #fff;
+  flex-shrink:     0;
+  box-shadow:      0 2px 8px rgba(0,0,0,0.14);
+}
+
+.ov-task-name {
+  font-size:   0.82rem;
+  font-weight: 500;
+  color:       var(--text-primary);
+  flex:        1;
+  white-space: nowrap;
+  overflow:    hidden;
+  text-overflow: ellipsis;
+}
+
+.ov-task-pct {
+  font-family: var(--font-mono);
+  font-size:   0.76rem;
+  font-weight: 600;
+  color:       var(--text-white);
+  min-width:   36px;
+  text-align:  right;
+}
+
+.ov-task-dot {
+  width:         8px;
+  height:        8px;
+  border-radius: 50%;
+  flex-shrink:   0;
+}
+
+/* ═══════════════════════════════════════════════════
+   TASKS STATUS (DONUT) PANEL — tall right panel
+═══════════════════════════════════════════════════ */
+.ov-donut-wrap {
+  display:         flex;
+  align-items:     center;
+  justify-content: center;
+  margin-bottom:   var(--s4);
+  position:        relative;
+}
+
+.ov-donut-svg {
+  width:     150px;
+  height:    150px;
+  transform: rotate(-90deg);                    /* Start from top */
+  overflow:  visible;
+}
+
+/* Track ring — full circle background */
+.ov-donut-track {
+  fill:         none;
+  stroke:       rgba(79, 100, 145, 0.10);
+  stroke-width: 20;
+}
+
+/* Colored segment ring */
+.ov-donut-ring {
+  fill:            none;
+  stroke-width:    20;
+  stroke-linecap:  round;
+  transition:      stroke-dashoffset 1.5s cubic-bezier(0.16,1,0.3,1) 0.3s;
+}
+
+/* Center label absolutely positioned over the SVG */
+.ov-donut-center {
+  position:       absolute;
+  display:        flex;
+  flex-direction: column;
+  align-items:    center;
+  justify-content:center;
+  text-align:     center;
+  pointer-events: none;
+}
+
+.ov-donut-center__num {
+  font-family:    var(--font-display);
+  font-size:      1.30rem;
+  font-weight:    800;
+  color:          var(--text-white);
+  letter-spacing: -0.02em;
+  line-height:    1;
+}
+
+.ov-donut-center__sub {
+  font-family:    var(--font-mono);
+  font-size:      0.60rem;
+  color:          var(--text-muted);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin-top:     2px;
+}
+
+/* Legend rows below donut */
+.ov-donut-legend {
+  display:        flex;
+  flex-direction: column;
+  gap:            var(--s2);
+}
+
+.ov-legend-row {
+  display:         flex;
+  align-items:     center;
+  justify-content: space-between;
+  gap:             var(--s2);
+}
+
+.ov-legend-dot {
+  width:         8px;
+  height:        8px;
+  border-radius: 50%;
+  flex-shrink:   0;
+}
+
+.ov-legend-label {
+  font-size: 0.82rem;
+  color:     var(--text-secondary);
+  flex:      1;
+}
+
+.ov-legend-pct {
+  font-family: var(--font-mono);
+  font-size:   0.78rem;
+  font-weight: 600;
+  color:       var(--text-white);
+}
+
+/* ═══════════════════════════════════════════════════
+   TEAM ACTIVITY PANEL — full-width bottom slider
+═══════════════════════════════════════════════════ */
+
+/* Header: title + slider controls + menu */
+.ov-activity-header {
+  display:         flex;
+  align-items:     center;
+  gap:             var(--s3);
+  margin-bottom:   var(--s4);
+}
+
+.ov-activity-title {
+  font-size:      0.90rem;
+  font-weight:    700;
+  color:          var(--text-white);
+  font-family:    var(--font-display);
+  letter-spacing: -0.01em;
+  flex:           1;                            /* Push controls to center/right */
+}
+
+/* Prev / Next arrow buttons */
+.ov-slider-btn {
+  width:           28px;
+  height:          28px;
+  border-radius:   50%;
+  background:      var(--glass-light);
+  border:          1px solid var(--border-subtle);
+  display:         flex;
+  align-items:     center;
+  justify-content: center;
+  font-size:       0.88rem;
+  color:           var(--text-secondary);
+  cursor:          pointer;
+  transition:      all var(--t-fast);
+  line-height:     1;
+  flex-shrink:     0;
+}
+
+.ov-slider-btn:hover {
+  background:  var(--glass-medium);
+  color:       var(--text-white);
+  box-shadow:  var(--shadow-sm);
+}
+
+/* Dot indicators */
+.ov-slider-dots {
+  display:     flex;
+  align-items: center;
+  gap:         5px;
+}
+
+.ov-slider-dot {
+  width:         7px;
+  height:        7px;
+  border-radius: 50%;
+  background:    rgba(79, 100, 145, 0.22);
+  cursor:        pointer;
+  border:        none;
+  padding:       0;
+  transition:    all var(--t-base);
+  flex-shrink:   0;
+}
+
+.ov-slider-dot:hover:not(.ov-slider-dot--active) {
+  background: var(--text-muted);
+  transform:  scale(1.2);
+}
+
+/* Active dot expands into a pill */
+.ov-slider-dot--active {
+  background:    var(--cyan, #38bdf8);
+  width:         20px;
+  border-radius: var(--r-full);
+  box-shadow:    0 0 8px rgba(56,189,248,0.40);
+}
+
+/* Activity slide content */
+.ov-activity-content {
+  display:     flex;
+  align-items: center;
+  gap:         var(--s4);
+  min-height:  46px;
+
+  /* Slide entrance animation */
+  animation:  ovSlideIn 0.35s cubic-bezier(0.16,1,0.3,1) both;
+}
+
+@keyframes ovSlideIn {
+  from { opacity: 0; transform: translateX(14px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+/* Activity avatar */
+.ov-activity-avatar {
+  width:           40px;
+  height:          40px;
+  border-radius:   var(--r-sm);
+  display:         flex;
+  align-items:     center;
+  justify-content: center;
+  font-family:     var(--font-display);
+  font-size:       0.84rem;
+  font-weight:     700;
+  color:           #fff;
+  flex-shrink:     0;
+  box-shadow:      0 4px 12px rgba(0,0,0,0.16);
+}
+
+.ov-activity-text {
+  font-size:   0.84rem;
+  color:       var(--text-primary);
+  line-height: 1.5;
+  flex:        1;
+}
+
+.ov-activity-time {
+  font-family:    var(--font-mono);
+  font-size:      0.62rem;
+  color:          var(--text-muted);
+  letter-spacing: 0.04em;
+  white-space:    nowrap;
+  flex-shrink:    0;
+}
+
+/* ═══════════════════════════════════════════════════
+   RESPONSIVE
+═══════════════════════════════════════════════════ */
+@media (max-width: 1100px) {
+  /* Collapse to 2 columns on medium screens */
+  .ov-bento {
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows:    auto;
+  }
+
+  .ov-panel--perf     { grid-column: 1 / 3; grid-row: auto; }
+  .ov-panel--donut    { grid-column: 2;      grid-row: auto; }
+  .ov-panel--projects { grid-column: 1;      grid-row: auto; }
+  .ov-panel--tasks    { grid-column: 2;      grid-row: auto; }
+  .ov-panel--activity { grid-column: 1 / 3;  grid-row: auto; }
+}
+
+@media (max-width: 768px) {
+  /* Single column on mobile */
+  .ov-bento {
     grid-template-columns: 1fr;
   }
 
-  .profile-card {
-    max-width: 420px;
-    margin:    0 auto;
-  }
-}
-
-@media (max-width: 520px) {
-  .page-header {
-    flex-direction: column;
-    align-items:    flex-start;
+  .ov-panel--perf,
+  .ov-panel--donut,
+  .ov-panel--projects,
+  .ov-panel--tasks,
+  .ov-panel--activity {
+    grid-column: 1;
+    grid-row:    auto;
   }
 
-  .kpi-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-
-  .profile-card__stats { gap: var(--space-2); }
+  .ov-header { flex-direction: column; align-items: flex-start; }
 }
