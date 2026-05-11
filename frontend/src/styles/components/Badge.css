@@ -1,0 +1,217 @@
+/* ═══════════════════════════════════════════════════════════════
+   Badge.css — Reusable Badge / Chip Component Styles
+   Supports: default, muted, success, warning, danger, info variants
+   Theme-aware: uses CSS variables from index.css
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ── Base badge ───────────────────────────────────────────────── */
+/* Applied to every badge regardless of variant */
+.badge {
+  display:        inline-flex;                  /* Flex for icon + text alignment */
+  align-items:    center;                       /* Vertically center content */
+  gap:            var(--s1);                    /* 4px gap between dot and label */
+  font-family:    var(--font-mono);             /* Mono font for technical aesthetic */
+  font-size:      0.60rem;                      /* Small, compact label size */
+  font-weight:    600;                          /* Semi-bold for legibility */
+  letter-spacing: 0.09em;                       /* Wide tracking for uppercase feel */
+  text-transform: uppercase;                    /* ALL CAPS for badge labels */
+  padding:        0.20rem 0.60rem;              /* Tight horizontal padding */
+  border-radius:  var(--r-xs);                  /* Subtle corner rounding */
+  line-height:    1.4;                          /* Comfortable line height */
+  white-space:    nowrap;                       /* Prevent text wrapping */
+  border:         1px solid transparent;        /* Base border (colored by variant) */
+  transition:     color        0.25s ease,      /* Smooth color transition */
+                  background   0.25s ease,      /* Smooth background transition */
+                  border-color 0.25s ease;      /* Smooth border transition */
+  position:       relative;                     /* Needed for pseudo-elements */
+  overflow:       hidden;                       /* Clip any overflow effects */
+  user-select:    none;                         /* Prevent accidental text selection */
+}
+
+/* ── Pulsing status dot (optional, shown when .badge--dot is added) ── */
+.badge--dot::before {
+  content:       '';                            /* Required for pseudo-element */
+  display:       inline-block;                  /* Render as inline block */
+  width:         5px;                           /* Dot diameter */
+  height:        5px;                           /* Dot diameter */
+  border-radius: 50%;                           /* Perfect circle */
+  background:    currentColor;                  /* Inherits text color from variant */
+  flex-shrink:   0;                             /* Never shrink in flex container */
+  animation:     pulseDot 2s ease infinite;     /* Pulsing animation from index.css */
+}
+
+/* ═══════════════════════════════════════════════════
+   VARIANTS — color + background per badge type
+   ═══════════════════════════════════════════════════ */
+
+/* ── Default (cyan) ───────────────────────────────── */
+/* Primary variant — used for general tags, tech labels */
+.badge--default {
+  background:   var(--glass-cyan);              /* Cyan-tinted glass background */
+  border-color: var(--border-cyan);             /* Cyan border */
+  color:        var(--cyan);                    /* Cyan text */
+}
+
+.badge--default:hover {
+  background:   var(--cyan-dim);                /* Slightly stronger on hover */
+  border-color: var(--border-active);           /* Brighter border on hover */
+}
+
+/* ── Muted (subtle) ───────────────────────────────── */
+/* Low-emphasis variant — used for meta labels, counts */
+.badge--muted {
+  background:   var(--glass-faint);             /* Very subtle glass background */
+  border-color: var(--border-subtle);           /* Faint border */
+  color:        var(--text-secondary);          /* Muted text color */
+}
+
+.badge--muted:hover {
+  background:   var(--glass-light);             /* Slightly more visible on hover */
+  border-color: var(--border-medium);           /* Slightly stronger border */
+  color:        var(--text-primary);            /* Brighter text on hover */
+}
+
+/* ── Success (green) ──────────────────────────────── */
+/* Used for: active, complete, available states */
+.badge--success {
+  background:   var(--green-dim);               /* Green-tinted background */
+  border-color: rgba(78, 204, 163, 0.30);       /* Green border */
+  color:        var(--green);                   /* Green text */
+}
+
+.badge--success:hover {
+  background:   rgba(78, 204, 163, 0.20);       /* Stronger on hover */
+  border-color: rgba(78, 204, 163, 0.50);       /* Stronger border on hover */
+}
+
+/* ── Warning (orange) ─────────────────────────────── */
+/* Used for: in-progress, pending, partial states */
+.badge--warning {
+  background:   var(--orange-dim);              /* Orange-tinted background */
+  border-color: rgba(245, 166, 35, 0.30);       /* Orange border */
+  color:        var(--orange);                  /* Orange text */
+}
+
+.badge--warning:hover {
+  background:   rgba(245, 166, 35, 0.20);       /* Stronger on hover */
+  border-color: rgba(245, 166, 35, 0.50);       /* Stronger border on hover */
+}
+
+/* ── Danger (red/pink) ────────────────────────────── */
+/* Used for: errors, blocked, critical states */
+.badge--danger {
+  background:   var(--red-dim);                 /* Red-tinted background */
+  border-color: rgba(240, 98, 146, 0.30);       /* Red border */
+  color:        var(--red);                     /* Red text */
+}
+
+.badge--danger:hover {
+  background:   rgba(240, 98, 146, 0.20);       /* Stronger on hover */
+  border-color: rgba(240, 98, 146, 0.50);       /* Stronger border on hover */
+}
+
+/* ── Info (violet) ────────────────────────────────── */
+/* Used for: beginner level, info labels, categories */
+.badge--info {
+  background:   var(--violet-dim);              /* Violet-tinted background */
+  border-color: rgba(155, 127, 234, 0.30);      /* Violet border */
+  color:        var(--violet);                  /* Violet text */
+}
+
+.badge--info:hover {
+  background:   rgba(155, 127, 234, 0.20);      /* Stronger on hover */
+  border-color: rgba(155, 127, 234, 0.50);      /* Stronger border on hover */
+}
+
+/* ── Gold ─────────────────────────────────────────── */
+/* Used for: achievements, featured, premium items */
+.badge--gold {
+  background:   var(--gold-dim);                /* Gold-tinted background */
+  border-color: rgba(255, 215, 0, 0.25);        /* Gold border */
+  color:        var(--gold);                    /* Gold text */
+}
+
+.badge--gold:hover {
+  background:   rgba(255, 215, 0, 0.16);        /* Stronger on hover */
+  border-color: rgba(255, 215, 0, 0.45);        /* Stronger border on hover */
+}
+
+/* ── Blue ─────────────────────────────────────────── */
+/* Used for: intermediate, info, secondary labels */
+.badge--blue {
+  background:   var(--blue-dim);                /* Blue-tinted background */
+  border-color: rgba(91, 141, 239, 0.30);       /* Blue border */
+  color:        var(--blue);                    /* Blue text */
+}
+
+.badge--blue:hover {
+  background:   rgba(91, 141, 239, 0.20);       /* Stronger on hover */
+  border-color: rgba(91, 141, 239, 0.50);       /* Stronger border on hover */
+}
+
+/* ═══════════════════════════════════════════════════
+   SIZE VARIANTS — override default compact size
+   ═══════════════════════════════════════════════════ */
+
+/* ── Extra small — for dense lists ───────────────── */
+.badge--xs {
+  font-size: 0.52rem;                           /* Smallest readable size */
+  padding:   0.14rem 0.46rem;                   /* Tighter padding */
+}
+
+/* ── Small (default, no extra class needed) ──────── */
+/* Uses base .badge styles */
+
+/* ── Medium — slightly larger for emphasis ────────── */
+.badge--md {
+  font-size:      0.68rem;                      /* Medium label size */
+  padding:        0.28rem 0.72rem;              /* More padding */
+  letter-spacing: 0.07em;                       /* Slightly tighter tracking */
+}
+
+/* ── Large — standalone prominence ───────────────── */
+.badge--lg {
+  font-size:      0.76rem;                      /* Larger label */
+  padding:        0.35rem 0.90rem;              /* Generous padding */
+  border-radius:  var(--r-sm);                  /* Slightly rounder */
+  letter-spacing: 0.06em;                       /* Normal tracking */
+}
+
+/* ── Pill variant — fully rounded ────────────────── */
+.badge--pill {
+  border-radius: var(--r-full);                 /* Full pill shape */
+  padding:       0.20rem 0.80rem;               /* Wider horizontal padding */
+}
+
+/* ═══════════════════════════════════════════════════
+   SKILL BAND BADGES — proficiency levels
+   Maps directly to SKILL_BANDS in constants.js
+   ═══════════════════════════════════════════════════ */
+
+/* Expert band — lime green */
+.badge--expert {
+  background:   rgba(200, 255, 87, 0.10);       /* Lime background */
+  border-color: rgba(200, 255, 87, 0.25);       /* Lime border */
+  color:        #C8FF57;                        /* Lime text */
+}
+
+/* Advanced band — cyan */
+.badge--advanced {
+  background:   rgba(0, 229, 255, 0.10);        /* Cyan background */
+  border-color: rgba(0, 229, 255, 0.25);        /* Cyan border */
+  color:        #00E5FF;                        /* Cyan text */
+}
+
+/* Intermediate band — violet */
+.badge--intermediate {
+  background:   rgba(155, 89, 245, 0.10);       /* Violet background */
+  border-color: rgba(155, 89, 245, 0.25);       /* Violet border */
+  color:        #9B59F5;                        /* Violet text */
+}
+
+/* Beginner band — gold */
+.badge--beginner {
+  background:   rgba(245, 166, 35, 0.10);       /* Gold background */
+  border-color: rgba(245, 166, 35, 0.25);       /* Gold border */
+  color:        #F5A623;                        /* Gold text */
+}
