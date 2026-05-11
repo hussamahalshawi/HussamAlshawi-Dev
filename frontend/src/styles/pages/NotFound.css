@@ -1,80 +1,328 @@
-/* NotFound.css */
+/* ═══════════════════════════════════════════════════════════════
+   NotFound.css — 404 Page with Particle Background
+   Dark-only page: ignores theme variables intentionally.
+   The particle canvas uses lime #c8ff57 — we build around that.
+   ═══════════════════════════════════════════════════════════════ */
 
-.not-found {
-  min-height: 100vh;
-  background-color: #050505; /* Blacker background for contrast */
-  display: flex;
-  align-items: center;
+/* ── Root container ───────────────────────────────────────────── */
+.nf {
+  position:        relative;                    /* Stacking context for canvas + content  */
+  min-height:      100vh;                       /* Full viewport height                   */
+  background:      #050810;                     /* Near-black base — deep dark            */
+  display:         flex;
+  align-items:     center;
   justify-content: center;
-  overflow: hidden;
-  position: relative;
+  overflow:        hidden;                      /* Clip canvas edges                      */
 }
 
-.not-found__vignette {
-  position: absolute;
-  inset: 0;
-  background: radial-gradient(circle at center, transparent 30%, rgba(0,0,0,0.8) 100%);
-  z-index: 1;
+/* ── Canvas sits at z-index 0, fills parent ───────────────────── */
+/* ParticleBackground already sets position:absolute inset:0 z-index:0 */
+
+/* ── Radial vignette — darkens edges, focuses center ─────────── */
+.nf__vignette {
+  position:       absolute;                     /* Overlay on top of canvas               */
+  inset:          0;
+  background:     radial-gradient(
+    ellipse 70% 70% at 50% 50%,
+    transparent   20%,
+    rgba(5,8,16,0.55) 65%,
+    rgba(5,8,16,0.90) 100%
+  );
+  pointer-events: none;                         /* Non-interactive — visual only          */
+  z-index:        1;                            /* Above canvas, below content            */
+}
+
+/* ── Subtle lime glow blob behind the 404 text ───────────────── */
+.nf__glow {
+  position:       absolute;                     /* Centered behind content                */
+  top:            50%;
+  left:           50%;
+  transform:      translate(-50%, -50%);
+  width:          500px;
+  height:         300px;
+  background:     radial-gradient(
+    ellipse at center,
+    rgba(200,255,87,0.06) 0%,
+    transparent 70%
+  );
   pointer-events: none;
+  z-index:        1;                            /* Above canvas, below content            */
+  animation:      nfGlowPulse 4s ease infinite; /* Slow breathe animation                */
 }
 
-.not-found__content {
-  position: relative;
-  z-index: 2;
-  width: 100%;
-  max-width: 500px;
-  text-align: center;
+@keyframes nfGlowPulse {
+  0%, 100% { opacity: 0.6; transform: translate(-50%, -50%) scale(1);    }
+  50%       { opacity: 1.0; transform: translate(-50%, -50%) scale(1.12); }
 }
 
-/* Geometric Container */
-.not-found__geo-container {
-  width: 100%;
-  margin-bottom: 2rem;
-  filter: drop-shadow(0 0 20px rgba(200, 255, 87, 0.3));
+/* ── Main content card — sits above canvas and vignette ──────── */
+.nf__content {
+  position:   relative;                         /* Above z-index 1 layers                 */
+  z-index:    2;
+  display:    flex;
+  flex-direction: column;
+  align-items:    center;
+  text-align:     center;
+  padding:        var(--s8) var(--s6);
+  max-width:      520px;
+  width:          100%;
+  animation:      nfEntrance 0.9s cubic-bezier(0.16,1,0.3,1) both; /* Slide-up entrance */
 }
 
-.not-found__geo-svg {
-  width: 100%;
-  height: auto;
+@keyframes nfEntrance {
+  from { opacity: 0; transform: translateY(28px); }
+  to   { opacity: 1; transform: translateY(0);    }
 }
 
-/* Animations for Geometric Paths */
-.geo-path {
-  stroke-dasharray: 400;
-  stroke-dashoffset: 400;
-  animation: drawGeo 3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+/* ── Glitch "404" large number ────────────────────────────────── */
+.nf__code {
+  font-family:    var(--font-display);          /* Syne — bold geometric display          */
+  font-size:      clamp(6rem, 18vw, 11rem);     /* Fluid: 96px → 176px                   */
+  font-weight:    800;
+  line-height:    1;
+  letter-spacing: -0.05em;
+  color:          #c8ff57;                      /* Lime — matches particle color          */
+  text-shadow:
+    0 0 40px rgba(200,255,87,0.35),             /* Wide ambient glow                      */
+    0 0 80px rgba(200,255,87,0.15);             /* Even wider faint glow                  */
+  margin-bottom:  var(--s4);
+  position:       relative;
+
+  /* Draw-in animation — clips text from left to right */
+  animation: nfCodeReveal 1.2s cubic-bezier(0.16,1,0.3,1) 0.1s both;
 }
 
-@keyframes drawGeo {
-  to { stroke-dashoffset: 0; }
+@keyframes nfCodeReveal {
+  from { clip-path: inset(0 100% 0 0); }        /* Fully hidden — clipped from right      */
+  to   { clip-path: inset(0 0% 0 0);   }        /* Fully visible                          */
 }
 
-/* Subtle pulse for each number */
-.pulse-1 { animation-delay: 0.2s; }
-.pulse-2 { animation-delay: 0.4s; }
-.pulse-3 { animation-delay: 0.6s; }
+/* Glitch pseudo-element — offset clone for effect */
+.nf__code::before {
+  content:    attr(data-text);                  /* Reads the same "404" text              */
+  position:   absolute;
+  inset:      0;
+  color:      rgba(200,255,87,0.20);            /* Very faint lime clone                  */
+  text-shadow: none;
+  transform:  translateX(3px) translateY(-2px); /* Offset to create glitch gap            */
+  clip-path:  inset(30% 0 50% 0);              /* Show only a horizontal slice           */
+  animation:  nfGlitch 3.5s step-end infinite 1.4s; /* Random glitch trigger            */
+}
 
-/* Text Styling */
-.not-found__status {
-  font-family: var(--font-mono, monospace);
-  font-size: 1.5rem;
-  letter-spacing: 0.4em;
-  color: #c8ff57;
-  margin-bottom: 0.5rem;
+@keyframes nfGlitch {
+  0%, 90%, 100% { opacity: 0; transform: translateX(3px)  translateY(-2px); }
+  91%            { opacity: 1; transform: translateX(-4px) translateY(2px);  clip-path: inset(20% 0 60% 0); }
+  93%            { opacity: 1; transform: translateX(4px)  translateY(-1px); clip-path: inset(55% 0 25% 0); }
+  95%            { opacity: 0; }
+}
+
+/* ── Status label above 404 ───────────────────────────────────── */
+.nf__label {
+  font-family:    var(--font-mono);             /* Mono — technical feel                  */
+  font-size:      0.62rem;
+  font-weight:    500;
+  letter-spacing: 0.28em;
   text-transform: uppercase;
+  color:          rgba(200,255,87,0.60);        /* Muted lime                             */
+  margin-bottom:  var(--s3);
+  display:        flex;
+  align-items:    center;
+  gap:            var(--s3);
+  animation:      fadeIn 0.6s ease 0.4s both;
 }
 
-.not-found__msg {
-  font-family: var(--font-mono, monospace);
-  font-size: 0.9rem;
-  color: rgba(255, 255, 255, 0.6);
-  margin-bottom: 3rem;
-  letter-spacing: 0.1em;
+/* Decorative lines flanking the label */
+.nf__label::before,
+.nf__label::after {
+  content:    '';
+  width:      32px;
+  height:     1px;
+  background: rgba(200,255,87,0.30);            /* Faint lime line                        */
 }
 
-/* Button Customization for this page */
-.not-found__actions .btn {
-  border-radius: 0; /* Sharp geometric edges */
-  font-family: var(--font-mono, monospace);
-  letter-spacing: 0.2em;
+/* ── Main message heading ─────────────────────────────────────── */
+.nf__title {
+  font-family:    var(--font-display);          /* Syne display                           */
+  font-size:      clamp(1.2rem, 3vw, 1.6rem);  /* Fluid size                             */
+  font-weight:    700;
+  color:          rgba(255,255,255,0.90);       /* Near-white                             */
+  letter-spacing: -0.02em;
+  margin-bottom:  var(--s3);
+  animation:      fadeUp 0.6s ease 0.5s both;
+}
+
+/* ── Subtitle / description ───────────────────────────────────── */
+.nf__sub {
+  font-family:    var(--font-mono);             /* Mono for technical feel                */
+  font-size:      0.80rem;
+  color:          rgba(255,255,255,0.38);       /* Very muted white                       */
+  letter-spacing: 0.04em;
+  line-height:    1.7;
+  max-width:      380px;
+  margin-bottom:  var(--s8);
+  animation:      fadeUp 0.6s ease 0.6s both;
+}
+
+/* ── CTA button row ───────────────────────────────────────────── */
+.nf__actions {
+  display:         flex;
+  align-items:     center;
+  gap:             var(--s4);
+  flex-wrap:       wrap;
+  justify-content: center;
+  animation:       fadeUp 0.6s ease 0.75s both;
+}
+
+/* Primary CTA — lime solid button */
+.nf__btn--primary {
+  display:         inline-flex;
+  align-items:     center;
+  gap:             var(--s2);
+  padding:         0.70rem 1.60rem;
+  background:      #c8ff57;                     /* Solid lime fill                        */
+  color:           #050810;                     /* Dark text on lime                      */
+  font-family:     var(--font-mono);            /* Mono for techy feel                    */
+  font-size:       0.75rem;
+  font-weight:     700;
+  letter-spacing:  0.12em;
+  text-transform:  uppercase;
+  text-decoration: none;
+  border:          none;
+  border-radius:   0;                           /* Sharp geometric — no radius            */
+  cursor:          pointer;
+  position:        relative;
+  overflow:        hidden;
+  transition:      all 0.22s ease;
+  box-shadow:
+    0 0 24px rgba(200,255,87,0.25),             /* Lime glow                              */
+    0 4px 16px rgba(0,0,0,0.40);               /* Drop shadow                            */
+}
+
+/* Shimmer sweep on hover */
+.nf__btn--primary::after {
+  content:    '';
+  position:   absolute;
+  top:        0;
+  left:       -100%;
+  width:      55%;
+  height:     100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.25), transparent);
+  transform:  skewX(-15deg);
+  transition: left 0.45s ease;
+}
+
+.nf__btn--primary:hover {
+  transform:  translateY(-2px);
+  box-shadow:
+    0 0 36px rgba(200,255,87,0.40),
+    0 8px 24px rgba(0,0,0,0.50);
+}
+
+.nf__btn--primary:hover::after { left: 160%; } /* Sweep through on hover                 */
+
+/* Ghost secondary button */
+.nf__btn--ghost {
+  display:         inline-flex;
+  align-items:     center;
+  gap:             var(--s2);
+  padding:         0.68rem 1.40rem;
+  background:      transparent;
+  color:           rgba(200,255,87,0.70);       /* Muted lime text                        */
+  font-family:     var(--font-mono);
+  font-size:       0.75rem;
+  font-weight:     600;
+  letter-spacing:  0.10em;
+  text-transform:  uppercase;
+  text-decoration: none;
+  border:          1px solid rgba(200,255,87,0.25); /* Faint lime border                 */
+  border-radius:   0;                           /* Sharp geometric                        */
+  cursor:          pointer;
+  transition:      all 0.22s ease;
+}
+
+.nf__btn--ghost:hover {
+  background:   rgba(200,255,87,0.06);          /* Subtle lime fill on hover              */
+  border-color: rgba(200,255,87,0.55);          /* Stronger border on hover               */
+  color:        #c8ff57;                        /* Full lime on hover                     */
+  transform:    translateY(-2px);
+}
+
+/* ── Coordinate display — decorative bottom element ──────────── */
+.nf__coords {
+  position:       absolute;                     /* Pinned to bottom of page               */
+  bottom:         var(--s8);
+  left:           50%;
+  transform:      translateX(-50%);
+  z-index:        2;
+  display:        flex;
+  align-items:    center;
+  gap:            var(--s4);
+  animation:      fadeIn 1s ease 1.2s both;
+}
+
+/* Individual coordinate item */
+.nf__coord {
+  font-family:    var(--font-mono);
+  font-size:      0.52rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color:          rgba(200,255,87,0.22);        /* Very faint lime                        */
+  white-space:    nowrap;
+}
+
+/* Separator dot between coords */
+.nf__coord-sep {
+  width:         3px;
+  height:        3px;
+  border-radius: 50%;
+  background:    rgba(200,255,87,0.20);
+  flex-shrink:   0;
+}
+
+/* ── Corner bracket decorations ───────────────────────────────── */
+/* These are pure CSS decorative corners — no extra HTML                */
+.nf__corner {
+  position:   absolute;
+  z-index:    2;
+  width:      28px;
+  height:     28px;
+  pointer-events: none;
+  animation:  fadeIn 1s ease 0.9s both;
+}
+
+.nf__corner--tl {
+  top:    var(--s6);
+  left:   var(--s6);
+  border-top:  1px solid rgba(200,255,87,0.25); /* Top-left corner — top edge            */
+  border-left: 1px solid rgba(200,255,87,0.25); /* Top-left corner — left edge           */
+}
+
+.nf__corner--tr {
+  top:     var(--s6);
+  right:   var(--s6);
+  border-top:   1px solid rgba(200,255,87,0.25);
+  border-right: 1px solid rgba(200,255,87,0.25);
+}
+
+.nf__corner--bl {
+  bottom: var(--s6);
+  left:   var(--s6);
+  border-bottom: 1px solid rgba(200,255,87,0.25);
+  border-left:   1px solid rgba(200,255,87,0.25);
+}
+
+.nf__corner--br {
+  bottom: var(--s6);
+  right:  var(--s6);
+  border-bottom: 1px solid rgba(200,255,87,0.25);
+  border-right:  1px solid rgba(200,255,87,0.25);
+}
+
+/* ── Responsive ───────────────────────────────────────────────── */
+@media (max-width: 480px) {
+  .nf__content  { padding: var(--s6) var(--s4); }  /* Tighter padding on mobile          */
+  .nf__actions  { flex-direction: column; width: 100%; } /* Stack buttons vertically     */
+  .nf__btn--primary,
+  .nf__btn--ghost { width: 100%; justify-content: center; } /* Full-width buttons        */
+  .nf__corner   { display: none; }                  /* Hide corner brackets on mobile    */
 }
