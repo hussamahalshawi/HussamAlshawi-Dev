@@ -1,5 +1,6 @@
 /* ═══════════════════════════════════════════════════════════════
    DashboardLayout.css — Devoryn-Grade Glassmorphism Shell
+   Fully theme-aware: uses CSS variables from index.css
    Fixed sidebar + sticky topbar + scrollable content area
    ═══════════════════════════════════════════════════════════════ */
 
@@ -7,14 +8,16 @@
 .dashboard-root {
   display:    flex;
   min-height: 100vh;
-  background: var(--bg-primary);
+  background: var(--bg-primary);                /* Theme-aware background */
   position:   relative;
   overflow-x: hidden;
+  transition: background 0.35s ease;            /* Smooth theme switch */
 }
 
 /* ═══════════════════════════════════════════════════
    SIDEBAR — Deep Frosted Glass Panel
-   ═══════════════════════════════════════════════════ */
+   Uses --sidebar-bg which switches per theme
+═══════════════════════════════════════════════════ */
 .sidebar {
   width:          var(--sidebar-width, 260px);
   min-height:     100vh;
@@ -24,26 +27,30 @@
   z-index:        200;
   display:        flex;
   flex-direction: column;
-  padding:        var(--space-5) var(--space-4) var(--space-6);
+  padding:        var(--s5) var(--s4) var(--s6);
   overflow-y:     auto;
   overflow-x:     hidden;
-  transition:     transform var(--transition-slow);
+  transition:     transform var(--t-slow),
+                  background 0.35s ease,        /* Smooth theme switch */
+                  border-color 0.35s ease;
 
-  /* Deep frosted glass — Devoryn signature */
-  background:              rgba(11, 16, 34, 0.82);
+  background:              var(--sidebar-bg);   /* Switches between dark/light */
   backdrop-filter:         blur(40px) saturate(1.8);
   -webkit-backdrop-filter: blur(40px) saturate(1.8);
-  border-right:            1px solid rgba(255, 255, 255, 0.09);
-  box-shadow:              8px 0 40px rgba(0, 0, 0, 0.55),
-                           inset -1px 0 0 rgba(255, 255, 255, 0.04);
+  border-right:            1px solid var(--sidebar-border);
+  box-shadow:              var(--sidebar-shadow),
+                           inset -1px 0 0 rgba(255,255,255,0.04);
 }
 
-/* Thin scrollbar inside sidebar */
+/* Thin custom scrollbar inside sidebar */
 .sidebar::-webkit-scrollbar       { width: 2px; }
 .sidebar::-webkit-scrollbar-track { background: transparent; }
-.sidebar::-webkit-scrollbar-thumb { background: rgba(79, 195, 247, 0.25); border-radius: 9999px; }
+.sidebar::-webkit-scrollbar-thumb {
+  background:    var(--cyan-dim);
+  border-radius: var(--r-full);
+}
 
-/* Right-edge glow line — Devoryn detail */
+/* Right-edge glow line */
 .sidebar::after {
   content:  '';
   position: absolute;
@@ -54,14 +61,14 @@
   background: linear-gradient(
     to bottom,
     transparent 0%,
-    rgba(79, 195, 247, 0.25) 35%,
-    rgba(79, 195, 247, 0.12) 65%,
+    var(--border-cyan) 35%,
+    var(--cyan-dim) 65%,
     transparent 100%
   );
   pointer-events: none;
 }
 
-/* Top gloss shine */
+/* Top gloss line */
 .sidebar::before {
   content:    '';
   position:   absolute;
@@ -69,11 +76,11 @@
   left:       0;
   right:      0;
   height:     1px;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.14), transparent);
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.20), transparent);
   pointer-events: none;
 }
 
-/* Water-droplet texture overlay */
+/* Water-droplet texture overlay (decorative) */
 .sidebar__texture {
   position:         absolute;
   inset:            0;
@@ -83,35 +90,33 @@
     radial-gradient(circle at 18% 28%, rgba(255,255,255,0.035) 1.5px, transparent 1.5px),
     radial-gradient(circle at 72% 14%, rgba(255,255,255,0.025) 1px,   transparent 1px),
     radial-gradient(circle at 84% 60%, rgba(255,255,255,0.03)  2px,   transparent 2px),
-    radial-gradient(circle at 33% 76%, rgba(255,255,255,0.02)  1.5px, transparent 1.5px),
-    radial-gradient(circle at 55% 42%, rgba(255,255,255,0.015) 1px,   transparent 1px);
+    radial-gradient(circle at 33% 76%, rgba(255,255,255,0.02)  1.5px, transparent 1.5px);
   border-radius: inherit;
 }
 
-/* Ensure all sidebar content sits above texture */
+/* All sidebar content above texture */
 .sidebar > *:not(.sidebar__texture) { position: relative; z-index: 1; }
 
 /* ── Logo ─────────────────────────────────────────── */
 .sidebar__logo {
   display:         flex;
   align-items:     center;
-  gap:             var(--space-3);
-  padding:         var(--space-3) var(--space-2);
-  margin-bottom:   var(--space-6);
+  gap:             var(--s3);
+  padding:         var(--s3) var(--s2);
+  margin-bottom:   var(--s6);
   text-decoration: none;
-  border-radius:   var(--radius-lg);
-  transition:      background var(--transition-fast);
-  position:        relative;
+  border-radius:   var(--r-lg);
+  transition:      background var(--t-fast);
 }
 
-.sidebar__logo:hover { background: rgba(255, 255, 255, 0.05); }
+.sidebar__logo:hover { background: var(--glass-light); }
 
-/* Brand square */
+/* Brand gradient square */
 .sidebar__logo-mark {
   width:           38px;
   height:          38px;
-  border-radius:   var(--radius-md);
-  background:      linear-gradient(135deg, var(--accent-cyan) 0%, var(--accent-blue) 100%);
+  border-radius:   var(--r-md);
+  background:      linear-gradient(135deg, var(--cyan) 0%, var(--blue) 100%);
   display:         flex;
   align-items:     center;
   justify-content: center;
@@ -119,45 +124,39 @@
   font-size:       0.82rem;
   font-weight:     800;
   color:           #fff;
-  letter-spacing:  -0.02em;
   flex-shrink:     0;
-  box-shadow:      0 0 20px rgba(79, 195, 247, 0.35),
-                   0 4px 12px rgba(0, 0, 0, 0.4);
-  animation:       glowPulse 4s ease-in-out infinite;
-}
-
-@keyframes glowPulse {
-  0%, 100% { box-shadow: 0 0 18px rgba(79,195,247,0.28), 0 4px 12px rgba(0,0,0,0.4); }
-  50%       { box-shadow: 0 0 30px rgba(79,195,247,0.48), 0 4px 16px rgba(0,0,0,0.4); }
+  box-shadow:      0 0 20px var(--cyan-dim), 0 4px 12px rgba(0,0,0,0.3);
 }
 
 .sidebar__logo-text {
   font-family:     var(--font-display);
   font-size:       1.22rem;
   font-weight:     800;
-  color:           var(--text-white);
+  color:           var(--text-white);           /* Inverted in light mode → dark text */
   letter-spacing:  0.01em;
   line-height:     1;
+  transition:      color 0.35s ease;
 }
 
 .sidebar__logo-text em {
-  color:      var(--accent-cyan);
+  color:      var(--cyan);
   font-style: normal;
 }
 
-/* ── Section label ────────────────────────────────── */
+/* ── Nav section label ────────────────────────────── */
 .sidebar__nav-label {
   font-family:    var(--font-mono);
   font-size:      0.56rem;
   letter-spacing: 0.18em;
   text-transform: uppercase;
   color:          var(--text-muted);
-  padding:        0 var(--space-3);
-  margin-bottom:  var(--space-2);
+  padding:        0 var(--s3);
+  margin-bottom:  var(--s2);
   display:        block;
+  transition:     color 0.35s ease;
 }
 
-/* ── Nav ──────────────────────────────────────────── */
+/* ── Nav links ────────────────────────────────────── */
 .sidebar__nav {
   display:        flex;
   flex-direction: column;
@@ -165,38 +164,37 @@
   flex:           1;
 }
 
-/* Nav item */
 .nav-item {
   display:         flex;
   align-items:     center;
-  gap:             var(--space-3);
-  padding:         0.6rem var(--space-3);
-  border-radius:   var(--radius-md);
+  gap:             var(--s3);
+  padding:         0.6rem var(--s3);
+  border-radius:   var(--r-md);
   color:           var(--text-secondary);
   font-size:       0.85rem;
   font-weight:     500;
   text-decoration: none;
   border:          1px solid transparent;
-  transition:      all var(--transition-base);
+  transition:      all var(--t-base);
   position:        relative;
   cursor:          pointer;
 }
 
 .nav-item:hover {
-  background:   rgba(255, 255, 255, 0.06);
+  background:   var(--glass-medium);
   color:        var(--text-primary);
-  border-color: rgba(255, 255, 255, 0.06);
+  border-color: var(--border-subtle);
 }
 
-/* Active state — cyan glass */
+/* Active state — uses theme-aware nav variables */
 .nav-item--active {
-  background:   rgba(79, 195, 247, 0.10);
-  color:        #7DD8FC;
-  border-color: rgba(79, 195, 247, 0.18);
-  box-shadow:   inset 0 0 0 1px rgba(79, 195, 247, 0.08);
+  background:   var(--nav-active-bg);
+  color:        var(--nav-active-color);
+  border-color: var(--nav-active-border);
+  box-shadow:   inset 0 0 0 1px var(--nav-active-border);
 }
 
-/* Left accent bar — Devoryn signature detail */
+/* Left accent bar on active item */
 .nav-item--active::before {
   content:       '';
   position:      absolute;
@@ -204,10 +202,9 @@
   top:           20%;
   height:        60%;
   width:         3px;
-  background:    var(--accent-cyan);
-  border-radius: 0 var(--radius-xs) var(--radius-xs) 0;
-  box-shadow:    0 0 10px var(--accent-cyan),
-                 0 0 20px rgba(79, 195, 247, 0.4);
+  background:    var(--cyan);
+  border-radius: 0 var(--r-xs) var(--r-xs) 0;
+  box-shadow:    0 0 10px var(--cyan), 0 0 20px var(--cyan-dim);
 }
 
 .nav-item__icon {
@@ -219,7 +216,7 @@
   font-size:       1.05rem;
   flex-shrink:     0;
   opacity:         0.75;
-  transition:      opacity var(--transition-fast);
+  transition:      opacity var(--t-fast);
 }
 
 .nav-item--active .nav-item__icon,
@@ -231,28 +228,28 @@
   flex:        1;
 }
 
-/* ── User card (bottom) ───────────────────────────── */
+/* ── User card at bottom ──────────────────────────── */
 .sidebar__user {
   margin-top:  auto;
-  padding-top: var(--space-5);
-  border-top:  1px solid rgba(255, 255, 255, 0.07);
+  padding-top: var(--s5);
+  border-top:  1px solid var(--border-subtle);
+  transition:  border-color 0.35s ease;
 }
 
 .sidebar__user-card {
   display:       flex;
   align-items:   center;
-  gap:           var(--space-3);
-  padding:       var(--space-3);
-  border-radius: var(--radius-lg);
-  background:    rgba(255, 255, 255, 0.05);
-  border:        1px solid rgba(255, 255, 255, 0.08);
+  gap:           var(--s3);
+  padding:       var(--s3);
+  border-radius: var(--r-lg);
+  background:    var(--glass-light);
+  border:        1px solid var(--border-subtle);
   cursor:        pointer;
-  transition:    all var(--transition-base);
+  transition:    all var(--t-base);
   position:      relative;
   overflow:      hidden;
 }
 
-/* Gloss on user card */
 .sidebar__user-card::before {
   content:    '';
   position:   absolute;
@@ -260,21 +257,21 @@
   left:       0;
   right:      0;
   height:     1px;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.12), transparent);
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.20), transparent);
   pointer-events: none;
 }
 
 .sidebar__user-card:hover {
-  background:   rgba(255, 255, 255, 0.08);
-  border-color: rgba(255, 255, 255, 0.12);
+  background:   var(--glass-medium);
+  border-color: var(--border-medium);
 }
 
-/* Avatar */
+/* Avatar circle */
 .sidebar__avatar {
   width:           38px;
   height:          38px;
-  border-radius:   var(--radius-md);
-  background:      linear-gradient(135deg, var(--accent-cyan), var(--accent-violet));
+  border-radius:   var(--r-md);
+  background:      linear-gradient(135deg, var(--cyan), var(--violet));
   display:         flex;
   align-items:     center;
   justify-content: center;
@@ -284,14 +281,10 @@
   color:           #fff;
   flex-shrink:     0;
   overflow:        hidden;
-  box-shadow:      0 2px 8px rgba(0, 0, 0, 0.35);
+  box-shadow:      0 2px 8px rgba(0,0,0,0.25);
 }
 
-.sidebar__avatar img {
-  width:      100%;
-  height:     100%;
-  object-fit: cover;
-}
+.sidebar__avatar img { width: 100%; height: 100%; object-fit: cover; }
 
 .sidebar__user-info { flex: 1; min-width: 0; }
 
@@ -303,6 +296,7 @@
   overflow:      hidden;
   text-overflow: ellipsis;
   line-height:   1.2;
+  transition:    color 0.35s ease;
 }
 
 .sidebar__user-role {
@@ -314,27 +308,23 @@
   white-space:    nowrap;
   overflow:       hidden;
   text-overflow:  ellipsis;
+  transition:     color 0.35s ease;
 }
 
-/* Online dot */
+/* Pulsing green online dot */
 .sidebar__online-dot {
   width:         8px;
   height:        8px;
   border-radius: 50%;
-  background:    var(--accent-green);
-  box-shadow:    0 0 8px var(--accent-green);
+  background:    var(--green);
+  box-shadow:    0 0 8px var(--green);
   animation:     pulseDot 2.5s ease infinite;
   flex-shrink:   0;
 }
 
-@keyframes pulseDot {
-  0%, 100% { transform: scale(1);    opacity: 1;   }
-  50%       { transform: scale(1.45); opacity: 0.65; }
-}
-
 /* ═══════════════════════════════════════════════════
    MAIN CONTENT AREA
-   ═══════════════════════════════════════════════════ */
+═══════════════════════════════════════════════════ */
 .dashboard-main {
   margin-left:    var(--sidebar-width, 260px);
   flex:           1;
@@ -345,8 +335,8 @@
 }
 
 /* ═══════════════════════════════════════════════════
-   TOPBAR — Sticky Frosted Glass Bar
-   ═══════════════════════════════════════════════════ */
+   TOPBAR — Sticky Frosted Glass
+═══════════════════════════════════════════════════ */
 .topbar {
   height:          64px;
   position:        sticky;
@@ -355,17 +345,18 @@
   display:         flex;
   align-items:     center;
   justify-content: space-between;
-  padding:         0 var(--space-8);
+  padding:         0 var(--s8);
+  transition:      background 0.35s ease,
+                   border-color 0.35s ease;
 
-  /* Frosted glass */
-  background:              rgba(11, 16, 34, 0.78);
+  background:              var(--topbar-bg);    /* Theme-aware topbar background */
   backdrop-filter:         blur(32px) saturate(1.6);
   -webkit-backdrop-filter: blur(32px) saturate(1.6);
-  border-bottom:           1px solid rgba(255, 255, 255, 0.08);
-  box-shadow:              0 2px 24px rgba(0, 0, 0, 0.28);
+  border-bottom:           1px solid var(--sidebar-border);
+  box-shadow:              0 2px 24px rgba(0,0,0,0.15);
 }
 
-/* Bottom gloss line on topbar */
+/* Bottom glow line on topbar */
 .topbar::after {
   content:    '';
   position:   absolute;
@@ -373,18 +364,19 @@
   left:       4%;
   right:      4%;
   height:     1px;
-  background: linear-gradient(90deg, transparent, rgba(79, 195, 247, 0.18), transparent);
+  background: linear-gradient(90deg, transparent, var(--border-cyan), transparent);
   pointer-events: none;
 }
 
-/* Greeting */
+/* Greeting text */
 .topbar__greeting-hi {
   font-family:    var(--font-display);
   font-size:      1.05rem;
   font-weight:    700;
-  color:          var(--text-white);
+  color:          var(--text-white);            /* Dark text in light mode */
   line-height:    1.2;
   letter-spacing: -0.01em;
+  transition:     color 0.35s ease;
 }
 
 .topbar__greeting-sub {
@@ -393,39 +385,41 @@
   color:          var(--text-muted);
   letter-spacing: 0.04em;
   margin-top:     2px;
+  transition:     color 0.35s ease;
 }
 
-/* Actions row */
+/* Actions row — right side of topbar */
 .topbar__actions {
   display:     flex;
   align-items: center;
-  gap:         var(--space-3);
+  gap:         var(--s3);
 }
 
-/* Icon button */
+/* Generic icon buttons (bell, settings) */
 .topbar__icon-btn {
   width:           38px;
   height:          38px;
-  border-radius:   var(--radius-md);
-  background:      rgba(255, 255, 255, 0.05);
-  border:          1px solid rgba(255, 255, 255, 0.08);
+  border-radius:   var(--r-md);
+  background:      var(--glass-light);
+  border:          1px solid var(--border-subtle);
   display:         flex;
   align-items:     center;
   justify-content: center;
   font-size:       1rem;
   color:           var(--text-secondary);
   cursor:          pointer;
-  transition:      all var(--transition-fast);
+  transition:      all var(--t-fast);
   position:        relative;
   flex-shrink:     0;
   font-family:     var(--font-body);
 }
 
 .topbar__icon-btn:hover {
-  background:   rgba(255, 255, 255, 0.09);
+  background:   var(--glass-medium);
   color:        var(--text-primary);
-  border-color: rgba(255, 255, 255, 0.14);
+  border-color: var(--border-medium);
   transform:    translateY(-1px);
+  box-shadow:   var(--shadow-sm);
 }
 
 /* Notification red dot */
@@ -436,34 +430,77 @@
   width:         6px;
   height:        6px;
   border-radius: 50%;
-  background:    var(--accent-cyan);
-  box-shadow:    0 0 6px var(--accent-cyan);
+  background:    var(--cyan);
+  box-shadow:    0 0 6px var(--cyan);
   animation:     pulseDot 2s ease infinite;
 }
 
-/* User pill */
+/* ── Theme Toggle Pill ────────────────────────────── */
+/* Container — pill shape holding both buttons */
+.topbar__theme-toggle {
+  display:       flex;
+  align-items:   center;
+  padding:       4px;                           /* Inner padding around buttons */
+  background:    var(--glass-light);            /* Theme-aware container bg */
+  border:        1px solid var(--border-subtle);
+  border-radius: var(--r-full);                 /* Pill shape */
+  gap:           2px;                           /* Space between buttons */
+  transition:    background 0.35s ease,
+                 border-color 0.35s ease;
+}
+
+/* Individual toggle button (moon / sun) */
+.theme-btn {
+  width:         32px;
+  height:        28px;
+  border-radius: var(--r-full);                 /* Round pill shape */
+  font-size:     0.85rem;
+  display:       flex;
+  align-items:   center;
+  justify-content: center;
+  color:         var(--toggle-text);            /* Inactive: muted color */
+  cursor:        pointer;
+  transition:    all var(--t-fast);
+  border:        none;
+  background:    transparent;
+  outline:       none;
+}
+
+/* Active toggle button — highlighted */
+.theme-btn--active {
+  background: var(--toggle-active-bg);          /* White highlight in both modes */
+  color:      var(--toggle-text-dark);          /* Darker text on active */
+  box-shadow: 0 1px 4px rgba(0,0,0,0.15);       /* Subtle lift shadow */
+}
+
+.theme-btn:not(.theme-btn--active):hover {
+  background: var(--glass-medium);              /* Hover state for inactive button */
+}
+
+/* ── User pill ────────────────────────────────────── */
 .topbar__user {
   display:       flex;
   align-items:   center;
-  gap:           var(--space-2);
+  gap:           var(--s2);
   padding:       0.40rem 0.80rem 0.40rem 0.40rem;
-  background:    rgba(255, 255, 255, 0.05);
-  border:        1px solid rgba(255, 255, 255, 0.09);
-  border-radius: 9999px;
+  background:    var(--glass-light);
+  border:        1px solid var(--border-subtle);
+  border-radius: var(--r-full);
   cursor:        pointer;
-  transition:    all var(--transition-base);
+  transition:    all var(--t-base);
 }
 
 .topbar__user:hover {
-  background:   rgba(255, 255, 255, 0.09);
-  border-color: rgba(255, 255, 255, 0.15);
+  background:   var(--glass-medium);
+  border-color: var(--border-medium);
+  box-shadow:   var(--shadow-sm);
 }
 
 .topbar__user-avatar {
   width:           30px;
   height:          30px;
   border-radius:   50%;
-  background:      linear-gradient(135deg, var(--accent-cyan), var(--accent-blue));
+  background:      linear-gradient(135deg, var(--cyan), var(--blue));
   display:         flex;
   align-items:     center;
   justify-content: center;
@@ -475,17 +512,14 @@
   flex-shrink:     0;
 }
 
-.topbar__user-avatar img {
-  width:      100%;
-  height:     100%;
-  object-fit: cover;
-}
+.topbar__user-avatar img { width: 100%; height: 100%; object-fit: cover; }
 
 .topbar__user-name {
   font-size:   0.82rem;
   font-weight: 500;
   color:       var(--text-secondary);
   white-space: nowrap;
+  transition:  color 0.35s ease;
 }
 
 .topbar__user-chevron {
@@ -494,18 +528,70 @@
   margin-left: 2px;
 }
 
-/* Hamburger — mobile only */
+/* Hamburger — shown only on mobile */
 .topbar__hamburger { display: none; }
 
 /* ═══════════════════════════════════════════════════
    PAGE CONTENT
-   ═══════════════════════════════════════════════════ */
+═══════════════════════════════════════════════════ */
 .page-content {
   flex:       1;
-  padding:    var(--space-8);
+  padding:    var(--s8);
   animation:  fadeIn 0.4s ease both;
 }
 
+/* ═══════════════════════════════════════════════════
+   MOBILE OVERLAY
+═══════════════════════════════════════════════════ */
+.sidebar-overlay {
+  position:        fixed;
+  inset:           0;
+  z-index:         150;
+  background:      rgba(0,0,0,0.55);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  animation:       fadeIn 0.2s ease;
+}
+
+/* ═══════════════════════════════════════════════════
+   RESPONSIVE
+═══════════════════════════════════════════════════ */
+@media (max-width: 1024px) {
+  /* Sidebar slides off-screen on tablet */
+  .sidebar {
+    transform:  translateX(-100%);
+    box-shadow: none;
+  }
+
+  /* Open state — slides back in */
+  .sidebar--open {
+    transform:  translateX(0);
+    box-shadow: var(--sidebar-shadow);
+    animation:  slideInLeft 0.35s cubic-bezier(0.16,1,0.3,1);
+  }
+
+  /* No left margin when sidebar is hidden */
+  .dashboard-main { margin-left: 0; }
+
+  /* Show hamburger on tablet/mobile */
+  .topbar__hamburger { display: flex; }
+
+  .page-content { padding: var(--s5); }
+  .topbar       { padding: 0 var(--s5); }
+}
+
+@media (max-width: 640px) {
+  /* Hide text elements on very small screens */
+  .topbar__greeting-sub { display: none; }
+  .topbar__user-name    { display: none; }
+  .topbar__user-chevron { display: none; }
+  .topbar               { padding: 0 var(--s4); }
+  .page-content         { padding: var(--s4); }
+}
+
+/* ═══════════════════════════════════════════════════
+   ANIMATIONS
+═══════════════════════════════════════════════════ */
 @keyframes fadeIn {
   from { opacity: 0; }
   to   { opacity: 1; }
@@ -521,49 +607,7 @@
   to   { transform: translateX(0); }
 }
 
-/* ═══════════════════════════════════════════════════
-   MOBILE OVERLAY
-   ═══════════════════════════════════════════════════ */
-.sidebar-overlay {
-  position:        fixed;
-  inset:           0;
-  z-index:         150;
-  background:      rgba(0, 0, 0, 0.65);
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
-  animation:       fadeIn 0.2s ease;
-}
-
-/* ═══════════════════════════════════════════════════
-   RESPONSIVE
-   ═══════════════════════════════════════════════════ */
-@media (max-width: 1024px) {
-  /* Sidebar slides off-screen */
-  .sidebar {
-    transform:  translateX(-100%);
-    box-shadow: none;
-  }
-
-  .sidebar--open {
-    transform:  translateX(0);
-    box-shadow: 8px 0 40px rgba(0, 0, 0, 0.6);
-    animation:  slideInLeft 0.35s cubic-bezier(0.16, 1, 0.3, 1);
-  }
-
-  /* No sidebar offset */
-  .dashboard-main { margin-left: 0; }
-
-  /* Show hamburger */
-  .topbar__hamburger { display: flex; }
-
-  .page-content { padding: var(--space-5); }
-  .topbar       { padding: 0 var(--space-5); }
-}
-
-@media (max-width: 640px) {
-  .topbar__greeting-sub { display: none; }
-  .topbar__user-name    { display: none; }
-  .topbar__user-chevron { display: none; }
-  .topbar               { padding: 0 var(--space-4); }
-  .page-content         { padding: var(--space-4); }
+@keyframes pulseDot {
+  0%, 100% { transform: scale(1);    opacity: 1;   }
+  50%       { transform: scale(1.45); opacity: 0.65; }
 }
