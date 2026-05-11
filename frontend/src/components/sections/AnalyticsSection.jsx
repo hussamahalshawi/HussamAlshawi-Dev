@@ -1,38 +1,75 @@
 /**
  * AnalyticsSection.jsx
  * ─────────────────────────────────────────────────────────
- * Devoryn-style analytics dashboard:
- * - Animated bento KPI grid (count-up numbers)
- * - Top skills horizontal bars (glass panel)
- * - Skill proficiency distribution bands
- * - Category score averages list
- * All data from analytics prop — no internal fetching.
+ * Devoryn-style analytics dashboard section.
+ *
+ * Layout:
+ *   ┌──────────────────────────────────────────────────┐
+ *   │  Section Header: "By the Numbers"                │
+ *   ├──────────────────────────────────────────────────┤
+ *   │  KPI Bento Grid (8 animated count-up cards)      │
+ *   ├────────────────────────┬─────────────────────────┤
+ *   │  Top Skills (bars)     │  Distribution Bands     │
+ *   │                        │  ─────────────────────  │
+ *   │                        │  Category Averages      │
+ *   └────────────────────────┴─────────────────────────┘
+ *
+ * Props:
+ *   analytics — from /api/portfolio/analytics
+ *     .counts              — entity counts object
+ *     .top_skills          — [{ skill_name, score, color }]
+ *     .skills_radar        — [{ category, avg_score }]
+ *     .skills_distribution — { expert, advanced, intermediate, beginner }
+ *
+ * All animations are triggered by IntersectionObserver (scroll-based).
  * ─────────────────────────────────────────────────────────
  */
-import { useRef, useEffect } from 'react';
-import {
-  CHART_COLORS,
-  SKILL_BANDS,
-}                            from '../../utils/constants';
-import { SkeletonKPI }       from '../ui/SkeletonLoader';
-import Badge                 from '../ui/Badge';
-import '../../styles/components/AnalyticsSection.css';
 
+import { useRef, useEffect }      from 'react';            // Hooks for animation
+import { CHART_COLORS, SKILL_BANDS, ANIMATION } from '../../utils/constants'; // Global tokens
+import { SkeletonKPI }            from '../ui/SkeletonLoader'; // Loading skeleton
+import Badge                       from '../ui/Badge';         // Badge component
+import '../../styles/components/AnalyticsSection.css';        // Section styles
+
+/* ── KPI card configuration ──────────────────────────────────── */
+/* Each entry maps to a count key in the analytics.counts object */
+const KPI_CONFIG = [
+  { key: 'skills',       label: 'Skills',       icon: '⚙',  color: CHART_COLORS[0] }, // Lime
+  { key: 'projects',     label: 'Projects',     icon: '⊡',  color: CHART_COLORS[1] }, // Cyan
+  { key: 'courses',      label: 'Courses',      icon: '📚', color: CHART_COLORS[2] }, // Violet
+  { key: 'experience',   label: 'Roles',        icon: '💼', color: CHART_COLORS[3] }, // Gold
+  { key: 'education',    label: 'Degrees',      icon: '🎓', color: CHART_COLORS[4] }, // Coral
+  { key: 'achievements', label: 'Achievements', icon: '🏆', color: CHART_COLORS[5] }, // Green
+  { key: 'self_study',   label: 'Self Study',   icon: '✍',  color: CHART_COLORS[6] }, // Blue
+  { key: 'goals',        label: 'Goals',        icon: '◈',  color: CHART_COLORS[7] }, // Amber
+];
+
+/* ════════════════════════════════════════════════════════════════
+   MAIN COMPONENT: AnalyticsSection
+════════════════════════════════════════════════════════════════ */
 /**
+ * AnalyticsSection — Renders the full analytics dashboard section.
+ *
  * @param {object}      props
- * @param {object|null} props.analytics - From /api/portfolio/analytics
+ * @param {object|null} props.analytics - Analytics data from API
+ *
+ * @returns {JSX.Element}
  */
 export default function AnalyticsSection({ analytics }) {
 
-  /* ── Loading skeleton ─────────────────────────────────────────── */
+  /* ── Loading skeleton — mirrors the real layout ─────────────── */
   if (!analytics) {
     return (
-      <section id="analytics" className="section">
+      <section id="analytics" className="section section--alt">
         <div className="container">
+
+          {/* Section header skeleton */}
           <div className="s-head">
             <span className="s-tag">Analytics</span>
             <h2 className="s-title">By the Numbers</h2>
           </div>
+
+          {/* KPI grid skeleton — 8 cards */}
           <div className="analytics-kpi-grid">
             {Array.from({ length: 8 }, (_, i) => (
               <SkeletonKPI key={i} />
@@ -43,26 +80,18 @@ export default function AnalyticsSection({ analytics }) {
     );
   }
 
-  /* ── Data extraction ──────────────────────────────────────────── */
-  const counts    = analytics.counts              || {};
-  const topSkills = analytics.top_skills          || [];
-  const radar     = analytics.skills_radar        || [];
-  const dist      = analytics.skills_distribution || {};
-
-  /* ── KPI config ───────────────────────────────────────────────── */
-  const kpis = [
-    { key: 'skills',       label: 'Skills',       icon: '⚙',  color: CHART_COLORS[0] },
-    { key: 'projects',     label: 'Projects',     icon: '⊡',  color: CHART_COLORS[1] },
-    { key: 'courses',      label: 'Courses',      icon: '📚', color: CHART_COLORS[2] },
-    { key: 'experience',   label: 'Roles',        icon: '💼', color: CHART_COLORS[3] },
-    { key: 'education',    label: 'Degrees',      icon: '🎓', color: CHART_COLORS[4] },
-    { key: 'achievements', label: 'Achievements', icon: '🏆', color: CHART_COLORS[5] },
-    { key: 'self_study',   label: 'Self Study',   icon: '✍',  color: CHART_COLORS[6] },
-    { key: 'goals',        label: 'Goals',        icon: '◈',  color: CHART_COLORS[7] },
-  ];
+  /* ── Safe data extraction with fallbacks ────────────────────── */
+  const counts    = analytics.counts              || {}; // Entity counts object
+  const topSkills = analytics.top_skills          || []; // Top skills array
+  const radar     = analytics.skills_radar        || []; // Category radar data
+  const dist      = analytics.skills_distribution || {}; // Distribution bands
 
   return (
-    <section id="analytics" className="section">
+    <section
+      id="analytics"
+      className="section section--alt"
+      aria-label="Analytics dashboard"
+    >
       <div className="container">
 
         {/* ── Section header ── */}
@@ -74,25 +103,30 @@ export default function AnalyticsSection({ analytics }) {
           </p>
         </div>
 
-        {/* ── KPI bento grid ── */}
-        <div className="analytics-kpi-grid" role="list">
-          {kpis.map((kpi, i) => (
+        {/* ── KPI bento grid — 8 animated count-up cards ── */}
+        <div
+          className="analytics-kpi-grid"
+          role="list"
+          aria-label="Portfolio statistics"
+        >
+          {KPI_CONFIG.map((kpi, i) => (
             <AnimatedKpiCard
               key={kpi.key}
               label={kpi.label}
               value={counts[kpi.key] || 0}
               icon={kpi.icon}
               color={kpi.color}
-              delay={i * 70}
+              delay={i * 70}                              /* Stagger each card by 70ms */
             />
           ))}
         </div>
 
-        {/* ── Bottom two-column ── */}
+        {/* ── Bottom two-column: skills + distribution ── */}
         <div className="analytics-bottom">
 
-          {/* ── Top skills bars panel ── */}
+          {/* ── LEFT: Top skills bars panel ── */}
           <div className="analytics-glass-panel analytics-skills">
+
             {/* Panel title */}
             <div className="analytics-panel__header">
               <p className="skill-group__title" style={{ margin: 0 }}>
@@ -100,31 +134,40 @@ export default function AnalyticsSection({ analytics }) {
               </p>
             </div>
 
-            {/* Skill rows — top 8 */}
+            {/* Skill bar rows — top 8 */}
             <SkillBarList
               skills={topSkills.slice(0, 8)}
               colors={CHART_COLORS}
             />
+
+            {/* Empty state */}
+            {topSkills.length === 0 && (
+              <p style={{ color: 'var(--text-muted)', fontSize: '0.82rem' }}>
+                No skills data available.
+              </p>
+            )}
           </div>
 
-          {/* ── Distribution + category averages panel ── */}
+          {/* ── RIGHT: Distribution + category averages panel ── */}
           <div className="analytics-glass-panel analytics-dist">
-            {/* Title */}
+
+            {/* Panel title */}
             <div className="analytics-panel__header">
               <p className="skill-group__title" style={{ margin: 0 }}>
                 Proficiency Distribution
               </p>
             </div>
 
-            {/* Band rows */}
+            {/* Band rows — loop over SKILL_BANDS constant */}
             {Object.entries(SKILL_BANDS).map(([key, band]) => {
-              const count = dist[key] || 0;
-              const total = counts.skills || 1;
-              const pct   = Math.round((count / total) * 100);
+              const count = dist[key]     || 0;          // Skills in this band
+              const total = counts.skills || 1;          // Avoid division by zero
+              const pct   = Math.round((count / total) * 100); // Percentage
 
               return (
                 <div key={key} className="dist-row">
-                  {/* Band badge */}
+
+                  {/* Band badge label */}
                   <div className="dist-row__label">
                     <Badge
                       label={band.label}
@@ -133,35 +176,41 @@ export default function AnalyticsSection({ analytics }) {
                     />
                   </div>
 
-                  {/* Progress track */}
+                  {/* Animated progress track */}
                   <div className="dist-row__track">
                     <div
                       className="dist-row__fill"
                       style={{
-                        width:      `${pct}%`,
-                        background: band.color,
+                        width:      `${pct}%`,           /* Width = percentage */
+                        background: band.color,          /* Band color */
                       }}
                     />
                   </div>
 
-                  {/* Count */}
+                  {/* Count number */}
                   <span className="dist-row__count">{count}</span>
                 </div>
               );
             })}
 
-            {/* Divider */}
+            {/* Divider between distribution and category averages */}
             <div className="analytics-divider" aria-hidden="true" />
 
-            {/* Category averages */}
+            {/* Category averages list — top 5 */}
             {radar.length > 0 && (
               <>
-                <p className="skill-group__title" style={{ marginBottom: 'var(--space-4)' }}>
+                <p className="skill-group__title" style={{ marginBottom: 'var(--space-4, 1rem)' }}>
                   Category Averages
                 </p>
+
                 {radar.slice(0, 5).map((cat, i) => (
                   <div key={cat.category} className="cat-avg-row">
-                    <span className="cat-avg-row__name">{cat.category}</span>
+                    {/* Category name */}
+                    <span className="cat-avg-row__name">
+                      {cat.category}
+                    </span>
+
+                    {/* Average score — colored by chart palette */}
                     <span
                       className="cat-avg-row__score"
                       style={{ color: CHART_COLORS[i % CHART_COLORS.length] }}
@@ -179,66 +228,98 @@ export default function AnalyticsSection({ analytics }) {
   );
 }
 
-/* ─────────────────────────────────────────────────────────────
-   SkillBarList — animated horizontal skill bars
-───────────────────────────────────────────────────────────── */
+/* ════════════════════════════════════════════════════════════════
+   SUB-COMPONENT: SkillBarList
+   Animated horizontal skill bars — triggered by scroll
+════════════════════════════════════════════════════════════════ */
 /**
- * @param {{ skills: Array, colors: Array }} props
+ * SkillBarList — Renders a list of animated skill bar rows.
+ * Uses IntersectionObserver to trigger bar fill animations.
+ *
+ * @param {object} props
+ * @param {Array}  props.skills - Array of skill objects { skill_name, score, color }
+ * @param {Array}  props.colors - Fallback color palette from CHART_COLORS
+ *
+ * @returns {JSX.Element}
  */
 function SkillBarList({ skills, colors }) {
-  const listRef = useRef(null);
 
-  /* Trigger fill animation on scroll-into-view */
+  const listRef = useRef(null);                            // Ref to the skill list container
+
+  /* ── Trigger fill animation when list enters viewport ─────── */
   useEffect(() => {
-    if (!listRef.current) return;
+    if (!listRef.current) return;                          // Guard: element not mounted
 
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach(entry => {
-          if (!entry.isIntersecting) return;
+          if (!entry.isIntersecting) return;               // Skip if not visible
+
+          /* Select all fill bars inside this list */
           const fills = entry.target.querySelectorAll('.analytics-skill-row__fill');
-          fills.forEach(fill => {
-            fill.style.width = fill.dataset.pct; /* Set to data-pct value */
+
+          fills.forEach((fill, i) => {
+            /* Stagger each bar by BAR_DELAY ms */
+            setTimeout(() => {
+              fill.style.width = fill.dataset.pct;         /* Animate to data-pct width */
+            }, i * ANIMATION.BAR_DELAY);
           });
-          observer.unobserve(entry.target);
+
+          observer.unobserve(entry.target);                /* Animate once only */
         });
       },
-      { threshold: 0.25 }
+      { threshold: ANIMATION.REVEAL_THRESHOLD }            /* Trigger at 12% visible */
     );
 
     observer.observe(listRef.current);
-    return () => observer.disconnect();
-  }, [skills]);
+    return () => observer.disconnect();                    /* Cleanup on unmount */
+  }, [skills]);                                            /* Re-run if skills change */
 
   return (
-    <div ref={listRef}>
+    <div ref={listRef} role="list" aria-label="Top skills">
       {skills.map((skill, i) => {
+
+        /* Build gradient from skill color or fallback chart palette */
         const gradient = skill.color
-          ? `linear-gradient(90deg, ${skill.color}, var(--accent-cyan))`
-          : `linear-gradient(90deg, ${colors[i % colors.length]}, var(--accent-cyan))`;
+          ? `linear-gradient(90deg, ${skill.color}, var(--cyan))`
+          : `linear-gradient(90deg, ${colors[i % colors.length]}, var(--cyan))`;
 
         return (
-          <div key={skill.skill_name} className="analytics-skill-row">
-            {/* Name */}
-            <span className="analytics-skill-row__name">
+          <div
+            key={skill.skill_name}
+            className="analytics-skill-row"
+            role="listitem"
+          >
+            {/* Skill name */}
+            <span
+              className="analytics-skill-row__name"
+              title={skill.skill_name}
+            >
               {skill.skill_name}
             </span>
 
-            {/* Track */}
+            {/* Progress track */}
             <div className="analytics-skill-row__track">
               <div
                 className="analytics-skill-row__fill"
-                data-pct={`${skill.score}%`}  /* Used by IntersectionObserver */
+                data-pct={`${skill.score}%`}               /* Target width for observer */
                 style={{
-                  width:      '0%',           /* Starts at 0, animated to data-pct */
-                  background: gradient,
-                  transition: 'width 1.3s cubic-bezier(0.16, 1, 0.3, 1)',
+                  width:      '0%',                        /* Start at 0 */
+                  background: gradient,                    /* Gradient fill */
+                  transition: `width 1.3s cubic-bezier(0.16, 1, 0.3, 1) ${i * 80}ms`, /* Stagger */
                 }}
+                role="progressbar"
+                aria-valuenow={skill.score}
+                aria-valuemin={0}
+                aria-valuemax={100}
+                aria-label={`${skill.skill_name}: ${skill.score}%`}
               />
             </div>
 
-            {/* Score */}
-            <span className="analytics-skill-row__pct">{skill.score}%</span>
+            {/* Score percentage */}
+            <span className="analytics-skill-row__pct">
+              {skill.score}%
+            </span>
           </div>
         );
       })}
@@ -246,32 +327,47 @@ function SkillBarList({ skills, colors }) {
   );
 }
 
-/* ─────────────────────────────────────────────────────────────
-   AnimatedKpiCard — count-up on mount with stagger delay
-───────────────────────────────────────────────────────────── */
+/* ════════════════════════════════════════════════════════════════
+   SUB-COMPONENT: AnimatedKpiCard
+   Count-up animation from 0 → value with staggered delay
+════════════════════════════════════════════════════════════════ */
 /**
- * @param {{ label, value, icon, color, delay }} props
+ * AnimatedKpiCard — KPI card with animated count-up number.
+ * Uses requestAnimationFrame for smooth GPU-accelerated counting.
+ *
+ * @param {object} props
+ * @param {string} props.label  - Display label (e.g., "Skills")
+ * @param {number} props.value  - Target number to count up to
+ * @param {string} props.icon   - Emoji or symbol for the card
+ * @param {string} props.color  - CSS color for the number and glow
+ * @param {number} props.delay  - Milliseconds to delay start (stagger)
+ *
+ * @returns {JSX.Element}
  */
 function AnimatedKpiCard({ label, value, icon, color, delay = 0 }) {
-  const numRef = useRef(null);
 
+  const numRef = useRef(null);                             // Direct DOM ref for performance
+
+  /* ── Count-up animation on mount ───────────────────────────── */
   useEffect(() => {
-    if (!numRef.current || value === 0) return;
+    if (!numRef.current || value === 0) return;            // Skip if no element or zero
 
-    const duration = 1300;
-    const start    = performance.now();
+    const duration = 1300;                                 // Animation duration in ms
+    const start    = performance.now();                    // High-res timestamp
 
+    /** RAF tick — updates counter each frame */
     const tick = (now) => {
-      const progress = Math.min((now - start) / duration, 1);
-      const eased    = 1 - Math.pow(1 - progress, 3); /* Cubic ease-out */
-      const current  = Math.round(eased * value);
+      const progress = Math.min((now - start) / duration, 1); // 0 → 1
+      const eased    = 1 - Math.pow(1 - progress, 3);         // Cubic ease-out
+      const current  = Math.round(eased * value);             // Current displayed value
 
-      if (numRef.current) numRef.current.textContent = current;
-      if (progress < 1) requestAnimationFrame(tick);
+      if (numRef.current) numRef.current.textContent = current; // Update DOM directly
+      if (progress < 1)   requestAnimationFrame(tick);          // Continue until done
     };
 
+    /* Delay start for stagger effect */
     const timer = setTimeout(() => requestAnimationFrame(tick), delay);
-    return () => clearTimeout(timer);
+    return () => clearTimeout(timer);                      /* Cleanup on unmount */
   }, [value, delay]);
 
   return (
@@ -279,8 +375,8 @@ function AnimatedKpiCard({ label, value, icon, color, delay = 0 }) {
       className="analytics-kpi-card"
       role="listitem"
       style={{
-        '--kpi-color': color,
-        animation:     `fadeUp 0.45s ease ${delay}ms both`,
+        '--kpi-color': color,                              /* Custom prop for glow color */
+        animation:     `fadeUp 0.45s ease ${delay}ms both`, /* Staggered entrance */
       }}
       aria-label={`${label}: ${value}`}
     >
@@ -289,7 +385,7 @@ function AnimatedKpiCard({ label, value, icon, color, delay = 0 }) {
         {icon}
       </div>
 
-      {/* Animated number */}
+      {/* Animated count-up number */}
       <div
         ref={numRef}
         className="analytics-kpi-card__num"
@@ -300,7 +396,9 @@ function AnimatedKpiCard({ label, value, icon, color, delay = 0 }) {
       </div>
 
       {/* Label */}
-      <div className="analytics-kpi-card__label">{label}</div>
+      <div className="analytics-kpi-card__label">
+        {label}
+      </div>
     </div>
   );
 }

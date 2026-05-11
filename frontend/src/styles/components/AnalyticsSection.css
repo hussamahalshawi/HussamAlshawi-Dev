@@ -1,315 +1,362 @@
 /* ═══════════════════════════════════════════════════════════════
    AnalyticsSection.css — Analytics Dashboard Panels
    Bento glass layout · KPI grid · Skills bars · Distribution
+   Theme-aware: uses CSS variables from index.css
    ═══════════════════════════════════════════════════════════════ */
 
-/* ── Shared glass panel mixin ─────────────────────────────────── */
+/* ── Shared glass panel ───────────────────────────────────────── */
+/* Applied to both analytics panels — skills + distribution */
 .analytics-glass-panel {
-  position:   relative;
-  overflow:   hidden;
-  border-radius: var(--radius-xl);
-  transition: border-color 0.25s ease;
+  position:                relative;            /* Stacking context for pseudo-elements */
+  overflow:                hidden;              /* Clip shimmer and glow effects */
+  border-radius:           var(--r-xl);         /* 20px rounded corners */
+  transition:              border-color 0.25s ease; /* Smooth hover border */
 
-  background:              rgba(14, 20, 40, 0.78);
-  backdrop-filter:         blur(24px) saturate(1.5);
-  -webkit-backdrop-filter: blur(24px) saturate(1.5);
-  border:                  1px solid rgba(255, 255, 255, 0.09);
-  box-shadow:              0 8px 32px rgba(0, 0, 0, 0.40),
-                           0 0 0 1px rgba(255, 255, 255, 0.04),
-                           inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  background:              rgba(14, 20, 40, 0.78); /* Deep dark frosted glass */
+  backdrop-filter:         blur(24px) saturate(1.5); /* Frosted blur effect */
+  -webkit-backdrop-filter: blur(24px) saturate(1.5); /* Safari support */
+  border:                  1px solid rgba(255, 255, 255, 0.09); /* Subtle border */
+  box-shadow:              0 8px 32px rgba(0, 0, 0, 0.40),     /* Depth shadow */
+                           0 0 0 1px rgba(255, 255, 255, 0.04), /* Inner ring */
+                           inset 0 1px 0 rgba(255, 255, 255, 0.06); /* Top gloss */
 }
 
-/* Top gloss line on every panel */
+/* Top gloss highlight line on every panel */
 .analytics-glass-panel::before {
-  content:    '';
-  position:   absolute;
-  top:        0;
-  left:       10%;
-  right:      10%;
-  height:     1px;
+  content:    '';                               /* Required pseudo-element */
+  position:   absolute;                         /* Remove from flow */
+  top:        0;                                /* Stick to top edge */
+  left:       10%;                              /* Inset from left */
+  right:      10%;                              /* Inset from right */
+  height:     1px;                              /* Single-pixel line */
   background: linear-gradient(90deg, transparent, rgba(255,255,255,0.16), transparent);
-  pointer-events: none;
+  pointer-events: none;                         /* Non-interactive */
 }
 
-/* Water-droplet texture */
+/* Water-droplet texture overlay — Devoryn signature */
 .analytics-glass-panel::after {
-  content:    '';
-  position:   absolute;
-  inset:      0;
+  content:    '';                               /* Required pseudo-element */
+  position:   absolute;                         /* Cover entire panel */
+  inset:      0;                                /* Fill all four sides */
   background-image:
     radial-gradient(circle at 18% 28%, rgba(255,255,255,0.030) 1.5px, transparent 1.5px),
     radial-gradient(circle at 72% 14%, rgba(255,255,255,0.022) 1px,   transparent 1px),
     radial-gradient(circle at 84% 62%, rgba(255,255,255,0.028) 2px,   transparent 2px),
     radial-gradient(circle at 34% 78%, rgba(255,255,255,0.018) 1.5px, transparent 1.5px);
-  pointer-events: none;
-  border-radius:  inherit;
+  pointer-events: none;                         /* Non-interactive decoration */
+  border-radius:  inherit;                      /* Match parent border radius */
 }
 
-.analytics-glass-panel:hover { border-color: rgba(255, 255, 255, 0.14); }
+/* Hover state — slightly brighter border */
+.analytics-glass-panel:hover {
+  border-color: rgba(255, 255, 255, 0.14);      /* More visible on hover */
+}
 
-/* ── All content above pseudo-elements ────────────────────────── */
-.analytics-glass-panel > * { position: relative; z-index: 1; }
+/* All panel content above pseudo-elements */
+.analytics-glass-panel > * {
+  position: relative;                           /* Above ::before and ::after */
+  z-index:  1;                                  /* Ensure visibility */
+}
 
 /* ── Panel header ─────────────────────────────────────────────── */
+/* Title row at the top of each glass panel */
 .analytics-panel__header {
-  display:         flex;
-  align-items:     center;
-  justify-content: space-between;
-  margin-bottom:   var(--space-5);
-}
-
-.analytics-panel__title {
-  font-family:    var(--font-display);
-  font-size:      0.96rem;
-  font-weight:    700;
-  color:          var(--text-white);
-  letter-spacing: -0.01em;
+  display:         flex;                        /* Horizontal row */
+  align-items:     center;                      /* Vertical center */
+  justify-content: space-between;               /* Title left, actions right */
+  margin-bottom:   var(--s5);                   /* Space below header */
 }
 
 /* ═══════════════════════════════════════════════════
-   KPI SECTION — same bento approach as Overview
+   KPI SECTION — Bento grid of animated count-up cards
    ═══════════════════════════════════════════════════ */
+
+/* KPI bento grid — fills available width with auto columns */
 .analytics-kpi-grid {
-  display:               grid;
-  grid-template-columns: repeat(auto-fill, minmax(145px, 1fr));
-  gap:                   1px;
-  background:            rgba(255, 255, 255, 0.07);
-  border:                1px solid rgba(255, 255, 255, 0.09);
-  border-radius:         var(--radius-xl);
-  overflow:              hidden;
-  margin-bottom:         var(--space-6);
+  display:               grid;                  /* CSS Grid layout */
+  grid-template-columns: repeat(auto-fill, minmax(145px, 1fr)); /* Responsive columns */
+  gap:                   1px;                   /* 1px gap shows bg as dividers */
+  background:            rgba(255, 255, 255, 0.07); /* Gap background color */
+  border:                1px solid rgba(255, 255, 255, 0.09); /* Grid border */
+  border-radius:         var(--r-xl);           /* Rounded grid corners */
+  overflow:              hidden;                /* Clip card corners to grid */
+  margin-bottom:         var(--s6);             /* Space below KPI grid */
 }
 
+/* Individual KPI card */
 .analytics-kpi-card {
-  background:     rgba(14, 20, 40, 0.88);
-  backdrop-filter:blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  padding:        1.4rem 1.3rem;
-  display:        flex;
-  flex-direction: column;
-  gap:            var(--space-2);
-  position:       relative;
-  overflow:       hidden;
-  transition:     background 0.15s ease;
+  background:              rgba(14, 20, 40, 0.88); /* Slightly darker than panel */
+  backdrop-filter:         blur(16px);          /* Frosted glass */
+  -webkit-backdrop-filter: blur(16px);          /* Safari support */
+  padding:                 1.4rem 1.3rem;       /* Card internal padding */
+  display:                 flex;                /* Flex column */
+  flex-direction:          column;              /* Stack icon / num / label */
+  gap:                     var(--s2);           /* 8px between elements */
+  position:                relative;            /* For glow pseudo-element */
+  overflow:                hidden;              /* Clip glow circle */
+  transition:              background 0.15s ease; /* Fast hover response */
 }
 
-.analytics-kpi-card:hover { background: rgba(20, 28, 55, 0.95); }
+/* Hover state — slightly lighter background */
+.analytics-kpi-card:hover {
+  background: rgba(20, 28, 55, 0.95);           /* Slightly brighter on hover */
+}
 
-/* Per-card color glow */
+/* Per-card color glow in bottom-right corner */
 .analytics-kpi-card::after {
-  content:       '';
-  position:      absolute;
-  bottom:        -20px;
-  right:         -20px;
-  width:         68px;
-  height:        68px;
-  border-radius: 50%;
-  background:    radial-gradient(circle, var(--kpi-color, var(--accent-cyan)) 0%, transparent 70%);
-  opacity:       0.06;
-  pointer-events:none;
-  transition:    opacity 0.25s ease;
+  content:        '';                           /* Required pseudo-element */
+  position:       absolute;                     /* Bottom-right position */
+  bottom:         -20px;                        /* Offset below card */
+  right:          -20px;                        /* Offset right of card */
+  width:          68px;                         /* Glow circle size */
+  height:         68px;                         /* Glow circle size */
+  border-radius:  50%;                          /* Perfect circle */
+  background:     radial-gradient(circle, var(--kpi-color, var(--cyan)) 0%, transparent 70%);
+  opacity:        0.06;                         /* Very subtle by default */
+  pointer-events: none;                         /* Non-interactive */
+  transition:     opacity 0.25s ease;           /* Smooth glow change */
 }
 
-.analytics-kpi-card:hover::after { opacity: 0.20; }
+/* Intensify glow on hover */
+.analytics-kpi-card:hover::after {
+  opacity: 0.20;                                /* More visible on hover */
+}
 
+/* Icon */
 .analytics-kpi-card__icon {
-  font-size:   1.1rem;
-  line-height: 1;
+  font-size:   1.1rem;                          /* Icon size */
+  line-height: 1;                               /* Tight line height */
 }
 
+/* Animated number */
 .analytics-kpi-card__num {
-  font-family:    var(--font-display);
-  font-size:      2.3rem;
-  font-weight:    800;
-  line-height:    1;
-  letter-spacing: -0.025em;
+  font-family:    var(--font-display);          /* Display font for impact */
+  font-size:      2.3rem;                       /* Large numeric display */
+  font-weight:    800;                          /* Maximum weight */
+  line-height:    1;                            /* No extra line height */
+  letter-spacing: -0.025em;                     /* Tight for display numbers */
 }
 
+/* Label */
 .analytics-kpi-card__label {
-  font-family:    var(--font-mono);
-  font-size:      0.57rem;
-  font-weight:    500;
-  letter-spacing: 0.10em;
-  text-transform: uppercase;
-  color:          var(--text-muted);
+  font-family:    var(--font-mono);             /* Mono for technical label */
+  font-size:      0.57rem;                      /* Very small */
+  font-weight:    500;                          /* Medium weight */
+  letter-spacing: 0.10em;                       /* Wide tracking */
+  text-transform: uppercase;                    /* All caps */
+  color:          var(--text-muted);            /* Muted text */
 }
 
 /* ═══════════════════════════════════════════════════
    BOTTOM TWO-COLUMN — skills bars + distribution
    ═══════════════════════════════════════════════════ */
+
+/* Two-column layout: skills (wider) + distribution */
 .analytics-bottom {
-  display:               grid;
-  grid-template-columns: 1.25fr 1fr;
-  gap:                   var(--space-5);
-  align-items:           start;
+  display:               grid;                  /* CSS Grid */
+  grid-template-columns: 1.25fr 1fr;            /* Skills wider than distribution */
+  gap:                   var(--s5);             /* 20px gap between panels */
+  align-items:           start;                 /* Align to tops */
 }
 
 /* ── Top skills panel ─────────────────────────────── */
+/* Left panel — contains skill bar list */
 .analytics-skills {
-  padding: var(--space-6);
+  padding: var(--s6);                           /* Inner panel padding */
 }
 
-/* Skill rows */
+/* Skill rows container */
 .analytics-skill-row {
-  display:       flex;
-  align-items:   center;
-  gap:           var(--space-3);
-  margin-bottom: var(--space-4);
+  display:       flex;                          /* Horizontal row */
+  align-items:   center;                        /* Vertical center */
+  gap:           var(--s3);                     /* Gap between elements */
+  margin-bottom: var(--s4);                     /* Space between rows */
 }
 
-.analytics-skill-row:last-child { margin-bottom: 0; }
+/* Remove bottom margin from last row */
+.analytics-skill-row:last-child {
+  margin-bottom: 0;                             /* No trailing space */
+}
 
+/* Skill name — fixed width for alignment */
 .analytics-skill-row__name {
-  font-size:     0.84rem;
-  font-weight:   500;
-  color:         var(--text-primary);
-  min-width:     110px;
-  white-space:   nowrap;
-  overflow:      hidden;
-  text-overflow: ellipsis;
+  font-size:     0.84rem;                       /* Readable label size */
+  font-weight:   500;                           /* Medium weight */
+  color:         var(--text-primary);           /* Theme text */
+  min-width:     110px;                         /* Fixed column width */
+  white-space:   nowrap;                        /* No wrapping */
+  overflow:      hidden;                        /* Clip long names */
+  text-overflow: ellipsis;                      /* Show ellipsis if clipped */
+  transition:    color 0.35s ease;              /* Theme switch */
 }
 
+/* Progress track */
 .analytics-skill-row__track {
-  flex:          1;
-  height:        4px;
-  background:    rgba(255, 255, 255, 0.07);
-  border-radius: 9999px;
-  overflow:      hidden;
+  flex:          1;                             /* Fill remaining space */
+  height:        4px;                           /* Thin track */
+  background:    rgba(255, 255, 255, 0.07);     /* Subtle track bg */
+  border-radius: var(--r-full);                 /* Pill shape */
+  overflow:      hidden;                        /* Clip fill bar */
 }
 
+/* Fill bar — animated via JS IntersectionObserver */
 .analytics-skill-row__fill {
-  height:        100%;
-  border-radius: 9999px;
-  position:      relative;
+  height:        100%;                          /* Full track height */
+  border-radius: var(--r-full);                 /* Pill shape */
+  position:      relative;                     /* For glow dot */
 }
 
-/* Glowing tip dot */
+/* Glowing tip dot at the end of fill bar */
 .analytics-skill-row__fill::after {
-  content:       '';
-  position:      absolute;
-  right:         -3px;
-  top:           50%;
-  transform:     translateY(-50%);
-  width:         8px;
-  height:        8px;
-  border-radius: 50%;
-  background:    inherit;
-  filter:        brightness(1.6);
-  box-shadow:    0 0 8px currentColor;
+  content:       '';                            /* Pseudo-element dot */
+  position:      absolute;                      /* Position at fill end */
+  right:         -3px;                          /* Slightly beyond fill */
+  top:           50%;                           /* Vertical center */
+  transform:     translateY(-50%);              /* Perfect center */
+  width:         8px;                           /* Dot size */
+  height:        8px;                           /* Dot size */
+  border-radius: 50%;                           /* Circle */
+  background:    inherit;                       /* Match fill color */
+  filter:        brightness(1.6);              /* Brighter than bar */
+  box-shadow:    0 0 8px currentColor;          /* Glow effect */
 }
 
+/* Percentage label */
 .analytics-skill-row__pct {
-  font-family: var(--font-mono);
-  font-size:   0.66rem;
-  color:       var(--text-muted);
-  min-width:   32px;
-  text-align:  right;
+  font-family: var(--font-mono);                /* Mono for numbers */
+  font-size:   0.66rem;                         /* Small */
+  color:       var(--text-muted);               /* Muted */
+  min-width:   32px;                            /* Fixed width */
+  text-align:  right;                           /* Right-align number */
 }
 
 /* ── Distribution panel ───────────────────────────── */
+/* Right panel — band distribution + category averages */
 .analytics-dist {
-  padding: var(--space-6);
+  padding: var(--s6);                           /* Inner panel padding */
 }
 
-/* Band row */
+/* Single distribution band row */
 .dist-row {
-  display:       flex;
-  align-items:   center;
-  gap:           var(--space-4);
-  margin-bottom: var(--space-4);
+  display:       flex;                          /* Horizontal row */
+  align-items:   center;                        /* Vertical center */
+  gap:           var(--s4);                     /* Gap between elements */
+  margin-bottom: var(--s4);                     /* Space between rows */
 }
 
-.dist-row:last-of-type { margin-bottom: 0; }
+/* Remove bottom margin from last row */
+.dist-row:last-of-type {
+  margin-bottom: 0;                             /* No trailing space */
+}
 
+/* Badge label column — fixed width */
 .dist-row__label {
-  min-width: 90px;
+  min-width: 90px;                              /* Fixed label column */
 }
 
+/* Progress track */
 .dist-row__track {
-  flex:          1;
-  height:        4px;
-  background:    rgba(255, 255, 255, 0.06);
-  border-radius: 9999px;
-  overflow:      hidden;
+  flex:          1;                             /* Fill remaining space */
+  height:        4px;                           /* Thin track */
+  background:    rgba(255, 255, 255, 0.06);     /* Subtle track bg */
+  border-radius: var(--r-full);                 /* Pill */
+  overflow:      hidden;                        /* Clip fill */
 }
 
+/* Animated fill bar */
 .dist-row__fill {
-  height:        100%;
-  border-radius: 9999px;
-  transition:    width 1.3s cubic-bezier(0.16, 1, 0.3, 1);
+  height:        100%;                          /* Full height */
+  border-radius: var(--r-full);                 /* Pill */
+  transition:    width 1.3s cubic-bezier(0.16, 1, 0.3, 1); /* Smooth expand */
 }
 
+/* Count number */
 .dist-row__count {
-  font-family: var(--font-mono);
-  font-size:   0.66rem;
-  color:       var(--text-muted);
-  min-width:   28px;
-  text-align:  right;
+  font-family: var(--font-mono);                /* Mono */
+  font-size:   0.66rem;                         /* Small */
+  color:       var(--text-muted);               /* Muted */
+  min-width:   28px;                            /* Fixed width */
+  text-align:  right;                           /* Right-align */
 }
 
-/* Divider inside dist panel */
+/* Divider between distribution and category sections */
 .analytics-divider {
-  height:     1px;
-  background: rgba(255, 255, 255, 0.07);
-  margin:     var(--space-5) 0;
+  height:     1px;                              /* Single pixel */
+  background: rgba(255, 255, 255, 0.07);        /* Very subtle */
+  margin:     var(--s5) 0;                      /* Vertical spacing */
 }
 
-/* Category averages list */
+/* Single category average row */
 .cat-avg-row {
-  display:         flex;
-  justify-content: space-between;
-  align-items:     center;
-  padding:         var(--space-2) 0;
-  border-bottom:   1px solid rgba(255, 255, 255, 0.04);
+  display:         flex;                        /* Horizontal row */
+  justify-content: space-between;               /* Name left, score right */
+  align-items:     center;                      /* Vertical center */
+  padding:         var(--s2) 0;                 /* Vertical padding */
+  border-bottom:   1px solid rgba(255, 255, 255, 0.04); /* Faint divider */
 }
 
-.cat-avg-row:last-child { border-bottom: none; }
+/* Remove border from last row */
+.cat-avg-row:last-child {
+  border-bottom: none;                          /* No trailing line */
+}
 
+/* Category name */
 .cat-avg-row__name {
-  font-size:   0.82rem;
-  color:       var(--text-secondary);
+  font-size:   0.82rem;                         /* Readable size */
+  color:       var(--text-secondary);           /* Secondary text */
+  transition:  color 0.35s ease;               /* Theme switch */
 }
 
+/* Average score number */
 .cat-avg-row__score {
-  font-family: var(--font-mono);
-  font-size:   0.72rem;
-  font-weight: 600;
+  font-family: var(--font-mono);                /* Mono */
+  font-size:   0.72rem;                         /* Small mono */
+  font-weight: 600;                             /* Semi-bold */
 }
 
-/* ── Category group title (shared) ───────────────── */
+/* ── Category group title (shared across sections) ── */
+/* Small mono uppercase label above lists */
 .skill-group__title {
-  font-family:    var(--font-mono);
-  font-size:      0.64rem;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color:          var(--accent-cyan);
-  display:        flex;
-  align-items:    center;
-  gap:            var(--space-2);
-  margin-bottom:  var(--space-4);
+  font-family:    var(--font-mono);             /* Mono */
+  font-size:      0.64rem;                      /* Very small */
+  letter-spacing: 0.14em;                       /* Wide tracking */
+  text-transform: uppercase;                    /* All caps */
+  color:          var(--accent-cyan, var(--cyan)); /* Cyan accent */
+  display:        flex;                         /* Flex row for dot */
+  align-items:    center;                       /* Vertical center */
+  gap:            var(--s2);                    /* Gap before text */
+  margin-bottom:  var(--s4);                    /* Space below */
 }
 
+/* Decorative line before title text */
 .skill-group__title::before {
-  content:    '';
-  width:      18px;
-  height:     1px;
-  background: var(--accent-cyan);
-  opacity:    0.55;
-  flex-shrink:0;
+  content:    '';                               /* Required */
+  width:      18px;                             /* Short line */
+  height:     1px;                              /* Single pixel */
+  background: var(--accent-cyan, var(--cyan));  /* Cyan */
+  opacity:    0.55;                             /* Semi-transparent */
+  flex-shrink:0;                                /* Don't shrink */
 }
 
 /* ═══════════════════════════════════════════════════
    RESPONSIVE
    ═══════════════════════════════════════════════════ */
+
+/* Tablet — stack bottom columns */
 @media (max-width: 960px) {
   .analytics-bottom {
-    grid-template-columns: 1fr;
-    gap:                   var(--space-4);
+    grid-template-columns: 1fr;                 /* Single column */
+    gap:                   var(--s4);           /* Slightly tighter gap */
   }
 }
 
+/* Mobile — 2-column KPI grid */
 @media (max-width: 560px) {
   .analytics-kpi-grid {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(2, 1fr);      /* Force 2 columns on mobile */
+  }
+
+  .analytics-kpi-card__num {
+    font-size: 1.9rem;                          /* Slightly smaller on mobile */
   }
 }
