@@ -1,813 +1,945 @@
-/**
- * OverviewSection.jsx
- * ─────────────────────────────────────────────────────────
- * Devoryn-style dashboard overview — redesigned to match screenshot:
- *
- *  ┌─────────────────────────────────────────────────────────────┐
- *  │  Page Header: "Hi, Hussam!" + subtitle                      │
- *  ├──────────────────┬──────────────────┬──────────────────────┤
- *  │  Performance     │  Score           │  Skill Scores        │
- *  │  Metrics (tall)  │  Distribution    │  Top 12 list (tall)  │
- *  │                  ├──────────────────┤                      │
- *  │                  │  Skills by       │                      │
- *  │                  │  Category        │                      │
- *  ├──────────────────┴──────────────────┤                      │
- *  │  Portfolio Records (full width)     │                      │
- *  ├─────────────────────────────────────┤                      │
- *  │  Languages Panel                    │                      │
- *  └─────────────────────────────────────┴──────────────────────┘
- *
- * Data flow:
- *   - profile   → name / title / avatar / stats
- *   - analytics → counts / top skills / category averages
- *   - skills    → score distribution / skill scores list
- * ─────────────────────────────────────────────────────────
- */
+/* ═══════════════════════════════════════════════════════════════
+   OverviewSection.css — Devoryn Analytics Dashboard Overview
+   Layout: 3-column main bento + full-width records + languages
+   Theme-aware: all colors via CSS variables from index.css
+   ═══════════════════════════════════════════════════════════════ */
 
-import { useRef, useEffect, useState, useCallback } from 'react'; // React hooks
-import { formatExperience, getInitials, scoreToBand } from '../../utils/formatters'; // Pure helpers
-import { CHART_COLORS, ANIMATION, SKILL_BANDS }       from '../../utils/constants';  // Global tokens
-import '../../styles/components/OverviewSection.css';                                 // Section styles
-
-/* ── SVG donut math constants ─────────────────────────────────── */
-const DONUT_RADIUS = 54;                                       // px — radius of donut ring
-const DONUT_CIRCUMF = 2 * Math.PI * DONUT_RADIUS;             // Full circumference
-
-/* ── Score band segments for distribution donut ──────────────── */
-const BAND_SEGMENTS = [
-  { label: 'Excellent', key: 'expert',       color: SKILL_BANDS.expert.color,       range: '80-100%' },
-  { label: 'Good',      key: 'advanced',     color: SKILL_BANDS.advanced.color,     range: '60-79%'  },
-  { label: 'Growing',   key: 'intermediate', color: SKILL_BANDS.intermediate.color, range: '40-59%'  },
-  { label: 'Learning',  key: 'beginner',     color: SKILL_BANDS.beginner.color,     range: '0-39%'   },
-];
-
-/* ── Bar chart data for performance panel ────────────────────── */
-const BAR_DATA = [
-  { a: 65, b: 45 },
-  { a: 80, b: 55 },
-  { a: 50, b: 70 },
-  { a: 90, b: 40 },
-  { a: 60, b: 85 },
-  { a: 75, b: 50 },
-  { a: 55, b: 65 },
-];
-
-/* ── Maximum bar height in px ────────────────────────────────── */
-const BAR_MAX_PX = 48;
-
-/* ════════════════════════════════════════════════════════════════
-   MAIN COMPONENT
-════════════════════════════════════════════════════════════════ */
-/**
- * OverviewSection — Devoryn analytics dashboard overview.
- * @param {object}      props
- * @param {object|null} props.profile   - Profile data from API
- * @param {object|null} props.analytics - Analytics data from API
- * @param {Array}       props.skills    - Skills array from API
- */
-export default function OverviewSection({ profile, analytics, skills = [] }) {
-
-  /* ── Safe display values with fallbacks ───────────────────── */
-  const fullName  = profile?.full_name            || 'Hussam Alshawi'; // Full name fallback
-  const firstName = fullName.split(' ')[0];                            // Extract first name
-  const title     = profile?.title                || 'Full Stack Developer'; // Title fallback
-  const avatar    = profile?.primary_avatar       || null;             // Avatar URL or null
-  const available = profile?.is_available_for_hire || false;           // Hire availability
-
-  /* ── Analytics counts with safe fallbacks ────────────────── */
-  const counts    = analytics?.counts    || {};                        // All entity counts
-  const topSkills = analytics?.top_skills || [];                       // Top skills array
-
-  /* ── Score distribution from skills array ────────────────── */
-  const distribution = buildDistribution(skills);                     // Calculate band counts
-
-  /* ── Category averages from analytics ───────────────────── */
-  const categoryAverages = analytics?.category_averages || buildFallbackCategories(topSkills);
-
-  /* ── Languages from profile ──────────────────────────────── */
-  const languages = analytics?.languages || [];                        // Languages list
-
-  /* ── Portfolio records row config ───────────────────────── */
-  const records = [
-    { label: 'Skills',       value: counts.skills       || 0 },
-    { label: 'Goals',        value: counts.goals         || 0 },
-    { label: 'Experience',   value: counts.experience    || 0 },
-    { label: 'Courses',      value: counts.courses       || 0 },
-    { label: 'Projects',     value: counts.projects      || 0 },
-    { label: 'Education',    value: counts.education     || 0 },
-    { label: 'Self Study',   value: counts.self_study    || 0 },
-    { label: 'Languages',    value: counts.languages     || 0 },
-    { label: 'Feedback',     value: counts.feedback      || 0 },
-    { label: 'Achievements', value: counts.achievements  || 0 },
-  ];
-
-  return (
-    <section id="overview" className="overview-section" aria-label="Dashboard Overview">
-
-      {/* ══════════════════════════════════════
-          PAGE HEADER
-      ══════════════════════════════════════ */}
-      <div className="page-header">
-        <div>
-          <h1 className="page-header__title">
-            Dashboard Overview
-          </h1>
-          <p className="page-header__sub">
-            {title} · Portfolio Analytics
-          </p>
-        </div>
-
-        {/* Availability pill — open/employed */}
-        <div
-          className={`availability-pill ${available ? 'availability-pill--open' : ''}`}
-          role="status"
-          aria-label={available ? 'Available for hire' : 'Currently employed'}
-        >
-          <span className="availability-pill__dot" aria-hidden="true" />
-          {available ? 'Available for Hire' : 'Currently Employed'}
-        </div>
-      </div>
-
-      {/* ══════════════════════════════════════
-          MAIN BENTO GRID — 3-column layout
-      ══════════════════════════════════════ */}
-      <div className="ov-main-grid" aria-label="Dashboard widgets">
-
-        {/* ── COL 1: Performance Metrics (tall, spans rows 1-3) ── */}
-        <PerformancePanel
-          profile={profile}
-          analytics={analytics}
-        />
-
-        {/* ── COL 2 TOP: Score Distribution donut ── */}
-        <ScoreDistributionPanel
-          distribution={distribution}
-          totalSkills={skills.length || counts.skills || 0}
-        />
-
-        {/* ── COL 3: Skill Scores list (tall, spans rows 1-3) ── */}
-        <SkillScoresPanel skills={topSkills} />
-
-        {/* ── COL 2 BOTTOM: Skills by Category ── */}
-        <SkillsByCategoryPanel categories={categoryAverages} />
-
-      </div>
-
-      {/* ══════════════════════════════════════
-          PORTFOLIO RECORDS — full width bar
-      ══════════════════════════════════════ */}
-      <PortfolioRecordsPanel records={records} />
-
-      {/* ══════════════════════════════════════
-          LANGUAGES PANEL
-      ══════════════════════════════════════ */}
-      {languages.length > 0 && (
-        <LanguagesPanel languages={languages} />
-      )}
-
-    </section>
-  );
+/* ══════════════════════════════════════════════════════
+   SECTION ROOT
+══════════════════════════════════════════════════════ */
+.overview-section {
+  padding:    0;                                /* Page content already has padding */
+  animation:  fadeIn 0.4s ease both;           /* Fade in whole section on mount   */
 }
 
-/* ════════════════════════════════════════════════════════════════
-   HELPER: buildDistribution
-   Counts skills per band from the skills array
-════════════════════════════════════════════════════════════════ */
-/**
- * @param {Array} skills - Skills with score property
- * @returns {{ expert, advanced, intermediate, beginner }}
- */
-function buildDistribution(skills) {
-  const result = { expert: 0, advanced: 0, intermediate: 0, beginner: 0 }; // Init counts
-  if (!skills?.length) return result;                                        // Guard empty
-
-  skills.forEach(skill => {
-    const score = skill.score || 0;                          // Get score safely
-    if      (score >= 80) result.expert++;                   // 80-100 → expert
-    else if (score >= 60) result.advanced++;                 // 60-79  → advanced
-    else if (score >= 40) result.intermediate++;             // 40-59  → intermediate
-    else                  result.beginner++;                 // 0-39   → beginner
-  });
-
-  return result; // Return counts object
+/* ══════════════════════════════════════════════════════
+   PAGE HEADER — title + availability pill
+══════════════════════════════════════════════════════ */
+.page-header {
+  display:         flex;                        /* Flex row for title + pill        */
+  align-items:     flex-start;                  /* Align top edges                  */
+  justify-content: space-between;               /* Push pill to right               */
+  margin-bottom:   var(--s8);                   /* Space below header               */
+  flex-wrap:       wrap;                        /* Wrap on small screens            */
+  gap:             var(--s4);                   /* Gap when wrapping                */
+  animation:       fadeUp 0.5s ease both;       /* Slide-up entrance animation      */
 }
 
-/* ════════════════════════════════════════════════════════════════
-   HELPER: buildFallbackCategories
-   Builds category averages from top skills if API doesn't provide
-════════════════════════════════════════════════════════════════ */
-/**
- * @param {Array} topSkills - Top skills with category field
- * @returns {Array} - [{ category, average }]
- */
-function buildFallbackCategories(topSkills) {
-  if (!topSkills?.length) return [];                         // Guard empty
-
-  const grouped = {};                                        // Group by category
-
-  topSkills.forEach(skill => {
-    const cat = skill.category || 'Other';                   // Default category
-    if (!grouped[cat]) grouped[cat] = [];                    // Init array
-    grouped[cat].push(skill.score || 0);                     // Push score
-  });
-
-  return Object.entries(grouped)                             // Convert to array
-    .map(([category, scores]) => ({
-      category,
-      average: Math.round(scores.reduce((s, n) => s + n, 0) / scores.length), // Mean
-    }))
-    .sort((a, b) => b.average - a.average)                   // Sort descending
-    .slice(0, 5);                                            // Top 5 only
+.page-header__title {
+  font-family:    var(--font-display);          /* Syne bold display font           */
+  font-size:      clamp(1.6rem, 3vw, 2.4rem);  /* Fluid type scale                 */
+  font-weight:    800;                          /* Heavy weight for impact          */
+  color:          var(--text-white);            /* Theme-aware — dark in light mode */
+  letter-spacing: -0.025em;                     /* Tighten display heading          */
+  line-height:    1.1;                          /* Compact heading line height      */
+  margin-bottom:  var(--s2);                    /* Small gap before subtitle        */
+  transition:     color 0.35s ease;             /* Smooth theme switch              */
 }
 
-/* ════════════════════════════════════════════════════════════════
-   PANEL 1: PerformancePanel
-   SVG line chart + bar chart + 3 KPI numbers
-   Left tall panel — matches screenshot
-════════════════════════════════════════════════════════════════ */
-/**
- * @param {{ profile, analytics }} props
- */
-function PerformancePanel({ profile, analytics }) {
-
-  const barsRef = useRef(null);                              // Ref for bar animation
-
-  /* Extract KPI values safely */
-  const expYears    = profile?.experience_years || 0;        // Years of experience
-  const score       = profile?.overall_score    || 0;        // Skill score 0-100
-  const projectCount= analytics?.counts?.projects || 0;      // Total projects
-
-  /* Animate bar heights on mount */
-  useEffect(() => {
-    if (!barsRef.current) return;                            // Guard no ref
-
-    const bars = barsRef.current.querySelectorAll('.ov-bar'); // All bar divs
-    bars.forEach((bar, i) => {
-      bar.style.height = '0px';                              // Start collapsed
-      setTimeout(() => {
-        bar.style.transition = 'height 0.9s cubic-bezier(0.16,1,0.3,1)'; // Smooth grow
-        bar.style.height     = bar.dataset.height;           // Animate to target
-      }, 450 + i * 80);                                      // Stagger each bar
-    });
-  }, []);                                                    // Run once on mount
-
-  return (
-    <div className="ov-panel ov-panel--perf" aria-label="Performance metrics">
-
-      {/* Water drop decorations — Devoryn signature */}
-      <div className="ov-drops" aria-hidden="true">
-        <div className="ov-drop ov-drop--a" />
-        <div className="ov-drop ov-drop--b" />
-        <div className="ov-drop ov-drop--c" />
-        <div className="ov-drop ov-drop--d" />
-      </div>
-
-      {/* Panel header */}
-      <div className="ov-panel__header">
-        <span className="ov-panel__title">Performance Metrics</span>
-        <button className="ov-panel__menu" aria-label="Panel options">···</button>
-      </div>
-
-      {/* SVG Animated Line Chart */}
-      <div className="ov-chart-area" role="img" aria-label="Performance trend">
-        <svg className="ov-chart-svg" viewBox="0 0 400 110" preserveAspectRatio="none">
-          <defs>
-            {/* Cyan gradient fill under the line */}
-            <linearGradient id="ovGrad" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%"   stopColor="var(--cyan)" stopOpacity="0.55" />
-              <stop offset="100%" stopColor="var(--cyan)" stopOpacity="0"    />
-            </linearGradient>
-          </defs>
-
-          {/* Area fill under curve */}
-          <path
-            className="ov-chart-fill"
-            d="M0,88 C30,82 55,68 80,63
-               C105,58 130,48 160,36
-               C190,24 215,28 240,23
-               C265,18 290,33 320,26
-               C350,20 375,15 400,10
-               L400,110 L0,110 Z"
-          />
-
-          {/* Animated draw-in trend line */}
-          <path
-            className="ov-chart-line"
-            d="M0,88 C30,82 55,68 80,63
-               C105,58 130,48 160,36
-               C190,24 215,28 240,23
-               C265,18 290,33 320,26
-               C350,20 375,15 400,10"
-          />
-        </svg>
-      </div>
-
-      {/* Bar chart — 7 groups of cyan + orange */}
-      <div className="ov-bars" ref={barsRef} role="img" aria-label="Monthly bars">
-        {BAR_DATA.map((group, i) => (
-          <div key={i} className="ov-bar-group">
-            {/* Cyan bar */}
-            <div
-              className="ov-bar ov-bar--cyan"
-              data-height={`${Math.round((group.a / 100) * BAR_MAX_PX)}px`}
-              style={{ height: '0px' }}
-              aria-hidden="true"
-            />
-            {/* Orange bar */}
-            <div
-              className="ov-bar ov-bar--orange"
-              data-height={`${Math.round((group.b / 100) * BAR_MAX_PX)}px`}
-              style={{ height: '0px' }}
-              aria-hidden="true"
-            />
-          </div>
-        ))}
-      </div>
-
-      {/* KPI numbers row */}
-      <div className="ov-kpis" role="list">
-
-        {/* Experience years */}
-        <div className="ov-kpi" role="listitem">
-          <div className="ov-kpi__num" style={{ color: 'var(--cyan)' }}>
-            {expYears > 0 ? `${expYears}+` : '—'}
-          </div>
-          <div className="ov-kpi__label">Yrs Exp</div>
-        </div>
-
-        <div className="ov-kpi__sep" aria-hidden="true" />
-
-        {/* Skill score */}
-        <div className="ov-kpi" role="listitem">
-          <div className="ov-kpi__num" style={{ color: 'var(--blue)' }}>
-            {score > 0 ? `${Math.round(score)}%` : '—'}
-          </div>
-          <div className="ov-kpi__label">Score</div>
-        </div>
-
-        <div className="ov-kpi__sep" aria-hidden="true" />
-
-        {/* Total projects */}
-        <div className="ov-kpi" role="listitem">
-          <div className="ov-kpi__num" style={{ color: 'var(--green)' }}>
-            {projectCount}
-          </div>
-          <div className="ov-kpi__label">Projects</div>
-        </div>
-      </div>
-    </div>
-  );
+.page-header__sub {
+  font-size:      0.82rem;                      /* Small subtitle text              */
+  color:          var(--text-muted);            /* Muted — secondary info           */
+  font-family:    var(--font-mono);             /* Mono for technical feel          */
+  letter-spacing: 0.04em;                       /* Slightly wide tracking           */
+  transition:     color 0.35s ease;             /* Smooth theme switch              */
 }
 
-/* ════════════════════════════════════════════════════════════════
-   PANEL 2: ScoreDistributionPanel
-   Donut chart — Skills spread across bands
-   Top-center panel — matches screenshot
-════════════════════════════════════════════════════════════════ */
-/**
- * @param {{ distribution, totalSkills }} props
- */
-function ScoreDistributionPanel({ distribution, totalSkills }) {
-
-  const total = totalSkills || 1;                            // Avoid division by zero
-
-  let cumulativePct = 0;                                     // Running total for offsets
-
-  return (
-    <div className="ov-panel ov-panel--score-dist" aria-label="Score distribution">
-
-      {/* Water drops */}
-      <div className="ov-drops" aria-hidden="true">
-        <div className="ov-drop ov-drop--a" />
-        <div className="ov-drop ov-drop--b" />
-      </div>
-
-      {/* Panel header */}
-      <div className="ov-panel__header">
-        <span className="ov-panel__title">Score Distribution</span>
-        <button className="ov-panel__menu" aria-label="Panel options">···</button>
-      </div>
-
-      {/* Subtitle */}
-      <p className="ov-panel__subtitle">Skills spread across bands</p>
-
-      {/* SVG Donut */}
-      <div className="ov-donut-wrap" aria-hidden="true">
-        <svg className="ov-donut-svg" viewBox="0 0 120 120">
-
-          {/* Background track ring */}
-          <circle
-            className="ov-donut-track"
-            cx="60" cy="60"
-            r={DONUT_RADIUS}
-          />
-
-          {/* Colored band segments */}
-          {BAND_SEGMENTS.map((seg, i) => {
-            const count   = distribution[seg.key] || 0;      // Skill count for band
-            const pct     = count / total;                    // Fraction 0-1
-            const dashArr = pct * DONUT_CIRCUMF;              // Filled arc length
-            const dashOff = DONUT_CIRCUMF - (cumulativePct * DONUT_CIRCUMF); // Start pos
-            cumulativePct += pct;                             // Advance running total
-
-            return (
-              <circle
-                key={seg.key}
-                className="ov-donut-ring"
-                cx="60" cy="60"
-                r={DONUT_RADIUS}
-                stroke={seg.color}
-                strokeDasharray={`${dashArr} ${DONUT_CIRCUMF}`}
-                strokeDashoffset={dashOff}
-                style={{
-                  transition: `stroke-dashoffset 1.4s cubic-bezier(0.16,1,0.3,1) ${0.3 + i * 0.15}s`,
-                }}
-              />
-            );
-          })}
-        </svg>
-
-        {/* Center label */}
-        <div className="ov-donut-center">
-          <div className="ov-donut-center__num">{totalSkills}</div>
-          <div className="ov-donut-center__sub">Skills</div>
-        </div>
-      </div>
-
-      {/* Legend rows */}
-      <div className="ov-donut-legend" role="list">
-        {BAND_SEGMENTS.map(seg => {
-          const count = distribution[seg.key] || 0;           // Count for this band
-          return (
-            <div key={seg.key} className="ov-legend-row" role="listitem">
-              <div
-                className="ov-legend-dot"
-                style={{ background: seg.color, boxShadow: `0 0 6px ${seg.color}` }}
-                aria-hidden="true"
-              />
-              <span className="ov-legend-label">{seg.label}</span>
-              <span className="ov-legend-range">{seg.range}</span>
-              <span className="ov-legend-pct" style={{ color: seg.color }}>
-                {count}
-              </span>
-            </div>
-          );
-        })}
-      </div>
-    </div>
-  );
+/* ── Availability status pill ──────────────────────── */
+.availability-pill {
+  display:        inline-flex;                  /* Flex for dot + text alignment    */
+  align-items:    center;                       /* Vertically center content        */
+  gap:            var(--s2);                    /* Space between dot and text       */
+  padding:        0.42rem var(--s4);            /* Pill vertical + horizontal pad   */
+  background:     var(--glass-medium);          /* Frosted glass surface            */
+  border:         1px solid var(--border-subtle);/* Subtle border ring              */
+  border-radius:  var(--r-full);                /* Full pill shape                  */
+  font-family:    var(--font-mono);             /* Mono technical font              */
+  font-size:      0.62rem;                      /* Very small mono label            */
+  font-weight:    500;                          /* Medium weight                    */
+  letter-spacing: 0.10em;                       /* Wide tracking for caps label     */
+  text-transform: uppercase;                    /* All caps status text             */
+  color:          var(--text-muted);            /* Default: muted grey color        */
+  transition:     all 0.35s ease;               /* Smooth theme + state changes     */
 }
 
-/* ════════════════════════════════════════════════════════════════
-   PANEL 3: SkillScoresPanel
-   Top 12 skills sorted by proficiency
-   Right tall panel — matches screenshot
-════════════════════════════════════════════════════════════════ */
-/**
- * @param {{ skills: Array }} props
- */
-function SkillScoresPanel({ skills }) {
-
-  const listRef = useRef(null);                              // Ref for IntersectionObserver
-
-  const displaySkills = skills.slice(0, 12);                 // Max 12 items per screenshot
-
-  /* Animate bars when panel enters viewport */
-  useEffect(() => {
-    if (!listRef.current) return;
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach(entry => {
-          if (!entry.isIntersecting) return;                 // Skip if not visible
-          entry.target
-            .querySelectorAll('.ov-skill-fill')
-            .forEach((fill, i) => {
-              setTimeout(() => {
-                fill.style.transform = 'scaleX(1)';          // Animate bar in
-              }, i * ANIMATION.BAR_DELAY);                   // Stagger each bar
-            });
-          observer.unobserve(entry.target);                  // Animate once only
-        });
-      },
-      { threshold: 0.2 }                                     // 20% visible to trigger
-    );
-
-    observer.observe(listRef.current);
-    return () => observer.disconnect();                      // Cleanup observer
-  }, [skills]);
-
-  return (
-    <div className="ov-panel ov-panel--skill-scores" aria-label="Skill scores top 12">
-
-      {/* Panel header */}
-      <div className="ov-panel__header">
-        <span className="ov-panel__title">Skill Scores</span>
-        <button className="ov-panel__menu" aria-label="Panel options">···</button>
-      </div>
-
-      {/* Subtitle description */}
-      <p className="ov-panel__subtitle">
-        Top {displaySkills.length} · Sorted by proficiency
-      </p>
-
-      {/* Band legend pills */}
-      <div className="ov-score-legend" aria-label="Score bands">
-        {BAND_SEGMENTS.map(seg => (
-          <span
-            key={seg.key}
-            className="ov-score-band-pill"
-            style={{ borderColor: seg.color, color: seg.color }}
-          >
-            {seg.label} ({seg.range})
-          </span>
-        ))}
-      </div>
-
-      {/* Skill rows list */}
-      <div className="ov-skill-list" ref={listRef} role="list">
-        {displaySkills.map((skill, i) => {
-          const band  = scoreToBand(skill.score || 0);        // Get proficiency band label
-          const color = getBandColor(skill.score || 0);        // Get band color
-          return (
-            <div key={skill.skill_name || i} className="ov-skill-row" role="listitem">
-
-              {/* Skill name */}
-              <span className="ov-skill-row__name" title={skill.skill_name}>
-                {skill.skill_name}
-              </span>
-
-              {/* Progress track + animated fill */}
-              <div className="ov-skill-row__track">
-                <div
-                  className="ov-skill-fill"
-                  style={{
-                    width:           `${skill.score || 0}%`,  // CSS width = score %
-                    background:      color,                    // Band color
-                    transform:       'scaleX(0)',              // Start hidden
-                    transformOrigin: 'left',                   // Grow from left
-                    transition:      'transform 1.1s cubic-bezier(0.16,1,0.3,1)',
-                  }}
-                />
-              </div>
-
-              {/* Score + band label */}
-              <span className="ov-skill-row__score" style={{ color }}>
-                {skill.score || 0}%
-              </span>
-            </div>
-          );
-        })}
-      </div>
-    </div>
-  );
+/* Open-to-hire state — glowing green */
+.availability-pill--open {
+  background:   var(--green-dim);               /* Subtle green tint background     */
+  border-color: var(--green);                   /* Green border glow                */
+  color:        var(--green);                   /* Green text                       */
+  box-shadow:   0 0 16px rgba(78,204,163,0.18); /* Ambient green glow               */
 }
 
-/* ════════════════════════════════════════════════════════════════
-   PANEL 4: SkillsByCategoryPanel
-   Horizontal bars — average score per domain
-   Bottom-center panel — matches screenshot
-════════════════════════════════════════════════════════════════ */
-/**
- * @param {{ categories: Array }} props
- */
-function SkillsByCategoryPanel({ categories }) {
-
-  const listRef = useRef(null);                              // Ref for animation trigger
-
-  /* Animate bars when panel enters viewport */
-  useEffect(() => {
-    if (!listRef.current) return;
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach(entry => {
-          if (!entry.isIntersecting) return;
-          entry.target
-            .querySelectorAll('.ov-cat-fill')
-            .forEach((fill, i) => {
-              setTimeout(() => {
-                fill.style.width = fill.dataset.pct;          // Trigger width transition
-              }, i * 120);                                    // Stagger by 120ms
-            });
-          observer.unobserve(entry.target);
-        });
-      },
-      { threshold: 0.2 }
-    );
-
-    observer.observe(listRef.current);
-    return () => observer.disconnect();
-  }, [categories]);
-
-  /* Fallback when no data */
-  const displayCats = categories?.length > 0
-    ? categories.slice(0, 5)                                 // Max 5 categories
-    : [
-        { category: 'Backend',  average: 75 },               // Demo data fallback
-        { category: 'Frontend', average: 68 },
-        { category: 'DevOps',   average: 55 },
-        { category: 'Database', average: 70 },
-        { category: 'Mobile',   average: 45 },
-      ];
-
-  return (
-    <div className="ov-panel ov-panel--cat" aria-label="Skills by category">
-
-      {/* Water drops */}
-      <div className="ov-drops" aria-hidden="true">
-        <div className="ov-drop ov-drop--b" />
-      </div>
-
-      {/* Panel header */}
-      <div className="ov-panel__header">
-        <span className="ov-panel__title">Skills by Category</span>
-        <button className="ov-panel__menu" aria-label="Panel options">···</button>
-      </div>
-
-      {/* Subtitle */}
-      <p className="ov-panel__subtitle">Average score per domain</p>
-
-      {/* Category bar rows */}
-      <div ref={listRef}>
-        {displayCats.map((cat, i) => {
-          const color = CHART_COLORS[i % CHART_COLORS.length]; // Cycle colors
-          return (
-            <div key={cat.category} className="ov-proj-row">
-
-              {/* Category name */}
-              <span className="ov-proj-row__name">{cat.category}</span>
-
-              {/* Animated progress track */}
-              <div className="ov-proj-row__track">
-                <div
-                  className="ov-cat-fill ov-proj-row__fill"
-                  data-pct={`${cat.average}%`}               // Target width
-                  style={{
-                    width:      '0%',                        // Start at 0
-                    background: color,
-                    transition: 'width 1.2s cubic-bezier(0.16, 1, 0.3, 1)',
-                  }}
-                />
-              </div>
-
-              {/* Average score */}
-              <span className="ov-proj-row__pct">{cat.average}%</span>
-            </div>
-          );
-        })}
-      </div>
-    </div>
-  );
+/* Pulsing dot indicator */
+.availability-pill__dot {
+  width:         7px;                           /* Dot size                         */
+  height:        7px;
+  border-radius: 50%;                           /* Circle shape                     */
+  background:    var(--text-muted);             /* Default muted color              */
+  flex-shrink:   0;                             /* Don't shrink the dot             */
+  transition:    background 0.35s ease;         /* Smooth color change              */
 }
 
-/* ════════════════════════════════════════════════════════════════
-   PANEL 5: PortfolioRecordsPanel
-   Full-width row showing total docs per model
-   Matches "Portfolio Records" in screenshot
-════════════════════════════════════════════════════════════════ */
-/**
- * @param {{ records: Array }} props
- */
-function PortfolioRecordsPanel({ records }) {
-
-  const countersRef = useRef(null);                          // Ref for count-up animation
-
-  /* Run count-up animation when panel enters viewport */
-  useEffect(() => {
-    if (!countersRef.current) return;
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach(entry => {
-          if (!entry.isIntersecting) return;
-
-          /* Animate each counter from 0 to target */
-          entry.target.querySelectorAll('[data-target]').forEach((el, i) => {
-            const target   = parseInt(el.dataset.target, 10); // Target value
-            const duration = ANIMATION.COUNTER_DURATION;      // 1800ms
-            const start    = performance.now();               // Start timestamp
-
-            const tick = (now) => {
-              const progress = Math.min((now - start) / duration, 1); // 0 → 1
-              const eased    = 1 - Math.pow(1 - progress, 3);         // Cubic ease-out
-              el.textContent = Math.round(eased * target);             // Update display
-              if (progress < 1) requestAnimationFrame(tick);           // Continue loop
-            };
-
-            setTimeout(() => requestAnimationFrame(tick), i * 60);    // Stagger start
-          });
-
-          observer.unobserve(entry.target);                   // Animate once
-        });
-      },
-      { threshold: 0.3 }
-    );
-
-    observer.observe(countersRef.current);
-    return () => observer.disconnect();
-  }, [records]);
-
-  return (
-    <div className="ov-panel ov-panel--records" aria-label="Portfolio records">
-
-      {/* Panel header */}
-      <div className="ov-panel__header">
-        <span className="ov-panel__title">Portfolio Records</span>
-        <span className="ov-panel__subtitle--inline">Total documents per model</span>
-        <button className="ov-panel__menu" aria-label="Panel options">···</button>
-      </div>
-
-      {/* Records grid — all counts in one row */}
-      <div className="ov-records-grid" ref={countersRef} role="list">
-        {records.map((rec, i) => (
-          <div key={rec.label} className="ov-record-item" role="listitem">
-
-            {/* Count with animated number */}
-            <div
-              className="ov-record-item__num"
-              data-target={rec.value}                        // Used by count-up
-              style={{ color: CHART_COLORS[i % CHART_COLORS.length] }}
-            >
-              {rec.value}
-            </div>
-
-            {/* Label */}
-            <div className="ov-record-item__label">{rec.label}</div>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
+/* Green pulsing dot when open */
+.availability-pill--open .availability-pill__dot {
+  background: var(--green);                     /* Green dot                        */
+  box-shadow: 0 0 8px var(--green);             /* Green glow                       */
+  animation:  pulseDot 2.5s ease infinite;      /* Pulse animation                  */
 }
 
-/* ════════════════════════════════════════════════════════════════
-   PANEL 6: LanguagesPanel
-   Language cards with proficiency level
-   Bottom panel — matches screenshot
-════════════════════════════════════════════════════════════════ */
-/**
- * @param {{ languages: Array }} props
- */
-function LanguagesPanel({ languages }) {
+/* ══════════════════════════════════════════════════════
+   SHARED GLASS PANEL BASE
+   All bento panels inherit from this base style
+══════════════════════════════════════════════════════ */
+.ov-panel {
+  position:   relative;                         /* For absolute children            */
+  overflow:   hidden;                           /* Clip decorations to border-radius*/
+  border-radius: var(--r-xl);                   /* Rounded corners                  */
+  padding:    var(--s6);                        /* Inner breathing room             */
+  transition: border-color 0.25s ease,
+              background  0.35s ease;           /* Smooth theme transitions         */
 
-  /* Demo fallback data matching screenshot */
-  const displayLangs = languages.length > 0
-    ? languages
-    : [
-        { name: 'Arabic',  level: 'Native',  flag: '🇸🇦', color: CHART_COLORS[1] },
-        { name: 'English', level: 'Fluent',  flag: '🇬🇧', color: CHART_COLORS[0] },
-      ];
-
-  return (
-    <div className="ov-panel ov-panel--languages" aria-label="Languages">
-
-      {/* Panel header */}
-      <div className="ov-panel__header">
-        <span className="ov-panel__title">Languages</span>
-        <span className="ov-panel__subtitle--inline">
-          Connectors of belonging
-        </span>
-        <button className="ov-panel__menu" aria-label="Panel options">···</button>
-      </div>
-
-      {/* Language cards row */}
-      <div className="ov-lang-grid" role="list">
-        {displayLangs.map((lang, i) => (
-          <div
-            key={lang.name}
-            className="ov-lang-card"
-            role="listitem"
-            style={{ '--lang-color': lang.color || CHART_COLORS[i % CHART_COLORS.length] }}
-          >
-            {/* Flag emoji */}
-            <div className="ov-lang-card__flag" aria-hidden="true">
-              {lang.flag || '🌐'}
-            </div>
-
-            {/* Language name */}
-            <div className="ov-lang-card__name">{lang.name}</div>
-
-            {/* Proficiency level */}
-            <div className="ov-lang-card__level">{lang.level}</div>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
+  /* Glassmorphism background */
+  background:              rgba(14, 20, 40, 0.78);
+  backdrop-filter:         blur(24px) saturate(1.5);
+  -webkit-backdrop-filter: blur(24px) saturate(1.5);
+  border:                  1px solid rgba(255, 255, 255, 0.09);
+  box-shadow:              0 8px 32px rgba(0, 0, 0, 0.40),
+                           0 0 0 1px rgba(255, 255, 255, 0.04),
+                           inset 0 1px 0 rgba(255, 255, 255, 0.06);
 }
 
-/* ════════════════════════════════════════════════════════════════
-   HELPER: getBandColor
-   Returns CSS color for a given score
-════════════════════════════════════════════════════════════════ */
-/**
- * @param {number} score - 0-100
- * @returns {string} - CSS color value
- */
-function getBandColor(score) {
-  if (score >= 80) return SKILL_BANDS.expert.color;          // Lime
-  if (score >= 60) return SKILL_BANDS.advanced.color;        // Cyan
-  if (score >= 40) return SKILL_BANDS.intermediate.color;    // Violet
-  return SKILL_BANDS.beginner.color;                         // Orange
+/* Top gloss line — signature Devoryn detail */
+.ov-panel::before {
+  content:    '';
+  position:   absolute;
+  top:        0;
+  left:       8%;                               /* Indented from edges              */
+  right:      8%;
+  height:     1px;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.18), transparent);
+  pointer-events: none;                         /* Non-interactive decoration       */
+  z-index:    2;                                /* Above content layers             */
+}
+
+/* Water-droplet texture — subtle depth detail */
+.ov-panel::after {
+  content:    '';
+  position:   absolute;
+  inset:      0;
+  background-image:
+    radial-gradient(circle at 18% 28%, rgba(255,255,255,0.030) 1.5px, transparent 1.5px),
+    radial-gradient(circle at 72% 14%, rgba(255,255,255,0.022) 1px,   transparent 1px),
+    radial-gradient(circle at 84% 62%, rgba(255,255,255,0.028) 2px,   transparent 2px),
+    radial-gradient(circle at 34% 78%, rgba(255,255,255,0.018) 1.5px, transparent 1.5px);
+  pointer-events: none;
+  border-radius:  inherit;
+  z-index:    0;                                /* Behind content                   */
+}
+
+/* All direct children above texture layers */
+.ov-panel > * { position: relative; z-index: 1; }
+
+/* Hover: slightly brighter border */
+.ov-panel:hover { border-color: rgba(255, 255, 255, 0.14); }
+
+/* ── Panel header row ──────────────────────────────── */
+.ov-panel__header {
+  display:         flex;                        /* Flex row for title + menu button */
+  align-items:     center;                      /* Vertically center                */
+  justify-content: space-between;               /* Push menu btn to right           */
+  margin-bottom:   var(--s4);                   /* Space below header               */
+}
+
+/* Panel title text */
+.ov-panel__title {
+  font-family:    var(--font-display);          /* Syne display font                */
+  font-size:      0.96rem;                      /* Panel heading size               */
+  font-weight:    700;                          /* Bold                             */
+  color:          var(--text-white);            /* Theme-aware white/dark           */
+  letter-spacing: -0.01em;                      /* Slight tracking reduction        */
+  transition:     color 0.35s ease;             /* Smooth theme transition          */
+}
+
+/* Panel subtitle — secondary descriptor line */
+.ov-panel__subtitle {
+  font-family:    var(--font-mono);             /* Mono for technical feel          */
+  font-size:      0.62rem;                      /* Very small subtitle              */
+  color:          var(--text-muted);            /* Muted secondary color            */
+  letter-spacing: 0.04em;                       /* Slight wide tracking             */
+  margin-bottom:  var(--s4);                    /* Space before panel content       */
+  transition:     color 0.35s ease;             /* Smooth theme transition          */
+}
+
+/* Inline subtitle variant — lives inside header row */
+.ov-panel__subtitle--inline {
+  font-family:    var(--font-mono);             /* Mono font                        */
+  font-size:      0.60rem;                      /* Extra small                      */
+  color:          var(--text-muted);            /* Muted                            */
+  letter-spacing: 0.04em;                       /* Wide tracking                    */
+  margin-left:    var(--s2);                    /* Small left offset                */
+  flex:           1;                            /* Fills space in header flex row   */
+  transition:     color 0.35s ease;             /* Smooth theme transition          */
+}
+
+/* Three-dot "···" options button */
+.ov-panel__menu {
+  font-size:     0.9rem;                        /* Slightly larger dot menu         */
+  color:         var(--text-muted);             /* Muted default                    */
+  cursor:        pointer;                       /* Pointer cursor                   */
+  padding:       2px 6px;                       /* Click area padding               */
+  border-radius: var(--r-sm);                   /* Rounded click zone               */
+  transition:    background var(--t-fast),
+                 color      var(--t-fast);      /* Hover transition                 */
+  background:    transparent;                   /* No background by default         */
+  border:        none;                          /* No border                        */
+  font-family:   var(--font-body);              /* Body font for dots               */
+  flex-shrink:   0;                             /* Don't shrink                     */
+}
+
+.ov-panel__menu:hover {
+  background: var(--glass-medium);              /* Frost hover background           */
+  color:      var(--text-primary);              /* Brighter on hover                */
+}
+
+/* ══════════════════════════════════════════════════════
+   DECORATIVE WATER DROPS
+   Positioned absolutely within panels
+══════════════════════════════════════════════════════ */
+.ov-drops {
+  position:       absolute;                     /* Overlays on panel                */
+  inset:          0;
+  pointer-events: none;                         /* Non-interactive                  */
+  overflow:       hidden;
+  border-radius:  inherit;
+  z-index:        0;                            /* Behind content                   */
+}
+
+/* Base drop style */
+.ov-drop {
+  position:      absolute;
+  border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%; /* Water drop shape           */
+  background:    rgba(255,255,255,0.18);         /* Translucent white fill          */
+  border:        1px solid rgba(255,255,255,0.35);/* Subtle white border            */
+  backdrop-filter: blur(4px);                   /* Frosted glass inside drop        */
+  animation:     dropFall 2.2s ease forwards;   /* Fall-in on mount                 */
+  opacity:       0;                             /* Starts invisible                 */
+}
+
+/* Drop A — large top-right */
+.ov-drop--a { width: 20px; height: 26px; top: 12%; right: 16%; animation-delay: 0.3s; }
+/* Drop B — medium right side */
+.ov-drop--b { width: 13px; height: 17px; top: 52%; left: 62%; animation-delay: 0.7s; }
+/* Drop C — large mid-panel */
+.ov-drop--c { width: 24px; height: 30px; top: 28%; right: 28%; animation-delay: 1.0s; }
+/* Drop D — small bottom */
+.ov-drop--d { width: 10px; height: 14px; top: 72%; left: 22%; animation-delay: 1.3s; }
+
+/* Drop fall-in keyframe */
+@keyframes dropFall {
+  0%   { transform: translateY(-10px) scale(0.8); opacity: 0;    }
+  60%  { transform: translateY(4px)   scale(1.05); opacity: 0.50; }
+  100% { transform: translateY(0)     scale(1);    opacity: 0.40; }
+}
+
+/* ══════════════════════════════════════════════════════
+   MAIN BENTO GRID — 3-column dashboard layout
+   Col 1: Performance panel (tall, rows 1-3)
+   Col 2 top: Score Distribution donut
+   Col 2 bottom: Skills by Category bars
+   Col 3: Skill Scores list (tall, rows 1-3)
+══════════════════════════════════════════════════════ */
+.ov-main-grid {
+  display:               grid;
+  grid-template-columns: 1fr 1.1fr 1fr;         /* Three roughly equal columns      */
+  grid-template-rows:    auto auto;              /* Two rows, heights auto-fit       */
+  gap:                   var(--s5);              /* Gap between all cells            */
+  margin-bottom:         var(--s5);              /* Space below grid                 */
+  align-items:           start;                  /* Panels align to their content    */
+}
+
+/* ── Panel: Performance Metrics (col 1, row 1-2 tall) ── */
+.ov-panel--perf {
+  grid-column: 1;                               /* First column                     */
+  grid-row:    1 / 3;                           /* Spans both rows                  */
+}
+
+/* ── Panel: Score Distribution (col 2, row 1) ─────────── */
+.ov-panel--score-dist {
+  grid-column: 2;                               /* Middle column                    */
+  grid-row:    1;                               /* First row only                   */
+}
+
+/* ── Panel: Skills by Category (col 2, row 2) ─────────── */
+.ov-panel--cat {
+  grid-column: 2;                               /* Middle column                    */
+  grid-row:    2;                               /* Second row                       */
+}
+
+/* ── Panel: Skill Scores list (col 3, row 1-2 tall) ───── */
+.ov-panel--skill-scores {
+  grid-column: 3;                               /* Right column                     */
+  grid-row:    1 / 3;                           /* Spans both rows (tall)           */
+}
+
+/* ══════════════════════════════════════════════════════
+   PERFORMANCE PANEL — SVG line + bar chart + KPI strip
+══════════════════════════════════════════════════════ */
+
+/* SVG line chart container */
+.ov-chart-area {
+  position:      relative;
+  height:        110px;                         /* Fixed height for SVG viewport    */
+  margin-bottom: var(--s4);
+  overflow:      hidden;
+}
+
+/* SVG element fills its container */
+.ov-chart-svg {
+  width:  100%;
+  height: 100%;
+}
+
+/* Gradient fill under the line */
+.ov-chart-fill {
+  fill:    url(#ovGrad);                        /* References <defs> linearGradient */
+  opacity: 0.28;                                /* Subtle transparent fill          */
+}
+
+/* Animated draw-in trend line */
+.ov-chart-line {
+  stroke:           var(--cyan);                /* Cyan line color                  */
+  stroke-width:     2.5;                        /* Line thickness                   */
+  stroke-linecap:   round;                      /* Rounded line ends                */
+  stroke-linejoin:  round;                      /* Rounded corners at joints        */
+  fill:             none;                       /* No fill — line only              */
+  filter:           drop-shadow(0 2px 8px var(--cyan-dim)); /* Soft glow           */
+
+  /* Draw animation via stroke-dashoffset */
+  stroke-dasharray:  1200;                      /* Large enough to cover full path  */
+  stroke-dashoffset: 1200;                      /* Start: fully hidden              */
+  animation: drawLine 2s cubic-bezier(0.16,1,0.3,1) 0.3s forwards; /* Draw-in     */
+}
+
+/* Draw-in keyframe — reveals line left to right */
+@keyframes drawLine {
+  to { stroke-dashoffset: 0; }                  /* Fully visible at end             */
+}
+
+/* Bar chart row — sits below SVG line chart */
+.ov-bars {
+  display:       flex;
+  align-items:   flex-end;                      /* Bars grow upward from baseline   */
+  gap:           5px;                           /* Small gap between groups         */
+  height:        56px;                          /* Container height                 */
+  padding-top:   8px;                           /* Top breathing room               */
+  margin-bottom: var(--s5);
+  border-top:    1px solid var(--border-subtle);/* Separator above bars             */
+  transition:    border-color 0.35s ease;
+}
+
+/* Group of two bars side by side */
+.ov-bar-group {
+  display:     flex;
+  gap:         3px;                             /* Gap between twin bars            */
+  align-items: flex-end;
+  flex:        1;                               /* Equal width distribution         */
+}
+
+/* Individual bar column */
+.ov-bar {
+  flex:          1;                             /* Fill group width equally         */
+  border-radius: 4px 4px 0 0;                   /* Rounded top corners only         */
+  min-width:     5px;                           /* Minimum visible width            */
+  transition:    height 0.9s cubic-bezier(0.16,1,0.3,1); /* Grow animation         */
+}
+
+/* Cyan bar variant */
+.ov-bar--cyan   { background: var(--cyan);   opacity: 0.85; }
+
+/* Orange bar variant */
+.ov-bar--orange { background: var(--orange); opacity: 0.70; }
+
+/* KPI numbers row — three stats with dividers */
+.ov-kpis {
+  display:     flex;                            /* Flex row for KPI items           */
+  align-items: center;                          /* Vertically align numbers         */
+  gap:         var(--s5);                       /* Space between KPI groups         */
+}
+
+/* Individual KPI stat */
+.ov-kpi {
+  display:        flex;
+  flex-direction: column;                       /* Stack number above label         */
+  gap:            3px;
+}
+
+/* KPI big number */
+.ov-kpi__num {
+  font-family:    var(--font-display);          /* Syne display for impact          */
+  font-size:      1.55rem;                      /* Large number size                */
+  font-weight:    800;
+  line-height:    1;
+  letter-spacing: -0.025em;                     /* Tighten large numbers            */
+  transition:     color 0.35s ease;
+}
+
+/* KPI label under number */
+.ov-kpi__label {
+  font-family:    var(--font-mono);             /* Mono for technical label         */
+  font-size:      0.58rem;
+  font-weight:    500;
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+  color:          var(--text-muted);
+  transition:     color 0.35s ease;
+}
+
+/* Vertical divider between KPI items */
+.ov-kpi__sep {
+  width:      1px;
+  height:     36px;
+  background: var(--border-subtle);             /* Theme-aware separator            */
+  flex-shrink:0;
+  transition: background 0.35s ease;
+}
+
+/* ══════════════════════════════════════════════════════
+   SCORE DISTRIBUTION PANEL — Donut chart
+══════════════════════════════════════════════════════ */
+
+/* Donut SVG wrapper — centers the donut and overlay */
+.ov-donut-wrap {
+  position:        relative;
+  width:           120px;
+  height:          120px;
+  margin:          0 auto var(--s4);            /* Centered with space below        */
+}
+
+/* SVG element */
+.ov-donut-svg {
+  width:     100%;
+  height:    100%;
+  transform: rotate(-90deg);                    /* Start segments from top          */
+}
+
+/* Background track ring — full gray circle */
+.ov-donut-track {
+  fill:          none;
+  stroke:        rgba(255,255,255,0.07);        /* Very faint track color           */
+  stroke-width:  10;                            /* Track thickness                  */
+}
+
+/* Colored segment arcs */
+.ov-donut-ring {
+  fill:            none;
+  stroke-width:    10;                          /* Same width as track              */
+  stroke-linecap:  butt;                        /* Flat ends for clean segments     */
+  transition:      stroke-dashoffset 1.4s cubic-bezier(0.16,1,0.3,1); /* Animate   */
+}
+
+/* Center overlay — sits in the middle of the donut hole */
+.ov-donut-center {
+  position:  absolute;
+  inset:     0;
+  display:   flex;
+  flex-direction: column;
+  align-items:    center;
+  justify-content:center;
+  pointer-events: none;
+}
+
+/* Center big number */
+.ov-donut-center__num {
+  font-family:    var(--font-display);
+  font-size:      1.55rem;
+  font-weight:    800;
+  line-height:    1;
+  color:          var(--text-white);
+  letter-spacing: -0.025em;
+  transition:     color 0.35s ease;
+}
+
+/* Center sub label */
+.ov-donut-center__sub {
+  font-family:    var(--font-mono);
+  font-size:      0.55rem;
+  color:          var(--text-muted);
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+  margin-top:     2px;
+  transition:     color 0.35s ease;
+}
+
+/* ── Legend rows below the donut ─────────────────── */
+.ov-donut-legend {
+  display:        flex;
+  flex-direction: column;
+  gap:            var(--s2);
+}
+
+/* Single legend row */
+.ov-legend-row {
+  display:     flex;
+  align-items: center;
+  gap:         var(--s3);
+}
+
+/* Colored dot marker */
+.ov-legend-dot {
+  width:         8px;
+  height:        8px;
+  border-radius: 50%;
+  flex-shrink:   0;
+}
+
+/* Legend label text */
+.ov-legend-label {
+  font-size:   0.76rem;
+  color:       var(--text-secondary);
+  flex:        1;                               /* Pushes range and value right     */
+  transition:  color 0.35s ease;
+}
+
+/* Range text — e.g. "80-100%" */
+.ov-legend-range {
+  font-family:    var(--font-mono);
+  font-size:      0.58rem;
+  color:          var(--text-muted);
+  letter-spacing: 0.04em;
+  margin-right:   var(--s2);
+  transition:     color 0.35s ease;
+}
+
+/* Value / count at right */
+.ov-legend-pct {
+  font-family: var(--font-mono);
+  font-size:   0.66rem;
+  font-weight: 600;
+  min-width:   24px;
+  text-align:  right;
+  transition:  color 0.35s ease;
+}
+
+/* ══════════════════════════════════════════════════════
+   SKILLS BY CATEGORY PANEL — horizontal bars
+══════════════════════════════════════════════════════ */
+
+/* Reuse ov-proj-row from ActiveProjects styling below */
+
+/* ══════════════════════════════════════════════════════
+   SHARED: PROJECT / CATEGORY ROW BARS
+   Used by Active Projects + Skills by Category panels
+══════════════════════════════════════════════════════ */
+.ov-proj-row {
+  display:       flex;
+  align-items:   center;
+  gap:           var(--s3);
+  margin-bottom: var(--s4);
+}
+
+.ov-proj-row:last-child { margin-bottom: 0; }
+
+/* Row label (project or category name) */
+.ov-proj-row__name {
+  font-size:     0.80rem;
+  font-weight:   500;
+  color:         var(--text-primary);
+  min-width:     90px;                          /* Fixed min-width for alignment    */
+  max-width:     100px;
+  white-space:   nowrap;
+  overflow:      hidden;
+  text-overflow: ellipsis;
+  transition:    color 0.35s ease;
+}
+
+/* Progress track */
+.ov-proj-row__track {
+  flex:          1;
+  height:        4px;
+  background:    rgba(255,255,255,0.07);
+  border-radius: var(--r-full);
+  overflow:      hidden;
+}
+
+/* Animated fill — JS sets width from data-pct */
+.ov-proj-row__fill {
+  height:        100%;
+  border-radius: var(--r-full);
+  position:      relative;
+}
+
+/* Glowing tip dot on fill */
+.ov-proj-row__fill::after {
+  content:       '';
+  position:      absolute;
+  right:         -3px;
+  top:           50%;
+  transform:     translateY(-50%);
+  width:         7px;
+  height:        7px;
+  border-radius: 50%;
+  background:    inherit;
+  filter:        brightness(1.6);
+  box-shadow:    0 0 8px currentColor;
+}
+
+/* Percentage value at right */
+.ov-proj-row__pct {
+  font-family: var(--font-mono);
+  font-size:   0.66rem;
+  color:       var(--text-muted);
+  min-width:   32px;
+  text-align:  right;
+  transition:  color 0.35s ease;
+}
+
+/* ══════════════════════════════════════════════════════
+   SKILL SCORES PANEL — top 12 skill rows (right tall col)
+══════════════════════════════════════════════════════ */
+
+/* Band legend pills row */
+.ov-score-legend {
+  display:       flex;
+  flex-wrap:     wrap;
+  gap:           var(--s2);
+  margin-bottom: var(--s4);
+}
+
+/* Individual band pill */
+.ov-score-band-pill {
+  font-family:    var(--font-mono);
+  font-size:      0.52rem;
+  font-weight:    500;
+  letter-spacing: 0.06em;
+  padding:        0.18rem 0.55rem;
+  border-radius:  var(--r-xs);
+  border:         1px solid;                    /* Color set via inline style       */
+  line-height:    1.4;
+  white-space:    nowrap;
+  opacity:        0.80;
+}
+
+/* Scrollable skills list container */
+.ov-skill-list {
+  overflow-y:    auto;                          /* Scroll if content overflows      */
+  max-height:    none;                          /* No forced max — natural height   */
+  padding-right: var(--s1);                     /* Space for scrollbar              */
+}
+
+/* Custom scrollbar for skill list */
+.ov-skill-list::-webkit-scrollbar       { width: 2px; }
+.ov-skill-list::-webkit-scrollbar-track { background: transparent; }
+.ov-skill-list::-webkit-scrollbar-thumb {
+  background:    var(--cyan-dim);
+  border-radius: var(--r-full);
+}
+
+/* Individual skill row */
+.ov-skill-row {
+  display:       flex;
+  align-items:   center;
+  gap:           var(--s3);
+  margin-bottom: var(--s3);
+}
+
+.ov-skill-row:last-child { margin-bottom: 0; }
+
+/* Skill name text */
+.ov-skill-row__name {
+  font-size:     0.78rem;
+  font-weight:   500;
+  color:         var(--text-primary);
+  min-width:     80px;
+  max-width:     90px;
+  white-space:   nowrap;
+  overflow:      hidden;
+  text-overflow: ellipsis;
+  transition:    color 0.35s ease;
+}
+
+/* Track bar */
+.ov-skill-row__track {
+  flex:          1;
+  height:        3px;
+  background:    rgba(255,255,255,0.07);
+  border-radius: var(--r-full);
+  overflow:      visible;                       /* Allow glow dot to overflow        */
+}
+
+/* Animated fill — starts scaleX(0) → JS sets scaleX(1) */
+.ov-skill-fill {
+  height:        100%;
+  border-radius: var(--r-full);
+  position:      relative;
+  transition:    transform 1.1s cubic-bezier(0.16,1,0.3,1); /* Scale animation     */
+}
+
+/* Glowing tip dot */
+.ov-skill-fill::after {
+  content:       '';
+  position:      absolute;
+  right:         -3px;
+  top:           50%;
+  transform:     translateY(-50%);
+  width:         7px;
+  height:        7px;
+  border-radius: 50%;
+  background:    inherit;
+  filter:        brightness(1.6);
+  box-shadow:    0 0 8px currentColor;
+}
+
+/* Score + band label at right */
+.ov-skill-row__score {
+  font-family:    var(--font-mono);
+  font-size:      0.60rem;
+  font-weight:    600;
+  min-width:      36px;
+  text-align:     right;
+  letter-spacing: 0.02em;
+  transition:     color 0.35s ease;
+}
+
+/* ══════════════════════════════════════════════════════
+   PORTFOLIO RECORDS PANEL — full-width counts strip
+══════════════════════════════════════════════════════ */
+.ov-panel--records {
+  margin-bottom: var(--s5);                     /* Space below this panel           */
+}
+
+/* Grid of record count items */
+.ov-records-grid {
+  display:               grid;
+  grid-template-columns: repeat(auto-fill, minmax(90px, 1fr)); /* Fluid columns    */
+  gap:                   1px;                   /* 1px gap creates grid lines       */
+  background:            rgba(255,255,255,0.06);/* Grid line color                  */
+  border:                1px solid rgba(255,255,255,0.06);
+  border-radius:         var(--r-lg);
+  overflow:              hidden;
+  margin-top:            var(--s3);
+}
+
+/* Individual record count item */
+.ov-record-item {
+  background:     rgba(14, 20, 40, 0.78);       /* Panel bg per cell                */
+  backdrop-filter:blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  padding:        1.2rem 1rem;                  /* Inner padding                    */
+  display:        flex;
+  flex-direction: column;                       /* Stack number above label         */
+  gap:            var(--s1);
+  position:       relative;
+  overflow:       hidden;
+  transition:     background 0.15s ease;
+}
+
+.ov-record-item:hover { background: rgba(20, 28, 55, 0.92); }
+
+/* Count-up number */
+.ov-record-item__num {
+  font-family:    var(--font-display);
+  font-size:      1.9rem;
+  font-weight:    800;
+  line-height:    1;
+  letter-spacing: -0.02em;
+  transition:     color 0.35s ease;
+}
+
+/* Model name label */
+.ov-record-item__label {
+  font-family:    var(--font-mono);
+  font-size:      0.56rem;
+  font-weight:    500;
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+  color:          var(--text-muted);
+  transition:     color 0.35s ease;
+}
+
+/* ══════════════════════════════════════════════════════
+   LANGUAGES PANEL — language cards strip
+══════════════════════════════════════════════════════ */
+.ov-panel--languages {
+  /* Inherits from ov-panel base */
+}
+
+/* Languages grid row */
+.ov-lang-grid {
+  display:               grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); /* Fluid cards     */
+  gap:                   var(--s3);
+  margin-top:            var(--s3);
+}
+
+/* Individual language card */
+.ov-lang-card {
+  background:    var(--glass-light);            /* Frosted glass surface            */
+  border:        1px solid var(--border-subtle);
+  border-radius: var(--r-lg);
+  padding:       var(--s4) var(--s3);
+  display:       flex;
+  flex-direction:column;
+  align-items:   center;
+  gap:           var(--s2);
+  text-align:    center;
+  transition:    all var(--t-base);
+  position:      relative;
+  overflow:      hidden;
+}
+
+/* Hover: slight lift + color accent border */
+.ov-lang-card:hover {
+  border-color: var(--lang-color, var(--cyan));  /* Color from CSS custom prop      */
+  background:   var(--glass-medium);
+  transform:    translateY(-2px);
+  box-shadow:   0 4px 20px rgba(0,0,0,0.25);
+}
+
+/* Bottom glow shimmer on hover */
+.ov-lang-card::after {
+  content:       '';
+  position:      absolute;
+  bottom:        -16px;
+  left:          50%;
+  transform:     translateX(-50%);
+  width:         48px;
+  height:        48px;
+  border-radius: 50%;
+  background:    radial-gradient(circle, var(--lang-color, var(--cyan)) 0%, transparent 70%);
+  opacity:       0;
+  transition:    opacity 0.25s ease;
+}
+
+.ov-lang-card:hover::after { opacity: 0.15; }
+
+/* Flag emoji */
+.ov-lang-card__flag {
+  font-size:   1.8rem;                          /* Large flag emoji                 */
+  line-height: 1;
+}
+
+/* Language name */
+.ov-lang-card__name {
+  font-family:    var(--font-display);
+  font-size:      0.84rem;
+  font-weight:    700;
+  color:          var(--text-primary);
+  letter-spacing: -0.01em;
+  transition:     color 0.35s ease;
+}
+
+/* Proficiency level badge */
+.ov-lang-card__level {
+  font-family:    var(--font-mono);
+  font-size:      0.56rem;
+  font-weight:    500;
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+  color:          var(--lang-color, var(--cyan));/* Accent color per language       */
+  transition:     color 0.35s ease;
+}
+
+/* ══════════════════════════════════════════════════════
+   RESPONSIVE BREAKPOINTS
+══════════════════════════════════════════════════════ */
+
+/* Tablet: collapse to 2-column */
+@media (max-width: 1100px) {
+  .ov-main-grid {
+    grid-template-columns: 1fr 1fr;             /* Two columns on tablet            */
+    grid-template-rows:    auto auto auto;       /* Three rows                       */
+  }
+
+  /* Performance panel: col 1-2, row 1 only on tablet */
+  .ov-panel--perf {
+    grid-column: 1 / 3;                         /* Full width on tablet             */
+    grid-row:    1;
+  }
+
+  /* Score dist: col 1, row 2 */
+  .ov-panel--score-dist {
+    grid-column: 1;
+    grid-row:    2;
+  }
+
+  /* Category: col 2, row 2 */
+  .ov-panel--cat {
+    grid-column: 2;
+    grid-row:    2;
+  }
+
+  /* Skill scores: col 1-2, row 3 */
+  .ov-panel--skill-scores {
+    grid-column: 1 / 3;
+    grid-row:    3;
+  }
+}
+
+/* Mobile: single column stack */
+@media (max-width: 700px) {
+  .ov-main-grid {
+    grid-template-columns: 1fr;                 /* Single column on mobile          */
+    grid-template-rows:    auto;                /* All rows auto height             */
+  }
+
+  /* Reset all panel grid positions */
+  .ov-panel--perf,
+  .ov-panel--score-dist,
+  .ov-panel--cat,
+  .ov-panel--skill-scores {
+    grid-column: 1;                             /* All in single column             */
+    grid-row:    auto;                          /* Auto stack                       */
+  }
+
+  /* Compact records grid on mobile */
+  .ov-records-grid {
+    grid-template-columns: repeat(3, 1fr);      /* 3 across on narrow screens       */
+  }
+
+  /* Compact lang grid on mobile */
+  .ov-lang-grid {
+    grid-template-columns: repeat(2, 1fr);      /* 2 across on mobile               */
+  }
+}
+
+/* ══════════════════════════════════════════════════════
+   LIGHT MODE OVERRIDES
+   Panels get a lighter glass surface in light mode
+══════════════════════════════════════════════════════ */
+[data-theme="light"] .ov-panel {
+  background:  rgba(255,255,255,0.52);          /* White-tinted glass in light mode */
+  border-color:rgba(79,100,145,0.14);           /* Blue-tinted border               */
+  box-shadow:  0 4px 24px rgba(79,100,145,0.12),
+               0 1px 0 rgba(255,255,255,0.80) inset;
+}
+
+[data-theme="light"] .ov-record-item {
+  background: rgba(255,255,255,0.52);
+}
+
+[data-theme="light"] .ov-record-item:hover {
+  background: rgba(255,255,255,0.72);
+}
+
+[data-theme="light"] .ov-records-grid {
+  background:   rgba(79,100,145,0.10);
+  border-color: rgba(79,100,145,0.10);
+}
+
+[data-theme="light"] .ov-lang-card {
+  background: rgba(255,255,255,0.55);
+}
+
+[data-theme="light"] .ov-bars {
+  border-top-color: rgba(79,100,145,0.14);
+}
+
+[data-theme="light"] .ov-donut-track {
+  stroke: rgba(79,100,145,0.12);
+}
+
+[data-theme="light"] .ov-proj-row__track,
+[data-theme="light"] .ov-skill-row__track {
+  background: rgba(79,100,145,0.10);
 }
