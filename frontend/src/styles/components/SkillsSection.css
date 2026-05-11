@@ -1,0 +1,350 @@
+/* ═══════════════════════════════════════════════════════════════
+   SkillsSection.css — Skills Dashboard Section
+   Category groups · Animated bars · Band badges · Radar summary
+   Theme-aware: uses CSS variables from index.css
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ── Section wrapper ──────────────────────────────────────────── */
+/* The section itself uses shared .section class from Sections.css */
+/* No additional wrapper needed — styles apply to children only  */
+
+/* ── Category filter pills row ───────────────────────────────── */
+/* Horizontal scrollable row of category filter buttons */
+.skills-filter {
+  display:        flex;                         /* Horizontal row */
+  gap:            var(--s2);                    /* 8px between pills */
+  flex-wrap:      wrap;                         /* Wrap on small screens */
+  margin-bottom:  var(--s8);                    /* Space before grid */
+  animation:      fadeUp 0.5s ease 0.1s both;  /* Delayed entrance */
+}
+
+/* Individual filter pill */
+.skills-filter__pill {
+  padding:        0.35rem 1rem;                 /* Pill padding */
+  background:     var(--glass-light);           /* Subtle glass bg */
+  border:         1px solid var(--border-subtle); /* Faint border */
+  border-radius:  var(--r-full);                /* Full pill shape */
+  font-family:    var(--font-mono);             /* Mono for technical feel */
+  font-size:      0.68rem;                      /* Small label */
+  font-weight:    500;                          /* Medium weight */
+  letter-spacing: 0.06em;                       /* Slight tracking */
+  color:          var(--text-secondary);        /* Muted text */
+  cursor:         pointer;                      /* Pointer cursor */
+  transition:     all var(--t-base);            /* Smooth all transitions */
+  white-space:    nowrap;                       /* No text wrap */
+}
+
+/* Filter pill hover state */
+.skills-filter__pill:hover {
+  background:   var(--glass-medium);            /* Slightly brighter */
+  color:        var(--text-primary);            /* Brighter text */
+  border-color: var(--border-medium);           /* Stronger border */
+  transform:    translateY(-1px);               /* Subtle lift */
+}
+
+/* Active filter pill — selected category */
+.skills-filter__pill--active {
+  background:   var(--glass-cyan);              /* Cyan glass */
+  border-color: var(--border-cyan);             /* Cyan border */
+  color:        var(--cyan);                    /* Cyan text */
+  box-shadow:   0 0 12px var(--cyan-glow);      /* Subtle glow */
+}
+
+/* ── Skills grid layout ───────────────────────────────────────── */
+/* Main grid: skill groups list + optional radar panel */
+.skills-grid {
+  display:               grid;                  /* CSS Grid */
+  grid-template-columns: 1fr;                   /* Single column by default */
+  gap:                   var(--s5);             /* 20px between groups */
+}
+
+/* When sidebar is present (radar panel) — two columns */
+.skills-grid--with-sidebar {
+  grid-template-columns: 1fr 300px;             /* Main + sidebar */
+  align-items:           start;                 /* Align to tops */
+}
+
+/* ── Category group container ─────────────────────────────────── */
+/* Wraps the group title + skill rows for one category */
+.skills-group {
+  background:              var(--card-bg);      /* Theme-aware card bg */
+  border-radius:           var(--r-xl);         /* Rounded corners */
+  border:                  1px solid var(--border-subtle); /* Faint border */
+  padding:                 var(--s6);           /* Inner padding */
+  position:                relative;            /* For pseudo-elements */
+  overflow:                hidden;              /* Clip effects */
+  transition:              border-color var(--t-base), /* Hover border */
+                           background   0.35s ease;   /* Theme switch */
+  /* Entrance animation — set by JS with stagger delay */
+  opacity:    0;                                /* Start invisible */
+  transform:  translateY(16px);                 /* Start below */
+  animation:  fadeUp 0.5s ease forwards;        /* Animate in */
+}
+
+/* Top gloss line on each group */
+.skills-group::before {
+  content:    '';                               /* Required */
+  position:   absolute;                         /* Top edge */
+  top:        0;                                /* Flush to top */
+  left:       8%;                               /* Inset */
+  right:      8%;                               /* Inset */
+  height:     1px;                              /* Single pixel */
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.10), transparent);
+  pointer-events: none;                         /* Non-interactive */
+}
+
+/* Hover state */
+.skills-group:hover {
+  border-color: var(--border-medium);           /* Brighter border */
+}
+
+/* ── Category group header ────────────────────────────────────── */
+/* Title row with category name and skill count badge */
+.skills-group__header {
+  display:         flex;                        /* Horizontal row */
+  align-items:     center;                      /* Vertical center */
+  justify-content: space-between;               /* Title left, badge right */
+  margin-bottom:   var(--s5);                   /* Space below header */
+}
+
+/* Category name */
+.skills-group__name {
+  font-family:    var(--font-mono);             /* Mono font */
+  font-size:      0.66rem;                      /* Small */
+  letter-spacing: 0.14em;                       /* Wide tracking */
+  text-transform: uppercase;                    /* All caps */
+  color:          var(--cyan);                  /* Cyan accent */
+  display:        flex;                         /* Flex for decoration */
+  align-items:    center;                       /* Vertical center */
+  gap:            var(--s2);                    /* Gap before text */
+}
+
+/* Decorative line before category name */
+.skills-group__name::before {
+  content:    '';                               /* Required */
+  width:      18px;                             /* Short line */
+  height:     1px;                              /* Single pixel */
+  background: var(--cyan);                      /* Cyan color */
+  opacity:    0.55;                             /* Semi-transparent */
+  flex-shrink:0;                                /* Don't shrink */
+}
+
+/* Skill count badge — "12 skills" */
+.skills-group__count {
+  font-family:    var(--font-mono);             /* Mono */
+  font-size:      0.60rem;                      /* Very small */
+  letter-spacing: 0.06em;                       /* Slight tracking */
+  color:          var(--text-muted);            /* Muted */
+  background:     var(--glass-light);           /* Subtle bg */
+  border:         1px solid var(--border-subtle); /* Faint border */
+  padding:        0.15rem 0.55rem;              /* Tight padding */
+  border-radius:  var(--r-full);                /* Pill */
+}
+
+/* ── Individual skill row ─────────────────────────────────────── */
+/* Each row: name + level badge + track + score */
+.skill-item {
+  display:       flex;                          /* Horizontal row */
+  align-items:   center;                        /* Vertical center */
+  gap:           var(--s3);                     /* 12px between elements */
+  margin-bottom: var(--s4);                     /* Space between rows */
+}
+
+/* Remove bottom margin from last item */
+.skill-item:last-child {
+  margin-bottom: 0;                             /* No trailing space */
+}
+
+/* Skill name label */
+.skill-item__name {
+  font-size:     0.84rem;                       /* Readable size */
+  font-weight:   500;                           /* Medium weight */
+  color:         var(--text-primary);           /* Theme text */
+  min-width:     130px;                         /* Fixed column width */
+  white-space:   nowrap;                        /* No wrap */
+  overflow:      hidden;                        /* Clip long names */
+  text-overflow: ellipsis;                      /* Show ellipsis */
+  flex-shrink:   0;                             /* Don't shrink */
+  transition:    color 0.35s ease;              /* Theme switch */
+}
+
+/* Progress track */
+.skill-item__track {
+  flex:          1;                             /* Fill remaining space */
+  height:        5px;                           /* Slightly thicker than analytics */
+  background:    rgba(255, 255, 255, 0.07);     /* Subtle track bg */
+  border-radius: var(--r-full);                 /* Pill */
+  overflow:      hidden;                        /* Clip fill */
+  position:      relative;                     /* For fill animation */
+}
+
+/* Animated fill bar */
+.skill-item__fill {
+  height:           100%;                       /* Full track height */
+  border-radius:    var(--r-full);              /* Pill */
+  transform:        scaleX(0);                  /* Start hidden */
+  transform-origin: left center;               /* Grow from left */
+  transition:       transform 1.2s cubic-bezier(0.16, 1, 0.3, 1); /* Smooth */
+  position:         relative;                  /* For glow dot */
+}
+
+/* Glowing tip dot at fill end */
+.skill-item__fill::after {
+  content:       '';                            /* Required */
+  position:      absolute;                      /* At fill end */
+  right:         -3px;                          /* Slightly beyond */
+  top:           50%;                           /* Vertical center */
+  transform:     translateY(-50%);              /* Perfect center */
+  width:         9px;                           /* Dot size */
+  height:        9px;                           /* Dot size */
+  border-radius: 50%;                           /* Circle */
+  background:    inherit;                       /* Match fill */
+  filter:        brightness(1.6);              /* Brighter */
+  box-shadow:    0 0 10px currentColor;         /* Glow */
+}
+
+/* Score percentage */
+.skill-item__score {
+  font-family: var(--font-mono);                /* Mono */
+  font-size:   0.68rem;                         /* Small */
+  font-weight: 600;                             /* Semi-bold */
+  min-width:   36px;                            /* Fixed width */
+  text-align:  right;                           /* Right-align */
+  flex-shrink: 0;                               /* Don't shrink */
+}
+
+/* ── Radar / Summary sidebar panel ───────────────────────────── */
+/* Right column: category averages as horizontal bars */
+.skills-radar-panel {
+  background:     var(--card-bg);               /* Card background */
+  border-radius:  var(--r-xl);                  /* Rounded corners */
+  border:         1px solid var(--border-subtle); /* Faint border */
+  padding:        var(--s6);                    /* Inner padding */
+  position:       sticky;                      /* Stick while scrolling */
+  top:            80px;                         /* Below topbar */
+  max-height:     calc(100vh - 100px);          /* Limit height */
+  overflow-y:     auto;                         /* Scroll if needed */
+  transition:     background 0.35s ease,        /* Theme switch */
+                  border-color var(--t-base);   /* Hover */
+}
+
+/* Custom scrollbar inside sticky panel */
+.skills-radar-panel::-webkit-scrollbar       { width: 2px; }
+.skills-radar-panel::-webkit-scrollbar-track { background: transparent; }
+.skills-radar-panel::-webkit-scrollbar-thumb {
+  background:    var(--cyan-dim);               /* Themed */
+  border-radius: var(--r-full);                 /* Pill */
+}
+
+/* Panel title */
+.skills-radar-panel__title {
+  font-family:    var(--font-mono);             /* Mono */
+  font-size:      0.64rem;                      /* Very small */
+  letter-spacing: 0.14em;                       /* Wide tracking */
+  text-transform: uppercase;                    /* All caps */
+  color:          var(--cyan);                  /* Cyan */
+  margin-bottom:  var(--s5);                    /* Space below */
+  display:        flex;                         /* Flex for dot */
+  align-items:    center;                       /* Center */
+  gap:            var(--s2);                    /* Gap */
+}
+
+/* Dot before title */
+.skills-radar-panel__title::before {
+  content:       '';                            /* Required */
+  width:         5px;                           /* Dot size */
+  height:        5px;                           /* Dot size */
+  border-radius: 50%;                           /* Circle */
+  background:    var(--cyan);                   /* Cyan */
+  animation:     pulseDot 2s ease infinite;     /* Pulsing */
+  flex-shrink:   0;                             /* Don't shrink */
+}
+
+/* Category row in radar panel */
+.skills-radar-row {
+  margin-bottom: var(--s4);                     /* Row spacing */
+}
+
+/* Remove bottom margin from last row */
+.skills-radar-row:last-child {
+  margin-bottom: 0;                             /* No trailing space */
+}
+
+/* Category header: name + score */
+.skills-radar-row__header {
+  display:         flex;                        /* Horizontal row */
+  justify-content: space-between;               /* Name left, score right */
+  align-items:     center;                      /* Vertical center */
+  margin-bottom:   var(--s2);                   /* Space before track */
+}
+
+/* Category name */
+.skills-radar-row__name {
+  font-size:     0.76rem;                       /* Small */
+  font-weight:   500;                           /* Medium */
+  color:         var(--text-secondary);         /* Secondary */
+  transition:    color 0.35s ease;              /* Theme switch */
+}
+
+/* Category average score */
+.skills-radar-row__score {
+  font-family: var(--font-mono);                /* Mono */
+  font-size:   0.68rem;                         /* Small */
+  font-weight: 600;                             /* Semi-bold */
+}
+
+/* Category progress track */
+.skills-radar-row__track {
+  width:         100%;                          /* Full width */
+  height:        3px;                           /* Very thin track */
+  background:    rgba(255, 255, 255, 0.06);     /* Subtle */
+  border-radius: var(--r-full);                 /* Pill */
+  overflow:      hidden;                        /* Clip */
+}
+
+/* Animated fill */
+.skills-radar-row__fill {
+  height:           100%;                       /* Full height */
+  border-radius:    var(--r-full);              /* Pill */
+  transform:        scaleX(0);                  /* Start hidden */
+  transform-origin: left center;               /* Grow from left */
+  transition:       transform 1.4s cubic-bezier(0.16, 1, 0.3, 1); /* Smooth */
+}
+
+/* ── Empty state ──────────────────────────────────────────────── */
+/* Shown when no skills are available */
+.skills-empty {
+  text-align:  center;                          /* Center text */
+  padding:     var(--s10) var(--s6);            /* Generous padding */
+  color:       var(--text-muted);               /* Muted text */
+  font-family: var(--font-mono);                /* Mono */
+  font-size:   0.80rem;                         /* Small */
+}
+
+/* ═══════════════════════════════════════════════════
+   RESPONSIVE
+   ═══════════════════════════════════════════════════ */
+
+/* Tablet — stack sidebar below groups */
+@media (max-width: 1024px) {
+  .skills-grid--with-sidebar {
+    grid-template-columns: 1fr;                 /* Single column */
+  }
+
+  .skills-radar-panel {
+    position: static;                           /* Remove sticky */
+    max-height: none;                           /* Remove height limit */
+    order: -1;                                  /* Move above groups */
+  }
+}
+
+/* Mobile — tighter skill names */
+@media (max-width: 600px) {
+  .skill-item__name {
+    min-width: 90px;                            /* Narrower on mobile */
+    font-size: 0.76rem;                         /* Smaller text */
+  }
+
+  .skills-group {
+    padding: var(--s4);                         /* Less padding on mobile */
+  }
