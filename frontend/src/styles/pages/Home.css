@@ -225,3 +225,53 @@
 @media (max-width: 600px) {
   .projects-grid { grid-template-columns: 1fr; }
 }
+
+/* Custom variables for consistent theme management */
+:root {
+    --glass-background: rgba(255, 255, 255, 0.05);
+    --glass-border: rgba(255, 255, 255, 0.15);
+    --accent-cyan: #00d2ff;
+    --text-primary: #ffffff;
+    --text-secondary: rgba(255, 255, 255, 0.6);
+}
+
+/* Dashboard main container with blurred background */
+.overview-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 20px;
+    padding: 20px;
+    color: var(--text-primary);
+}
+
+/* Glassmorphism card style */
+.glass-card {
+    background: var(--glass-background);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid var(--glass-border);
+    border-radius: 25px;
+    padding: 25px;
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease;
+}
+
+.glass-card:hover {
+    transform: translateY(-5px);
+}
+
+/* Progress bar styling for projects */
+.progress-container {
+    height: 8px;
+    width: 100%;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    margin: 10px 0;
+    overflow: hidden;
+}
+
+.progress-fill {
+    height: 100%;
+    background: var(--accent-cyan);
+    border-radius: 10px;
+}
