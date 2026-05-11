@@ -1,79 +1,80 @@
-/* ═══════════════════════════════════════════════════
-   NotFound.css — 404 page styles
-   ═══════════════════════════════════════════════════ */
+/* NotFound.css */
 
 .not-found {
-  min-height:      100vh;
-  display:         flex;
-  flex-direction:  column;
-  align-items:     center;
+  min-height: 100vh;
+  background-color: #050505; /* Blacker background for contrast */
+  display: flex;
+  align-items: center;
   justify-content: center;
-  text-align:      center;
-  padding:         2rem;
-  position:        relative;
-  overflow:        hidden;
+  overflow: hidden;
+  position: relative;
 }
 
-/* Background glow */
-.not-found__bg {
-  position:   absolute;
-  inset:      0;
-  z-index:    0;
-  background: radial-gradient(
-    ellipse 600px 400px at 50% 50%,
-    rgba(200, 255, 87, 0.04) 0%,
-    transparent 70%
-  );
+.not-found__vignette {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at center, transparent 30%, rgba(0,0,0,0.8) 100%);
+  z-index: 1;
+  pointer-events: none;
 }
 
 .not-found__content {
   position: relative;
-  z-index:  1;
+  z-index: 2;
+  width: 100%;
+  max-width: 500px;
+  text-align: center;
 }
 
-/* Giant 404 number */
-.not-found__code {
-  font-family:    var(--font-display);
-  font-size:      clamp(8rem, 20vw, 16rem);
-  line-height:    0.85;
-  letter-spacing: 0.05em;
-  color:          transparent;
-  -webkit-text-stroke: 1px var(--color-faint);
-  margin-bottom:  1.5rem;
-  position:       relative;
+/* Geometric Container */
+.not-found__geo-container {
+  width: 100%;
+  margin-bottom: 2rem;
+  filter: drop-shadow(0 0 20px rgba(200, 255, 87, 0.3));
 }
 
-/* Lime accent overlay */
-.not-found__code::after {
-  content:            '404';
-  position:           absolute;
-  inset:              0;
-  color:              var(--color-lime);
-  -webkit-text-stroke: 0;
-  opacity:            0.08;
-  filter:             blur(20px);
+.not-found__geo-svg {
+  width: 100%;
+  height: auto;
 }
 
-.not-found__title {
-  font-family:    var(--font-display);
-  font-size:      clamp(1.8rem, 4vw, 2.8rem);
-  letter-spacing: 0.04em;
-  color:          var(--color-text);
-  margin-bottom:  1rem;
+/* Animations for Geometric Paths */
+.geo-path {
+  stroke-dasharray: 400;
+  stroke-dashoffset: 400;
+  animation: drawGeo 3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
 }
 
-.not-found__sub {
-  font-size:     0.97rem;
-  color:         var(--color-muted);
-  line-height:   1.8;
-  max-width:     400px;
-  margin:        0 auto 2.5rem;
+@keyframes drawGeo {
+  to { stroke-dashoffset: 0; }
 }
 
-.not-found__actions {
-  display:     flex;
-  gap:         1rem;
-  align-items: center;
-  justify-content: center;
-  flex-wrap:   wrap;
+/* Subtle pulse for each number */
+.pulse-1 { animation-delay: 0.2s; }
+.pulse-2 { animation-delay: 0.4s; }
+.pulse-3 { animation-delay: 0.6s; }
+
+/* Text Styling */
+.not-found__status {
+  font-family: var(--font-mono, monospace);
+  font-size: 1.5rem;
+  letter-spacing: 0.4em;
+  color: #c8ff57;
+  margin-bottom: 0.5rem;
+  text-transform: uppercase;
+}
+
+.not-found__msg {
+  font-family: var(--font-mono, monospace);
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.6);
+  margin-bottom: 3rem;
+  letter-spacing: 0.1em;
+}
+
+/* Button Customization for this page */
+.not-found__actions .btn {
+  border-radius: 0; /* Sharp geometric edges */
+  font-family: var(--font-mono, monospace);
+  letter-spacing: 0.2em;
 }
