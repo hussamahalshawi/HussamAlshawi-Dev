@@ -1,112 +1,197 @@
 /**
  * constants.js
  * ─────────────────────────────────────────────────────────
- * Single source of truth for every constant used across the
- * frontend. Change a value here → updates everywhere.
+ * Single source of truth for every constant used across
+ * the entire frontend. Change a value here → updates
+ * everywhere automatically. Never hardcode these values
+ * directly inside components or services.
+ *
+ * Sections:
+ *   1. API base URL
+ *   2. API endpoint paths
+ *   3. Navigation links
+ *   4. Social platform config
+ *   5. Skill proficiency bands
+ *   6. Chart color palette
+ *   7. Animation durations
+ *   8. Loader messages
+ *   9. Request timeout
  * ─────────────────────────────────────────────────────────
  */
 
-// ── API base URL — reads from .env, falls back to local dev ──
+/* ══════════════════════════════════════════════════════════
+   1. API BASE URL
+   Reads from .env — falls back to local dev if not set
+══════════════════════════════════════════════════════════ */
 export const API_BASE_URL =
-  import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+  import.meta.env.VITE_API_URL || 'http://localhost:5000/api'; // Vite env var with fallback
 
-// ── API endpoint paths ────────────────────────────────────────
+/* ══════════════════════════════════════════════════════════
+   2. API ENDPOINT PATHS
+   All paths are relative to API_BASE_URL.
+   Function endpoints (e.g. PROJECT_DETAIL) accept an id
+   and return the full dynamic path string.
+══════════════════════════════════════════════════════════ */
 export const ENDPOINTS = {
-  // Profile
-  PROFILE:            '/portfolio/profile',
 
-  // Analytics
-  ANALYTICS:          '/portfolio/analytics',
-  TECH_STACK:         '/portfolio/analytics/tech-stack',
-  TIMELINE:           '/portfolio/analytics/timeline',
+  // ── Profile ───────────────────────────────────────────
+  PROFILE:              '/portfolio/profile',           // GET — public profile data
 
-  // Skills
-  SKILLS:             '/portfolio/skills',
-  SKILLS_SUMMARY:     '/portfolio/skills/summary',
+  // ── Analytics ─────────────────────────────────────────
+  ANALYTICS:            '/portfolio/analytics',         // GET — mega aggregate payload
+  TECH_STACK:           '/portfolio/analytics/tech-stack', // GET — tech frequency data
+  TIMELINE:             '/portfolio/analytics/timeline',   // GET — career timeline
 
-  // Projects
-  PROJECTS:           '/portfolio/projects',
-  PROJECT_DETAIL:     (id) => `/portfolio/projects/${id}`,
+  // ── Skills ────────────────────────────────────────────
+  SKILLS:               '/portfolio/skills',            // GET — all skills grouped
+  SKILLS_SUMMARY:       '/portfolio/skills/summary',    // GET — lightweight summary
 
-  // Experience
-  EXPERIENCE:         '/portfolio/experience',
-  EXPERIENCE_TIMELINE:'/portfolio/experience/timeline',
+  // ── Projects ──────────────────────────────────────────
+  PROJECTS:             '/portfolio/projects',          // GET — all projects (filterable)
+  PROJECT_DETAIL:       (id) => `/portfolio/projects/${id}`, // GET — single project by ID
 
-  // Education & Courses
-  EDUCATION:          '/portfolio/education',
-  COURSES:            '/portfolio/courses',
-  COURSES_STATS:      '/portfolio/courses/stats',
-  ACHIEVEMENTS:       '/portfolio/achievements',
-  SELF_STUDY:         '/portfolio/self-study',
+  // ── Experience ────────────────────────────────────────
+  EXPERIENCE:           '/portfolio/experience',        // GET — work experience list
+  EXPERIENCE_TIMELINE:  '/portfolio/experience/timeline', // GET — timeline format
 
-  // Goals & Languages
-  GOALS:              '/portfolio/goals',
-  GOALS_STATS:        '/portfolio/goals/stats',
-  LANGUAGES:          '/portfolio/languages',
+  // ── Education & Courses ───────────────────────────────
+  EDUCATION:            '/portfolio/education',         // GET — education records
+  COURSES:              '/portfolio/courses',           // GET — completed courses
+  COURSES_STATS:        '/portfolio/courses/stats',     // GET — courses statistics
+  ACHIEVEMENTS:         '/portfolio/achievements',      // GET — achievements list
+  SELF_STUDY:           '/portfolio/self-study',        // GET — self-study records
 
-  // Feedback
-  FEEDBACK:           '/feedback',
-  FEEDBACK_FEATURED:  '/feedback/featured',
+  // ── Goals & Languages ─────────────────────────────────
+  GOALS:                '/portfolio/goals',             // GET — career roadmap goals
+  GOALS_STATS:          '/portfolio/goals/stats',       // GET — goals statistics
+  LANGUAGES:            '/portfolio/languages',         // GET — spoken languages
+
+  // ── Feedback / Contact ────────────────────────────────
+  FEEDBACK:             '/feedback',                    // POST — submit contact message
+  FEEDBACK_FEATURED:    '/feedback/featured',           // GET — approved testimonials
 };
 
-// ── Navigation links ──────────────────────────────────────────
+/* ══════════════════════════════════════════════════════════
+   3. NAVIGATION LINKS
+   Used by DashboardLayout sidebar nav items.
+   id must match the corresponding <section id="..."> element.
+══════════════════════════════════════════════════════════ */
 export const NAV_LINKS = [
-  { label: 'About',      href: '#about'       },
-  { label: 'Analytics',  href: '#analytics'   },
-  { label: 'Skills',     href: '#skills'       },
-  { label: 'Projects',   href: '#projects'     },
-  { label: 'Experience', href: '#experience'   },
-  { label: 'Goals',      href: '#goals'        },
-  { label: 'Contact',    href: '#contact'      },
+  { id: 'overview',   label: 'Dashboard',  href: '#overview',   icon: '⊞' },
+  { id: 'analytics',  label: 'Analytics',  href: '#analytics',  icon: '↗' },
+  { id: 'skills',     label: 'Skills',     href: '#skills',     icon: '◎' },
+  { id: 'projects',   label: 'Projects',   href: '#projects',   icon: '⊡' },
+  { id: 'experience', label: 'Experience', href: '#experience', icon: '⊛' },
+  { id: 'goals',      label: 'Goals',      href: '#goals',      icon: '◈' },
+  { id: 'contact',    label: 'Contact',    href: '#contact',    icon: '✉' },
 ];
 
-// ── Social platform config ────────────────────────────────────
+/* ══════════════════════════════════════════════════════════
+   4. SOCIAL PLATFORM CONFIG
+   Used by ProfileCard and ContactSection social links.
+   key must match the field name in the profile API response.
+══════════════════════════════════════════════════════════ */
 export const SOCIAL_PLATFORMS = [
-  { key: 'github',    icon: '⚙',  label: 'GitHub'   },
-  { key: 'linkedin',  icon: '💼', label: 'LinkedIn' },
-  { key: 'medium',    icon: '✍',  label: 'Medium'   },
-  { key: 'instagram', icon: '📸', label: 'Instagram' },
-  { key: 'facebook',  icon: '🔗', label: 'Facebook' },
+  { key: 'github',    icon: '⚙',  label: 'GitHub'    }, // GitHub profile URL
+  { key: 'linkedin',  icon: '💼', label: 'LinkedIn'  }, // LinkedIn profile URL
+  { key: 'medium',    icon: '✍',  label: 'Medium'    }, // Medium blog URL
+  { key: 'instagram', icon: '📸', label: 'Instagram' }, // Instagram profile URL
+  { key: 'facebook',  icon: '🔗', label: 'Facebook'  }, // Facebook profile URL
 ];
 
-// ── Skill proficiency bands ───────────────────────────────────
+/* ══════════════════════════════════════════════════════════
+   5. SKILL PROFICIENCY BANDS
+   Maps score ranges (0–100) to proficiency labels and colors.
+   Used by SkillsSection, AnalyticsSection, and formatters.
+══════════════════════════════════════════════════════════ */
 export const SKILL_BANDS = {
-  expert:       { min: 80, max: 100, label: 'Expert',       color: '#C8FF57' },
-  advanced:     { min: 60, max: 79,  label: 'Advanced',     color: '#00E5FF' },
-  intermediate: { min: 40, max: 59,  label: 'Intermediate', color: '#9B59F5' },
-  beginner:     { min: 0,  max: 39,  label: 'Beginner',     color: '#F5A623' },
+  expert: {
+    min:   80,          // Minimum score for Expert band
+    max:   100,         // Maximum score for Expert band
+    label: 'Expert',    // Display label
+    color: '#C8FF57',   // Lime green — highest proficiency
+  },
+  advanced: {
+    min:   60,          // Minimum score for Advanced band
+    max:   79,          // Maximum score for Advanced band
+    label: 'Advanced',  // Display label
+    color: '#00E5FF',   // Cyan — strong proficiency
+  },
+  intermediate: {
+    min:   40,          // Minimum score for Intermediate band
+    max:   59,          // Maximum score for Intermediate band
+    label: 'Intermediate', // Display label
+    color: '#9B59F5',   // Violet — growing proficiency
+  },
+  beginner: {
+    min:   0,           // Minimum score for Beginner band
+    max:   39,          // Maximum score for Beginner band
+    label: 'Beginner',  // Display label
+    color: '#F5A623',   // Gold — early stage proficiency
+  },
 };
 
-// ── Chart color palette (consistent across all charts) ───────
+/* ══════════════════════════════════════════════════════════
+   6. CHART COLOR PALETTE
+   Consistent colors used across all charts and visualizations.
+   Access by index: CHART_COLORS[0] = lime, [1] = cyan, etc.
+══════════════════════════════════════════════════════════ */
 export const CHART_COLORS = [
-  '#C8FF57', // lime
-  '#00E5FF', // cyan
-  '#9B59F5', // violet
-  '#F5A623', // gold
-  '#FF6B6B', // coral
-  '#1D9E75', // green
-  '#185FA5', // blue
-  '#854F0B', // amber
+  '#C8FF57', // [0] Lime    — primary accent
+  '#00E5FF', // [1] Cyan    — secondary accent
+  '#9B59F5', // [2] Violet  — tertiary accent
+  '#F5A623', // [3] Gold    — warning/highlight
+  '#FF6B6B', // [4] Coral   — danger/contrast
+  '#1D9E75', // [5] Green   — success
+  '#185FA5', // [6] Blue    — info
+  '#854F0B', // [7] Amber   — deep warm
 ];
 
-// ── Animation durations (ms) ─────────────────────────────────
+/* ══════════════════════════════════════════════════════════
+   7. ANIMATION DURATIONS & THRESHOLDS
+   Used by count-up animations, bar reveals, and observers.
+   All durations are in milliseconds unless noted.
+══════════════════════════════════════════════════════════ */
 export const ANIMATION = {
-  COUNTER_DURATION:  1800,   // count-up animation ms
-  BAR_DELAY:          120,   // stagger delay between skill bars ms
-  REVEAL_THRESHOLD:  0.12,  // IntersectionObserver threshold
-  TIMELINE_THRESHOLD:0.20,
+  COUNTER_DURATION:   1800, // ms — count-up animation total duration
+  BAR_DELAY:           120, // ms — stagger delay between each skill bar
+  REVEAL_THRESHOLD:   0.12, // IntersectionObserver trigger ratio (0–1)
+  TIMELINE_THRESHOLD: 0.20, // IntersectionObserver ratio for timeline items
 };
 
-// ── Loader messages sequence ──────────────────────────────────
+/* ══════════════════════════════════════════════════════════
+   8. LOADER MESSAGES
+   Sequence of messages shown during initial page load.
+   Cycled through by the PageLoader component.
+══════════════════════════════════════════════════════════ */
 export const LOADER_MESSAGES = [
-  'Connecting to API...',
-  'Loading profile...',
-  'Fetching analytics...',
-  'Loading skills...',
-  'Loading projects...',
-  'Loading experience...',
-  'All systems ready!',
+  'Connecting to API...',     // Step 1 — establishing connection
+  'Loading profile...',       // Step 2 — fetching profile data
+  'Fetching analytics...',    // Step 3 — fetching analytics data
+  'Loading skills...',        // Step 4 — fetching skills data
+  'Loading projects...',      // Step 5 — fetching projects data
+  'Loading experience...',    // Step 6 — fetching experience data
+  'All systems ready!',       // Step 7 — everything loaded
 ];
 
-// ── Request timeout in ms ─────────────────────────────────────
-export const REQUEST_TIMEOUT = 8000;
+/* ══════════════════════════════════════════════════════════
+   9. REQUEST TIMEOUT
+   Maximum time in ms before an API request is cancelled.
+   Applied globally in services/api.js Axios instance.
+══════════════════════════════════════════════════════════ */
+export const REQUEST_TIMEOUT = 8000; // 8 seconds — reasonable for slow connections
+
+/* ══════════════════════════════════════════════════════════
+   10. SECTION IDS
+   IDs of all portfolio sections — must match <section id="...">
+   Used by IntersectionObserver in Home.jsx to track active nav.
+══════════════════════════════════════════════════════════ */
+export const SECTION_IDS = [
+  'overview',    // Dashboard overview section
+  'analytics',   // Analytics charts section
+  'skills',      // Skills bars section
+  'projects',    // Projects grid section
+  'experience',  // Career timeline section
+  'goals',       // Goals roadmap section
+  'contact',     // Contact form section
+];
