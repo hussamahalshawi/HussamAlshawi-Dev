@@ -1,0 +1,84 @@
+/* ═══════════════════════════════════════════════════════════════
+   boot.css — Boot Loader Styles
+   Imported first in main.jsx so it loads before React hydrates.
+   Prevents FOUC (Flash of Unstyled Content) on initial page load.
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ── Scene background — instant paint before JS executes ──────── */
+html,
+body {
+  margin:     0;                                /* Remove browser default margin */
+  padding:    0;                                /* Remove browser default padding */
+  background: #cfe0f5;                          /* Devoryn sky-blue base color */
+  min-height: 100vh;                            /* Full viewport height always */
+}
+
+/* ── Boot loader overlay ───────────────────────────────────────── */
+#boot-loader {
+  position:        fixed;                       /* Cover entire screen */
+  inset:           0;                           /* top/right/bottom/left = 0 */
+  z-index:         9999;                        /* Above everything */
+  display:         flex;                        /* Center content */
+  flex-direction:  column;                      /* Stack ring + text vertically */
+  align-items:     center;                      /* Horizontal center */
+  justify-content: center;                      /* Vertical center */
+  gap:             16px;                        /* Space between ring and text */
+
+  /* Devoryn sky-blue radial gradient background */
+  background:
+    radial-gradient(ellipse 1200px 800px at 20% -5%,  rgba(120,180,255,0.55) 0%, transparent 60%),
+    radial-gradient(ellipse 800px  600px at 85% 110%, rgba(100,160,255,0.45) 0%, transparent 55%),
+    linear-gradient(160deg, #cfe0f5 0%, #d8eafc 40%, #c8d9f0 100%);
+
+  /* Smooth fade-out transition when .hidden class is added */
+  transition: opacity 0.5s ease, visibility 0.5s ease;
+}
+
+/* Hidden state — triggered by JS after React mounts */
+#boot-loader.hidden {
+  opacity:        0;                            /* Fade to transparent */
+  visibility:     hidden;                       /* Remove from accessibility tree */
+  pointer-events: none;                         /* Prevent click interception */
+}
+
+/* ── Spinning dual-color ring ──────────────────────────────────── */
+.boot-ring {
+  width:         60px;                          /* Ring outer size */
+  height:        60px;
+  border:        2px solid rgba(79, 145, 247, 0.18); /* Faint base ring */
+  border-top:    2px solid #4f91f7;             /* Blue top segment */
+  border-right:  2px solid #38bdf8;             /* Cyan right segment */
+  border-radius: 50%;                           /* Perfect circle */
+  animation:     bootSpin 0.9s linear infinite; /* Continuous rotation */
+}
+
+/* ── Loading text ──────────────────────────────────────────────── */
+.boot-text {
+  font-family:    'JetBrains Mono', monospace;  /* Mono font for tech feel */
+  font-size:      0.70rem;                      /* Small, subtle */
+  letter-spacing: 0.20em;                       /* Wide tracking */
+  text-transform: uppercase;                    /* All caps */
+  color:          #5a7499;                      /* Muted blue-grey */
+}
+
+/* ── HA.Dev logo at bottom ─────────────────────────────────────── */
+.boot-logo {
+  position:       absolute;                     /* Pin to bottom of screen */
+  bottom:         32px;
+  font-family:    'Syne', sans-serif;           /* Display font */
+  font-size:      1.1rem;
+  font-weight:    800;
+  letter-spacing: 0.05em;
+  color:          rgba(26, 35, 50, 0.30);       /* Very subtle dark text */
+}
+
+/* Blue dot after "HA" */
+.boot-logo em {
+  color:      #4f91f7;                          /* Blue accent */
+  font-style: normal;                           /* Override italic default */
+}
+
+/* ── Spin keyframe ─────────────────────────────────────────────── */
+@keyframes bootSpin {
+  to { transform: rotate(360deg); }            /* Full 360° rotation */
+}
