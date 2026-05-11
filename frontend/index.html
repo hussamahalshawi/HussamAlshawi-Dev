@@ -15,9 +15,9 @@
 
     <!--
       FONTS — Devoryn aesthetic:
-        Syne          → Display / headings  (geometric, bold personality)
-        DM Sans       → Body text           (clean, readable, modern)
-        JetBrains Mono → Mono / labels      (technical, precise)
+        Syne           → Display / headings   (geometric, bold personality)
+        DM Sans        → Body text            (clean, readable, modern)
+        JetBrains Mono → Mono / code labels   (technical, precise feel)
     -->
     <link
       href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&family=JetBrains+Mono:wght@300;400;500;700&display=swap"
@@ -28,84 +28,18 @@
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 
     <!--
-      CRITICAL INLINE CSS — prevents FOUC.
-      Sets scene background instantly before JS loads.
+      NOTE: All styles are in CSS files imported via main.jsx.
+      boot.css is the first import in main.jsx and handles
+      the #boot-loader and body background to prevent FOUC.
     -->
-    <style>
-      /* Instant background matching Devoryn sky-blue scene */
-      html, body {
-        margin:     0;
-        padding:    0;
-        background: #cfe0f5;
-        min-height: 100vh;
-      }
-
-      /* ── Boot loader ──────────────────────────────────────── */
-      #boot-loader {
-        position:        fixed;
-        inset:           0;
-        z-index:         9999;
-        display:         flex;
-        flex-direction:  column;
-        align-items:     center;
-        justify-content: center;
-        gap:             16px;
-        background:
-          radial-gradient(ellipse 1200px 800px at 20% -5%,  rgba(120,180,255,0.55) 0%, transparent 60%),
-          radial-gradient(ellipse 800px  600px at 85% 110%, rgba(100,160,255,0.45) 0%, transparent 55%),
-          linear-gradient(160deg, #cfe0f5 0%, #d8eafc 40%, #c8d9f0 100%);
-        transition: opacity 0.5s ease, visibility 0.5s ease;
-      }
-
-      /* Hidden state — fades out after React mounts */
-      #boot-loader.hidden {
-        opacity:        0;
-        visibility:     hidden;
-        pointer-events: none;
-      }
-
-      /* Spinning dual-color ring */
-      .boot-ring {
-        width:         60px;
-        height:        60px;
-        border:        2px solid rgba(79,145,247,0.18);
-        border-top:    2px solid #4f91f7;
-        border-right:  2px solid #38bdf8;
-        border-radius: 50%;
-        animation:     bootSpin 0.9s linear infinite;
-      }
-
-      /* Loading text */
-      .boot-text {
-        font-family:    'JetBrains Mono', monospace;
-        font-size:      0.70rem;
-        letter-spacing: 0.20em;
-        text-transform: uppercase;
-        color:          #5a7499;
-      }
-
-      /* Logo at bottom */
-      .boot-logo {
-        position:       absolute;
-        bottom:         32px;
-        font-family:    'Syne', sans-serif;
-        font-size:      1.1rem;
-        font-weight:    800;
-        letter-spacing: 0.05em;
-        color:          rgba(26,35,50,0.30);
-      }
-
-      .boot-logo em { color: #4f91f7; font-style: normal; }
-
-      @keyframes bootSpin { to { transform: rotate(360deg); } }
-    </style>
   </head>
 
   <body>
 
     <!--
-      Boot loader — visible while React bundle downloads + hydrates.
-      Fades out in main.jsx after the root renders.
+      BOOT LOADER — visible while React bundle downloads + hydrates.
+      Styled entirely by src/styles/boot.css (imported first in main.jsx).
+      Hidden by JS in main.jsx after React mounts via classList.add('hidden').
     -->
     <div id="boot-loader" role="status" aria-label="Loading portfolio">
       <div class="boot-ring"></div>
@@ -113,10 +47,16 @@
       <span class="boot-logo">HA<em>.</em>Dev</span>
     </div>
 
-    <!-- React mounts here -->
+    <!--
+      ROOT — React mounts the entire application here.
+      DashboardLayout renders sidebar + topbar + all sections.
+    -->
     <div id="root"></div>
 
-    <!-- Vite entry point — replaced with bundle in production -->
+    <!--
+      ENTRY POINT — Vite replaces this with the bundled ES module.
+      main.jsx → App.jsx → Home.jsx → DashboardLayout + sections
+    -->
     <script type="module" src="/src/main.jsx"></script>
 
   </body>
