@@ -6,15 +6,19 @@
 
     <!-- ── SEO ───────────────────────────────────────────────── -->
     <title>Hussam Alshawi — Portfolio Dashboard</title>
-    <meta name="description" content="Full Stack Developer Portfolio — Skills, Projects, Experience & Analytics Dashboard." />
+    <meta
+      name="description"
+      content="Full Stack Developer Portfolio — Skills, Projects, Experience and Analytics Dashboard."
+    />
     <meta name="theme-color" content="#cfe0f5" />
 
     <!-- ── Font preconnect for performance ──────────────────── -->
+    <!-- Preconnect tells the browser to open the connection early -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 
     <!--
-      FONTS — Devoryn aesthetic:
+      FONTS — Three typefaces for the Devoryn aesthetic:
         Syne           → Display / headings   (geometric, bold personality)
         DM Sans        → Body text            (clean, readable, modern)
         JetBrains Mono → Mono / code labels   (technical, precise feel)
@@ -28,34 +32,40 @@
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 
     <!--
-      NOTE: All styles are in CSS files imported via main.jsx.
-      boot.css is the first import in main.jsx and handles
-      the #boot-loader and body background to prevent FOUC.
+      NOTE: All styles are imported via main.jsx (not here).
+      boot.css is imported FIRST in main.jsx to prevent FOUC
+      (Flash of Unstyled Content) before React hydrates.
     -->
   </head>
 
   <body>
 
     <!--
-      BOOT LOADER — visible while React bundle downloads + hydrates.
-      Styled entirely by src/styles/boot.css (imported first in main.jsx).
-      Hidden by JS in main.jsx after React mounts via classList.add('hidden').
+      BOOT LOADER
+      ────────────────────────────────────────────────────────
+      Visible while the React bundle downloads and hydrates.
+      Styled by src/styles/boot.css (first import in main.jsx).
+      Hidden by JS in main.jsx after React mounts.
     -->
     <div id="boot-loader" role="status" aria-label="Loading portfolio">
-      <div class="boot-ring"></div>
-      <span class="boot-text">Loading Portfolio…</span>
-      <span class="boot-logo">HA<em>.</em>Dev</span>
+      <div class="boot-ring"></div>                  <!-- Spinning dual-color ring -->
+      <span class="boot-text">Loading Portfolio…</span> <!-- Loading label -->
+      <span class="boot-logo">HA<em>.</em>Dev</span>    <!-- Brand mark at bottom -->
     </div>
 
     <!--
-      ROOT — React mounts the entire application here.
+      ROOT
+      ────────────────────────────────────────────────────────
+      React mounts the entire application here.
       DashboardLayout renders sidebar + topbar + all sections.
     -->
     <div id="root"></div>
 
     <!--
-      ENTRY POINT — Vite replaces this with the bundled ES module.
-      main.jsx → App.jsx → Home.jsx → DashboardLayout + sections
+      ENTRY POINT
+      ────────────────────────────────────────────────────────
+      Vite replaces this with the bundled ES module at build time.
+      Chain: main.jsx → App.jsx → Home.jsx → DashboardLayout + sections
     -->
     <script type="module" src="/src/main.jsx"></script>
 
