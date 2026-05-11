@@ -1,0 +1,62 @@
+/* ═══════════════════════════════════════════════════
+   Sections.css — Shared Section Layout Styles
+   Used by all portfolio sections
+   ═══════════════════════════════════════════════════ */
+
+/* ── Base section ─────────────────────────────────── */
+.section {
+  padding:  var(--s16) 0;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Alternate-background sections */
+.section--alt {
+  background:    rgba(14, 19, 38, 0.50);
+  border-top:    1px solid var(--border-faint);
+  border-bottom: 1px solid var(--border-faint);
+}
+
+/* ── Container ────────────────────────────────────── */
+.container {
+  max-width: var(--content-max);
+  margin:    0 auto;
+  padding:   0 var(--s8);
+}
+
+/* ── Section head block ───────────────────────────── */
+.s-head {
+  margin-bottom: var(--s10);
+  animation:     fadeUp 0.5s ease both;
+}
+
+/* Decorative background blob (subtle) */
+.section::before {
+  content:        '';
+  position:       absolute;
+  width:          600px;
+  height:         400px;
+  border-radius:  50%;
+  background:     radial-gradient(ellipse at center, rgba(79,195,247,0.04) 0%, transparent 70%);
+  pointer-events: none;
+  top:            0;
+  left:           -200px;
+  z-index:        0;
+}
+
+/* Content sits above decorative bg */
+.section > .container {
+  position: relative;
+  z-index:  1;
+}
+
+/* ── Responsive ───────────────────────────────────── */
+@media (max-width: 1024px) {
+  .container { padding: 0 var(--s6); }
+  .section   { padding: var(--s12) 0; }
+}
+
+@media (max-width: 600px) {
+  .container { padding: 0 var(--s4); }
+  .section   { padding: var(--s10) 0; }
+}

@@ -31,16 +31,16 @@ import DashboardLayout           from '@/components/layout/DashboardLayout';
 
 // ── Portfolio sections ────────────────────────────────────────────
 import OverviewSection           from '@/components/sections/OverviewSection';
-import AnalyticsSection          from '@/components/sections/AnalyticsSection';
-import SkillsSection             from '@/components/sections/SkillsSection';
-import ProjectsSection           from '@/components/sections/ProjectsSection';
-import ExperienceSection         from '@/components/sections/ExperienceSection';
-import GoalsSection              from '@/components/sections/GoalsSection';
-import ContactForm               from '@/components/sections/ContactForm';
+// import AnalyticsSection          from '@/components/sections/AnalyticsSection';
+// import SkillsSection             from '@/components/sections/SkillsSection';
+// import ProjectsSection           from '@/components/sections/ProjectsSection';
+// import ExperienceSection         from '@/components/sections/ExperienceSection';
+// import GoalsSection              from '@/components/sections/GoalsSection';
+// import ContactForm               from '@/components/sections/ContactForm';
 
 // ── UI helpers ───────────────────────────────────────────────────
-import PageLoader                from '@/components/ui/PageLoader';
-import OfflineBanner             from '@/components/ui/OfflineBanner';
+// import PageLoader                from '@/components/ui/PageLoader';
+// import OfflineBanner             from '@/components/ui/OfflineBanner';
 
 // ── Shared section layout styles ─────────────────────────────────
 import '@/styles/layout/Sections.css';

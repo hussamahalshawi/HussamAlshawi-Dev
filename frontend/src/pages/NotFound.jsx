@@ -5,8 +5,8 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
-import Button from '../components/ui/Button';
-import ParticleBackground from '../components/ui/ParticleBackground';
+// import Button from '../components/ui/Button';
+// import ParticleBackground from '../components/ui/ParticleBackground';
 import '../styles/pages/NotFound.css';
 
 /**
