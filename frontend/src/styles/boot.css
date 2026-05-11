@@ -1,28 +1,34 @@
 /* ═══════════════════════════════════════════════════════════════
    boot.css — Boot Loader Styles
-   Imported first in main.jsx so it loads before React hydrates.
-   Prevents FOUC (Flash of Unstyled Content) on initial page load.
+   ─────────────────────────────────────────────────────────────
+   This file is imported FIRST in main.jsx so it loads before
+   React hydrates. Its only job is to:
+     1. Paint the body background instantly (no white flash)
+     2. Style the #boot-loader overlay
+     3. Define the fade-out transition when React is ready
    ═══════════════════════════════════════════════════════════════ */
 
-/* ── Scene background — instant paint before JS executes ──────── */
+/* ── Instant background paint ─────────────────────────────────── */
+/* Applied before any JS runs — prevents white flash on load */
 html,
 body {
-  margin:     0;                                /* Remove browser default margin */
-  padding:    0;                                /* Remove browser default padding */
-  background: #cfe0f5;                          /* Devoryn sky-blue base color */
-  min-height: 100vh;                            /* Full viewport height always */
+  margin:     0;                                /* Remove default browser margin */
+  padding:    0;                                /* Remove default browser padding */
+  background: #cfe0f5;                          /* Devoryn sky-blue — matches light theme */
+  min-height: 100vh;                            /* Always fill the full viewport height */
 }
 
 /* ── Boot loader overlay ───────────────────────────────────────── */
+/* Covers the entire screen while the React bundle loads */
 #boot-loader {
-  position:        fixed;                       /* Cover entire screen */
-  inset:           0;                           /* top/right/bottom/left = 0 */
-  z-index:         9999;                        /* Above everything */
-  display:         flex;                        /* Center content */
-  flex-direction:  column;                      /* Stack ring + text vertically */
-  align-items:     center;                      /* Horizontal center */
-  justify-content: center;                      /* Vertical center */
-  gap:             16px;                        /* Space between ring and text */
+  position:        fixed;                       /* Cover entire viewport */
+  inset:           0;                           /* Shorthand for top/right/bottom/left: 0 */
+  z-index:         9999;                        /* Sit above all other content */
+  display:         flex;                        /* Center children with flexbox */
+  flex-direction:  column;                      /* Stack ring + text + logo vertically */
+  align-items:     center;                      /* Center horizontally */
+  justify-content: center;                      /* Center vertically */
+  gap:             16px;                        /* Space between ring, text, and logo */
 
   /* Devoryn sky-blue radial gradient background */
   background:
@@ -30,55 +36,57 @@ body {
     radial-gradient(ellipse 800px  600px at 85% 110%, rgba(100,160,255,0.45) 0%, transparent 55%),
     linear-gradient(160deg, #cfe0f5 0%, #d8eafc 40%, #c8d9f0 100%);
 
-  /* Smooth fade-out transition when .hidden class is added */
+  /* CSS transition for fade-out — triggered by adding .hidden class via JS */
   transition: opacity 0.5s ease, visibility 0.5s ease;
 }
 
-/* Hidden state — triggered by JS after React mounts */
+/* ── Hidden state — added by JS after React mounts ────────────── */
+/* main.jsx calls: loader.classList.add('hidden') */
 #boot-loader.hidden {
-  opacity:        0;                            /* Fade to transparent */
+  opacity:        0;                            /* Fade to fully transparent */
   visibility:     hidden;                       /* Remove from accessibility tree */
-  pointer-events: none;                         /* Prevent click interception */
+  pointer-events: none;                         /* Prevent accidental click interception */
 }
 
 /* ── Spinning dual-color ring ──────────────────────────────────── */
+/* The main loading indicator — dual-segment spin effect */
 .boot-ring {
-  width:         60px;                          /* Ring outer size */
-  height:        60px;
-  border:        2px solid rgba(79, 145, 247, 0.18); /* Faint base ring */
+  width:         60px;                          /* Ring outer diameter */
+  height:        60px;                          /* Ring outer diameter */
+  border:        2px solid rgba(79, 145, 247, 0.18); /* Faint full ring base */
   border-top:    2px solid #4f91f7;             /* Blue top segment */
   border-right:  2px solid #38bdf8;             /* Cyan right segment */
   border-radius: 50%;                           /* Perfect circle */
-  animation:     bootSpin 0.9s linear infinite; /* Continuous rotation */
+  animation:     bootSpin 0.9s linear infinite; /* Continuous clockwise rotation */
 }
 
-/* ── Loading text ──────────────────────────────────────────────── */
+/* ── Loading text label ────────────────────────────────────────── */
 .boot-text {
-  font-family:    'JetBrains Mono', monospace;  /* Mono font for tech feel */
-  font-size:      0.70rem;                      /* Small, subtle */
-  letter-spacing: 0.20em;                       /* Wide tracking */
-  text-transform: uppercase;                    /* All caps */
+  font-family:    'JetBrains Mono', monospace;  /* Mono font for technical feel */
+  font-size:      0.70rem;                      /* Small, subtle label */
+  letter-spacing: 0.20em;                       /* Wide tracking for tech aesthetic */
+  text-transform: uppercase;                    /* All uppercase */
   color:          #5a7499;                      /* Muted blue-grey */
 }
 
-/* ── HA.Dev logo at bottom ─────────────────────────────────────── */
+/* ── Brand logo at bottom of screen ───────────────────────────── */
 .boot-logo {
-  position:       absolute;                     /* Pin to bottom of screen */
-  bottom:         32px;
-  font-family:    'Syne', sans-serif;           /* Display font */
-  font-size:      1.1rem;
-  font-weight:    800;
-  letter-spacing: 0.05em;
+  position:       absolute;                     /* Pin to bottom of the overlay */
+  bottom:         32px;                         /* 32px from bottom edge */
+  font-family:    'Syne', sans-serif;           /* Display font for brand mark */
+  font-size:      1.1rem;                       /* Medium brand size */
+  font-weight:    800;                          /* Heavy weight for impact */
+  letter-spacing: 0.05em;                       /* Slight tracking */
   color:          rgba(26, 35, 50, 0.30);       /* Very subtle dark text */
 }
 
-/* Blue dot after "HA" */
+/* Blue accent dot after "HA" in the logo */
 .boot-logo em {
-  color:      #4f91f7;                          /* Blue accent */
-  font-style: normal;                           /* Override italic default */
+  color:      #4f91f7;                          /* Brand blue accent */
+  font-style: normal;                           /* Override browser italic default */
 }
 
-/* ── Spin keyframe ─────────────────────────────────────────────── */
+/* ── Spin keyframe animation ───────────────────────────────────── */
 @keyframes bootSpin {
-  to { transform: rotate(360deg); }            /* Full 360° rotation */
+  to { transform: rotate(360deg); }             /* Full 360° clockwise rotation */
 }
