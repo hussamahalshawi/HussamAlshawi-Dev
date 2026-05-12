@@ -58,15 +58,16 @@ export function usePortfolioData() {
     /* Execute all requests simultaneously using Promise.allSettled */
     const results = await Promise.allSettled(tasks);
 
-    /* Destructure results for mapping */
-    const [profileRes, analyticsRes, skillsRes, projectsRes] = results;
+    // Destructure all 5 results including skills summary
+    const [profileRes, analyticsRes, skillsRes, projectsRes, skillsSummaryRes] = results;
 
     /* Construct the final data object, defaulting to null for failed requests */
     const newData = {
-      profile:   profileRes.status   === 'fulfilled' ? profileRes.value   : null,
-      analytics: analyticsRes.status === 'fulfilled' ? analyticsRes.value : null,
-      skills:    skillsRes.status    === 'fulfilled' ? skillsRes.value    : null,
-      projects:  projectsRes.status  === 'fulfilled' ? projectsRes.value  : null,
+      profile:       profileRes.status       === 'fulfilled' ? profileRes.value       : null,
+      analytics:     analyticsRes.status     === 'fulfilled' ? analyticsRes.value     : null,
+      skills:        skillsRes.status        === 'fulfilled' ? skillsRes.value        : null,
+      projects:      projectsRes.status      === 'fulfilled' ? projectsRes.value      : null,
+      skillsSummary: skillsSummaryRes.status === 'fulfilled' ? skillsSummaryRes.value : null,
     };
 
     /* Validation: check if all requests failed to display a global error banner */
