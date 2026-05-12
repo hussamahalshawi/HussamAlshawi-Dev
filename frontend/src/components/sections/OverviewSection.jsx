@@ -199,6 +199,8 @@ const avatar = profile?.profile_gallery?.[0]?.url
           avatar={avatar}
           available={available}
           social={social}
+          profile={profile}
+          counts={counts}
         />
 
         {/* ── COL 2 TOP: SCORE DISTRIBUTION DONUT ─────────────────── */}
@@ -241,7 +243,7 @@ const avatar = profile?.profile_gallery?.[0]?.url
  * Card height is controlled by CSS to match Col 2 total height.
  * @param {{ fullName, title, bio, avatar, available, social }} props
  */
-function ProfileCardPanel({ fullName, title, bio, avatar, available, social }) {
+function ProfileCardPanel({ fullName, title, bio, avatar, available, social, profile, counts }) {
 
   const initials = getInitials(fullName); // Extract initials e.g. "HA"
 
@@ -290,7 +292,51 @@ function ProfileCardPanel({ fullName, title, bio, avatar, available, social }) {
 
       {/* ── Full bio — no truncation ── */}
       {bio && <p className="ov-profile__bio">{bio}</p>}
+        {/* ── Quick Stats Strip ── */}
+<div className="ov-profile__stats" role="list" aria-label="Profile statistics">
 
+  {/* Years of experience */}
+  <div className="ov-stat" role="listitem">
+    <div className="ov-stat__num" style={{ color: 'var(--cyan)' }}>
+      {profile?.experience_years ? `${profile.experience_years}+` : '—'}
+    </div>
+    <div className="ov-stat__label">Yrs Exp</div>
+  </div>
+
+  {/* Divider */}
+  <div className="ov-stat__divider" aria-hidden="true" />
+
+  {/* Goals score / overall score */}
+  <div className="ov-stat" role="listitem">
+    <div className="ov-stat__num" style={{ color: 'var(--green)' }}>
+      {profile?.overall_score ? `${Math.round(profile.overall_score)}%` : '—'}
+    </div>
+    <div className="ov-stat__label">Score</div>
+  </div>
+
+  {/* Divider */}
+  <div className="ov-stat__divider" aria-hidden="true" />
+
+  {/* Total experience roles count */}
+  <div className="ov-stat" role="listitem">
+    <div className="ov-stat__num" style={{ color: 'var(--violet)' }}>
+      {counts?.experience || '—'}
+    </div>
+    <div className="ov-stat__label">Roles</div>
+  </div>
+
+  {/* Divider */}
+  <div className="ov-stat__divider" aria-hidden="true" />
+
+  {/* Total projects count */}
+  <div className="ov-stat" role="listitem">
+    <div className="ov-stat__num" style={{ color: 'var(--orange)' }}>
+      {counts?.projects || '—'}
+    </div>
+    <div className="ov-stat__label">Projects</div>
+  </div>
+
+</div>
       {/* ── Luxury Social links ── */}
 <div className="ov-profile__social--luxury" role="list" aria-label="Social links">
   {SOCIAL_PLATFORMS_CONFIG.map(platform => {

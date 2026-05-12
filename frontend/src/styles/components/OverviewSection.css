@@ -1039,3 +1039,63 @@
   /* Skill list: remove scroll cap on mobile */
   .ov-skill-list { max-height: none; }
 }
+
+/* ── Profile Quick Stats Strip ─────────────────── */
+.ov-profile__stats {
+  display:         flex;
+  align-items:     center;
+  justify-content: center;
+  gap:             0;
+  width:           100%;
+  background:      var(--glass-light);
+  border:          1px solid var(--border-subtle);
+  border-radius:   var(--r-lg);
+  margin-bottom:   var(--s4);
+  overflow:        hidden;
+}
+
+/* Individual stat cell */
+.ov-stat {
+  display:        flex;
+  flex-direction: column;
+  align-items:    center;
+  justify-content:center;
+  gap:            3px;
+  padding:        var(--s3) var(--s4);
+  flex:           1;
+  transition:     background var(--t-fast);
+}
+
+.ov-stat:hover {
+  background: var(--glass-medium);   /* Subtle highlight on hover */
+}
+
+/* Big number */
+.ov-stat__num {
+  font-family:    var(--font-display);
+  font-size:      1.3rem;
+  font-weight:    800;
+  line-height:    1;
+  letter-spacing: -0.02em;
+  transition:     color 0.35s ease;
+}
+
+/* Label below number */
+.ov-stat__label {
+  font-family:    var(--font-mono);
+  font-size:      0.52rem;
+  font-weight:    500;
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+  color:          var(--text-muted);
+  transition:     color 0.35s ease;
+}
+
+/* Vertical divider between stats */
+.ov-stat__divider {
+  width:      1px;
+  height:     36px;
+  background: var(--border-subtle);
+  flex-shrink:0;
+  transition: background 0.35s ease;
+}
