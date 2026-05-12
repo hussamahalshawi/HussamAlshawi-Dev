@@ -183,7 +183,7 @@
   font-size:      1.15rem;                      /* Medium brand size */
   font-weight:    800;                          /* Heavy weight */
   letter-spacing: 0.04em;                       /* Slight tracking */
-  color:          rgba(255, 255, 255, 0.12);    /* Very subtle in dark mode */
+  color:          var(--text-secondary);        /* Very subtle in dark mode */
   transition:     color 0.35s ease;            /* Smooth theme switch */
   user-select:    none;                         /* Non-interactive */
   pointer-events: none;                         /* Not clickable */
