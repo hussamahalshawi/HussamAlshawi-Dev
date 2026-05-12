@@ -282,7 +282,7 @@
 .ov-panel--profile {
   grid-column: 1;
   grid-row:    1 / 3;                           /* Spans both rows visually          */
-  align-self:  stretch;                         /* Stretches to fill both rows       */
+  align-self:  start;                         /* Stretches to fill both rows       */
   display:     flex;                            /* Flex column layout inside         */
   flex-direction: column;                       /* Stack children vertically         */
 }
@@ -997,17 +997,35 @@
 /* Tablet (≤1100px): collapse to 2 columns */
 @media (max-width: 1100px) {
   .ov-main-grid {
-    grid-template-columns: 1fr 1fr;            /* Two columns                       */
-    grid-template-rows:    auto auto auto;      /* Three rows                        */
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows:    auto auto auto;
   }
 
+  /* Profile first — full width */
+  .ov-panel--profile      { grid-column: 1 / 3; grid-row: 1; align-self: start; }
 
-  /* Score distribution and category side by side */
+  /* Score distribution and category side by side below profile */
   .ov-panel--score-dist   { grid-column: 1;     grid-row: 2; }
   .ov-panel--cat          { grid-column: 2;     grid-row: 2; }
 
-  /* Skill scores spans full width */
+  /* Skill scores full width at bottom */
   .ov-panel--skill-scores { grid-column: 1 / 3; grid-row: 3; }
+}
+
+@media (max-width: 700px) {
+  .ov-main-grid {
+    grid-template-columns: 1fr;
+    grid-template-rows:    auto;
+  }
+
+  .ov-panel--profile,
+  .ov-panel--score-dist,
+  .ov-panel--cat,
+  .ov-panel--skill-scores {
+    grid-column: 1;
+    grid-row:    auto;
+    align-self:  start;
+  }
 }
 
 /* Mobile (≤700px): single column stacked */
@@ -1040,50 +1058,68 @@
   .ov-skill-list { max-height: none; }
 }
 
-/* ── Profile Quick Stats Strip ─────────────────── */
+//* ── Profile Stats — 2x2 grid style ───────────────── */
 .ov-profile__stats {
-  display:         flex;
-  align-items:     center;
-  justify-content: center;
-  gap:             0;
-  width:           100%;
-  background:      var(--glass-light);
-  border:          1px solid var(--border-subtle);
-  border-radius:   var(--r-lg);
-  margin-bottom:   var(--s4);
-  overflow:        hidden;
+  display:               grid;
+  grid-template-columns: 1fr 1fr;   /* Two columns — 2 stats per row     */
+  gap:                   1px;       /* 1px gap shows as divider lines     */
+  background:            var(--border-subtle); /* Gap color = divider     */
+  border:                1px solid var(--border-subtle);
+  border-radius:         var(--r-lg);
+  margin-bottom:         var(--s4);
+  overflow:              hidden;
+  width:                 100%;
 }
 
 /* Individual stat cell */
 .ov-stat {
-  display:        flex;
-  flex-direction: column;
-  align-items:    center;
-  justify-content:center;
-  gap:            3px;
-  padding:        var(--s3) var(--s4);
-  flex:           1;
-  transition:     background var(--t-fast);
+  display:         flex;
+  flex-direction:  row;             /* Icon + text side by side           */
+  align-items:     center;
+  gap:             var(--s3);
+  padding:         var(--s3) var(--s4);
+  background:      var(--glass-light);
+  transition:      background var(--t-fast);
 }
 
 .ov-stat:hover {
-  background: var(--glass-medium);   /* Subtle highlight on hover */
+  background: var(--glass-medium);
+}
+
+/* Icon circle */
+.ov-stat__icon {
+  width:           32px;
+  height:          32px;
+  border-radius:   var(--r-md);
+  display:         flex;
+  align-items:     center;
+  justify-content: center;
+  font-size:       1rem;
+  flex-shrink:     0;
+  background:      var(--glass-medium);
+}
+
+/* Text group */
+.ov-stat__text {
+  display:        flex;
+  flex-direction: column;
+  gap:            2px;
 }
 
 /* Big number */
 .ov-stat__num {
   font-family:    var(--font-display);
-  font-size:      1.3rem;
+  font-size:      1.1rem;
   font-weight:    800;
   line-height:    1;
   letter-spacing: -0.02em;
   transition:     color 0.35s ease;
 }
 
-/* Label below number */
+/* Label */
 .ov-stat__label {
   font-family:    var(--font-mono);
-  font-size:      0.52rem;
+  font-size:      0.50rem;
   font-weight:    500;
   letter-spacing: 0.10em;
   text-transform: uppercase;
@@ -1091,11 +1127,5 @@
   transition:     color 0.35s ease;
 }
 
-/* Vertical divider between stats */
-.ov-stat__divider {
-  width:      1px;
-  height:     36px;
-  background: var(--border-subtle);
-  flex-shrink:0;
-  transition: background 0.35s ease;
-}
+/* Hide old divider — no longer needed with grid layout */
+.ov-stat__divider { display: none; }

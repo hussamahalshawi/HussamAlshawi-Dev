@@ -201,6 +201,7 @@ const avatar = profile?.profile_gallery?.[0]?.url
           social={social}
           profile={profile}
           counts={counts}
+          analytics={analytics}
         />
 
         {/* ── COL 2 TOP: SCORE DISTRIBUTION DONUT ─────────────────── */}
@@ -243,7 +244,7 @@ const avatar = profile?.profile_gallery?.[0]?.url
  * Card height is controlled by CSS to match Col 2 total height.
  * @param {{ fullName, title, bio, avatar, available, social }} props
  */
-function ProfileCardPanel({ fullName, title, bio, avatar, available, social, profile, counts }) {
+function ProfileCardPanel({ fullName, title, bio, avatar, available, social, profile, counts, analytics }) {
 
   const initials = getInitials(fullName); // Extract initials e.g. "HA"
 
@@ -292,48 +293,59 @@ function ProfileCardPanel({ fullName, title, bio, avatar, available, social, pro
 
       {/* ── Full bio — no truncation ── */}
       {bio && <p className="ov-profile__bio">{bio}</p>}
-        {/* ── Quick Stats Strip ── */}
+        {/* ── Quick Stats 2x2 Grid ── */}
 <div className="ov-profile__stats" role="list" aria-label="Profile statistics">
 
-  {/* Years of experience */}
+  {/* Stat 1: Years of experience */}
   <div className="ov-stat" role="listitem">
-    <div className="ov-stat__num" style={{ color: 'var(--cyan)' }}>
-      {profile?.experience_years ? `${profile.experience_years}+` : '—'}
+    <div className="ov-stat__icon" style={{ background: 'var(--cyan-dim)' }}>
+      ⏱
     </div>
-    <div className="ov-stat__label">Yrs Exp</div>
+    <div className="ov-stat__text">
+      <div className="ov-stat__num" style={{ color: 'var(--cyan)' }}>
+        {profile?.experience_years ? `${profile.experience_years}+` : '—'}
+      </div>
+      <div className="ov-stat__label">Yrs Exp</div>
+    </div>
   </div>
 
-  {/* Divider */}
-  <div className="ov-stat__divider" aria-hidden="true" />
-
-  {/* Goals score / overall score */}
+  {/* Stat 2: Overall score */}
   <div className="ov-stat" role="listitem">
-    <div className="ov-stat__num" style={{ color: 'var(--green)' }}>
-      {profile?.overall_score ? `${Math.round(profile.overall_score)}%` : '—'}
+    <div className="ov-stat__icon" style={{ background: 'var(--green-dim)' }}>
+      🎯
     </div>
-    <div className="ov-stat__label">Score</div>
+    <div className="ov-stat__text">
+      <div className="ov-stat__num" style={{ color: 'var(--green)' }}>
+        {profile?.overall_score ? `${Math.round(profile.overall_score)}%` : '—'}
+      </div>
+      <div className="ov-stat__label">Score</div>
+    </div>
   </div>
 
-  {/* Divider */}
-  <div className="ov-stat__divider" aria-hidden="true" />
-
-  {/* Total work experience count from analytics API */}
-<div className="ov-stat" role="listitem">
-  <div className="ov-stat__num" style={{ color: 'var(--violet)' }}>
-    {counts?.experience || '—'}
-  </div>
-  <div className="ov-stat__label">Experience</div>
-</div>
-
-  {/* Divider */}
-  <div className="ov-stat__divider" aria-hidden="true" />
-
-  {/* Total projects count */}
+  {/* Stat 3: Experience count */}
   <div className="ov-stat" role="listitem">
-    <div className="ov-stat__num" style={{ color: 'var(--orange)' }}>
-      {counts?.projects || '—'}
+    <div className="ov-stat__icon" style={{ background: 'var(--violet-dim)' }}>
+      💼
     </div>
-    <div className="ov-stat__label">Projects</div>
+    <div className="ov-stat__text">
+      <div className="ov-stat__num" style={{ color: 'var(--violet)' }}>
+        {analytics ? (counts?.experience || '0') : '...'}
+      </div>
+      <div className="ov-stat__label">Experience</div>
+    </div>
+  </div>
+
+  {/* Stat 4: Projects count */}
+  <div className="ov-stat" role="listitem">
+    <div className="ov-stat__icon" style={{ background: 'var(--orange-dim)' }}>
+      ⊡
+    </div>
+    <div className="ov-stat__text">
+      <div className="ov-stat__num" style={{ color: 'var(--orange)' }}>
+        {analytics ? (counts?.projects || '0') : '...'}
+      </div>
+      <div className="ov-stat__label">Projects</div>
+    </div>
   </div>
 
 </div>
