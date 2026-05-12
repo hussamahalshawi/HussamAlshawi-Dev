@@ -147,7 +147,11 @@ export default function OverviewSection({ profile, analytics }) {
   const fullName  = profile?.full_name              || 'Hussam Alshawi';  // Display name
   const title     = profile?.title                  || 'Full Stack Developer'; // Job title
   const bio       = profile?.bio                    || '';                 // Bio text
-  const avatar    = profile?.primary_avatar         || null;              // Cloudinary URL
+  // Use first image from profile_gallery if available, fallback to primary_avatar
+const avatar = profile?.profile_gallery?.[0]?.url
+  || profile?.profile_gallery?.[0]
+  || profile?.primary_avatar
+  || null;             // Cloudinary URL
   const available = profile?.is_available_for_hire  || false;            // Hire status
   const social    = profile?.social           || {};                // Social URLs object
   const languages = profile?.languages              || [];               // Languages array
