@@ -1,6 +1,12 @@
 /* ═══════════════════════════════════════════════════════════════
-   OverviewSection.css — Devoryn Analytics Dashboard Overview
-   Layout: 3-column main bento + full-width records + languages
+   OverviewSection.css — Devoryn Portfolio Dashboard Overview
+   Layout matches wireframe:
+     Row 1: 3-column grid
+       Col 1: Profile card (name + title + bio + social links)
+       Col 2: Score Distribution (top) + Skills by Category (bottom)
+       Col 3: Skill Scores — Top 12 (tall)
+     Row 2: Portfolio Records — full width
+     Row 3: Languages — full width
    Theme-aware: all colors via CSS variables from index.css
    ═══════════════════════════════════════════════════════════════ */
 
@@ -16,90 +22,85 @@
    PAGE HEADER — title + availability pill
 ══════════════════════════════════════════════════════ */
 .page-header {
-  display:         flex;                        /* Flex row for title + pill        */
-  align-items:     flex-start;                  /* Align top edges                  */
-  justify-content: space-between;               /* Push pill to right               */
-  margin-bottom:   var(--s8);                   /* Space below header               */
-  flex-wrap:       wrap;                        /* Wrap on small screens            */
-  gap:             var(--s4);                   /* Gap when wrapping                */
-  animation:       fadeUp 0.5s ease both;       /* Slide-up entrance animation      */
+  display:         flex;                        /* Row: title left, pill right      */
+  align-items:     flex-start;
+  justify-content: space-between;
+  margin-bottom:   var(--s8);
+  flex-wrap:       wrap;
+  gap:             var(--s4);
+  animation:       fadeUp 0.5s ease both;
 }
 
 .page-header__title {
-  font-family:    var(--font-display);          /* Syne bold display font           */
-  font-size:      clamp(1.6rem, 3vw, 2.4rem);  /* Fluid type scale                 */
-  font-weight:    800;                          /* Heavy weight for impact          */
-  color:          var(--text-white);            /* Theme-aware — dark in light mode */
-  letter-spacing: -0.025em;                     /* Tighten display heading          */
-  line-height:    1.1;                          /* Compact heading line height      */
-  margin-bottom:  var(--s2);                    /* Small gap before subtitle        */
-  transition:     color 0.35s ease;             /* Smooth theme switch              */
+  font-family:    var(--font-display);
+  font-size:      clamp(1.6rem, 3vw, 2.4rem);
+  font-weight:    800;
+  color:          var(--text-white);
+  letter-spacing: -0.025em;
+  line-height:    1.1;
+  margin-bottom:  var(--s2);
+  transition:     color 0.35s ease;
 }
 
 .page-header__sub {
-  font-size:      0.82rem;                      /* Small subtitle text              */
-  color:          var(--text-muted);            /* Muted — secondary info           */
-  font-family:    var(--font-mono);             /* Mono for technical feel          */
-  letter-spacing: 0.04em;                       /* Slightly wide tracking           */
-  transition:     color 0.35s ease;             /* Smooth theme switch              */
+  font-size:      0.82rem;
+  color:          var(--text-muted);
+  font-family:    var(--font-mono);
+  letter-spacing: 0.04em;
+  transition:     color 0.35s ease;
 }
 
-/* ── Availability status pill ──────────────────────── */
+/* ── Availability pill ─────────────────────────────── */
 .availability-pill {
-  display:        inline-flex;                  /* Flex for dot + text alignment    */
-  align-items:    center;                       /* Vertically center content        */
-  gap:            var(--s2);                    /* Space between dot and text       */
-  padding:        0.42rem var(--s4);            /* Pill vertical + horizontal pad   */
-  background:     var(--glass-medium);          /* Frosted glass surface            */
-  border:         1px solid var(--border-subtle);/* Subtle border ring              */
-  border-radius:  var(--r-full);                /* Full pill shape                  */
-  font-family:    var(--font-mono);             /* Mono technical font              */
-  font-size:      0.62rem;                      /* Very small mono label            */
-  font-weight:    500;                          /* Medium weight                    */
-  letter-spacing: 0.10em;                       /* Wide tracking for caps label     */
-  text-transform: uppercase;                    /* All caps status text             */
-  color:          var(--text-muted);            /* Default: muted grey color        */
-  transition:     all 0.35s ease;               /* Smooth theme + state changes     */
+  display:        inline-flex;
+  align-items:    center;
+  gap:            var(--s2);
+  padding:        0.42rem var(--s4);
+  background:     var(--glass-medium);
+  border:         1px solid var(--border-subtle);
+  border-radius:  var(--r-full);
+  font-family:    var(--font-mono);
+  font-size:      0.62rem;
+  font-weight:    500;
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+  color:          var(--text-muted);
+  transition:     all 0.35s ease;
 }
 
-/* Open-to-hire state — glowing green */
 .availability-pill--open {
-  background:   var(--green-dim);               /* Subtle green tint background     */
-  border-color: var(--green);                   /* Green border glow                */
-  color:        var(--green);                   /* Green text                       */
-  box-shadow:   0 0 16px rgba(78,204,163,0.18); /* Ambient green glow               */
+  background:   var(--green-dim);
+  border-color: var(--green);
+  color:        var(--green);
+  box-shadow:   0 0 16px rgba(78,204,163,0.18);
 }
 
-/* Pulsing dot indicator */
 .availability-pill__dot {
-  width:         7px;                           /* Dot size                         */
+  width:         7px;
   height:        7px;
-  border-radius: 50%;                           /* Circle shape                     */
-  background:    var(--text-muted);             /* Default muted color              */
-  flex-shrink:   0;                             /* Don't shrink the dot             */
-  transition:    background 0.35s ease;         /* Smooth color change              */
+  border-radius: 50%;
+  background:    var(--text-muted);
+  flex-shrink:   0;
+  transition:    background 0.35s ease;
 }
 
-/* Green pulsing dot when open */
 .availability-pill--open .availability-pill__dot {
-  background: var(--green);                     /* Green dot                        */
-  box-shadow: 0 0 8px var(--green);             /* Green glow                       */
-  animation:  pulseDot 2.5s ease infinite;      /* Pulse animation                  */
+  background: var(--green);
+  box-shadow: 0 0 8px var(--green);
+  animation:  pulseDot 2.5s ease infinite;
 }
 
 /* ══════════════════════════════════════════════════════
    SHARED GLASS PANEL BASE
-   All bento panels inherit from this base style
+   All panels inherit from this base
 ══════════════════════════════════════════════════════ */
 .ov-panel {
-  position:   relative;                         /* For absolute children            */
-  overflow:   hidden;                           /* Clip decorations to border-radius*/
-  border-radius: var(--r-xl);                   /* Rounded corners                  */
-  padding:    var(--s6);                        /* Inner breathing room             */
-  transition: border-color 0.25s ease,
-              background  0.35s ease;           /* Smooth theme transitions         */
+  position:   relative;
+  overflow:   hidden;
+  border-radius: var(--r-xl);
+  padding:    var(--s6);
+  transition: border-color 0.25s ease, background 0.35s ease;
 
-  /* Glassmorphism background */
   background:              rgba(14, 20, 40, 0.78);
   backdrop-filter:         blur(24px) saturate(1.5);
   -webkit-backdrop-filter: blur(24px) saturate(1.5);
@@ -109,20 +110,20 @@
                            inset 0 1px 0 rgba(255, 255, 255, 0.06);
 }
 
-/* Top gloss line — signature Devoryn detail */
+/* Top gloss line */
 .ov-panel::before {
   content:    '';
   position:   absolute;
   top:        0;
-  left:       8%;                               /* Indented from edges              */
+  left:       8%;
   right:      8%;
   height:     1px;
   background: linear-gradient(90deg, transparent, rgba(255,255,255,0.18), transparent);
-  pointer-events: none;                         /* Non-interactive decoration       */
-  z-index:    2;                                /* Above content layers             */
+  pointer-events: none;
+  z-index:    2;
 }
 
-/* Water-droplet texture — subtle depth detail */
+/* Water-droplet texture */
 .ov-panel::after {
   content:    '';
   position:   absolute;
@@ -134,311 +135,266 @@
     radial-gradient(circle at 34% 78%, rgba(255,255,255,0.018) 1.5px, transparent 1.5px);
   pointer-events: none;
   border-radius:  inherit;
-  z-index:    0;                                /* Behind content                   */
+  z-index:    0;
 }
 
-/* All direct children above texture layers */
 .ov-panel > * { position: relative; z-index: 1; }
-
-/* Hover: slightly brighter border */
 .ov-panel:hover { border-color: rgba(255, 255, 255, 0.14); }
 
-/* ── Panel header row ──────────────────────────────── */
+/* ── Panel header ──────────────────────────────────── */
 .ov-panel__header {
-  display:         flex;                        /* Flex row for title + menu button */
-  align-items:     center;                      /* Vertically center                */
-  justify-content: space-between;               /* Push menu btn to right           */
-  margin-bottom:   var(--s4);                   /* Space below header               */
+  display:         flex;
+  align-items:     center;
+  justify-content: space-between;
+  margin-bottom:   var(--s4);
 }
 
-/* Panel title text */
 .ov-panel__title {
-  font-family:    var(--font-display);          /* Syne display font                */
-  font-size:      0.96rem;                      /* Panel heading size               */
-  font-weight:    700;                          /* Bold                             */
-  color:          var(--text-white);            /* Theme-aware white/dark           */
-  letter-spacing: -0.01em;                      /* Slight tracking reduction        */
-  transition:     color 0.35s ease;             /* Smooth theme transition          */
+  font-family:    var(--font-display);
+  font-size:      0.96rem;
+  font-weight:    700;
+  color:          var(--text-white);
+  letter-spacing: -0.01em;
+  transition:     color 0.35s ease;
 }
 
-/* Panel subtitle — secondary descriptor line */
 .ov-panel__subtitle {
-  font-family:    var(--font-mono);             /* Mono for technical feel          */
-  font-size:      0.62rem;                      /* Very small subtitle              */
-  color:          var(--text-muted);            /* Muted secondary color            */
-  letter-spacing: 0.04em;                       /* Slight wide tracking             */
-  margin-bottom:  var(--s4);                    /* Space before panel content       */
-  transition:     color 0.35s ease;             /* Smooth theme transition          */
+  font-family:    var(--font-mono);
+  font-size:      0.62rem;
+  color:          var(--text-muted);
+  letter-spacing: 0.04em;
+  margin-bottom:  var(--s4);
+  transition:     color 0.35s ease;
 }
 
-/* Inline subtitle variant — lives inside header row */
-.ov-panel__subtitle--inline {
-  font-family:    var(--font-mono);             /* Mono font                        */
-  font-size:      0.60rem;                      /* Extra small                      */
-  color:          var(--text-muted);            /* Muted                            */
-  letter-spacing: 0.04em;                       /* Wide tracking                    */
-  margin-left:    var(--s2);                    /* Small left offset                */
-  flex:           1;                            /* Fills space in header flex row   */
-  transition:     color 0.35s ease;             /* Smooth theme transition          */
-}
-
-/* Three-dot "···" options button */
 .ov-panel__menu {
-  font-size:     0.9rem;                        /* Slightly larger dot menu         */
-  color:         var(--text-muted);             /* Muted default                    */
-  cursor:        pointer;                       /* Pointer cursor                   */
-  padding:       2px 6px;                       /* Click area padding               */
-  border-radius: var(--r-sm);                   /* Rounded click zone               */
-  transition:    background var(--t-fast),
-                 color      var(--t-fast);      /* Hover transition                 */
-  background:    transparent;                   /* No background by default         */
-  border:        none;                          /* No border                        */
-  font-family:   var(--font-body);              /* Body font for dots               */
-  flex-shrink:   0;                             /* Don't shrink                     */
+  font-size:     0.9rem;
+  color:         var(--text-muted);
+  cursor:        pointer;
+  padding:       2px 6px;
+  border-radius: var(--r-sm);
+  transition:    background var(--t-fast), color var(--t-fast);
+  background:    transparent;
+  border:        none;
+  font-family:   var(--font-body);
+  flex-shrink:   0;
 }
 
 .ov-panel__menu:hover {
-  background: var(--glass-medium);              /* Frost hover background           */
-  color:      var(--text-primary);              /* Brighter on hover                */
+  background: var(--glass-medium);
+  color:      var(--text-primary);
 }
 
 /* ══════════════════════════════════════════════════════
-   DECORATIVE WATER DROPS
-   Positioned absolutely within panels
-══════════════════════════════════════════════════════ */
-.ov-drops {
-  position:       absolute;                     /* Overlays on panel                */
-  inset:          0;
-  pointer-events: none;                         /* Non-interactive                  */
-  overflow:       hidden;
-  border-radius:  inherit;
-  z-index:        0;                            /* Behind content                   */
-}
-
-/* Base drop style */
-.ov-drop {
-  position:      absolute;
-  border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%; /* Water drop shape           */
-  background:    rgba(255,255,255,0.18);         /* Translucent white fill          */
-  border:        1px solid rgba(255,255,255,0.35);/* Subtle white border            */
-  backdrop-filter: blur(4px);                   /* Frosted glass inside drop        */
-  animation:     dropFall 2.2s ease forwards;   /* Fall-in on mount                 */
-  opacity:       0;                             /* Starts invisible                 */
-}
-
-/* Drop A — large top-right */
-.ov-drop--a { width: 20px; height: 26px; top: 12%; right: 16%; animation-delay: 0.3s; }
-/* Drop B — medium right side */
-.ov-drop--b { width: 13px; height: 17px; top: 52%; left: 62%; animation-delay: 0.7s; }
-/* Drop C — large mid-panel */
-.ov-drop--c { width: 24px; height: 30px; top: 28%; right: 28%; animation-delay: 1.0s; }
-/* Drop D — small bottom */
-.ov-drop--d { width: 10px; height: 14px; top: 72%; left: 22%; animation-delay: 1.3s; }
-
-/* Drop fall-in keyframe */
-@keyframes dropFall {
-  0%   { transform: translateY(-10px) scale(0.8); opacity: 0;    }
-  60%  { transform: translateY(4px)   scale(1.05); opacity: 0.50; }
-  100% { transform: translateY(0)     scale(1);    opacity: 0.40; }
-}
-
-/* ══════════════════════════════════════════════════════
-   MAIN BENTO GRID — 3-column dashboard layout
-   Col 1: Performance panel (tall, rows 1-3)
-   Col 2 top: Score Distribution donut
-   Col 2 bottom: Skills by Category bars
-   Col 3: Skill Scores list (tall, rows 1-3)
+   MAIN 3-COLUMN GRID
+   Col 1: Profile card
+   Col 2: Score distribution (top) + Skills by category (bottom)
+   Col 3: Skill scores top 12 (tall)
 ══════════════════════════════════════════════════════ */
 .ov-main-grid {
   display:               grid;
-  grid-template-columns: 1fr 1.1fr 1fr;         /* Three roughly equal columns      */
-  grid-template-rows:    auto auto;              /* Two rows, heights auto-fit       */
-  gap:                   var(--s5);              /* Gap between all cells            */
-  margin-bottom:         var(--s5);              /* Space below grid                 */
-  align-items:           start;                  /* Panels align to their content    */
+  grid-template-columns: 1fr 1.1fr 1fr;
+  grid-template-rows:    auto auto;
+  gap:                   var(--s5);
+  margin-bottom:         var(--s5);
+  align-items:           start;
 }
 
-/* ── Panel: Performance Metrics (col 1, row 1-2 tall) ── */
-.ov-panel--perf {
-  grid-column: 1;                               /* First column                     */
-  grid-row:    1 / 3;                           /* Spans both rows                  */
+/* ── Col 1: Profile card (spans both rows) ─────────── */
+.ov-panel--profile {
+  grid-column: 1;
+  grid-row:    1 / 3;                           /* Tall — spans both rows           */
 }
 
-/* ── Panel: Score Distribution (col 2, row 1) ─────────── */
+/* ── Col 2 top: Score Distribution ────────────────── */
 .ov-panel--score-dist {
-  grid-column: 2;                               /* Middle column                    */
-  grid-row:    1;                               /* First row only                   */
+  grid-column: 2;
+  grid-row:    1;
 }
 
-/* ── Panel: Skills by Category (col 2, row 2) ─────────── */
+/* ── Col 2 bottom: Skills by Category ─────────────── */
 .ov-panel--cat {
-  grid-column: 2;                               /* Middle column                    */
-  grid-row:    2;                               /* Second row                       */
+  grid-column: 2;
+  grid-row:    2;
 }
 
-/* ── Panel: Skill Scores list (col 3, row 1-2 tall) ───── */
+/* ── Col 3: Skill Scores (spans both rows) ─────────── */
 .ov-panel--skill-scores {
-  grid-column: 3;                               /* Right column                     */
-  grid-row:    1 / 3;                           /* Spans both rows (tall)           */
+  grid-column: 3;
+  grid-row:    1 / 3;                           /* Tall — spans both rows           */
 }
 
 /* ══════════════════════════════════════════════════════
-   PERFORMANCE PANEL — SVG line + bar chart + KPI strip
+   PROFILE CARD — Col 1
+   name + title + bio + social links
 ══════════════════════════════════════════════════════ */
 
-/* SVG line chart container */
-.ov-chart-area {
-  position:      relative;
-  height:        110px;                         /* Fixed height for SVG viewport    */
-  margin-bottom: var(--s4);
-  overflow:      hidden;
+/* Avatar wrapper with triple glow ring */
+.ov-profile__avatar-wrap {
+  position:        relative;
+  width:           90px;
+  height:          90px;
+  margin:          0 auto var(--s4);
 }
 
-/* SVG element fills its container */
-.ov-chart-svg {
-  width:  100%;
-  height: 100%;
+/* Avatar circle */
+.ov-profile__avatar {
+  width:           90px;
+  height:          90px;
+  border-radius:   50%;
+  background:      linear-gradient(135deg, var(--cyan), var(--violet));
+  display:         flex;
+  align-items:     center;
+  justify-content: center;
+  font-family:     var(--font-display);
+  font-size:       1.6rem;
+  font-weight:     800;
+  color:           #fff;
+  overflow:        hidden;
+  box-shadow:
+    0 0 0 2px rgba(79,195,247,0.30),            /* Inner cyan ring                  */
+    0 0 0 5px rgba(79,195,247,0.12),            /* Middle glow ring                 */
+    0 0 20px rgba(79,195,247,0.18);             /* Outer ambient glow               */
 }
 
-/* Gradient fill under the line */
-.ov-chart-fill {
-  fill:    url(#ovGrad);                        /* References <defs> linearGradient */
-  opacity: 0.28;                                /* Subtle transparent fill          */
+.ov-profile__avatar img {
+  width:      100%;
+  height:     100%;
+  object-fit: cover;
 }
 
-/* Animated draw-in trend line */
-.ov-chart-line {
-  stroke:           var(--cyan);                /* Cyan line color                  */
-  stroke-width:     2.5;                        /* Line thickness                   */
-  stroke-linecap:   round;                      /* Rounded line ends                */
-  stroke-linejoin:  round;                      /* Rounded corners at joints        */
-  fill:             none;                       /* No fill — line only              */
-  filter:           drop-shadow(0 2px 8px var(--cyan-dim)); /* Soft glow           */
-
-  /* Draw animation via stroke-dashoffset */
-  stroke-dasharray:  1200;                      /* Large enough to cover full path  */
-  stroke-dashoffset: 1200;                      /* Start: fully hidden              */
-  animation: drawLine 2s cubic-bezier(0.16,1,0.3,1) 0.3s forwards; /* Draw-in     */
+/* Online status dot */
+.ov-profile__online {
+  position:      absolute;
+  bottom:        4px;
+  right:         4px;
+  width:         14px;
+  height:        14px;
+  border-radius: 50%;
+  background:    var(--green);
+  border:        2px solid rgba(14,20,40,0.90);
+  box-shadow:    0 0 8px var(--green);
+  animation:     pulseDot 2.5s ease infinite;
 }
 
-/* Draw-in keyframe — reveals line left to right */
-@keyframes drawLine {
-  to { stroke-dashoffset: 0; }                  /* Fully visible at end             */
-}
-
-/* Bar chart row — sits below SVG line chart */
-.ov-bars {
-  display:       flex;
-  align-items:   flex-end;                      /* Bars grow upward from baseline   */
-  gap:           5px;                           /* Small gap between groups         */
-  height:        56px;                          /* Container height                 */
-  padding-top:   8px;                           /* Top breathing room               */
-  margin-bottom: var(--s5);
-  border-top:    1px solid var(--border-subtle);/* Separator above bars             */
-  transition:    border-color 0.35s ease;
-}
-
-/* Group of two bars side by side */
-.ov-bar-group {
-  display:     flex;
-  gap:         3px;                             /* Gap between twin bars            */
-  align-items: flex-end;
-  flex:        1;                               /* Equal width distribution         */
-}
-
-/* Individual bar column */
-.ov-bar {
-  flex:          1;                             /* Fill group width equally         */
-  border-radius: 4px 4px 0 0;                   /* Rounded top corners only         */
-  min-width:     5px;                           /* Minimum visible width            */
-  transition:    height 0.9s cubic-bezier(0.16,1,0.3,1); /* Grow animation         */
-}
-
-/* Cyan bar variant */
-.ov-bar--cyan   { background: var(--cyan);   opacity: 0.85; }
-
-/* Orange bar variant */
-.ov-bar--orange { background: var(--orange); opacity: 0.70; }
-
-/* KPI numbers row — three stats with dividers */
-.ov-kpis {
-  display:     flex;                            /* Flex row for KPI items           */
-  align-items: center;                          /* Vertically align numbers         */
-  gap:         var(--s5);                       /* Space between KPI groups         */
-}
-
-/* Individual KPI stat */
-.ov-kpi {
-  display:        flex;
-  flex-direction: column;                       /* Stack number above label         */
-  gap:            3px;
-}
-
-/* KPI big number */
-.ov-kpi__num {
-  font-family:    var(--font-display);          /* Syne display for impact          */
-  font-size:      1.55rem;                      /* Large number size                */
+/* Name */
+.ov-profile__name {
+  font-family:    var(--font-display);
+  font-size:      1.15rem;
   font-weight:    800;
-  line-height:    1;
-  letter-spacing: -0.025em;                     /* Tighten large numbers            */
+  color:          var(--text-white);
+  letter-spacing: -0.02em;
+  text-align:     center;
+  margin-bottom:  var(--s1);
   transition:     color 0.35s ease;
 }
 
-/* KPI label under number */
-.ov-kpi__label {
-  font-family:    var(--font-mono);             /* Mono for technical label         */
-  font-size:      0.58rem;
+/* Title/role */
+.ov-profile__title {
+  font-family:    var(--font-mono);
+  font-size:      0.65rem;
   font-weight:    500;
+  color:          var(--cyan);
   letter-spacing: 0.10em;
   text-transform: uppercase;
-  color:          var(--text-muted);
+  text-align:     center;
+  margin-bottom:  var(--s5);
   transition:     color 0.35s ease;
 }
 
-/* Vertical divider between KPI items */
-.ov-kpi__sep {
-  width:      1px;
-  height:     36px;
-  background: var(--border-subtle);             /* Theme-aware separator            */
-  flex-shrink:0;
-  transition: background 0.35s ease;
+/* Bio text */
+.ov-profile__bio {
+  font-size:     0.82rem;
+  color:         var(--text-secondary);
+  line-height:   1.7;
+  text-align:    center;
+  margin-bottom: var(--s5);
+  transition:    color 0.35s ease;
+}
+
+/* Social links row */
+.ov-profile__social {
+  display:         flex;
+  align-items:     center;
+  justify-content: center;
+  flex-wrap:       wrap;
+  gap:             var(--s2);
+  margin-bottom:   var(--s5);
+}
+
+/* Individual social link pill */
+.ov-social-link {
+  display:         inline-flex;
+  align-items:     center;
+  gap:             var(--s1);
+  padding:         0.28rem 0.65rem;
+  background:      var(--glass-light);
+  border:          1px solid var(--border-subtle);
+  border-radius:   var(--r-full);
+  font-family:     var(--font-mono);
+  font-size:       0.58rem;
+  font-weight:     500;
+  letter-spacing:  0.06em;
+  text-transform:  uppercase;
+  color:           var(--text-secondary);
+  text-decoration: none;
+  transition:      all var(--t-base);
+  white-space:     nowrap;
+}
+
+.ov-social-link:hover {
+  background:   var(--glass-cyan);
+  border-color: var(--border-cyan);
+  color:        var(--cyan);
+  transform:    translateY(-1px);
+}
+
+/* CTA buttons */
+.ov-profile__actions {
+  display: flex;
+  gap:     var(--s3);
+}
+
+.ov-profile__actions .btn {
+  flex: 1;                                      /* Equal width buttons              */
+  justify-content: center;
 }
 
 /* ══════════════════════════════════════════════════════
-   SCORE DISTRIBUTION PANEL — Donut chart
+   SCORE DISTRIBUTION — Col 2 top
+   Donut chart showing skills spread across bands
 ══════════════════════════════════════════════════════ */
 
-/* Donut SVG wrapper — centers the donut and overlay */
+/* Donut SVG wrapper */
 .ov-donut-wrap {
-  position:        relative;
-  width:           120px;
-  height:          120px;
-  margin:          0 auto var(--s4);            /* Centered with space below        */
+  position:  relative;
+  width:     120px;
+  height:    120px;
+  margin:    0 auto var(--s4);
 }
 
-/* SVG element */
 .ov-donut-svg {
   width:     100%;
   height:    100%;
   transform: rotate(-90deg);                    /* Start segments from top          */
 }
 
-/* Background track ring — full gray circle */
+/* Background track ring */
 .ov-donut-track {
-  fill:          none;
-  stroke:        rgba(255,255,255,0.07);        /* Very faint track color           */
-  stroke-width:  10;                            /* Track thickness                  */
+  fill:         none;
+  stroke:       rgba(255,255,255,0.07);
+  stroke-width: 10;
 }
 
 /* Colored segment arcs */
 .ov-donut-ring {
   fill:            none;
-  stroke-width:    10;                          /* Same width as track              */
-  stroke-linecap:  butt;                        /* Flat ends for clean segments     */
-  transition:      stroke-dashoffset 1.4s cubic-bezier(0.16,1,0.3,1); /* Animate   */
+  stroke-width:    10;
+  stroke-linecap:  butt;
+  transition:      stroke-dashoffset 1.4s cubic-bezier(0.16,1,0.3,1);
 }
 
-/* Center overlay — sits in the middle of the donut hole */
+/* Center overlay */
 .ov-donut-center {
   position:  absolute;
   inset:     0;
@@ -449,7 +405,6 @@
   pointer-events: none;
 }
 
-/* Center big number */
 .ov-donut-center__num {
   font-family:    var(--font-display);
   font-size:      1.55rem;
@@ -460,7 +415,6 @@
   transition:     color 0.35s ease;
 }
 
-/* Center sub label */
 .ov-donut-center__sub {
   font-family:    var(--font-mono);
   font-size:      0.55rem;
@@ -471,21 +425,19 @@
   transition:     color 0.35s ease;
 }
 
-/* ── Legend rows below the donut ─────────────────── */
+/* Legend rows */
 .ov-donut-legend {
   display:        flex;
   flex-direction: column;
   gap:            var(--s2);
 }
 
-/* Single legend row */
 .ov-legend-row {
   display:     flex;
   align-items: center;
   gap:         var(--s3);
 }
 
-/* Colored dot marker */
 .ov-legend-dot {
   width:         8px;
   height:        8px;
@@ -493,15 +445,14 @@
   flex-shrink:   0;
 }
 
-/* Legend label text */
 .ov-legend-label {
   font-size:   0.76rem;
   color:       var(--text-secondary);
-  flex:        1;                               /* Pushes range and value right     */
+  flex:        1;
   transition:  color 0.35s ease;
 }
 
-/* Range text — e.g. "80-100%" */
+/* Band range e.g. "80–100%" */
 .ov-legend-range {
   font-family:    var(--font-mono);
   font-size:      0.58rem;
@@ -511,7 +462,6 @@
   transition:     color 0.35s ease;
 }
 
-/* Value / count at right */
 .ov-legend-pct {
   font-family: var(--font-mono);
   font-size:   0.66rem;
@@ -522,15 +472,11 @@
 }
 
 /* ══════════════════════════════════════════════════════
-   SKILLS BY CATEGORY PANEL — horizontal bars
+   SKILLS BY CATEGORY — Col 2 bottom
+   Horizontal bars showing average score per domain
 ══════════════════════════════════════════════════════ */
 
-/* Reuse ov-proj-row from ActiveProjects styling below */
-
-/* ══════════════════════════════════════════════════════
-   SHARED: PROJECT / CATEGORY ROW BARS
-   Used by Active Projects + Skills by Category panels
-══════════════════════════════════════════════════════ */
+/* Reuses .ov-proj-row pattern */
 .ov-proj-row {
   display:       flex;
   align-items:   center;
@@ -540,12 +486,11 @@
 
 .ov-proj-row:last-child { margin-bottom: 0; }
 
-/* Row label (project or category name) */
 .ov-proj-row__name {
   font-size:     0.80rem;
   font-weight:   500;
   color:         var(--text-primary);
-  min-width:     90px;                          /* Fixed min-width for alignment    */
+  min-width:     90px;
   max-width:     100px;
   white-space:   nowrap;
   overflow:      hidden;
@@ -553,7 +498,6 @@
   transition:    color 0.35s ease;
 }
 
-/* Progress track */
 .ov-proj-row__track {
   flex:          1;
   height:        4px;
@@ -562,14 +506,14 @@
   overflow:      hidden;
 }
 
-/* Animated fill — JS sets width from data-pct */
 .ov-proj-row__fill {
   height:        100%;
   border-radius: var(--r-full);
   position:      relative;
+  transition:    width 1.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-/* Glowing tip dot on fill */
+/* Glow tip dot */
 .ov-proj-row__fill::after {
   content:       '';
   position:      absolute;
@@ -584,7 +528,6 @@
   box-shadow:    0 0 8px currentColor;
 }
 
-/* Percentage value at right */
 .ov-proj-row__pct {
   font-family: var(--font-mono);
   font-size:   0.66rem;
@@ -595,7 +538,9 @@
 }
 
 /* ══════════════════════════════════════════════════════
-   SKILL SCORES PANEL — top 12 skill rows (right tall col)
+   SKILL SCORES — Col 3 (tall)
+   Top 12 skills sorted by proficiency
+   Bands: Excellent (80-100) Good (60-79) Growing (40-59) Learning (0-39)
 ══════════════════════════════════════════════════════ */
 
 /* Band legend pills row */
@@ -606,7 +551,6 @@
   margin-bottom: var(--s4);
 }
 
-/* Individual band pill */
 .ov-score-band-pill {
   font-family:    var(--font-mono);
   font-size:      0.52rem;
@@ -614,20 +558,18 @@
   letter-spacing: 0.06em;
   padding:        0.18rem 0.55rem;
   border-radius:  var(--r-xs);
-  border:         1px solid;                    /* Color set via inline style       */
+  border:         1px solid;
   line-height:    1.4;
   white-space:    nowrap;
   opacity:        0.80;
 }
 
-/* Scrollable skills list container */
+/* Skill list */
 .ov-skill-list {
-  overflow-y:    auto;                          /* Scroll if content overflows      */
-  max-height:    none;                          /* No forced max — natural height   */
-  padding-right: var(--s1);                     /* Space for scrollbar              */
+  overflow-y:    auto;
+  padding-right: var(--s1);
 }
 
-/* Custom scrollbar for skill list */
 .ov-skill-list::-webkit-scrollbar       { width: 2px; }
 .ov-skill-list::-webkit-scrollbar-track { background: transparent; }
 .ov-skill-list::-webkit-scrollbar-thumb {
@@ -645,7 +587,6 @@
 
 .ov-skill-row:last-child { margin-bottom: 0; }
 
-/* Skill name text */
 .ov-skill-row__name {
   font-size:     0.78rem;
   font-weight:   500;
@@ -658,24 +599,27 @@
   transition:    color 0.35s ease;
 }
 
-/* Track bar */
 .ov-skill-row__track {
   flex:          1;
   height:        3px;
   background:    rgba(255,255,255,0.07);
   border-radius: var(--r-full);
-  overflow:      visible;                       /* Allow glow dot to overflow        */
+  overflow:      visible;
 }
 
-/* Animated fill — starts scaleX(0) → JS sets scaleX(1) */
+/* Animated fill */
 .ov-skill-fill {
   height:        100%;
   border-radius: var(--r-full);
   position:      relative;
-  transition:    transform 1.1s cubic-bezier(0.16,1,0.3,1); /* Scale animation     */
+  transform:     scaleX(0);
+  transform-origin: left;
+  transition:    transform 1.1s cubic-bezier(0.16,1,0.3,1);
 }
 
-/* Glowing tip dot */
+.ov-skill-fill--visible { transform: scaleX(1); }
+
+/* Glow tip dot */
 .ov-skill-fill::after {
   content:       '';
   position:      absolute;
@@ -690,7 +634,7 @@
   box-shadow:    0 0 8px currentColor;
 }
 
-/* Score + band label at right */
+/* Score + band at right */
 .ov-skill-row__score {
   font-family:    var(--font-mono);
   font-size:      0.60rem;
@@ -702,41 +646,41 @@
 }
 
 /* ══════════════════════════════════════════════════════
-   PORTFOLIO RECORDS PANEL — full-width counts strip
+   PORTFOLIO RECORDS — full width row 2
+   Total documents per model
 ══════════════════════════════════════════════════════ */
 .ov-panel--records {
-  margin-bottom: var(--s5);                     /* Space below this panel           */
+  margin-bottom: var(--s5);
 }
 
-/* Grid of record count items */
+/* Grid of record count cells */
 .ov-records-grid {
   display:               grid;
-  grid-template-columns: repeat(auto-fill, minmax(90px, 1fr)); /* Fluid columns    */
-  gap:                   1px;                   /* 1px gap creates grid lines       */
-  background:            rgba(255,255,255,0.06);/* Grid line color                  */
+  grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+  gap:                   1px;
+  background:            rgba(255,255,255,0.06);
   border:                1px solid rgba(255,255,255,0.06);
   border-radius:         var(--r-lg);
   overflow:              hidden;
   margin-top:            var(--s3);
 }
 
-/* Individual record count item */
 .ov-record-item {
-  background:     rgba(14, 20, 40, 0.78);       /* Panel bg per cell                */
-  backdrop-filter:blur(12px);
+  background:      rgba(14, 20, 40, 0.78);
+  backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  padding:        1.2rem 1rem;                  /* Inner padding                    */
-  display:        flex;
-  flex-direction: column;                       /* Stack number above label         */
-  gap:            var(--s1);
-  position:       relative;
-  overflow:       hidden;
-  transition:     background 0.15s ease;
+  padding:         1.2rem 1rem;
+  display:         flex;
+  flex-direction:  column;
+  gap:             var(--s1);
+  position:        relative;
+  overflow:        hidden;
+  transition:      background 0.15s ease;
 }
 
 .ov-record-item:hover { background: rgba(20, 28, 55, 0.92); }
 
-/* Count-up number */
+/* Big count number */
 .ov-record-item__num {
   font-family:    var(--font-display);
   font-size:      1.9rem;
@@ -758,23 +702,23 @@
 }
 
 /* ══════════════════════════════════════════════════════
-   LANGUAGES PANEL — language cards strip
+   LANGUAGES — full width row 3
+   Language cards with flag + name + level badge
 ══════════════════════════════════════════════════════ */
 .ov-panel--languages {
-  /* Inherits from ov-panel base */
+  /* Inherits .ov-panel base */
 }
 
-/* Languages grid row */
 .ov-lang-grid {
   display:               grid;
-  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); /* Fluid cards     */
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
   gap:                   var(--s3);
   margin-top:            var(--s3);
 }
 
-/* Individual language card */
+/* Language card */
 .ov-lang-card {
-  background:    var(--glass-light);            /* Frosted glass surface            */
+  background:    var(--glass-light);
   border:        1px solid var(--border-subtle);
   border-radius: var(--r-lg);
   padding:       var(--s4) var(--s3);
@@ -788,15 +732,14 @@
   overflow:      hidden;
 }
 
-/* Hover: slight lift + color accent border */
 .ov-lang-card:hover {
-  border-color: var(--lang-color, var(--cyan));  /* Color from CSS custom prop      */
+  border-color: var(--lang-color, var(--cyan));
   background:   var(--glass-medium);
   transform:    translateY(-2px);
   box-shadow:   0 4px 20px rgba(0,0,0,0.25);
 }
 
-/* Bottom glow shimmer on hover */
+/* Bottom glow on hover */
 .ov-lang-card::after {
   content:       '';
   position:      absolute;
@@ -813,13 +756,8 @@
 
 .ov-lang-card:hover::after { opacity: 0.15; }
 
-/* Flag emoji */
-.ov-lang-card__flag {
-  font-size:   1.8rem;                          /* Large flag emoji                 */
-  line-height: 1;
-}
+.ov-lang-card__flag  { font-size: 1.8rem; line-height: 1; }
 
-/* Language name */
 .ov-lang-card__name {
   font-family:    var(--font-display);
   font-size:      0.84rem;
@@ -829,87 +767,55 @@
   transition:     color 0.35s ease;
 }
 
-/* Proficiency level badge */
 .ov-lang-card__level {
   font-family:    var(--font-mono);
   font-size:      0.56rem;
   font-weight:    500;
   letter-spacing: 0.10em;
   text-transform: uppercase;
-  color:          var(--lang-color, var(--cyan));/* Accent color per language       */
+  color:          var(--lang-color, var(--cyan));
   transition:     color 0.35s ease;
 }
 
 /* ══════════════════════════════════════════════════════
-   RESPONSIVE BREAKPOINTS
+   DECORATIVE WATER DROPS
 ══════════════════════════════════════════════════════ */
-
-/* Tablet: collapse to 2-column */
-@media (max-width: 1100px) {
-  .ov-main-grid {
-    grid-template-columns: 1fr 1fr;             /* Two columns on tablet            */
-    grid-template-rows:    auto auto auto;       /* Three rows                       */
-  }
-
-  /* Performance panel: col 1-2, row 1 only on tablet */
-  .ov-panel--perf {
-    grid-column: 1 / 3;                         /* Full width on tablet             */
-    grid-row:    1;
-  }
-
-  /* Score dist: col 1, row 2 */
-  .ov-panel--score-dist {
-    grid-column: 1;
-    grid-row:    2;
-  }
-
-  /* Category: col 2, row 2 */
-  .ov-panel--cat {
-    grid-column: 2;
-    grid-row:    2;
-  }
-
-  /* Skill scores: col 1-2, row 3 */
-  .ov-panel--skill-scores {
-    grid-column: 1 / 3;
-    grid-row:    3;
-  }
+.ov-drops {
+  position:       absolute;
+  inset:          0;
+  pointer-events: none;
+  overflow:       hidden;
+  border-radius:  inherit;
+  z-index:        0;
 }
 
-/* Mobile: single column stack */
-@media (max-width: 700px) {
-  .ov-main-grid {
-    grid-template-columns: 1fr;                 /* Single column on mobile          */
-    grid-template-rows:    auto;                /* All rows auto height             */
-  }
+.ov-drop {
+  position:      absolute;
+  border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+  background:    rgba(255,255,255,0.18);
+  border:        1px solid rgba(255,255,255,0.35);
+  backdrop-filter: blur(4px);
+  animation:     dropFall 2.2s ease forwards;
+  opacity:       0;
+}
 
-  /* Reset all panel grid positions */
-  .ov-panel--perf,
-  .ov-panel--score-dist,
-  .ov-panel--cat,
-  .ov-panel--skill-scores {
-    grid-column: 1;                             /* All in single column             */
-    grid-row:    auto;                          /* Auto stack                       */
-  }
+.ov-drop--a { width: 20px; height: 26px; top: 12%; right: 16%; animation-delay: 0.3s; }
+.ov-drop--b { width: 13px; height: 17px; top: 52%; left: 62%; animation-delay: 0.7s; }
+.ov-drop--c { width: 24px; height: 30px; top: 28%; right: 28%; animation-delay: 1.0s; }
+.ov-drop--d { width: 10px; height: 14px; top: 72%; left: 22%; animation-delay: 1.3s; }
 
-  /* Compact records grid on mobile */
-  .ov-records-grid {
-    grid-template-columns: repeat(3, 1fr);      /* 3 across on narrow screens       */
-  }
-
-  /* Compact lang grid on mobile */
-  .ov-lang-grid {
-    grid-template-columns: repeat(2, 1fr);      /* 2 across on mobile               */
-  }
+@keyframes dropFall {
+  0%   { transform: translateY(-10px) scale(0.8); opacity: 0;    }
+  60%  { transform: translateY(4px)   scale(1.05); opacity: 0.50; }
+  100% { transform: translateY(0)     scale(1);    opacity: 0.40; }
 }
 
 /* ══════════════════════════════════════════════════════
    LIGHT MODE OVERRIDES
-   Panels get a lighter glass surface in light mode
 ══════════════════════════════════════════════════════ */
 [data-theme="light"] .ov-panel {
-  background:  rgba(255,255,255,0.52);          /* White-tinted glass in light mode */
-  border-color:rgba(79,100,145,0.14);           /* Blue-tinted border               */
+  background:  rgba(255,255,255,0.52);
+  border-color:rgba(79,100,145,0.14);
   box-shadow:  0 4px 24px rgba(79,100,145,0.12),
                0 1px 0 rgba(255,255,255,0.80) inset;
 }
@@ -931,10 +837,6 @@
   background: rgba(255,255,255,0.55);
 }
 
-[data-theme="light"] .ov-bars {
-  border-top-color: rgba(79,100,145,0.14);
-}
-
 [data-theme="light"] .ov-donut-track {
   stroke: rgba(79,100,145,0.12);
 }
@@ -942,4 +844,46 @@
 [data-theme="light"] .ov-proj-row__track,
 [data-theme="light"] .ov-skill-row__track {
   background: rgba(79,100,145,0.10);
+}
+
+/* ══════════════════════════════════════════════════════
+   RESPONSIVE BREAKPOINTS
+══════════════════════════════════════════════════════ */
+
+/* Tablet: 2 columns */
+@media (max-width: 1100px) {
+  .ov-main-grid {
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows:    auto auto auto;
+  }
+
+  /* Profile spans full width */
+  .ov-panel--profile      { grid-column: 1 / 3; grid-row: 1; }
+  .ov-panel--score-dist   { grid-column: 1;     grid-row: 2; }
+  .ov-panel--cat          { grid-column: 2;     grid-row: 2; }
+  .ov-panel--skill-scores { grid-column: 1 / 3; grid-row: 3; }
+}
+
+/* Mobile: single column */
+@media (max-width: 700px) {
+  .ov-main-grid {
+    grid-template-columns: 1fr;
+    grid-template-rows:    auto;
+  }
+
+  .ov-panel--profile,
+  .ov-panel--score-dist,
+  .ov-panel--cat,
+  .ov-panel--skill-scores {
+    grid-column: 1;
+    grid-row:    auto;
+  }
+
+  .ov-records-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .ov-lang-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }

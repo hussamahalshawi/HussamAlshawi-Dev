@@ -157,7 +157,7 @@ export default function Home() {
       ══════════════════════════════════════════════════════ */}
       <SkillsSection
         skills={data.skills}                    /* Grouped skills from API              */
-        summary={null}                          /* Summary fetched separately if needed */
+        summary={data.skillsSummary}                          /* Summary fetched separately if needed */
       />
 
       {/* ══════════════════════════════════════════════════════

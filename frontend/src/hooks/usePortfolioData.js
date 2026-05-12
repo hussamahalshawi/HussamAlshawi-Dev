@@ -46,6 +46,7 @@ export function usePortfolioData() {
       analyticsService.getAnalytics(),         // Slot 1 — analytics
       skillsService.getPublicSkills(),         // Slot 2 — skills
       projectsService.getProjects(),           // Slot 3 — projects
+      skillsService.getSkillsSummary(),
     ]);
 
     /* Destructure by position (matches order above) */

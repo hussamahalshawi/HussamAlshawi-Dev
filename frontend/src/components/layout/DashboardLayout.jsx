@@ -181,24 +181,24 @@ export default function DashboardLayout({ children, activeSection = '', profile 
               </button>
             </div>
 
-            {/* Notification bell with cyan dot */}
-            <button
-              className="topbar__icon-btn"
-              aria-label="Notifications"
-              title="Notifications"
-            >
-              🔔
-              <span className="topbar__notif-dot" aria-hidden="true" />
-            </button>
+{/*              */}{/* Notification bell with cyan dot */}
+{/*             <button */}
+{/*               className="topbar__icon-btn" */}
+{/*               aria-label="Notifications" */}
+{/*               title="Notifications" */}
+{/*             > */}
+{/*               🔔 */}
+{/*               <span className="topbar__notif-dot" aria-hidden="true" /> */}
+{/*             </button> */}
 
-            {/* Settings button */}
-            <button
-              className="topbar__icon-btn"
-              aria-label="Settings"
-              title="Settings"
-            >
-              ⚙
-            </button>
+{/*              */}{/* Settings button */}
+{/*             <button */}
+{/*               className="topbar__icon-btn" */}
+{/*               aria-label="Settings" */}
+{/*               title="Settings" */}
+{/*             > */}
+{/*               ⚙ */}
+{/*             </button> */}
 
             {/* User pill — shows avatar + full name */}
             <div
