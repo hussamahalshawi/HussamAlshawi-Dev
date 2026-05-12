@@ -317,13 +317,13 @@ function ProfileCardPanel({ fullName, title, bio, avatar, available, social, pro
   {/* Divider */}
   <div className="ov-stat__divider" aria-hidden="true" />
 
-  {/* Total experience roles count */}
-  <div className="ov-stat" role="listitem">
-    <div className="ov-stat__num" style={{ color: 'var(--violet)' }}>
-      {counts?.experience || '—'}
-    </div>
-    <div className="ov-stat__label">Roles</div>
+  {/* Total work experience count from analytics API */}
+<div className="ov-stat" role="listitem">
+  <div className="ov-stat__num" style={{ color: 'var(--violet)' }}>
+    {counts?.experience || '—'}
   </div>
+  <div className="ov-stat__label">Experience</div>
+</div>
 
   {/* Divider */}
   <div className="ov-stat__divider" aria-hidden="true" />

@@ -49,9 +49,13 @@ export function usePortfolioData() {
     ];
 
     /* Attach a listener to each task to increment progress regardless of success or failure */
-    tasks.forEach(task => {
+    // Track names for each task to show in console during development
+    const taskNames = ['Profile', 'Analytics', 'Skills', 'Projects', 'Skills Summary'];
+
+    tasks.forEach((task, index) => {
       task.finally(() => {
-        setProgress(prev => prev + 1);                   // Increment counter when a request settles
+        console.log(`[Loader] ✓ ${taskNames[index]} loaded`); // Dev feedback
+        setProgress(prev => prev + 1);                         // Advance progress bar
       });
     });
 
