@@ -43,29 +43,6 @@ export function useProjects(params = {}) {
   const [loading,  setLoading]  = useState(true); // True while request is in-flight
   const [error,    setError]    = useState(null); // Error message string or null
 
-  /**
-   * fetchProjects — core fetching function.
-   * Extracted so refetch() can call it directly.
-   */
-  async function fetchProjects() {
-    setLoading(true);                              // Show loading state
-    setError(null);                               // Clear any previous error
-
-    try {
-      /* Fire GET /portfolio/projects with optional query params */
-      const data = await projectsService.getProjects(params);
-
-      /* Safely extract fields — API returns { count, types, projects } */
-      setProjects(data?.projects || []);           // Set projects array
-      setCount(data?.count       || 0);            // Set total count
-      setTypes(data?.types       || []);           // Set available type filters
-    } catch (err) {
-      /* Set error message — use API message or generic fallback */
-      setError(err.message || 'Failed to load projects.');
-    } finally {
-      setLoading(false);                           // Always hide loader
-    }
-  }
 
   /* Run on mount and whenever params change */
   useEffect(() => {
@@ -108,7 +85,10 @@ export function useProjects(params = {}) {
     types,           // Available type filter options
     loading,         // Boolean loading state
     error,           // Error string or null
-    refetch: fetchProjects, // Manual refresh function
+    refetch: () => {                                    // Manual refetch triggers useEffect
+      setProjects([]);                                  // Clear current data
+      setLoading(true);                                 // Show loader immediately
+    },
   };
 }
 
