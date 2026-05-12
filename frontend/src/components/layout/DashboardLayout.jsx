@@ -8,7 +8,7 @@
  * - Fully theme-aware: reads from ThemeContext for dark/light
  * ─────────────────────────────────────────────────────────
  */
-import { useState }      from 'react';
+import { useState , useEffect }      from 'react';
 import { useProfile }    from '../../hooks/useProfile';      // Profile data for avatar/name
 import { useTheme }      from '../../context/ThemeContext';  // Dark/light mode context
 import { getInitials }   from '../../utils/formatters';      // Formats name → "HA"
@@ -43,8 +43,26 @@ export default function DashboardLayout({ children, activeSection = '', profile 
   const initials  = getInitials(fullName);                // "HA" format for avatars
   const title     = profile?.title          || 'Full Stack Developer';
   const avatar    = profile?.primary_avatar || null;      // Cloudinary URL or null
-  const available = profile?.is_available_for_hire || false; // Hire status
+  /* ── Dynamic favicon — runs after render, updates tab icon from API avatar ── */
+/* ── Dynamic favicon — directly set Cloudinary URL with size param ── */
+useEffect(() => {
+  if (!avatar) return;                                      // Skip if no avatar from API
 
+  const favicon = document.getElementById('dynamic-favicon'); // Find favicon link tag
+  if (!favicon) return;                                     // Skip if not found in DOM
+
+  /* Append Cloudinary transform params to force 64px square output */
+  /* This avoids CORS canvas issues entirely — browser loads directly */
+  const sized = avatar.includes('cloudinary.com')
+    ? avatar.replace('/upload/', '/upload/w_192,h_192,c_fill,r_max,b_rgb:4a90d9/')  // Cloudinary transform URL
+    : avatar;                                               // Non-Cloudinary: use as-is
+
+  favicon.href = sized;                                     // Set resized avatar as favicon
+  favicon.type = 'image/jpeg';                              // Update MIME type
+}, [avatar]);                                               // Re-run when avatar changes
+
+
+  const available = profile?.is_available_for_hire || false; // Hire status
   /** Close sidebar when nav link is clicked on mobile */
   const closeOnMobile = () => setSidebarOpen(false);
 
@@ -62,17 +80,28 @@ export default function DashboardLayout({ children, activeSection = '', profile 
         <div className="sidebar__texture" aria-hidden="true" />
 
         {/* ── Logo ── */}
-        <a
-          href="#overview"
-          className="sidebar__logo"
-          onClick={closeOnMobile}
-          aria-label="Go to dashboard overview"
-        >
-          <div className="sidebar__logo-mark" aria-hidden="true">HA</div>
-          <span className="sidebar__logo-text">
-            HA<em>.</em>Dev
-          </span>
-        </a>
+            <a
+              href="#overview"
+              className="sidebar__logo"
+              onClick={(e) => {
+                  e.preventDefault();                              // Prevent default anchor behavior
+                  closeOnMobile();                                 // Close mobile sidebar
+                  window.location.href = window.location.origin;  // Navigate to root URL — works locally and on cloud
+                }}
+              aria-label="Go to dashboard overview"
+            >
+
+              {/* CHANGE THIS ↓ — show avatar image if available, fallback to "HA" text */}
+              <div className="sidebar__logo-mark" aria-hidden="true">
+                {avatar
+                  ? <img src={avatar} alt={fullName} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 'inherit' }} />
+                  : 'HA'
+                }
+              </div>
+              <span className="sidebar__logo-text">
+                HA<em>.</em>Dev
+              </span>
+            </a>
 
         {/* ── Section label above nav ── */}
         <span className="sidebar__nav-label" aria-hidden="true">Menu</span>
@@ -141,15 +170,20 @@ export default function DashboardLayout({ children, activeSection = '', profile 
         {/* ── Sticky Topbar ── */}
         <header className="topbar" role="banner">
 
-          {/* Left side: personal greeting */}
-          <div className="topbar__greeting" aria-live="polite">
-            <div className="topbar__greeting-hi">
-              Hi, {firstName}! 👋
+         {/* Left side: personal greeting — name and title pulled from profile API */}
+            <div className="topbar__greeting" aria-live="polite">
+
+              {/* Hi + first name from profile.full_name, split to get first word */}
+              <div className="topbar__greeting-hi">
+                {fullName}! 👋
+              </div>
+
+              {/* Job title from profile.title — falls back to static string if API fails */}
+              <div className="topbar__greeting-sub">
+                {title || 'Welcome to your Portfolio'}
+              </div>
+
             </div>
-            <div className="topbar__greeting-sub">
-              Welcome to your Portfolio
-            </div>
-          </div>
 
           {/* Right side: action buttons */}
           <div className="topbar__actions">
