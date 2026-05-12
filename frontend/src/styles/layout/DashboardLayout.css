@@ -371,7 +371,7 @@
 /* Greeting text */
 .topbar__greeting-hi {
   font-family:    var(--font-display);
-  font-size:      1.05rem;
+  font-size:      1.7rem;
   font-weight:    700;
   color:          var(--text-white);            /* Dark text in light mode */
   line-height:    1.2;
@@ -587,6 +587,9 @@
   .topbar__user-chevron { display: none; }
   .topbar               { padding: 0 var(--s4); }
   .page-content         { padding: var(--s4); }
+  .topbar__greeting-hi {
+    font-size: 1.10rem;   /* Scale back on small screens */
+  }
 }
 
 /* ═══════════════════════════════════════════════════

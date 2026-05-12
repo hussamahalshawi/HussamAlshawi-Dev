@@ -175,7 +175,7 @@ useEffect(() => {
 
               {/* Hi + first name from profile.full_name, split to get first word */}
               <div className="topbar__greeting-hi">
-                {fullName}! 👋
+                {fullName}  👋
               </div>
 
               {/* Job title from profile.title — falls back to static string if API fails */}
@@ -187,7 +187,15 @@ useEffect(() => {
 
           {/* Right side: action buttons */}
           <div className="topbar__actions">
-
+                {/* Availability status pill */}
+        <div
+          className={`availability-pill ${available ? 'availability-pill--open' : ''}`}
+          role="status"
+          aria-label={available ? 'Available for hire' : 'Currently employed'}
+        >
+          <span className="availability-pill__dot" aria-hidden="true" />
+          {available ? 'Available for Hire' : 'Currently Employed'}
+        </div>
             {/* ── Theme Toggle — dark/light switch ── */}
             <div
               className="topbar__theme-toggle"

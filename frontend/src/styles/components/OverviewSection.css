@@ -283,16 +283,24 @@
   box-shadow:    0 0 8px var(--green);
   animation:     pulseDot 2.5s ease infinite;   /* Continuous pulse from index.css  */
 }
-
-/* Full name — centered, display font */
+/* ── Col 1: Profile card — spans both rows but aligned to content ── */
+.ov-panel--profile {
+  grid-column: 1;
+  grid-row:    1 / 3;                           /* Spans both rows visually          */
+  align-self:  stretch;                         /* Stretches to fill both rows       */
+  display:     flex;                            /* Flex column layout inside         */
+  flex-direction: column;                       /* Stack children vertically         */
+}
+/* Full name — centered, larger bolder display font */
 .ov-profile__name {
   font-family:    var(--font-display);
-  font-size:      1.15rem;
-  font-weight:    800;
+  font-size:      1.55rem;              /* Increased from 1.15rem — more presence  */
+  font-weight:    800;                  /* Maximum weight                          */
   color:          var(--text-white);
-  letter-spacing: -0.02em;
+  letter-spacing: -0.03em;             /* Tight tracking suits large display size */
   text-align:     center;
   margin-bottom:  var(--s1);
+  line-height:    1.15;
   transition:     color 0.35s ease;
 }
 
@@ -309,14 +317,24 @@
   transition:     color 0.35s ease;
 }
 
-/* Bio paragraph — truncated for profile card */
+/* Bio takes available space — pushes social to bottom */
 .ov-profile__bio {
   font-size:     0.82rem;
   color:         var(--text-secondary);
-  line-height:   1.7;
+  line-height:   1.75;
   text-align:    center;
-  margin-bottom: var(--s5);
+  margin-bottom: var(--s4);
+  flex:          1;                             /* Expands to fill remaining space   */
+  overflow-y:    auto;                          /* Scroll if very long               */
+  padding-right: var(--s1);
   transition:    color 0.35s ease;
+}
+/* Custom scrollbar for bio */
+.ov-profile__bio::-webkit-scrollbar       { width: 2px; }
+.ov-profile__bio::-webkit-scrollbar-track { background: transparent; }
+.ov-profile__bio::-webkit-scrollbar-thumb {
+  background:    var(--cyan-dim);
+  border-radius: var(--r-full);
 }
 
 /* Social links flex row */
@@ -329,12 +347,12 @@
   margin-bottom:   var(--s5);
 }
 
-/* Individual social link pill */
+/* Social link pill — with SVG icon support */
 .ov-social-link {
   display:         inline-flex;
   align-items:     center;
-  gap:             var(--s1);
-  padding:         0.28rem 0.65rem;
+  gap:             var(--s2);
+  padding:         0.30rem 0.70rem;
   background:      var(--glass-light);
   border:          1px solid var(--border-subtle);
   border-radius:   var(--r-full);
@@ -349,12 +367,14 @@
   white-space:     nowrap;
 }
 
+/* Hover — brand color glow effect */
 .ov-social-link:hover {
-  background:   var(--glass-cyan);
-  border-color: var(--border-cyan);
-  color:        var(--cyan);
-  transform:    translateY(-1px);
-  box-shadow:   0 4px 12px rgba(79,195,247,0.15);
+  background:   var(--glass-medium);
+  border-color: var(--social-color, var(--border-cyan));
+  color:        var(--social-color, var(--cyan));
+  transform:    translateY(-2px);
+  box-shadow:   0 4px 14px rgba(0,0,0,0.25),
+                0 0 12px color-mix(in srgb, var(--social-color, var(--cyan)) 30%, transparent);
 }
 
 /* CTA buttons row */
@@ -366,6 +386,18 @@
 .ov-profile__actions .btn {
   flex:           1;                            /* Equal width between buttons       */
   justify-content:center;
+}
+/* SVG icon inside social link */
+.ov-social-link__icon {
+  display:     flex;
+  align-items: center;
+  flex-shrink: 0;
+  opacity:     0.75;                   /* Slightly muted by default               */
+  transition:  opacity var(--t-fast);
+}
+
+.ov-social-link:hover .ov-social-link__icon {
+  opacity: 1;                          /* Full opacity on hover                   */
 }
 
 /* ══════════════════════════════════════════════════════

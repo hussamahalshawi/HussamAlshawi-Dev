@@ -33,14 +33,71 @@ import { CHART_COLORS, SOCIAL_PLATFORMS }            from '../../utils/constants
 import '../../styles/components/OverviewSection.css';                               // Section styles
 
 /* ── Social platform icon map ─────────────────────────────────── */
-/* Maps platform keys to display icons */
+/* ── SVG Social Icons — professional colored icons ───────────── */
+/* Each icon is a colored SVG for visual richness                 */
 const SOCIAL_ICONS = {
-  github:    '⚙',
-  linkedin:  '💼',
-  medium:    '✍',
-  instagram: '📸',
-  facebook:  '🔗',
+
+  github: (
+    <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor">
+      <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/>
+    </svg>
+  ),
+
+  linkedin: (
+    <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor">
+      <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 0 1-2.063-2.065 2.064 2.064 0 1 1 2.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+    </svg>
+  ),
+
+  twitter: (
+    <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor">
+      <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.746l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+    </svg>
+  ),
+
+  instagram: (
+    <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor">
+      <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 1 0 0 12.324 6.162 6.162 0 0 0 0-12.324zM12 16a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm6.406-11.845a1.44 1.44 0 1 0 0 2.881 1.44 1.44 0 0 0 0-2.881z"/>
+    </svg>
+  ),
+
+  youtube: (
+    <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor">
+      <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+    </svg>
+  ),
+
+  medium: (
+    <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor">
+      <path d="M13.54 12a6.8 6.8 0 0 1-6.77 6.82A6.8 6.8 0 0 1 0 12a6.8 6.8 0 0 1 6.77-6.82A6.8 6.8 0 0 1 13.54 12zM20.96 12c0 3.54-1.51 6.42-3.38 6.42-1.87 0-3.39-2.88-3.39-6.42s1.52-6.42 3.39-6.42 3.38 2.88 3.38 6.42M24 12c0 3.17-.53 5.75-1.19 5.75-.66 0-1.19-2.58-1.19-5.75s.53-5.75 1.19-5.75C23.47 6.25 24 8.83 24 12z"/>
+    </svg>
+  ),
+
+  facebook: (
+    <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor">
+      <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+    </svg>
+  ),
+
+  telegram: (
+    <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor">
+      <path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/>
+    </svg>
+  ),
 };
+
+/* ── Social platform config — matches API social_links keys ──── */
+/* Add or remove platforms here to control what appears in UI     */
+const SOCIAL_PLATFORMS_CONFIG = [
+  { key: 'github',    label: 'GitHub',    color: '#ffffff' },
+  { key: 'linkedin',  label: 'LinkedIn',  color: '#0A66C2' },
+  { key: 'twitter',   label: 'X',         color: '#ffffff' },
+  { key: 'instagram', label: 'Instagram', color: '#E1306C' },
+  { key: 'youtube',   label: 'YouTube',   color: '#FF0000' },
+  { key: 'medium',    label: 'Medium',    color: '#ffffff' },
+  { key: 'facebook',  label: 'Facebook',  color: '#1877F2' },
+  { key: 'telegram',  label: 'Telegram',  color: '#26A5E4' },
+];
 
 /* ── Band thresholds & labels — matches wireframe description ──── */
 /* Excellent (80-100%) / Good (60-79%) / Growing (40-59%) / Learning (0-39%) */
@@ -123,28 +180,6 @@ export default function OverviewSection({ profile, analytics }) {
     <section id="overview" className="overview-section" aria-label="Dashboard Overview">
 
       {/* ══════════════════════════════════════
-          PAGE HEADER
-      ══════════════════════════════════════ */}
-      <div className="page-header">
-        <div>
-          <h1 className="page-header__title">Dashboard Overview</h1>
-          <p className="page-header__sub">
-            {title} · Portfolio Analytics
-          </p>
-        </div>
-
-        {/* Availability status pill */}
-        <div
-          className={`availability-pill ${available ? 'availability-pill--open' : ''}`}
-          role="status"
-          aria-label={available ? 'Available for hire' : 'Currently employed'}
-        >
-          <span className="availability-pill__dot" aria-hidden="true" />
-          {available ? 'Available for Hire' : 'Currently Employed'}
-        </div>
-      </div>
-
-      {/* ══════════════════════════════════════
           MAIN 3-COLUMN GRID
           Col 1: Profile Card (tall, spans 2 rows)
           Col 2: Score Distribution (top) + Skills by Category (bottom)
@@ -194,16 +229,31 @@ export default function OverviewSection({ profile, analytics }) {
 
 /* ════════════════════════════════════════════════════════════════
    SUB-COMPONENT: ProfileCardPanel — Col 1
-   Name + Title + Bio + Social Links
+   Avatar + Name + Title + Full Bio + Social Links
 ════════════════════════════════════════════════════════════════ */
 /**
- * ProfileCardPanel — left panel with avatar, bio, social links, CTAs.
- * Spans both grid rows (tall panel matching wireframe Col 1).
- * @param {object} props
+ * ProfileCardPanel — left panel with profile info and social links.
+ * Social links check both nested object and flat key formats from API.
+ * Card height is controlled by CSS to match Col 2 total height.
+ * @param {{ fullName, title, bio, avatar, available, social }} props
  */
 function ProfileCardPanel({ fullName, title, bio, avatar, available, social }) {
 
-  const initials = getInitials(fullName); // Extract "HA" from "Hussam Alshawi"
+  const initials = getInitials(fullName); // Extract initials e.g. "HA"
+
+  /* ── Debug: log social object to verify API key names ─────────── */
+  /* Remove this after confirming social links work correctly        */
+  console.log('[ProfileCard] social object:', social);
+
+  /* ── Normalize social links — handles nested or flat API formats ── */
+  /* Some APIs return { github: { url: '...' } } others { github: '...' } */
+  const getSocialUrl = (key) => {
+    const val = social[key];                    // Direct access by key
+    if (!val) return null;                      // Key doesn't exist
+    if (typeof val === 'string') return val;    // Flat format: { github: 'https://...' }
+    if (typeof val === 'object') return val.url || val.link || val.href || null; // Nested format
+    return null;
+  };
 
   return (
     <div
@@ -211,48 +261,40 @@ function ProfileCardPanel({ fullName, title, bio, avatar, available, social }) {
       role="complementary"
       aria-label="Profile summary"
     >
-      {/* Water drop decorations — Devoryn signature */}
+      {/* Decorative water drops */}
       <div className="ov-drops" aria-hidden="true">
         <div className="ov-drop ov-drop--a" />
         <div className="ov-drop ov-drop--b" />
       </div>
 
-      {/* ── Avatar with triple glow ring ── */}
+      {/* ── Avatar ── */}
       <div className="ov-profile__avatar-wrap">
         <div className="ov-profile__avatar" aria-label={`${fullName} profile photo`}>
           {avatar
-            ? <img src={avatar} alt={`${fullName}`} />
+            ? <img src={avatar} alt={fullName} />
             : <span>{initials}</span>
           }
         </div>
-        {/* Online status indicator dot */}
-        <div
-          className="ov-profile__online"
-          title="Online"
-          aria-label="Status: active"
-        />
+        <div className="ov-profile__online" title="Online" aria-label="Status: active" />
       </div>
 
-      {/* ── Name ── */}
+      {/* ── Full name ── */}
       <div className="ov-profile__name">{fullName}</div>
 
-      {/* ── Role / Title ── */}
+      {/* ── Job title ── */}
       <div className="ov-profile__title">{title}</div>
 
-      {/* ── Bio text — capped at 200 chars for cleanliness ── */}
-      {bio && (
-        <p className="ov-profile__bio">
-          {bio.length > 200 ? `${bio.slice(0, 200)}…` : bio}
-        </p>
-      )}
+      {/* ── Full bio — no truncation ── */}
+      {bio && <p className="ov-profile__bio">{bio}</p>}
 
-      {/* ── Social links — pill badges ── */}
+      {/* ── Social links ── */}
       <div className="ov-profile__social" role="list" aria-label="Social links">
-        {SOCIAL_PLATFORMS.map(platform => {
-          const url = social[platform.key]; // Get URL from profile social object
-          if (!url) return null;            // Skip if no URL for this platform
+        {SOCIAL_PLATFORMS_CONFIG.map(platform => {
+          const url  = getSocialUrl(platform.key); // Try to get URL safely
+          const icon = SOCIAL_ICONS[platform.key]; // SVG icon element
+          if (!url || !icon) return null;          // Skip if missing
           return (
-            <a
+                <a
               key={platform.key}
               href={url}
               target="_blank"
@@ -260,35 +302,30 @@ function ProfileCardPanel({ fullName, title, bio, avatar, available, social }) {
               className="ov-social-link"
               role="listitem"
               aria-label={`${platform.label} profile`}
+              style={{ '--social-color': platform.color }}
             >
-              <span aria-hidden="true">{SOCIAL_ICONS[platform.key]}</span>
+              <span
+                className="ov-social-link__icon"
+                aria-hidden="true"
+                style={{ color: platform.color }}
+              >
+                {icon}
+              </span>
               {platform.label}
             </a>
           );
         })}
 
-        {/* Fallback social links when API returns empty */}
+        {/* Fallback message when social object is completely empty */}
         {Object.keys(social).length === 0 && (
-          <>
-            <span className="ov-social-link" aria-hidden="true">⚙ GitHub</span>
-            <span className="ov-social-link" aria-hidden="true">💼 LinkedIn</span>
-          </>
+          <span style={{ fontSize: '0.65rem', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
+            No social links configured
+          </span>
         )}
-      </div>
-
-      {/* ── CTA buttons ── */}
-      <div className="ov-profile__actions">
-        <a href="#contact" className="btn btn--primary btn--sm" aria-label="Hire Hussam">
-          Hire Me
-        </a>
-        <a href="#projects" className="btn btn--ghost btn--sm" aria-label="View projects">
-          Projects →
-        </a>
       </div>
     </div>
   );
 }
-
 /* ════════════════════════════════════════════════════════════════
    SUB-COMPONENT: ScoreDistributionPanel — Col 2 Top
    SVG donut chart: skills spread across Excellent/Good/Growing/Learning
