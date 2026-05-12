@@ -1,75 +1,85 @@
 /**
  * OverviewSection.jsx
  * ─────────────────────────────────────────────────────────
- * Devoryn-style dashboard overview — matches the screenshot:
+ * Redesigned Devoryn-style Overview Dashboard.
  *
- *  ┌─────────────────────────────────────────────────────┐
- *  │  Page Header: "Dashboard Overview" + availability   │
- *  ├──────────────────────┬──────────────────────────────┤
- *  │  Profile Card (left) │  KPI Grid (3×2) + TopSkills  │
- *  ├──────────────────────┴──────────────────────────────┤
- *  │  BENTO ROW:                                         │
- *  │  [Performance─tall] [ActiveProjects] [Donut─tall]  │
- *  │  [Performance─tall] [TasksList    ] [Donut─tall]  │
- *  │  [Team Activity ── full width ──────────────────]  │
- *  └─────────────────────────────────────────────────────┘
+ * Layout matches wireframe exactly:
+ *
+ *  ┌──────────────────────────────────────────────────────┐
+ *  │  Page Header: "Dashboard Overview" + availability    │
+ *  ├────────────────┬────────────────┬────────────────────┤
+ *  │  Profile Card  │ Score Dist.    │  Skill Scores      │
+ *  │  (Col 1 tall)  │ (Col 2 top)    │  Top 12 (Col 3)    │
+ *  │                ├────────────────┤  Sorted by band    │
+ *  │  Name, Title,  │ Skills by Cat  │  Excellent/Good/   │
+ *  │  Bio, Social   │ (Col 2 bottom) │  Growing/Learning  │
+ *  ├────────────────┴────────────────┴────────────────────┤
+ *  │  Portfolio Records — Total documents per model       │
+ *  ├──────────────────────────┬──────────────────────────┤
+ *  │  (spacer / future)       │  Languages panel          │
+ *  └──────────────────────────┴──────────────────────────┘
  *
  * Data flow:
- *   - profile   → profile card avatar / name / stats
- *   - analytics → KPI counts / top skills / counts for donut
- *   - All child panels receive props — no internal fetching
+ *   profile   → Col 1 profile card, name/title/bio/social
+ *   analytics → Col 2 score distribution donut + skills by category bars
+ *               Col 3 top 12 skill scores + Portfolio Records row
+ *               Languages row
  * ─────────────────────────────────────────────────────────
  */
 
 import { useRef, useEffect, useState, useCallback } from 'react'; // React hooks
 import { formatExperience, getInitials }             from '../../utils/formatters'; // Pure helpers
-import { CHART_COLORS, ANIMATION }                   from '../../utils/constants';  // Global tokens
+import { CHART_COLORS, SOCIAL_PLATFORMS }            from '../../utils/constants';  // Global tokens
 import '../../styles/components/OverviewSection.css';                               // Section styles
 
-/* ── Bar chart data — 7 month-groups of 2 bars (cyan + orange) ── */
-const BAR_DATA = [
-  { a: 65, b: 45 },
-  { a: 80, b: 55 },
-  { a: 50, b: 70 },
-  { a: 90, b: 40 },
-  { a: 60, b: 85 },
-  { a: 75, b: 50 },
-  { a: 55, b: 65 },
+/* ── Social platform icon map ─────────────────────────────────── */
+/* Maps platform keys to display icons */
+const SOCIAL_ICONS = {
+  github:    '⚙',
+  linkedin:  '💼',
+  medium:    '✍',
+  instagram: '📸',
+  facebook:  '🔗',
+};
+
+/* ── Band thresholds & labels — matches wireframe description ──── */
+/* Excellent (80-100%) / Good (60-79%) / Growing (40-59%) / Learning (0-39%) */
+const SCORE_BANDS = [
+  { key: 'excellent', label: 'Excellent', min: 80, max: 100, color: '#4FC3F7' }, // Cyan
+  { key: 'good',      label: 'Good',      min: 60, max: 79,  color: '#4ECCA3' }, // Green
+  { key: 'growing',   label: 'Growing',   min: 40, max: 59,  color: '#9B7FEA' }, // Violet
+  { key: 'learning',  label: 'Learning',  min: 0,  max: 39,  color: '#F5A623' }, // Gold
 ];
 
-/* ── Maximum bar height in px for the chart ──────────────────── */
-const BAR_MAX_PX = 48;
-
-/* ── Static activity feed entries (replace with API later) ───── */
-const ACTIVITIES = [
-  { id: 1, initials: 'HA', text: 'Updated portfolio backend API endpoints',         time: '2m ago',  color: 'var(--cyan)'   },
-  { id: 2, initials: 'HA', text: 'Pushed new SkillsSection glassmorphism update',   time: '18m ago', color: 'var(--green)'  },
-  { id: 3, initials: 'HA', text: 'Deployed frontend build to production server',    time: '1h ago',  color: 'var(--orange)' },
-  { id: 4, initials: 'HA', text: 'Completed MongoDB Atlas schema migration',        time: '3h ago',  color: 'var(--gold)'   },
-  { id: 5, initials: 'HA', text: 'Resolved CORS configuration on Flask backend',   time: '5h ago',  color: 'var(--violet)' },
+/* ── Portfolio record model labels ───────────────────────────── */
+/* Maps analytics count keys to display labels for the records strip */
+const RECORD_ITEMS = [
+  { key: 'skills',       label: 'Skills',      icon: '⚙',  color: CHART_COLORS[0] },
+  { key: 'goals',        label: 'Goals',       icon: '◈',  color: CHART_COLORS[1] },
+  { key: 'experience',   label: 'Experience',  icon: '💼', color: CHART_COLORS[2] },
+  { key: 'courses',      label: 'Courses',     icon: '📚', color: CHART_COLORS[3] },
+  { key: 'projects',     label: 'Projects',    icon: '⊡',  color: CHART_COLORS[4] },
+  { key: 'education',    label: 'Education',   icon: '🎓', color: CHART_COLORS[5] },
+  { key: 'self_study',   label: 'Self Study',  icon: '✍',  color: CHART_COLORS[6] },
+  { key: 'languages',    label: 'Languages',   icon: '🌐', color: CHART_COLORS[7] },
+  { key: 'feedback',     label: 'Feedback',    icon: '💬', color: CHART_COLORS[0] },
+  { key: 'achievements', label: 'Achievements',icon: '🏆', color: CHART_COLORS[3] },
 ];
 
-/* ── Color palette for task avatars ──────────────────────────── */
-const AVATAR_COLORS = [
-  CHART_COLORS[0], // cyan
-  CHART_COLORS[1], // blue
-  CHART_COLORS[2], // violet
-  CHART_COLORS[3], // gold
-  CHART_COLORS[4], // coral
-];
-
-/* ── Donut segment definitions for Tasks Status ─────────────── */
-const DONUT_SEGMENTS = [
-  { label: 'In Progress', key: 'in_progress', color: '#4FC3F7', defaultPct: 45 }, // cyan
-  { label: 'Done',        key: 'done',        color: '#4ECCA3', defaultPct: 30 }, // green
-  { label: 'Backlog',     key: 'backlog',      color: '#F5A623', defaultPct: 25 }, // orange
-];
+/* ── Language proficiency level → color mapping ──────────────── */
+/* Maps level strings to display colors for the language cards */
+const LANG_LEVEL_COLORS = {
+  native:       '#4FC3F7',  // Cyan for native
+  fluent:       '#4ECCA3',  // Green for fluent
+  intermediate: '#F5A623',  // Gold for intermediate
+  beginner:     '#9B7FEA',  // Violet for beginner
+};
 
 /* ════════════════════════════════════════════════════════════════
-   MAIN COMPONENT
+   MAIN COMPONENT: OverviewSection
 ════════════════════════════════════════════════════════════════ */
 /**
- * OverviewSection — assembles the full Devoryn overview dashboard.
+ * OverviewSection — assembles the full redesigned overview dashboard.
  * @param {object}      props
  * @param {object|null} props.profile   - Profile data from API
  * @param {object|null} props.analytics - Analytics data from API
@@ -77,44 +87,37 @@ const DONUT_SEGMENTS = [
 export default function OverviewSection({ profile, analytics }) {
 
   /* ── Safe display values with fallbacks ──────────────────────── */
-  const fullName  = profile?.full_name             || 'Hussam Alshawi';
-  const firstName = fullName.split(' ')[0];                   // "Hussam" for greeting
-  const title     = profile?.title                 || 'Full Stack Developer';
-  const bio       = profile?.bio                   || '';
-  const avatar    = profile?.primary_avatar        || null;   // Cloudinary URL or null
-  const expYears  = profile?.experience_years       || 0;     // Numeric years
-  const score     = profile?.overall_score          || 0;     // 0-100
-  const available = profile?.is_available_for_hire  || false; // Boolean
+  const fullName  = profile?.full_name              || 'Hussam Alshawi';  // Display name
+  const title     = profile?.title                  || 'Full Stack Developer'; // Job title
+  const bio       = profile?.bio                    || '';                 // Bio text
+  const avatar    = profile?.primary_avatar         || null;              // Cloudinary URL
+  const available = profile?.is_available_for_hire  || false;            // Hire status
+  const social    = profile?.social_links           || {};                // Social URLs object
+  const languages = profile?.languages              || [];               // Languages array
 
   /* ── Analytics derived values ─────────────────────────────────── */
-  const counts    = analytics?.counts    || {};                // { skills, projects, ... }
-  const topSkills = analytics?.top_skills || [];               // [{ skill_name, score, color }]
+  const counts       = analytics?.counts          || {};   // Entity counts
+  const topSkills    = analytics?.top_skills      || [];   // Top skills array
+  const skillsDist   = analytics?.skills_distribution || {}; // Band distribution
+  const radarData    = analytics?.skills_radar    || [];   // Category averages
 
-  /* ── KPI card config — icon + label + count key + color ─────── */
-  const kpis = [
-    { label: 'Skills',       key: 'skills',       icon: '⚙',  color: CHART_COLORS[0] },
-    { label: 'Projects',     key: 'projects',     icon: '⊡',  color: CHART_COLORS[1] },
-    { label: 'Courses',      key: 'courses',      icon: '📚', color: CHART_COLORS[2] },
-    { label: 'Roles',        key: 'experience',   icon: '💼', color: CHART_COLORS[3] },
-    { label: 'Goals',        key: 'goals',        icon: '◈',  color: CHART_COLORS[4] },
-    { label: 'Achievements', key: 'achievements', icon: '🏆', color: CHART_COLORS[5] },
-  ];
+  /* ── Compute top 12 skills sorted by score desc ──────────────── */
+  /* Used by Col 3 skill scores panel */
+  const top12Skills = [...topSkills]
+    .sort((a, b) => (b.score || 0) - (a.score || 0))  // Sort high → low
+    .slice(0, 12);                                       // Take top 12 only
 
-  /* ── Build active projects from analytics counts (demo data) ── */
-  const activeProjects = [
-    { name: 'Portfolio Site',  pct: Math.min(92, 100), color: CHART_COLORS[0] },
-    { name: 'API Backend',     pct: Math.min(78, 100), color: CHART_COLORS[2] },
-    { name: 'Mobile Dashboard',pct: Math.min(54, 100), color: CHART_COLORS[3] },
-  ];
+  /* ── Compute band counts from skills distribution ─────────────── */
+  /* Maps API distribution keys to band display */
+  const bandCounts = {
+    excellent: skillsDist.expert       || 0,  // API "expert" → wireframe "Excellent"
+    good:      skillsDist.advanced     || 0,  // API "advanced" → wireframe "Good"
+    growing:   skillsDist.intermediate || 0,  // API "intermediate" → wireframe "Growing"
+    learning:  skillsDist.beginner     || 0,  // API "beginner" → wireframe "Learning"
+  };
 
-  /* ── Build task rows from goals counts ───────────────────────── */
-  const taskRows = topSkills.slice(0, 4).map((skill, i) => ({
-    id:      i,
-    name:    skill.skill_name,
-    pct:     skill.score,
-    initial: skill.skill_name.charAt(0).toUpperCase(),
-    color:   AVATAR_COLORS[i % AVATAR_COLORS.length],
-  }));
+  /* ── Total skills for donut percentage calculation ─────────────── */
+  const totalSkills = counts.skills || 1; // Avoid division by zero
 
   return (
     <section id="overview" className="overview-section" aria-label="Dashboard Overview">
@@ -142,153 +145,143 @@ export default function OverviewSection({ profile, analytics }) {
       </div>
 
       {/* ══════════════════════════════════════
-          ROW — Profile card (left) + KPIs + skills (right)
+          MAIN 3-COLUMN GRID
+          Col 1: Profile Card (tall, spans 2 rows)
+          Col 2: Score Distribution (top) + Skills by Category (bottom)
+          Col 3: Skill Scores Top 12 (tall, spans 2 rows)
       ══════════════════════════════════════ */}
-      <div className="overview-row">
+      <div className="ov-main-grid">
 
-        {/* ── PROFILE CARD ─────────────────────────────────────── */}
-        <ProfileCard
+        {/* ── COL 1: PROFILE CARD ─────────────────────────────────── */}
+        <ProfileCardPanel
           fullName={fullName}
           title={title}
           bio={bio}
           avatar={avatar}
-          expYears={expYears}
-          score={score}
           available={available}
-          projectCount={counts.projects || 0}
+          social={social}
         />
 
-        {/* ── RIGHT COLUMN ─────────────────────────────────────── */}
-        <div className="overview-right">
+        {/* ── COL 2 TOP: SCORE DISTRIBUTION DONUT ─────────────────── */}
+        <ScoreDistributionPanel
+          bandCounts={bandCounts}
+          totalSkills={totalSkills}
+        />
 
-          {/* KPI bento grid */}
-          <div className="kpi-grid" role="list" aria-label="Portfolio statistics">
-            {kpis.map((kpi, i) => (
-              <AnimatedKpiCard
-                key={kpi.key}
-                label={kpi.label}
-                value={counts[kpi.key] || 0}
-                icon={kpi.icon}
-                color={kpi.color}
-                delay={i * 80}                               /* Staggered entrance */
-              />
-            ))}
-          </div>
+        {/* ── COL 3: SKILL SCORES TOP 12 ──────────────────────────── */}
+        <SkillScoresPanel skills={top12Skills} />
 
-          {/* Top skills glass panel */}
-          {topSkills.length > 0 && (
-            <TopSkillsPanel skills={topSkills} />
-          )}
-        </div>
+        {/* ── COL 2 BOTTOM: SKILLS BY CATEGORY ────────────────────── */}
+        <SkillsByCategoryPanel radarData={radarData} />
+
       </div>
 
       {/* ══════════════════════════════════════
-          BENTO GRID — Performance / Projects / Donut / Tasks / Activity
+          PORTFOLIO RECORDS — full-width strip
+          Shows total documents per model
       ══════════════════════════════════════ */}
-      <div className="ov-bento" aria-label="Dashboard widgets">
+      <PortfolioRecordsPanel counts={counts} />
 
-        {/* ── 1. PERFORMANCE METRICS — col 1, spans rows 1-2 ─── */}
-        <PerformancePanel
-          expYears={expYears}
-          score={score}
-          projectCount={counts.projects || 0}
-        />
+      {/* ══════════════════════════════════════
+          LANGUAGES PANEL — full-width
+          Language cards with flag + name + level
+      ══════════════════════════════════════ */}
+      <LanguagesPanel languages={languages} />
 
-        {/* ── 2. ACTIVE PROJECTS — col 2, row 1 ───────────────── */}
-        <ActiveProjectsPanel projects={activeProjects} />
-
-        {/* ── 3. TASKS STATUS DONUT — col 3, spans rows 1-2 ───── */}
-        <TasksDonutPanel analytics={analytics} />
-
-        {/* ── 4. TASKS LIST — col 2, row 2 ─────────────────────── */}
-        <TasksListPanel tasks={taskRows} />
-
-        {/* ── 5. TEAM ACTIVITY — full width, row 3 ─────────────── */}
-        <TeamActivityPanel />
-
-      </div>
     </section>
   );
 }
 
 /* ════════════════════════════════════════════════════════════════
-   SUB-COMPONENT: ProfileCard
+   SUB-COMPONENT: ProfileCardPanel — Col 1
+   Name + Title + Bio + Social Links
 ════════════════════════════════════════════════════════════════ */
 /**
- * ProfileCard — left panel with avatar glow ring, stats strip, bio, CTAs.
+ * ProfileCardPanel — left panel with avatar, bio, social links, CTAs.
+ * Spans both grid rows (tall panel matching wireframe Col 1).
  * @param {object} props
  */
-function ProfileCard({ fullName, title, bio, avatar, expYears, score, available, projectCount }) {
+function ProfileCardPanel({ fullName, title, bio, avatar, available, social }) {
 
-  const initials = getInitials(fullName); // "HA"
+  const initials = getInitials(fullName); // Extract "HA" from "Hussam Alshawi"
 
   return (
-    <div className="profile-card" role="complementary" aria-label="Profile summary">
+    <div
+      className="ov-panel ov-panel--profile"
+      role="complementary"
+      aria-label="Profile summary"
+    >
+      {/* Water drop decorations — Devoryn signature */}
+      <div className="ov-drops" aria-hidden="true">
+        <div className="ov-drop ov-drop--a" />
+        <div className="ov-drop ov-drop--b" />
+      </div>
 
-      {/* ── Avatar with triple ring glow ── */}
-      <div className="profile-card__avatar-wrap">
-        <div className="profile-card__avatar" aria-hidden="true">
+      {/* ── Avatar with triple glow ring ── */}
+      <div className="ov-profile__avatar-wrap">
+        <div className="ov-profile__avatar" aria-label={`${fullName} profile photo`}>
           {avatar
-            ? <img src={avatar} alt={`${fullName} profile photo`} />
+            ? <img src={avatar} alt={`${fullName}`} />
             : <span>{initials}</span>
           }
         </div>
-        {/* Pulsing online indicator */}
+        {/* Online status indicator dot */}
         <div
-          className="profile-card__online"
+          className="ov-profile__online"
           title="Online"
-          aria-label="Status: online"
+          aria-label="Status: active"
         />
       </div>
 
-      {/* ── Name + role ── */}
-      <div className="profile-card__info">
-        <div className="profile-card__name">{fullName}</div>
-        <div className="profile-card__title">{title}</div>
-      </div>
+      {/* ── Name ── */}
+      <div className="ov-profile__name">{fullName}</div>
 
-      {/* ── Stats strip: exp / score / projects ── */}
-      <div className="profile-card__stats" role="list" aria-label="Key stats">
+      {/* ── Role / Title ── */}
+      <div className="ov-profile__title">{title}</div>
 
-        <div className="profile-stat" role="listitem">
-          <div className="profile-stat__num" style={{ color: 'var(--cyan)' }}>
-            {formatExperience(expYears)}
-          </div>
-          <div className="profile-stat__label">Yrs Exp</div>
-        </div>
-
-        <div className="profile-stat__divider" aria-hidden="true" />
-
-        <div className="profile-stat" role="listitem">
-          <div className="profile-stat__num" style={{ color: 'var(--blue)' }}>
-            {Math.round(score)}
-          </div>
-          <div className="profile-stat__label">Score</div>
-        </div>
-
-        <div className="profile-stat__divider" aria-hidden="true" />
-
-        <div className="profile-stat" role="listitem">
-          <div className="profile-stat__num" style={{ color: 'var(--green)' }}>
-            {projectCount}
-          </div>
-          <div className="profile-stat__label">Projects</div>
-        </div>
-      </div>
-
-      {/* ── Bio text — max 160 chars ── */}
+      {/* ── Bio text — capped at 200 chars for cleanliness ── */}
       {bio && (
-        <p className="profile-card__bio">
-          {bio.length > 160 ? `${bio.slice(0, 160)}…` : bio}
+        <p className="ov-profile__bio">
+          {bio.length > 200 ? `${bio.slice(0, 200)}…` : bio}
         </p>
       )}
 
+      {/* ── Social links — pill badges ── */}
+      <div className="ov-profile__social" role="list" aria-label="Social links">
+        {SOCIAL_PLATFORMS.map(platform => {
+          const url = social[platform.key]; // Get URL from profile social object
+          if (!url) return null;            // Skip if no URL for this platform
+          return (
+            <a
+              key={platform.key}
+              href={url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="ov-social-link"
+              role="listitem"
+              aria-label={`${platform.label} profile`}
+            >
+              <span aria-hidden="true">{SOCIAL_ICONS[platform.key]}</span>
+              {platform.label}
+            </a>
+          );
+        })}
+
+        {/* Fallback social links when API returns empty */}
+        {Object.keys(social).length === 0 && (
+          <>
+            <span className="ov-social-link" aria-hidden="true">⚙ GitHub</span>
+            <span className="ov-social-link" aria-hidden="true">💼 LinkedIn</span>
+          </>
+        )}
+      </div>
+
       {/* ── CTA buttons ── */}
-      <div className="profile-card__actions">
-        <a href="#contact" className="btn btn--primary btn--sm profile-card__btn">
+      <div className="ov-profile__actions">
+        <a href="#contact" className="btn btn--primary btn--sm" aria-label="Hire Hussam">
           Hire Me
         </a>
-        <a href="#projects" className="btn btn--ghost btn--sm profile-card__btn">
+        <a href="#projects" className="btn btn--ghost btn--sm" aria-label="View projects">
           Projects →
         </a>
       </div>
@@ -297,537 +290,113 @@ function ProfileCard({ fullName, title, bio, avatar, expYears, score, available,
 }
 
 /* ════════════════════════════════════════════════════════════════
-   SUB-COMPONENT: AnimatedKpiCard
-   Count-up animation from 0 → value on mount with stagger delay
+   SUB-COMPONENT: ScoreDistributionPanel — Col 2 Top
+   SVG donut chart: skills spread across Excellent/Good/Growing/Learning
 ════════════════════════════════════════════════════════════════ */
 /**
- * @param {{ label, value, icon, color, delay }} props
+ * ScoreDistributionPanel — donut chart showing band distribution.
+ * @param {{ bandCounts: object, totalSkills: number }} props
  */
-function AnimatedKpiCard({ label, value, icon, color, delay = 0 }) {
+function ScoreDistributionPanel({ bandCounts, totalSkills }) {
 
-  const numRef = useRef(null); // DOM ref to update text content directly (perf)
+  /* ── SVG donut geometry ──────────────────────────────────────── */
+  const RADIUS  = 52;                              // Donut ring radius in SVG units
+  const CIRCUMF = 2 * Math.PI * RADIUS;            // Full circle circumference
+  const STROKE  = 10;                              // Ring stroke width
 
-  useEffect(() => {
-    if (!numRef.current || value === 0) return; // Skip if no element or zero value
+  let cumulativePct = 0;                           // Running total for segment offsets
 
-    const duration = ANIMATION.COUNTER_DURATION;             // 1800ms from constants
-    const start    = performance.now();                      // High-res timestamp
-
-    /** Recursive RAF tick — updates number every frame */
-    const tick = (now) => {
-      const progress = Math.min((now - start) / duration, 1); // 0 → 1
-      const eased    = 1 - Math.pow(1 - progress, 3);         // Cubic ease-out
-      const current  = Math.round(eased * value);             // Interpolated value
-
-      if (numRef.current) numRef.current.textContent = current; // Direct DOM update
-      if (progress < 1)   requestAnimationFrame(tick);          // Continue until done
-    };
-
-    /* Delay start to create stagger effect between cards */
-    const timer = setTimeout(() => requestAnimationFrame(tick), delay);
-    return () => clearTimeout(timer);                          // Cleanup on unmount
-  }, [value, delay]);
+  /* Build segments with computed percentages */
+  const segments = SCORE_BANDS.map(band => {
+    const count = bandCounts[band.key] || 0;                    // Skills in this band
+    const pct   = totalSkills > 0 ? count / totalSkills : 0;   // Fraction of circle
+    const result = { ...band, count, pct, offset: cumulativePct }; // Store offset before advancing
+    cumulativePct += pct;                                        // Advance cumulative
+    return result;
+  });
 
   return (
     <div
-      className="kpi-card"
-      role="listitem"
-      style={{
-        '--kpi-color': color,                                  // CSS custom prop for glow
-        animation:     `fadeUp 0.45s ease ${delay}ms both`,   // Staggered entrance
-      }}
-      aria-label={`${label}: ${value}`}
+      className="ov-panel ov-panel--score-dist"
+      aria-label="Score distribution across proficiency bands"
     >
-      {/* Icon */}
-      <div className="kpi-card__icon" aria-hidden="true">{icon}</div>
-
-      {/* Animated count-up number */}
-      <div
-        ref={numRef}
-        className="kpi-card__num"
-        style={{ color }}
-        aria-live="polite"
-      >
-        {value}
-      </div>
-
-      {/* Label */}
-      <div className="kpi-card__label">{label}</div>
-    </div>
-  );
-}
-
-/* ════════════════════════════════════════════════════════════════
-   SUB-COMPONENT: TopSkillsPanel
-   Glass panel with animated horizontal skill bars
-════════════════════════════════════════════════════════════════ */
-/**
- * @param {{ skills: Array }} props
- */
-function TopSkillsPanel({ skills }) {
-
-  const listRef = useRef(null); // Ref to trigger bar animations via IntersectionObserver
-
-  /* Animate bars when panel scrolls into view */
-  useEffect(() => {
-    if (!listRef.current) return;
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach(entry => {
-          if (!entry.isIntersecting) return;
-          /* Set scaleX(1) on all fill bars to trigger CSS transition */
-          entry.target
-            .querySelectorAll('.skill-row__fill')
-            .forEach(fill => { fill.style.transform = 'scaleX(1)'; });
-          observer.unobserve(entry.target);                   // Animate once only
-        });
-      },
-      { threshold: 0.3 }                                      // 30% visible trigger
-    );
-
-    observer.observe(listRef.current);
-    return () => observer.disconnect();
-  }, [skills]);
-
-  return (
-    <div className="top-skills-panel" aria-label="Top skills">
-
-      {/* Header row */}
-      <div className="top-skills-panel__header">
-        <span className="top-skills-panel__title">Top Skills</span>
-        <a href="#skills" className="btn btn--ghost btn--sm">View All →</a>
-      </div>
-
-      {/* Skill bar rows — top 5 */}
-      <div className="top-skills-panel__list" ref={listRef}>
-        {skills.slice(0, 5).map((skill, i) => (
-          <div key={skill.skill_name} className="skill-row">
-
-            {/* Skill name */}
-            <span className="skill-row__name">{skill.skill_name}</span>
-
-            {/* Progress track + animated fill */}
-            <div className="skill-row__track">
-              <div
-                className="skill-row__fill"
-                style={{
-                  width:      `${skill.score}%`,
-                  background: skill.color
-                    ? `linear-gradient(90deg, ${skill.color}, var(--cyan))`
-                    : `linear-gradient(90deg, ${CHART_COLORS[i % CHART_COLORS.length]}, var(--cyan))`,
-                }}
-              />
-            </div>
-
-            {/* Score percentage */}
-            <span className="skill-row__pct">{skill.score}%</span>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-/* ════════════════════════════════════════════════════════════════
-   BENTO PANEL 1: PerformancePanel
-   SVG line chart + animated bar chart + 3 KPI numbers
-   Matches "Performance Metrics" in screenshot (left tall panel)
-════════════════════════════════════════════════════════════════ */
-/**
- * @param {{ expYears, score, projectCount }} props
- */
-function PerformancePanel({ expYears, score, projectCount }) {
-
-  const barsRef = useRef(null); // Ref for bar height animation
-
-  /* Animate bar heights upward after mount */
-  useEffect(() => {
-    if (!barsRef.current) return;
-
-    const bars = barsRef.current.querySelectorAll('.ov-bar'); // Get all bar elements
-
-    bars.forEach((bar, i) => {
-      const targetH = bar.dataset.height;                     // Read from data attribute
-      bar.style.height = '0px';                               // Start collapsed
-
-      /* Stagger each bar's growth by 80ms */
-      setTimeout(() => {
-        bar.style.transition = 'height 0.9s cubic-bezier(0.16,1,0.3,1)';
-        bar.style.height     = targetH;                       // Animate to target height
-      }, 450 + i * 80);
-    });
-  }, []);
-
-  return (
-    <div className="ov-panel ov-panel--perf" aria-label="Performance metrics">
-
-      {/* Water drop decorations */}
-      <div className="ov-drops" aria-hidden="true">
-        <div className="ov-drop ov-drop--a" />
-        <div className="ov-drop ov-drop--b" />
-        <div className="ov-drop ov-drop--c" />
-        <div className="ov-drop ov-drop--d" />
-      </div>
-
       {/* Panel header */}
       <div className="ov-panel__header">
-        <span className="ov-panel__title">Performance Metrics</span>
+        <span className="ov-panel__title">Score Distribution</span>
         <button className="ov-panel__menu" aria-label="Panel options">···</button>
       </div>
-
-      {/* ── SVG Line Chart ── */}
-      <div className="ov-chart-area" role="img" aria-label="Performance trend line">
-        <svg
-          className="ov-chart-svg"
-          viewBox="0 0 400 110"
-          preserveAspectRatio="none"
-        >
-          <defs>
-            {/* Gradient fill under the trend line */}
-            <linearGradient id="ovGrad" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%"   stopColor="var(--cyan)" stopOpacity="0.55" />
-              <stop offset="100%" stopColor="var(--cyan)" stopOpacity="0"    />
-            </linearGradient>
-          </defs>
-
-          {/* Area fill */}
-          <path
-            className="ov-chart-fill"
-            d="M0,88 C30,82 55,68 80,63
-               C105,58 130,48 160,36
-               C190,24 215,28 240,23
-               C265,18 290,33 320,26
-               C350,20 375,15 400,10
-               L400,110 L0,110 Z"
-          />
-
-          {/* Animated trend line — draws via stroke-dashoffset */}
-          <path
-            className="ov-chart-line"
-            d="M0,88 C30,82 55,68 80,63
-               C105,58 130,48 160,36
-               C190,24 215,28 240,23
-               C265,18 290,33 320,26
-               C350,20 375,15 400,10"
-          />
-        </svg>
-      </div>
-
-      {/* ── Bar Chart — 7 groups of cyan + orange ── */}
-      <div
-        className="ov-bars"
-        ref={barsRef}
-        role="img"
-        aria-label="Monthly performance bars"
-      >
-        {BAR_DATA.map((group, i) => (
-          <div key={i} className="ov-bar-group">
-            {/* Cyan bar */}
-            <div
-              className="ov-bar ov-bar--cyan"
-              data-height={`${Math.round((group.a / 100) * BAR_MAX_PX)}px`}
-              style={{ height: '0px' }}
-              aria-hidden="true"
-            />
-            {/* Orange bar */}
-            <div
-              className="ov-bar ov-bar--orange"
-              data-height={`${Math.round((group.b / 100) * BAR_MAX_PX)}px`}
-              style={{ height: '0px' }}
-              aria-hidden="true"
-            />
-          </div>
-        ))}
-      </div>
-
-      {/* ── KPI Numbers row ── */}
-      <div className="ov-kpis" role="list">
-
-        {/* Experience years */}
-        <div className="ov-kpi" role="listitem">
-          <div className="ov-kpi__num" style={{ color: 'var(--cyan)' }}>
-            {expYears > 0 ? `${expYears}+` : '—'}
-          </div>
-          <div className="ov-kpi__label">Yrs Exp</div>
-        </div>
-
-        <div className="ov-kpi__sep" aria-hidden="true" />
-
-        {/* Overall score */}
-        <div className="ov-kpi" role="listitem">
-          <div className="ov-kpi__num" style={{ color: 'var(--blue)' }}>
-            {score > 0 ? `${Math.round(score)}%` : '—'}
-          </div>
-          <div className="ov-kpi__label">Score</div>
-        </div>
-
-        <div className="ov-kpi__sep" aria-hidden="true" />
-
-        {/* Total projects */}
-        <div className="ov-kpi" role="listitem">
-          <div className="ov-kpi__num" style={{ color: 'var(--green)' }}>
-            {projectCount}
-          </div>
-          <div className="ov-kpi__label">Projects</div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-/* ════════════════════════════════════════════════════════════════
-   BENTO PANEL 2: ActiveProjectsPanel
-   Horizontal progress bars for top 3 active projects
-   Matches "Active Projects" in screenshot (center top)
-════════════════════════════════════════════════════════════════ */
-/**
- * @param {{ projects: Array }} props
- */
-function ActiveProjectsPanel({ projects }) {
-
-  const listRef = useRef(null); // Ref for IntersectionObserver trigger
-
-  /* Animate bar widths when panel enters viewport */
-  useEffect(() => {
-    if (!listRef.current) return;
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach(entry => {
-          if (!entry.isIntersecting) return;
-
-          /* Set each fill bar's width from its data attribute */
-          entry.target
-            .querySelectorAll('.ov-proj-row__fill')
-            .forEach(fill => {
-              fill.style.width = fill.dataset.pct;            // Trigger CSS transition
-            });
-          observer.unobserve(entry.target);
-        });
-      },
-      { threshold: 0.25 }
-    );
-
-    observer.observe(listRef.current);
-    return () => observer.disconnect();
-  }, [projects]);
-
-  return (
-    <div className="ov-panel ov-panel--projects" aria-label="Active projects">
-
-      {/* Panel header */}
-      <div className="ov-panel__header">
-        <span className="ov-panel__title">Active Projects</span>
-        <button className="ov-panel__menu" aria-label="Panel options">···</button>
-      </div>
-
-      {/* Project bar rows */}
-      <div ref={listRef}>
-        {projects.map((project, i) => (
-          <div key={i} className="ov-proj-row">
-
-            {/* Project name */}
-            <span className="ov-proj-row__name">{project.name}</span>
-
-            {/* Animated progress track */}
-            <div className="ov-proj-row__track">
-              <div
-                className="ov-proj-row__fill"
-                data-pct={`${project.pct}%`}                 /* Used by IntersectionObserver */
-                style={{
-                  width:      '0%',                          /* Starts at 0, animated to data-pct */
-                  background: project.color,
-                  transition: 'width 1.3s cubic-bezier(0.16, 1, 0.3, 1)',
-                }}
-              />
-            </div>
-
-            {/* Percentage label */}
-            <span className="ov-proj-row__pct">{project.pct}%</span>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-/* ════════════════════════════════════════════════════════════════
-   BENTO PANEL 3: TasksDonutPanel
-   SVG donut chart with legend rows
-   Matches "Tasks Status" donut in screenshot (right tall panel)
-════════════════════════════════════════════════════════════════ */
-/**
- * @param {{ analytics: object|null }} props
- */
-function TasksDonutPanel({ analytics }) {
-
-  /* Extract goals-by-status from analytics or use defaults */
-  const goalsByStatus = analytics?.goals_by_status || null;
-
-  /* Build segment data with real or default percentages */
-  const segments = DONUT_SEGMENTS.map(seg => ({
-    ...seg,
-    pct: goalsByStatus?.[seg.key] ?? seg.defaultPct,          // Real data or fallback
-  }));
-
-  /* Total for normalizing */
-  const total = segments.reduce((sum, s) => sum + s.pct, 0) || 100;
-
-  /* SVG donut math */
-  const RADIUS      = 54;                                      // px — donut ring radius
-  const CIRCUMF     = 2 * Math.PI * RADIUS;                   // Full circle circumference
-
-  let cumulativePct = 0; // Running total for segment offset calculation
-
-  return (
-    <div className="ov-panel ov-panel--donut" aria-label="Tasks status distribution">
-
-      {/* Water drop decorations */}
-      <div className="ov-drops" aria-hidden="true">
-        <div className="ov-drop ov-drop--a" />
-        <div className="ov-drop ov-drop--c" />
-      </div>
-
-      {/* Panel header */}
-      <div className="ov-panel__header">
-        <span className="ov-panel__title">Tasks Status</span>
-        <button className="ov-panel__menu" aria-label="Panel options">···</button>
-      </div>
+      <p className="ov-panel__subtitle">Skills spread across bands</p>
 
       {/* ── SVG Donut ── */}
       <div className="ov-donut-wrap" aria-hidden="true">
         <svg
           className="ov-donut-svg"
           viewBox="0 0 120 120"
+          role="img"
+          aria-label="Donut chart showing skill score distribution"
         >
-          {/* Track ring — full circle in background */}
+          {/* Background track ring — full circle at low opacity */}
           <circle
             className="ov-donut-track"
             cx="60" cy="60"
             r={RADIUS}
+            fill="none"
+            strokeWidth={STROKE}
           />
 
-          {/* Colored segments */}
+          {/* Colored segments — one per band */}
           {segments.map((seg, i) => {
-            const segPct    = (seg.pct / total);               // Fraction of circle
-            const dashArr   = segPct * CIRCUMF;                // Filled length
-            const dashOff   = CIRCUMF - (cumulativePct / total) * CIRCUMF; // Start offset
-            const offset    = cumulativePct;                   // Track running total
-
-            cumulativePct += seg.pct;                          // Advance for next segment
-
+            const dashArr = seg.pct * CIRCUMF;              // Filled arc length
+            const dashOff = CIRCUMF - seg.offset * CIRCUMF; // Offset from top
             return (
               <circle
                 key={seg.key}
-                className="ov-donut-ring"
                 cx="60" cy="60"
                 r={RADIUS}
+                fill="none"
                 stroke={seg.color}
+                strokeWidth={STROKE}
                 strokeDasharray={`${dashArr} ${CIRCUMF}`}
                 strokeDashoffset={dashOff}
+                strokeLinecap="butt"
                 style={{
-                  /* Animate segment draw-in with stagger */
-                  transition: `stroke-dashoffset 1.4s cubic-bezier(0.16,1,0.3,1) ${0.4 + i * 0.2}s`,
+                  transition: `stroke-dashoffset 1.4s cubic-bezier(0.16,1,0.3,1) ${0.3 + i * 0.2}s`,
                 }}
               />
             );
           })}
         </svg>
 
-        {/* Center label */}
-        <div className="ov-donut-center" aria-label={`${total} total tasks`}>
-          <div className="ov-donut-center__num">{total}</div>
+        {/* Center: total skills count */}
+        <div className="ov-donut-center" aria-label={`${totalSkills} total skills`}>
+          <div className="ov-donut-center__num">{totalSkills}</div>
           <div className="ov-donut-center__sub">Total</div>
         </div>
       </div>
 
-      {/* ── Legend rows — In Progress / Done / Backlog ── */}
+      {/* ── Legend rows ── */}
       <div className="ov-donut-legend" role="list">
-        {segments.map(seg => (
-          <div key={seg.key} className="ov-legend-row" role="listitem">
-            {/* Color dot */}
-            <div
-              className="ov-legend-dot"
-              style={{ background: seg.color, boxShadow: `0 0 6px ${seg.color}` }}
-              aria-hidden="true"
-            />
-            {/* Label */}
-            <span className="ov-legend-label">{seg.label}</span>
-            {/* Percentage */}
-            <span className="ov-legend-pct" style={{ color: seg.color }}>
-              {seg.pct}%
-            </span>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-/* ════════════════════════════════════════════════════════════════
-   BENTO PANEL 4: TasksListPanel
-   Avatar + name + percentage + status dot rows
-   Matches "Tasks Status" list in screenshot (center bottom)
-════════════════════════════════════════════════════════════════ */
-/**
- * @param {{ tasks: Array }} props
- */
-function TasksListPanel({ tasks }) {
-
-  /* Fallback demo tasks if no real data */
-  const displayTasks = tasks.length > 0 ? tasks : [
-    { id: 1, name: 'Portfolio Site',   pct: 92, initial: 'P', color: CHART_COLORS[0] },
-    { id: 2, name: 'API Integration',  pct: 78, initial: 'A', color: CHART_COLORS[1] },
-    { id: 3, name: 'Mobile UI',        pct: 45, initial: 'M', color: CHART_COLORS[2] },
-    { id: 4, name: 'Testing Suite',    pct: 30, initial: 'T', color: CHART_COLORS[3] },
-  ];
-
-  return (
-    <div className="ov-panel ov-panel--tasks" aria-label="Tasks list">
-
-      {/* Panel header */}
-      <div className="ov-panel__header">
-        <span className="ov-panel__title">Tasks Status</span>
-        <button className="ov-panel__menu" aria-label="Panel options">···</button>
-      </div>
-
-      {/* Task rows */}
-      <div role="list">
-        {displayTasks.map(task => {
-          /* Status dot color: green ≥ 60, orange ≥ 30, red < 30 */
-          const dotColor = task.pct >= 60
-            ? 'var(--green)'
-            : task.pct >= 30
-              ? 'var(--orange)'
-              : 'var(--red)';
+        {segments.map(seg => {
+          const pctDisplay = totalSkills > 0
+            ? Math.round((seg.count / totalSkills) * 100)
+            : 0; // Percentage for this band
 
           return (
-            <div key={task.id} className="ov-task-row" role="listitem">
-
-              {/* Avatar circle with initial */}
+            <div key={seg.key} className="ov-legend-row" role="listitem">
+              {/* Colored dot */}
               <div
-                className="ov-task-avatar"
-                style={{ background: task.color }}
+                className="ov-legend-dot"
+                style={{ background: seg.color, boxShadow: `0 0 6px ${seg.color}` }}
                 aria-hidden="true"
-              >
-                {task.initial}
-              </div>
-
-              {/* Task name */}
-              <span className="ov-task-name" title={task.name}>
-                {task.name}
-              </span>
-
-              {/* Progress percentage */}
-              <span className="ov-task-pct">{task.pct}%</span>
-
-              {/* Status dot */}
-              <div
-                className="ov-task-dot"
-                style={{ background: dotColor, boxShadow: `0 0 6px ${dotColor}` }}
-                aria-label={`Progress: ${task.pct}%`}
               />
+              {/* Band label */}
+              <span className="ov-legend-label">{seg.label}</span>
+              {/* Score range */}
+              <span className="ov-legend-range">{seg.min}–{seg.max}%</span>
+              {/* Percentage */}
+              <span className="ov-legend-pct" style={{ color: seg.color }}>
+                {seg.count}
+              </span>
             </div>
           );
         })}
@@ -837,114 +406,385 @@ function TasksListPanel({ tasks }) {
 }
 
 /* ════════════════════════════════════════════════════════════════
-   BENTO PANEL 5: TeamActivityPanel
-   Full-width slider with prev/next + dot indicators
-   Auto-advances every 5 seconds — matches screenshot bottom bar
+   SUB-COMPONENT: SkillsByCategoryPanel — Col 2 Bottom
+   Horizontal bars showing average score per domain/category
 ════════════════════════════════════════════════════════════════ */
-function TeamActivityPanel() {
+/**
+ * SkillsByCategoryPanel — horizontal bars for category averages.
+ * @param {{ radarData: Array }} props
+ */
+function SkillsByCategoryPanel({ radarData }) {
 
-  const [current,     setCurrent]     = useState(0);       // Active slide index
-  const [isAnimating, setIsAnimating] = useState(false);   // Lock during transition
+  const panelRef = useRef(null); // Ref for IntersectionObserver animation trigger
 
-  /* Navigate to a specific slide index */
-  const goTo = useCallback((index) => {
-    if (isAnimating) return;                                 // Block rapid clicks
-    setIsAnimating(true);
-    setCurrent(index);
-    setTimeout(() => setIsAnimating(false), 380);           // Unlock after animation
-  }, [isAnimating]);
-
-  /* Advance to next slide (wraps around) */
-  const goNext = useCallback(() => {
-    goTo((current + 1) % ACTIVITIES.length);
-  }, [current, goTo]);
-
-  /* Go to previous slide */
-  const goPrev = useCallback(() => {
-    goTo((current - 1 + ACTIVITIES.length) % ACTIVITIES.length);
-  }, [current, goTo]);
-
-  /* Auto-advance every 5 seconds */
+  /* Animate bar widths when panel scrolls into view */
   useEffect(() => {
-    const timer = setInterval(goNext, 5000);
-    return () => clearInterval(timer);                       // Cleanup on unmount
-  }, [goNext]);
+    if (!panelRef.current) return;
 
-  const active = ACTIVITIES[current];                        // Current slide data
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach(entry => {
+          if (!entry.isIntersecting) return;
+          /* Set each fill bar's width from data attribute */
+          entry.target
+            .querySelectorAll('.ov-proj-row__fill')
+            .forEach(fill => {
+              fill.style.width = fill.dataset.pct; // Trigger CSS transition
+            });
+          observer.unobserve(entry.target); // Animate once only
+        });
+      },
+      { threshold: 0.20 } // Trigger when 20% visible
+    );
+
+    observer.observe(panelRef.current);
+    return () => observer.disconnect(); // Cleanup on unmount
+  }, [radarData]); // Re-observe when data changes
+
+  /* Fallback demo data when API returns nothing */
+  const displayData = radarData.length > 0 ? radarData : [
+    { category: 'Frontend',  avg_score: 82 },
+    { category: 'Backend',   avg_score: 75 },
+    { category: 'DevOps',    avg_score: 60 },
+    { category: 'Database',  avg_score: 68 },
+    { category: 'Mobile',    avg_score: 45 },
+  ];
 
   return (
-    <div className="ov-panel ov-panel--activity" aria-label="Team activity feed">
+    <div
+      className="ov-panel ov-panel--cat"
+      ref={panelRef}
+      aria-label="Skills by category panel"
+    >
+      {/* Panel header */}
+      <div className="ov-panel__header">
+        <span className="ov-panel__title">Skills by Category</span>
+        <button className="ov-panel__menu" aria-label="Panel options">···</button>
+      </div>
+      <p className="ov-panel__subtitle">Average score per domain</p>
 
-      {/* ── Panel header with slider controls ── */}
-      <div className="ov-activity-header">
-        <span className="ov-activity-title">Team Activity</span>
+      {/* Category bar rows */}
+      <div role="list" aria-label="Category average scores">
+        {displayData.map((cat, i) => {
+          const color = CHART_COLORS[i % CHART_COLORS.length]; // Color per category
+          return (
+            <div
+              key={cat.category}
+              className="ov-proj-row"
+              role="listitem"
+              aria-label={`${cat.category}: ${cat.avg_score}%`}
+            >
+              {/* Category name */}
+              <span className="ov-proj-row__name">{cat.category}</span>
 
-        {/* Navigation controls */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--s2)' }}
-          role="group" aria-label="Slide navigation"
-        >
-          {/* Previous button */}
-          <button
-            className="ov-slider-btn"
-            onClick={goPrev}
-            aria-label="Previous activity"
-            disabled={isAnimating}
+              {/* Animated progress track */}
+              <div className="ov-proj-row__track">
+                <div
+                  className="ov-proj-row__fill"
+                  data-pct={`${cat.avg_score}%`}      // Used by IntersectionObserver
+                  style={{
+                    width:      '0%',                 // Starts at 0, animated to data-pct
+                    background: `linear-gradient(90deg, ${color}, var(--cyan))`,
+                    transition: 'width 1.3s cubic-bezier(0.16, 1, 0.3, 1)',
+                  }}
+                  role="progressbar"
+                  aria-valuenow={cat.avg_score}
+                  aria-valuemin={0}
+                  aria-valuemax={100}
+                />
+              </div>
+
+              {/* Percentage label */}
+              <span className="ov-proj-row__pct" style={{ color }}>
+                {cat.avg_score}%
+              </span>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+/* ════════════════════════════════════════════════════════════════
+   SUB-COMPONENT: SkillScoresPanel — Col 3
+   Top 12 skills sorted by proficiency band
+   Excellent (80-100%) / Good (60-79%) / Growing (40-59%) / Learning (0-39%)
+════════════════════════════════════════════════════════════════ */
+/**
+ * SkillScoresPanel — tall right panel with top 12 skills by score.
+ * Uses IntersectionObserver to animate fill bars on scroll.
+ * @param {{ skills: Array }} props
+ */
+function SkillScoresPanel({ skills }) {
+
+  const listRef  = useRef(null);                // Ref for observer trigger
+  const [visible, setVisible] = useState(false); // Controls bar visibility class
+
+  /* Trigger animations when panel enters viewport */
+  useEffect(() => {
+    if (!listRef.current) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          setVisible(true);       // Activate fill bars
+          observer.disconnect();  // Only once
+        }
+      },
+      { threshold: 0.15 } // 15% visible trigger
+    );
+
+    observer.observe(listRef.current);
+    return () => observer.disconnect(); // Cleanup
+  }, [skills]);
+
+  /**
+   * Returns the band config for a given score
+   * @param {number} score - Skill score 0–100
+   * @returns {object} Band config with label and color
+   */
+  const getBand = (score) => {
+    return SCORE_BANDS.find(b => score >= b.min && score <= b.max)
+      || SCORE_BANDS[SCORE_BANDS.length - 1]; // Fallback to last band
+  };
+
+  /* Fallback demo data when API returns nothing */
+  const displaySkills = skills.length > 0 ? skills : [
+    { skill_name: 'JavaScript', score: 90 },
+    { skill_name: 'Python',     score: 85 },
+    { skill_name: 'React',      score: 82 },
+    { skill_name: 'Flask',      score: 78 },
+    { skill_name: 'MongoDB',    score: 74 },
+    { skill_name: 'CSS3',       score: 70 },
+    { skill_name: 'Git',        score: 65 },
+    { skill_name: 'Docker',     score: 58 },
+    { skill_name: 'TypeScript', score: 55 },
+    { skill_name: 'PostgreSQL', score: 50 },
+    { skill_name: 'Redis',      score: 42 },
+    { skill_name: 'Kubernetes', score: 35 },
+  ];
+
+  return (
+    <div
+      className="ov-panel ov-panel--skill-scores"
+      ref={listRef}
+      aria-label="Top 12 skill scores"
+    >
+      {/* Panel header */}
+      <div className="ov-panel__header">
+        <span className="ov-panel__title">Skill Scores</span>
+        <button className="ov-panel__menu" aria-label="Panel options">···</button>
+      </div>
+      <p className="ov-panel__subtitle">Top 12 · Sorted by proficiency</p>
+
+      {/* ── Band legend pills ── */}
+      <div className="ov-score-legend" role="list" aria-label="Score band legend">
+        {SCORE_BANDS.map(band => (
+          <span
+            key={band.key}
+            className="ov-score-band-pill"
+            role="listitem"
+            style={{ color: band.color, borderColor: `${band.color}55` }}
           >
-            ‹
-          </button>
-
-          {/* Dot indicators */}
-          <div className="ov-slider-dots" role="tablist">
-            {ACTIVITIES.map((_, i) => (
-              <button
-                key={i}
-                className={`ov-slider-dot ${i === current ? 'ov-slider-dot--active' : ''}`}
-                onClick={() => goTo(i)}
-                role="tab"
-                aria-selected={i === current}
-                aria-label={`Activity ${i + 1}`}
-              />
-            ))}
-          </div>
-
-          {/* Next button */}
-          <button
-            className="ov-slider-btn"
-            onClick={goNext}
-            aria-label="Next activity"
-            disabled={isAnimating}
-          >
-            ›
-          </button>
-        </div>
-
-        {/* Three-dot menu */}
-        <button className="ov-panel__menu" aria-label="Activity options">···</button>
+            {band.label} {band.min}–{band.max}%
+          </span>
+        ))}
       </div>
 
-      {/* ── Slide content — key forces re-mount = re-animation ── */}
-      <div
-        className="ov-activity-content"
-        key={current}
-        aria-live="polite"
-        aria-atomic="true"
-      >
-        {/* Avatar square with gradient */}
-        <div
-          className="ov-activity-avatar"
+      {/* ── Skill rows list ── */}
+      <div className="ov-skill-list" role="list" aria-label="Top skills list">
+        {displaySkills.map((skill, i) => {
+          const band = getBand(skill.score || 0); // Get band for this score
+          return (
+            <div
+              key={skill._id || skill.skill_name || i}
+              className="ov-skill-row"
+              role="listitem"
+              aria-label={`${skill.skill_name}: ${skill.score}% — ${band.label}`}
+              style={{ animationDelay: `${i * 60}ms` }} // Stagger entrance
+            >
+              {/* Skill name */}
+              <span className="ov-skill-row__name" title={skill.skill_name}>
+                {skill.skill_name}
+              </span>
+
+              {/* Progress track */}
+              <div className="ov-skill-row__track">
+                <div
+                  className={`ov-skill-fill ${visible ? 'ov-skill-fill--visible' : ''}`}
+                  style={{
+                    width:            `${skill.score || 0}%`,                  // Fill width
+                    background:       `linear-gradient(90deg, ${band.color}, var(--cyan))`, // Band gradient
+                    transitionDelay:  `${0.3 + i * 0.06}s`,                   // Stagger timing
+                  }}
+                  role="progressbar"
+                  aria-valuenow={skill.score}
+                  aria-valuemin={0}
+                  aria-valuemax={100}
+                />
+              </div>
+
+              {/* Score + band label */}
+              <div className="ov-skill-row__score" style={{ color: band.color }}>
+                {skill.score || 0}%
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+/* ════════════════════════════════════════════════════════════════
+   SUB-COMPONENT: PortfolioRecordsPanel — Full Width
+   Shows total document counts per model from analytics.counts
+════════════════════════════════════════════════════════════════ */
+/**
+ * PortfolioRecordsPanel — horizontal strip with count per entity.
+ * Matches wireframe: "Portfolio Records — Total documents per model"
+ * @param {{ counts: object }} props
+ */
+function PortfolioRecordsPanel({ counts }) {
+
+  return (
+    <div
+      className="ov-panel ov-panel--records"
+      aria-label="Portfolio records — total documents per model"
+    >
+      {/* Panel header */}
+      <div className="ov-panel__header">
+        <span className="ov-panel__title">Portfolio Records</span>
+        <span
           style={{
-            background: `linear-gradient(135deg, ${active.color}, var(--blue))`,
+            fontFamily:    'var(--font-mono)',
+            fontSize:      '0.60rem',
+            color:         'var(--text-muted)',
+            letterSpacing: '0.08em',
           }}
-          aria-hidden="true"
         >
-          {active.initials}
-        </div>
+          Total documents per model
+        </span>
+      </div>
 
-        {/* Activity description */}
-        <p className="ov-activity-text">{active.text}</p>
+      {/* Record grid — one cell per model */}
+      <div className="ov-records-grid" role="list">
+        {RECORD_ITEMS.map((item, i) => {
+          const count = counts[item.key] || 0; // Count from analytics or 0
+          return (
+            <div
+              key={item.key}
+              className="ov-record-item"
+              role="listitem"
+              aria-label={`${item.label}: ${count}`}
+              style={{ '--rec-color': item.color }} // CSS custom prop for glow
+            >
+              {/* Color accent line at top */}
+              <div
+                style={{
+                  position:   'absolute',
+                  top:        0,
+                  left:       0,
+                  right:      0,
+                  height:     '2px',
+                  background: `linear-gradient(90deg, ${item.color}, transparent)`,
+                }}
+                aria-hidden="true"
+              />
 
-        {/* Timestamp */}
-        <span className="ov-activity-time">{active.time}</span>
+              {/* Icon */}
+              <div style={{ fontSize: '1rem', lineHeight: 1 }} aria-hidden="true">
+                {item.icon}
+              </div>
+
+              {/* Big count number */}
+              <div
+                className="ov-record-item__num"
+                style={{ color: item.color }}
+              >
+                {count}
+              </div>
+
+              {/* Model label */}
+              <div className="ov-record-item__label">{item.label}</div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+/* ════════════════════════════════════════════════════════════════
+   SUB-COMPONENT: LanguagesPanel — Full Width
+   Language cards with emoji flag + name + proficiency level badge
+════════════════════════════════════════════════════════════════ */
+/**
+ * LanguagesPanel — grid of language cards.
+ * @param {{ languages: Array }} props
+ */
+function LanguagesPanel({ languages }) {
+
+  /* Fallback demo languages when API returns empty */
+  const displayLangs = languages.length > 0 ? languages : [
+    { language: 'Arabic',  flag: '🇸🇦', level: 'native',       proficiency: 'Native'       },
+    { language: 'English', flag: '🇬🇧', level: 'intermediate',  proficiency: 'Intermediate' },
+  ];
+
+  return (
+    <div
+      className="ov-panel ov-panel--languages"
+      aria-label="Languages panel"
+    >
+      {/* Panel header */}
+      <div className="ov-panel__header">
+        <span className="ov-panel__title">Languages</span>
+        <span
+          style={{
+            fontFamily:    'var(--font-mono)',
+            fontSize:      '0.58rem',
+            color:         'var(--text-muted)',
+            letterSpacing: '0.08em',
+          }}
+        >
+          Communication & literacy levels
+        </span>
+      </div>
+
+      {/* Language card grid */}
+      <div className="ov-lang-grid" role="list" aria-label="Languages list">
+        {displayLangs.map((lang, i) => {
+          const levelKey  = (lang.level || '').toLowerCase(); // Normalize level string
+          const langColor = LANG_LEVEL_COLORS[levelKey]
+            || CHART_COLORS[i % CHART_COLORS.length];         // Color from level or palette
+
+          return (
+            <div
+              key={lang.language || i}
+              className="ov-lang-card"
+              role="listitem"
+              aria-label={`${lang.language}: ${lang.proficiency || lang.level}`}
+              style={{ '--lang-color': langColor }} // CSS custom prop for hover glow
+            >
+              {/* Flag emoji */}
+              <div className="ov-lang-card__flag" aria-hidden="true">
+                {lang.flag || '🌐'}
+              </div>
+
+              {/* Language name */}
+              <div className="ov-lang-card__name">{lang.language}</div>
+
+              {/* Proficiency level badge */}
+              <div
+                className="ov-lang-card__level"
+                style={{ color: langColor }}
+              >
+                {lang.proficiency || lang.level || 'N/A'}
+              </div>
+            </div>
+          );
+        })}
       </div>
     </div>
   );
