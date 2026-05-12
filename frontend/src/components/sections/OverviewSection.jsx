@@ -89,12 +89,12 @@ const SOCIAL_ICONS = {
 /* ── Social platform config — matches API social_links keys ──── */
 /* Add or remove platforms here to control what appears in UI     */
 const SOCIAL_PLATFORMS_CONFIG = [
-  { key: 'github',    label: 'GitHub',    color: '#ffffff' },
+  { key: 'github',    label: 'GitHub',    color: '#000000' },
   { key: 'linkedin',  label: 'LinkedIn',  color: '#0A66C2' },
   { key: 'twitter',   label: 'X',         color: '#ffffff' },
   { key: 'instagram', label: 'Instagram', color: '#E1306C' },
   { key: 'youtube',   label: 'YouTube',   color: '#FF0000' },
-  { key: 'medium',    label: 'Medium',    color: '#ffffff' },
+  { key: 'medium',    label: 'Medium',    color: '#000000' },
   { key: 'facebook',  label: 'Facebook',  color: '#1877F2' },
   { key: 'telegram',  label: 'Telegram',  color: '#26A5E4' },
 ];
@@ -149,7 +149,7 @@ export default function OverviewSection({ profile, analytics }) {
   const bio       = profile?.bio                    || '';                 // Bio text
   const avatar    = profile?.primary_avatar         || null;              // Cloudinary URL
   const available = profile?.is_available_for_hire  || false;            // Hire status
-  const social    = profile?.social_links           || {};                // Social URLs object
+  const social    = profile?.social           || {};                // Social URLs object
   const languages = profile?.languages              || [];               // Languages array
 
   /* ── Analytics derived values ─────────────────────────────────── */
@@ -248,7 +248,7 @@ function ProfileCardPanel({ fullName, title, bio, avatar, available, social }) {
   /* ── Normalize social links — handles nested or flat API formats ── */
   /* Some APIs return { github: { url: '...' } } others { github: '...' } */
   const getSocialUrl = (key) => {
-    const val = social[key];                    // Direct access by key
+    const val = social[key] || social[key.toLowerCase()];                    // Direct access by key
     if (!val) return null;                      // Key doesn't exist
     if (typeof val === 'string') return val;    // Flat format: { github: 'https://...' }
     if (typeof val === 'object') return val.url || val.link || val.href || null; // Nested format
@@ -287,34 +287,37 @@ function ProfileCardPanel({ fullName, title, bio, avatar, available, social }) {
       {/* ── Full bio — no truncation ── */}
       {bio && <p className="ov-profile__bio">{bio}</p>}
 
-      {/* ── Social links ── */}
-      <div className="ov-profile__social" role="list" aria-label="Social links">
-        {SOCIAL_PLATFORMS_CONFIG.map(platform => {
-          const url  = getSocialUrl(platform.key); // Try to get URL safely
-          const icon = SOCIAL_ICONS[platform.key]; // SVG icon element
-          if (!url || !icon) return null;          // Skip if missing
-          return (
-                <a
-              key={platform.key}
-              href={url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="ov-social-link"
-              role="listitem"
-              aria-label={`${platform.label} profile`}
-              style={{ '--social-color': platform.color }}
-            >
-              <span
-                className="ov-social-link__icon"
-                aria-hidden="true"
-                style={{ color: platform.color }}
-              >
-                {icon}
-              </span>
-              {platform.label}
-            </a>
-          );
-        })}
+      {/* ── Luxury Social links ── */}
+<div className="ov-profile__social--luxury" role="list" aria-label="Social links">
+  {SOCIAL_PLATFORMS_CONFIG.map(platform => {
+    const url  = getSocialUrl(platform.key); // Safely get URL
+    const icon = SOCIAL_ICONS[platform.key]; // Your SVG icons
+
+    if (!url || !icon) return null;          // Skip if missing
+
+    return (
+      <a
+        key={platform.key}
+        href={url}
+        target="_blank"
+        rel="noopener noreferrer"
+        /* Added 'luxury' class and dynamic platform key for specific colors */
+        className={`ov-social-link--luxury ${platform.key}`}
+        role="listitem"
+        aria-label={`${platform.label} profile`}
+        /* Keeping your color variable for the glow effect if needed */
+        style={{ '--social-color': platform.color }}
+      >
+        <span
+          className="ov-social-link__icon--luxury"
+          aria-hidden="true"
+        >
+          {icon}
+        </span>
+        {/* Label removed to match the minimalist video style */}
+      </a>
+    );
+  })}
 
         {/* Fallback message when social object is completely empty */}
         {Object.keys(social).length === 0 && (

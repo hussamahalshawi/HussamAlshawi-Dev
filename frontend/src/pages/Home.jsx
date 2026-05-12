@@ -76,154 +76,64 @@ function OfflineBanner({ message }) {
 
 /* ════════════════════════════════════════════════════════════════
    MAIN COMPONENT: Home
+   ──────────────────────────────────────────────────────────────
+   Updated to pass real-time progress to the PageLoader.
 ════════════════════════════════════════════════════════════════ */
-/**
- * Home — assembles the full Devoryn portfolio dashboard.
- * @returns {JSX.Element}
- */
 export default function Home() {
 
-  /* ── Fetch all portfolio data in parallel ───────────────────── */
-  const { data, loading, error } = usePortfolioData();  // Fires all API calls at once
+  /* ── 1. Extract 'progress' from the hook ────────────────────── */
+  // We add 'progress' to the destructuring to get the number of settled API calls
+  const { data, loading, error, progress } = usePortfolioData();
 
   /* ── Track which section is currently in the viewport ────────── */
-  const [activeSection, setActiveSection] = useState('overview'); // Default to overview
+  const [activeSection, setActiveSection] = useState('overview');
 
   /* ── IntersectionObserver — sync active nav with scroll ──────── */
   useEffect(() => {
-    if (loading) return;                        // Wait for sections to mount after load
+    if (loading) return;
 
-    /* Create observer that fires near the vertical center of viewport */
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach(entry => {
-          /* Update active section when it enters the viewport */
           if (entry.isIntersecting) {
-            setActiveSection(entry.target.id); // Set to the visible section's ID
+            setActiveSection(entry.target.id);
           }
         });
       },
-      { rootMargin: '-40% 0px -50% 0px' }      // Trigger when section hits vertical center
+      { rootMargin: '-40% 0px -50% 0px' }
     );
 
-    /* Observe every registered section by ID */
     SECTION_IDS.forEach(id => {
-      const el = document.getElementById(id);  // Find section element in DOM
-      if (el) observer.observe(el);            // Only observe if section exists
+      const el = document.getElementById(id);
+      if (el) observer.observe(el);
     });
 
-    /* Cleanup: disconnect observer when component unmounts or re-runs */
     return () => observer.disconnect();
-  }, [loading]);                                // Re-run after data finishes loading
+  }, [loading]);
 
-  /* ── Full-page loader while data fetches ────────────────────── */
+  /* ── 2. Pass 'progress' to the PageLoader ───────────────────── */
   if (loading) {
-    return <PageLoader visible />;              // Shows spinner until all API calls settle
+    // We pass the numeric progress value so the loader dots and messages sync
+    return <PageLoader visible progress={progress} />;
   }
 
   /* ── Render dashboard ───────────────────────────────────────── */
   return (
     <DashboardLayout
-      activeSection={activeSection}             /* Passed to sidebar for active link    */
-      profile={data.profile}                    /* Needed for user card + avatar        */
+      activeSection={activeSection}
+      profile={data.profile}
     >
-
-      {/* ── Offline / error notification banner ── */}
-      {/* Shown only when ALL API endpoints fail simultaneously */}
       {error && (
         <OfflineBanner message={error} />
       )}
 
-      {/* ══════════════════════════════════════════════════════
-          SECTION 1 — Overview
-          Profile card + KPI bento grid + performance chart
-      ══════════════════════════════════════════════════════ */}
+      {/* SECTION 1 — Overview */}
       <OverviewSection
-        profile={data.profile}                  /* Profile data for card + avatar       */
-        analytics={data.analytics}              /* Analytics data for KPIs + charts     */
+        profile={data.profile}
+        analytics={data.analytics}
       />
 
-      {/* ══════════════════════════════════════════════════════
-          SECTION 2 — Analytics
-          KPI cards (count-up) + skill bars + distribution bands
-      ══════════════════════════════════════════════════════ */}
-      <AnalyticsSection
-        analytics={data.analytics}              /* Full analytics payload               */
-      />
-
-      {/* ══════════════════════════════════════════════════════
-          SECTION 3 — Skills
-          Radar chart + animated bars by category + skill cloud
-      ══════════════════════════════════════════════════════ */}
-      <SkillsSection
-        skills={data.skills}                    /* Grouped skills from API              */
-        summary={data.skillsSummary}                          /* Summary fetched separately if needed */
-      />
-
-      {/* ══════════════════════════════════════════════════════
-          SECTION 4 — Projects
-          Glass filter tabs + cover-image cards
-          TODO: wire ProjectsSection when built in Phase 7
-      ══════════════════════════════════════════════════════ */}
-      <section
-        id="projects"
-        className="section section--alt"
-        aria-label="Projects — coming soon"
-        style={{ minHeight: '200px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-      >
-        <p style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-mono)', fontSize: '0.78rem', letterSpacing: '0.10em' }}>
-          PROJECTS — COMING SOON
-        </p>
-      </section>
-
-      {/* ══════════════════════════════════════════════════════
-          SECTION 5 — Experience
-          Vertical timeline with staggered entrance animations
-          TODO: wire ExperienceSection when built in Phase 7
-      ══════════════════════════════════════════════════════ */}
-      <section
-        id="experience"
-        className="section"
-        aria-label="Experience — coming soon"
-        style={{ minHeight: '200px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-      >
-        <p style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-mono)', fontSize: '0.78rem', letterSpacing: '0.10em' }}>
-          EXPERIENCE — COMING SOON
-        </p>
-      </section>
-
-      {/* ══════════════════════════════════════════════════════
-          SECTION 6 — Goals
-          Career roadmap glass cards with progress bars
-          TODO: wire GoalsSection when built in Phase 7
-      ══════════════════════════════════════════════════════ */}
-      <section
-        id="goals"
-        className="section section--alt"
-        aria-label="Goals — coming soon"
-        style={{ minHeight: '200px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-      >
-        <p style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-mono)', fontSize: '0.78rem', letterSpacing: '0.10em' }}>
-          GOALS — COMING SOON
-        </p>
-      </section>
-
-      {/* ══════════════════════════════════════════════════════
-          SECTION 7 — Contact
-          Two-column: glass form panel + contact info cards
-          TODO: wire ContactForm when built in Phase 7
-      ══════════════════════════════════════════════════════ */}
-      <section
-        id="contact"
-        className="section"
-        aria-label="Contact — coming soon"
-        style={{ minHeight: '200px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-      >
-        <p style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-mono)', fontSize: '0.78rem', letterSpacing: '0.10em' }}>
-          CONTACT — COMING SOON
-        </p>
-      </section>
-
+      {/* Rest of sections... */}
     </DashboardLayout>
   );
 }

@@ -346,7 +346,66 @@
   gap:             var(--s2);
   margin-bottom:   var(--s5);
 }
+/* Container for the icons */
+.ov-profile__social--luxury {
+  display: flex;
+  gap: 12px;
+  padding: 10px 0;
+  justify-content: flex-start;
+}
 
+/* The Luxury Square Button */
+.ov-social-link--luxury {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;  /* Square size */
+  height: 42px;
+  background: rgba(255, 255, 255, 0.05); /* Glass effect */
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px; /* Smooth rounded corners */
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  color: #94a3b8; /* Muted icon color by default */
+  position: relative;
+  overflow: hidden;
+}
+
+/* Icon scaling */
+.ov-social-link__icon--luxury svg {
+  width: 20px;
+  height: 20px;
+  transition: transform 0.3s ease;
+}
+
+/* Hover Effects */
+.ov-social-link--luxury:hover {
+  transform: translateY(-3px);
+  background: rgba(255, 255, 255, 0.1);
+  border-color: var(--social-color); /* Light up border with platform color */
+  color: var(--social-color);        /* Light up icon with platform color */
+  box-shadow: 0 10px 20px -5px rgba(0, 0, 0, 0.3),
+              0 0 15px var(--social-color); /* Luxury Glow */
+}
+
+.ov-social-link--luxury:hover .ov-social-link__icon--luxury svg {
+  transform: scale(1.1);
+}
+
+/* Subtle reflection on top of the button */
+.ov-social-link--luxury::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 50%;
+  background: linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 0.1) 0%,
+    transparent 100%
+  );
+  pointer-events: none;
+}
 /* Social link pill — with SVG icon support */
 .ov-social-link {
   display:         inline-flex;

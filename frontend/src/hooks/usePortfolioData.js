@@ -22,37 +22,46 @@ const INITIAL_STATE = {
 };
 
 /**
- * usePortfolioData — fetches all portfolio data concurrently.
- * @returns {{ data, loading, error, refetch }}
+ * usePortfolioData — fetches all portfolio data concurrently with progress tracking.
+ * @returns {{ data, loading, error, progress, refetch }}
  */
 export function usePortfolioData() {
-
-  const [data,    setData]    = useState(INITIAL_STATE); // Holds all API responses
-  const [loading, setLoading] = useState(true);          // True while fetching
-  const [error,   setError]   = useState(null);          // null = ok, string = error msg
+  const [data, setData] = useState(INITIAL_STATE);       // Holds all API responses
+  const [loading, setLoading] = useState(true);          // Global loading state
+  const [error, setError] = useState(null);              // API error messages
+  const [progress, setProgress] = useState(0);           // Tracks number of completed requests
 
   /**
-   * fetchAll — core fetch function wrapped in useCallback.
-   * useCallback prevents a new function reference on every render,
-   * which would otherwise cause the useEffect to re-run infinitely.
+   * fetchAll — core fetch function with real-time progress updates.
    */
   const fetchAll = useCallback(async () => {
-    setLoading(true);    // Show loader
-    setError(null);      // Clear previous errors
+    setLoading(true);                                    // Initialize loading
+    setError(null);                                      // Reset previous errors
+    setProgress(0);                                      // Reset progress counter
 
-    /* Fire all requests simultaneously — no waterfall */
-    const results = await Promise.allSettled([
-      profileService.getPublicProfile(),       // Slot 0 — profile
-      analyticsService.getAnalytics(),         // Slot 1 — analytics
-      skillsService.getPublicSkills(),         // Slot 2 — skills
-      projectsService.getProjects(),           // Slot 3 — projects
-      skillsService.getSkillsSummary(),
-    ]);
+    /* Define the list of API tasks to be executed in parallel */
+    const tasks = [
+      profileService.getPublicProfile(),                 // Task 0: Profile data
+      analyticsService.getAnalytics(),                   // Task 1: Analytics data
+      skillsService.getPublicSkills(),                   // Task 2: Skills list
+      projectsService.getProjects(),                     // Task 3: Projects list
+      skillsService.getSkillsSummary(),                  // Task 4: Skills summary
+    ];
 
-    /* Destructure by position (matches order above) */
+    /* Attach a listener to each task to increment progress regardless of success or failure */
+    tasks.forEach(task => {
+      task.finally(() => {
+        setProgress(prev => prev + 1);                   // Increment counter when a request settles
+      });
+    });
+
+    /* Execute all requests simultaneously using Promise.allSettled */
+    const results = await Promise.allSettled(tasks);
+
+    /* Destructure results for mapping */
     const [profileRes, analyticsRes, skillsRes, projectsRes] = results;
 
-    /* Build the data object — null if that specific request failed */
+    /* Construct the final data object, defaulting to null for failed requests */
     const newData = {
       profile:   profileRes.status   === 'fulfilled' ? profileRes.value   : null,
       analytics: analyticsRes.status === 'fulfilled' ? analyticsRes.value : null,
@@ -60,31 +69,27 @@ export function usePortfolioData() {
       projects:  projectsRes.status  === 'fulfilled' ? projectsRes.value  : null,
     };
 
-    /* Only show error banner if EVERYTHING failed (full offline) */
+    /* Validation: check if all requests failed to display a global error banner */
     const allFailed = Object.values(newData).every(v => v === null);
     if (allFailed) {
-      const firstRejection = results.find(r => r.status === 'rejected'); // First error
-      const isOffline      = firstRejection?.reason?.isNetworkError;     // Network down?
-      setError(
-        isOffline
-          ? 'Backend is offline. Showing demo content.'   // Network down
-          : 'Failed to load portfolio data.'              // API error
-      );
+      const firstRejection = results.find(r => r.status === 'rejected');
+      const isOffline      = firstRejection?.reason?.isNetworkError;
+      setError(isOffline ? 'Backend is offline' : 'Failed to load portfolio data');
     }
 
-    setData(newData);    // Update state with whatever succeeded
-    setLoading(false);   // Hide loader
-  }, []);                // Empty deps — fetchAll never changes after mount
+    setData(newData);                                    // Update global state
+    setLoading(false);                                   // Dismiss loader
+  }, []);
 
-  /* Run once on mount — useCallback ensures stable reference */
   useEffect(() => {
-    fetchAll();          // Execute the parallel fetch on component mount
-  }, [fetchAll]);        // fetchAll is stable due to useCallback([])
+    fetchAll();                                          // Auto-fetch on component mount
+  }, [fetchAll]);
 
   return {
-    data,               // { profile, analytics, skills, projects }
-    loading,            // boolean
-    error,              // null | string
-    refetch: fetchAll,  // Call this to manually refresh all data
+    data,
+    loading,
+    error,
+    progress,                                            // Expose progress for UI components
+    refetch: fetchAll,
   };
 }
