@@ -16,7 +16,7 @@ import '../../styles/layout/DashboardLayout.css';            // Component layout
 
 /** Navigation items — id must match each <section id="..."> */
 const NAV_ITEMS = [
-  { label: 'Dashboard',  href: '#overview',   icon: '⊞', id: 'overview'   },
+  { label: 'Overview',  href: '#overview',   icon: '⊞', id: 'overview'   },
   { label: 'Analytics',  href: '#analytics',  icon: '↗', id: 'analytics'  },
   { label: 'Skills',     href: '#skills',     icon: '◎', id: 'skills'     },
   { label: 'Projects',   href: '#projects',   icon: '⊡', id: 'projects'   },
@@ -103,8 +103,8 @@ useEffect(() => {
               </span>
             </a>
 
-        {/* ── Section label above nav ── */}
-        <span className="sidebar__nav-label" aria-hidden="true">Menu</span>
+{/*          */}{/* ── Section label above nav ── */}
+{/*         <span className="sidebar__nav-label" aria-hidden="true">Menu</span> */}
 
         {/* ── Navigation links ── */}
         <nav
