@@ -165,13 +165,12 @@ export const ANIMATION = {
    Cycled through by the PageLoader component.
 ══════════════════════════════════════════════════════════ */
 export const LOADER_MESSAGES = [
-  'Connecting to API...',     // Step 1 — establishing connection
-  'Loading profile...',       // Step 2 — fetching profile data
-  'Fetching analytics...',    // Step 3 — fetching analytics data
-  'Loading skills...',        // Step 4 — fetching skills data
-  'Loading projects...',      // Step 5 — fetching projects data
-  'Loading experience...',    // Step 6 — fetching experience data
-  'All systems ready!',       // Step 7 — everything loaded
+  'Connecting to API...',      // Step 0 — initial connection
+  'Loading Profile...',        // Step 1 — profile fetch complete
+  'Loading Analytics...',      // Step 2 — analytics fetch complete
+  'Loading Skills...',         // Step 3 — skills fetch complete
+  'Loading Projects...',       // Step 4 — projects fetch complete
+  'All systems ready!',        // Step 5 — everything loaded
 ];
 
 /* ══════════════════════════════════════════════════════════

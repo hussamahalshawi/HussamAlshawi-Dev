@@ -50,12 +50,11 @@ export default function PageLoader({
 
   /* ── Sync internal index with external progress ─────────────── */
   useEffect(() => {
-    if (visible) {
-      // Ensure the index doesn't exceed the available messages
+      if (!visible) return;                                          // Skip if loader hidden
+      // Map progress count (0-5) directly to message index
       const nextIndex = Math.min(progress, LOADER_MESSAGES.length - 1);
-      setMsgIndex(nextIndex);
-    }
-  }, [progress, visible]);
+      setMsgIndex(nextIndex);                                        // Update displayed message
+    }, [progress, visible]);
 
   /* ── Current message text ───────────────────────────────────── */
   const currentMessage = LOADER_MESSAGES[msgIndex]
