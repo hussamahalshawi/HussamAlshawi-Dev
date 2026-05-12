@@ -12,7 +12,7 @@ const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 // ── AXIOS INSTANCE CREATION ───────────────────────────────────────
 const apiClient = axios.create({
   baseURL: BASE_URL,
-  timeout: 10000, // Increased to 10 seconds for unstable networks
+  timeout: 0, // Increased to 10 seconds for unstable networks
   headers: { 'Content-Type': 'application/json' },
 });
 
@@ -29,12 +29,9 @@ axiosRetry(apiClient, {
     return retryCount * 2000;
   },
   retryCondition: (error) => {
-    // Retry on network errors or request timeouts (ECONNABORTED)
-    return (
-      axiosRetry.isNetworkOrIdempotentRequestError(error) ||
-      error.code === 'ECONNABORTED'
-    );
-  },
+  // Only retry on network errors, NOT on timeout since timeout is disabled
+  return axiosRetry.isNetworkOrIdempotentRequestError(error);
+},
   shouldResetTimeout: true, // Reset timeout clock for each retry attempt
 });
 
