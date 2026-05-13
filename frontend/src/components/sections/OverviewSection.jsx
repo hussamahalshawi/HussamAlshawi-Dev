@@ -28,6 +28,7 @@
  */
 
 import { useRef, useEffect, useState, useCallback } from 'react'; // React hooks
+import { motion } from 'framer-motion';
 import { formatExperience, getInitials }             from '../../utils/formatters'; // Pure helpers
 import { CHART_COLORS, SOCIAL_PLATFORMS }            from '../../utils/constants';  // Global tokens
 import '../../styles/components/OverviewSection.css';                               // Section styles
@@ -263,10 +264,15 @@ function ProfileCardPanel({ fullName, title, bio, avatar, available, social, pro
   };
 
   return (
-    <div
+    <motion.div
       className="ov-panel ov-panel--profile"
       role="complementary"
       aria-label="Profile summary"
+      initial={{ opacity: 0, scale: 0.96 }}
+      whileInView={{ opacity: 1, scale: 1 }}
+      viewport={{ once: true, amount: 0.1 }}
+      transition={{ duration: 0.6, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
+      whileHover={{ y: -4, transition: { duration: 0.2 } }}   /* Lift on hover */
     >
       {/* Decorative water drops */}
       <div className="ov-drops" aria-hidden="true">
@@ -406,7 +412,7 @@ function ProfileCardPanel({ fullName, title, bio, avatar, available, social, pro
   </div>
 
 </div>
-</div>
+</motion.div>
   );
 }
 /* ════════════════════════════════════════════════════════════════
