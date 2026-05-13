@@ -32,7 +32,7 @@ import { motion } from 'framer-motion';
 import { formatExperience, getInitials }             from '../../utils/formatters'; // Pure helpers
 import { CHART_COLORS, SOCIAL_PLATFORMS }            from '../../utils/constants';  // Global tokens
 import '../../styles/components/OverviewSection.css';                               // Section styles
-
+import ParticleBackground from '../ui/ParticleBackground';
 /* ── Social platform icon map ─────────────────────────────────── */
 /* ── SVG Social Icons — professional colored icons ───────────── */
 /* Each icon is a colored SVG for visual richness                 */
@@ -274,6 +274,9 @@ function ProfileCardPanel({ fullName, title, bio, avatar, available, social, pro
       transition={{ duration: 0.6, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
       whileHover={{ y: -4, transition: { duration: 0.2 } }}   /* Lift on hover */
     >
+    <div style={{ position: 'absolute', inset: 0, opacity: 0.08, pointerEvents: 'none' }}>
+      <ParticleBackground />
+    </div>
       {/* Decorative water drops */}
       <div className="ov-drops" aria-hidden="true">
         <div className="ov-drop ov-drop--a" />
