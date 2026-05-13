@@ -13,6 +13,7 @@ import { useProfile }    from '../../hooks/useProfile';      // Profile data for
 import { useTheme }      from '../../context/ThemeContext';  // Dark/light mode context
 import { getInitials }   from '../../utils/formatters';      // Formats name → "HA"
 import '../../styles/layout/DashboardLayout.css';            // Component layout styles
+import ParticleBackground from '../ui/ParticleBackground';
 
 /** Navigation items — id must match each <section id="..."> */
 const NAV_ITEMS = [
@@ -68,7 +69,8 @@ useEffect(() => {
 
   return (
     <div className="dashboard-root">
-
+        {/* Global particle network — sits behind everything */}
+        <ParticleBackground opacity={0.7} />
       {/* ══════════════════════════════════════════════
           SIDEBAR — Fixed frosted glass panel
       ══════════════════════════════════════════════ */}

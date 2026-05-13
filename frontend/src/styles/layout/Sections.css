@@ -8,7 +8,6 @@
   padding:  var(--s16) 0;
   position: relative;
   overflow: hidden;
-  scroll-snap-align: start;
   min-height:        100vh;
 }
 
