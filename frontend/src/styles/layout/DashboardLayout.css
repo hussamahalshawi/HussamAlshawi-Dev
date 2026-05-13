@@ -619,3 +619,27 @@
   0%, 100% { transform: scale(1);    opacity: 1;   }
   50%       { transform: scale(1.45); opacity: 0.65; }
 }
+/* ── Cyberpunk 3D text glow on logo ──────────────── */
+.sidebar__logo-text {
+  text-shadow:
+    0 0 10px var(--cyan),
+    0 0 20px var(--cyan-dim),
+    0 0 40px rgba(79,195,247,0.15);
+  transition: text-shadow 0.3s ease;
+}
+
+.sidebar__logo:hover .sidebar__logo-text {
+  text-shadow:
+    0 0 14px var(--cyan),
+    0 0 28px var(--cyan),
+    0 0 60px rgba(79,195,247,0.30),
+    2px 2px 0px rgba(91,141,239,0.5),
+    -1px -1px 0px rgba(155,127,234,0.3);
+}
+
+/* ── Glow pulse on nav active items ─────────────── */
+.nav-item--active .nav-item__label {
+  text-shadow:
+    0 0 8px var(--cyan),
+    0 0 16px var(--cyan-dim);
+}
