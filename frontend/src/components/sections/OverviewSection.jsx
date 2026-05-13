@@ -293,59 +293,75 @@ function ProfileCardPanel({ fullName, title, bio, avatar, available, social, pro
 
       {/* ── Full bio — no truncation ── */}
       {bio && <p className="ov-profile__bio">{bio}</p>}
-        {/* ── Quick Stats 2x2 Grid ── */}
+        {/* ── Quick Stats — 4 cards horizontal ── */}
 <div className="ov-profile__stats" role="list" aria-label="Profile statistics">
 
-  {/* Stat 1: Years of experience */}
-  <div className="ov-stat" role="listitem">
-    <div className="ov-stat__icon" style={{ background: 'var(--cyan-dim)' }}>
-      ⏱
+  {/* Yrs Experience */}
+  <div
+    className="ov-stat"
+    role="listitem"
+    style={{
+      background:   'rgba(79,195,247,0.07)',
+      borderColor:  'rgba(79,195,247,0.22)',
+      color:        '#4FC3F7',
+    }}
+  >
+    <span className="ov-stat__tag">Exp</span>
+    <div className="ov-stat__num">
+      {profile?.experience_years ? `${profile.experience_years}+` : '—'}
     </div>
-    <div className="ov-stat__text">
-      <div className="ov-stat__num" style={{ color: 'var(--cyan)' }}>
-        {profile?.experience_years ? `${profile.experience_years}+` : '—'}
-      </div>
-      <div className="ov-stat__label">Yrs Exp</div>
-    </div>
+    <span className="ov-stat__label">Years</span>
   </div>
 
-  {/* Stat 2: Overall score */}
-  <div className="ov-stat" role="listitem">
-    <div className="ov-stat__icon" style={{ background: 'var(--green-dim)' }}>
-      🎯
+  {/* Overall Score */}
+  <div
+    className="ov-stat"
+    role="listitem"
+    style={{
+      background:  'rgba(78,204,163,0.07)',
+      borderColor: 'rgba(78,204,163,0.22)',
+      color:       '#4ECCA3',
+    }}
+  >
+    <span className="ov-stat__tag">Score</span>
+    <div className="ov-stat__num">
+      {profile?.overall_score ? `${Math.round(profile.overall_score)}%` : '—'}
     </div>
-    <div className="ov-stat__text">
-      <div className="ov-stat__num" style={{ color: 'var(--green)' }}>
-        {profile?.overall_score ? `${Math.round(profile.overall_score)}%` : '—'}
-      </div>
-      <div className="ov-stat__label">Score</div>
-    </div>
+    <span className="ov-stat__label">Goals</span>
   </div>
 
-  {/* Stat 3: Experience count */}
-  <div className="ov-stat" role="listitem">
-    <div className="ov-stat__icon" style={{ background: 'var(--violet-dim)' }}>
-      💼
+  {/* Experience count */}
+  <div
+    className="ov-stat"
+    role="listitem"
+    style={{
+      background:  'rgba(155,127,234,0.07)',
+      borderColor: 'rgba(155,127,234,0.22)',
+      color:       '#9B7FEA',
+    }}
+  >
+    <span className="ov-stat__tag">Work</span>
+    <div className="ov-stat__num">
+      {analytics ? (counts?.experience || '0') : '...'}
     </div>
-    <div className="ov-stat__text">
-      <div className="ov-stat__num" style={{ color: 'var(--violet)' }}>
-        {analytics ? (counts?.experience || '0') : '...'}
-      </div>
-      <div className="ov-stat__label">Experience</div>
-    </div>
+    <span className="ov-stat__label">Experience</span>
   </div>
 
-  {/* Stat 4: Projects count */}
-  <div className="ov-stat" role="listitem">
-    <div className="ov-stat__icon" style={{ background: 'var(--orange-dim)' }}>
-      ⊡
+  {/* Projects count */}
+  <div
+    className="ov-stat"
+    role="listitem"
+    style={{
+      background:  'rgba(245,166,35,0.07)',
+      borderColor: 'rgba(245,166,35,0.22)',
+      color:       '#F5A623',
+    }}
+  >
+    <span className="ov-stat__tag">Built</span>
+    <div className="ov-stat__num">
+      {analytics ? (counts?.projects || '0') : '...'}
     </div>
-    <div className="ov-stat__text">
-      <div className="ov-stat__num" style={{ color: 'var(--orange)' }}>
-        {analytics ? (counts?.projects || '0') : '...'}
-      </div>
-      <div className="ov-stat__label">Projects</div>
-    </div>
+    <span className="ov-stat__label">Projects</span>
   </div>
 
 </div>
