@@ -38,6 +38,7 @@ import SkillsSection                    from '../components/sections/SkillsSecti
 // ── UI helpers ────────────────────────────────────────────────────
 import PageLoader                       from '../components/ui/PageLoader';              // Full-screen loader
 
+import AnimatedSection from '../components/ui/AnimatedSection';
 // ── Shared section layout styles ──────────────────────────────────
 import '../styles/layout/Sections.css';                                  // Section padding + container
 
@@ -128,10 +129,9 @@ export default function Home() {
       )}
 
       {/* SECTION 1 — Overview */}
-      <OverviewSection
-        profile={data.profile}
-        analytics={data.analytics}
-      />
+      <AnimatedSection id="overview" className="section">
+          <OverviewSection profile={data.profile} analytics={data.analytics} />
+        </AnimatedSection>
 
       {/* Rest of sections... */}
     </DashboardLayout>
