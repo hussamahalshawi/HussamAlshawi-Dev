@@ -958,10 +958,26 @@
    Maintain glassmorphism with lighter palette
 ══════════════════════════════════════════════════════ */
 [data-theme="light"] .ov-panel {
-  background:  rgba(255,255,255,0.52);
-  border-color:rgba(79,100,145,0.14);
-  box-shadow:  0 4px 24px rgba(79,100,145,0.12),
-               0 1px 0 rgba(255,255,255,0.80) inset;
+  background:   rgba(255,255,255,0.68);
+  border-color: rgba(79,100,145,0.18);
+  box-shadow:
+    0 4px 24px rgba(79,100,145,0.14),
+    0 1px 0 rgba(255,255,255,0.90) inset;
+}
+
+[data-theme="light"] .ov-panel:hover {
+  border-color: rgba(79,145,247,0.35);
+  background:   rgba(255,255,255,0.82);
+}
+
+/* Panel title in light mode */
+[data-theme="light"] .ov-panel__title {
+  color: #1a2332;
+}
+
+/* Panel subtitle in light mode */
+[data-theme="light"] .ov-panel__subtitle {
+  color: #5a7499;
 }
 
 [data-theme="light"] .ov-record-item {
