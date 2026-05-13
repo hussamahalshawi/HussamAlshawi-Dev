@@ -291,8 +291,49 @@ function ProfileCardPanel({ fullName, title, bio, avatar, available, social, pro
       {/* ── Job title ── */}
       <div className="ov-profile__title">{title}</div>
 
+           {/* ── Luxury Social links ── */}
+<div className="ov-profile__social--luxury" role="list" aria-label="Social links">
+  {SOCIAL_PLATFORMS_CONFIG.map(platform => {
+    const url  = getSocialUrl(platform.key); // Safely get URL
+    const icon = SOCIAL_ICONS[platform.key]; // Your SVG icons
+
+    if (!url || !icon) return null;          // Skip if missing
+
+    return (
+      <a
+        key={platform.key}
+        href={url}
+        target="_blank"
+        rel="noopener noreferrer"
+        /* Added 'luxury' class and dynamic platform key for specific colors */
+        className={`ov-social-link--luxury ${platform.key}`}
+        role="listitem"
+        aria-label={`${platform.label} profile`}
+        /* Keeping your color variable for the glow effect if needed */
+        style={{ '--social-color': platform.color }}
+      >
+        <span
+          className="ov-social-link__icon--luxury"
+          aria-hidden="true"
+        >
+          {icon}
+        </span>
+        {/* Label removed to match the minimalist video style */}
+      </a>
+    );
+  })}
+
+        {/* Fallback message when social object is completely empty */}
+        {Object.keys(social).length === 0 && (
+          <span style={{ fontSize: '0.65rem', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
+            No social links configured
+          </span>
+        )}
+      </div>
       {/* ── Full bio — no truncation ── */}
       {bio && <p className="ov-profile__bio">{bio}</p>}
+
+
         {/* ── Quick Stats — 4 cards horizontal ── */}
 <div className="ov-profile__stats" role="list" aria-label="Profile statistics">
 
@@ -365,46 +406,7 @@ function ProfileCardPanel({ fullName, title, bio, avatar, available, social, pro
   </div>
 
 </div>
-      {/* ── Luxury Social links ── */}
-<div className="ov-profile__social--luxury" role="list" aria-label="Social links">
-  {SOCIAL_PLATFORMS_CONFIG.map(platform => {
-    const url  = getSocialUrl(platform.key); // Safely get URL
-    const icon = SOCIAL_ICONS[platform.key]; // Your SVG icons
-
-    if (!url || !icon) return null;          // Skip if missing
-
-    return (
-      <a
-        key={platform.key}
-        href={url}
-        target="_blank"
-        rel="noopener noreferrer"
-        /* Added 'luxury' class and dynamic platform key for specific colors */
-        className={`ov-social-link--luxury ${platform.key}`}
-        role="listitem"
-        aria-label={`${platform.label} profile`}
-        /* Keeping your color variable for the glow effect if needed */
-        style={{ '--social-color': platform.color }}
-      >
-        <span
-          className="ov-social-link__icon--luxury"
-          aria-hidden="true"
-        >
-          {icon}
-        </span>
-        {/* Label removed to match the minimalist video style */}
-      </a>
-    );
-  })}
-
-        {/* Fallback message when social object is completely empty */}
-        {Object.keys(social).length === 0 && (
-          <span style={{ fontSize: '0.65rem', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
-            No social links configured
-          </span>
-        )}
-      </div>
-    </div>
+</div>
   );
 }
 /* ════════════════════════════════════════════════════════════════
