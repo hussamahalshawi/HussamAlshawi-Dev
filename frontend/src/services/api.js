@@ -1,26 +1,37 @@
 /**
- * api.js — Centralized Axios instance for API requests.
- * Simplified: fast timeout + no retry = faster failure feedback.
+ * api.js — Two Axios instances:
+ *   apiClient         → Phase 1 critical requests (8s timeout)
+ *   apiClientBackground → Phase 2 background requests (no timeout)
  */
 
 import axios from 'axios';                              // HTTP client library
 
-// ── ENVIRONMENT CONFIGURATION ─────────────────────────────────────
-const BASE_URL = import.meta.env.VITE_API_URL           // Read from .env file
-  || 'http://localhost:5000/api';                       // Fallback for local dev
+// ── BASE URL ──────────────────────────────────────────────────────
+const BASE_URL = import.meta.env.VITE_API_URL           // Read from .env
+  || 'http://localhost:5000/api';                       // Local dev fallback
 
-// ── AXIOS INSTANCE CREATION ───────────────────────────────────────
+// ── PHASE 1: Critical instance — fast timeout ─────────────────────
+// Used for Profile + Analytics only
 const apiClient = axios.create({
   baseURL: BASE_URL,                                    // All requests relative to this
-  timeout: 8000,                                        // 8s max — fail fast, no hanging
+  timeout: 8000,                                        // 8s — fail fast for critical data
   headers: { 'Content-Type': 'application/json' },     // Default JSON header
 });
 
-// ── RESPONSE INTERCEPTOR ──────────────────────────────────────────
-apiClient.interceptors.response.use(
+// ── PHASE 2: Background instance — no timeout ─────────────────────
+// Used for Skills + Projects + Summary — they can take as long as needed
+const apiClientBackground = axios.create({
+  baseURL: BASE_URL,                                    // Same base URL
+  timeout: 0,                                           // No timeout — wait until done
+  headers: { 'Content-Type': 'application/json' },     // Default JSON header
+});
+
+// ── SHARED RESPONSE HANDLER ───────────────────────────────────────
+// Applied to both instances — same error shape
+const responseHandler = [
   (response) => response.data,                          // Unwrap data directly
   (error) => {
-    const status  = error.response?.status;             // HTTP status code if any
+    const status  = error.response?.status;             // HTTP status if any
     const message = error.response?.data?.message      // Server error message
       || error.message;                                 // Fallback to axios message
 
@@ -29,10 +40,15 @@ apiClient.interceptors.response.use(
     return Promise.reject({
       status,                                           // e.g. 404, 500
       message,                                          // Human-readable error
-      isNetworkError: !error.response,                  // True if no response at all
-      isTimeout:      error.code === 'ECONNABORTED',    // True if 8s exceeded
+      isNetworkError: !error.response,                  // True if no server response
+      isTimeout:      error.code === 'ECONNABORTED',    // True if timeout exceeded
     });
-  }
-);
+  },
+];
 
-export default apiClient;                               // Single instance for all services
+// Apply same interceptor to both instances
+apiClient.interceptors.response.use(...responseHandler);
+apiClientBackground.interceptors.response.use(...responseHandler);
+
+export default apiClient;                               // Phase 1 — default export
+export { apiClientBackground };                         // Phase 2 — named export
