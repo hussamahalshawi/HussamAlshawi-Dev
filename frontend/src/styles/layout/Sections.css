@@ -1,14 +1,20 @@
 /* ═══════════════════════════════════════════════════
    Sections.css — Shared Section Layout Styles
-   Used by all portfolio sections
+   FIX: removed min-height: 100vh — was causing huge
+   gap between topbar and first content card
    ═══════════════════════════════════════════════════ */
 
 /* ── Base section ─────────────────────────────────── */
 .section {
-  padding:  var(--s16) 0;
+  padding:  var(--s8) 0;                        /* FIX: was s16, reduced to s8       */
   position: relative;
   overflow: hidden;
-  min-height:        100vh;
+  /* FIX: removed min-height: 100vh — caused giant empty space */
+}
+
+/* First section — even tighter top padding */
+.section:first-child {
+  padding-top: var(--s6);                       /* FIX: tighten first card to topbar */
 }
 
 /* Alternate-background sections */
@@ -54,10 +60,10 @@
 /* ── Responsive ───────────────────────────────────── */
 @media (max-width: 1024px) {
   .container { padding: 0 var(--s6); }
-  .section   { padding: var(--s12) 0; }
+  .section   { padding: var(--s8) 0; }
 }
 
 @media (max-width: 600px) {
   .container { padding: 0 var(--s4); }
-  .section   { padding: var(--s10) 0; }
+  .section   { padding: var(--s6) 0; }
 }
