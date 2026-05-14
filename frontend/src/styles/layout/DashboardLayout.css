@@ -644,14 +644,18 @@
 }
 /* ── Light mode sidebar fix ── */
 [data-theme="light"] .sidebar {
-  background:              rgba(255,255,255,0.72);
+  background: rgba(207,224,245,0.35);
+  backdrop-filter: blur(40px) saturate(2.2);
+  border-right: 1px solid rgba(255,255,255,0.45);
   border-right-color:      rgba(79,100,145,0.15);
   box-shadow:              2px 0 24px rgba(79,100,145,0.10);
 }
 
 /* ── Light mode topbar fix ── */
 [data-theme="light"] .topbar {
-  background:              rgba(255,255,255,0.80);
+  background: rgba(207,224,245,0.30);
+  backdrop-filter: blur(32px) saturate(2.0);
+  border-bottom: 1px solid rgba(255,255,255,0.40);
   border-bottom-color:     rgba(79,100,145,0.15);
   box-shadow:              0 2px 16px rgba(79,100,145,0.10);
 }
