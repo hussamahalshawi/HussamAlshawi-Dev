@@ -12,6 +12,7 @@ import profileService                        from '../services/profileService'; 
 import analyticsService                      from '../services/analyticsService'; // Analytics API
 import skillsService                         from '../services/skillsService';    // Skills API
 import projectsService                       from '../services/projectsService';  // Projects API
+import { apiClientBackground } from '../services/api';
 
 /** Default empty state — prevents undefined crashes before data loads */
 const INITIAL_STATE = {
@@ -86,21 +87,21 @@ export function usePortfolioData() {
        Fires after loader hides. No loading state changes.
        Components receive data via setData when ready.
     ═══════════════════════════════════════════════════ */
+    // Phase 2 uses apiClientBackground directly — bypasses 8s timeout on services
     Promise.allSettled([
-      skillsService.getPublicSkills(),    // Background: full skills list
-      projectsService.getProjects(),      // Background: projects grid
-      skillsService.getSkillsSummary(),   // Background: skills summary
+      apiClientBackground.get('/portfolio/skills'),         // No timeout — wait as long as needed
+      apiClientBackground.get('/portfolio/projects'),       // No timeout — wait as long as needed
+      apiClientBackground.get('/portfolio/skills/summary'), // No timeout — wait as long as needed
     ]).then(([skillsRes, projectsRes, summaryRes]) => {
 
-      /* Build Phase 2 slice — null for any failed request */
       const phase2Data = {
         skills:        skillsRes.status   === 'fulfilled' ? skillsRes.value   : null,
         projects:      projectsRes.status === 'fulfilled' ? projectsRes.value : null,
         skillsSummary: summaryRes.status  === 'fulfilled' ? summaryRes.value  : null,
       };
 
-      console.log('[Phase 2] ✓ Background data loaded'); // Dev feedback
-      setData(prev => ({ ...prev, ...phase2Data }));      // Merge into existing state
+      console.log('[Phase 2] ✓ Background data loaded');    // Dev feedback
+      setData(prev => ({ ...prev, ...phase2Data }));         // Merge into state reactively
     });
     /* No catch needed — allSettled never rejects, errors are per-item */
 

@@ -14,7 +14,7 @@ const BASE_URL = import.meta.env.VITE_API_URL           // Read from .env
 // Used for Profile + Analytics only
 const apiClient = axios.create({
   baseURL: BASE_URL,                                    // All requests relative to this
-  timeout: 8000,                                        // 8s — fail fast for critical data
+  timeout: 0,                                        // 8s — fail fast for critical data
   headers: { 'Content-Type': 'application/json' },     // Default JSON header
 });
 
