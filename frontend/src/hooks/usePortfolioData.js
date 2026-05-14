@@ -1,9 +1,14 @@
 /**
  * usePortfolioData.js
  * ─────────────────────────────────────────────────────────
- * Cache-first + Priority Loading:
- *   Phase 1: Profile + Analytics → await → hide loader → save cache
- *   Phase 2: Skills + Projects + Summary → no await → save cache silently
+ * Cache-first + Auto Cache Busting strategy:
+ *
+ *   On every load:
+ *     1. Show cached data instantly (no loader)
+ *     2. Fetch fresh data in background (no timeout)
+ *     3. Compare versions — if changed bust cache + update UI
+ *     4. If no cache exists → show loader → await Phase 1 only
+ *
  * ─────────────────────────────────────────────────────────
  */
 
@@ -16,130 +21,146 @@ import {
   CACHE_KEYS,
   saveToCache,
   loadFromCacheAny,
+  isCacheStale,
 } from '../utils/cache';
 
-/** Default empty state */
-const INITIAL_STATE = {
-  profile:       null,
-  analytics:     null,
-  skills:        null,
-  projects:      null,
-  skillsSummary: null,
-};
+/** API task definitions — key maps to CACHE_KEYS */
+const API_TASKS = [
+  {
+    key:     'profile',                              // Maps to CACHE_KEYS.profile
+    label:   'Profile',                             // For console logs
+    fetch:   () => profileService.getPublicProfile(), // API call
+    phase:   1,                                     // Phase 1 = critical (awaited)
+  },
+  {
+    key:     'analytics',
+    label:   'Analytics',
+    fetch:   () => analyticsService.getAnalytics(),
+    phase:   1,                                     // Phase 1 = critical (awaited)
+  },
+  {
+    key:     'skills',
+    label:   'Skills',
+    fetch:   () => skillsService.getPublicSkills(),
+    phase:   2,                                     // Phase 2 = background
+  },
+  {
+    key:     'projects',
+    label:   'Projects',
+    fetch:   () => projectsService.getProjects(),
+    phase:   2,                                     // Phase 2 = background
+  },
+  {
+    key:     'skillsSummary',
+    label:   'Skills Summary',
+    fetch:   () => skillsService.getSkillsSummary(),
+    phase:   2,                                     // Phase 2 = background
+  },
+];
 
 export function usePortfolioData() {
 
-  /* ── Load ALL cached data as initial state synchronously ─────────
-     Every key loads from cache instantly before first render.
-     Phase 2 sections show cached data immediately on reload.        */
-  const [data, setData] = useState(() => ({
-    profile:       loadFromCacheAny(CACHE_KEYS.profile),
-    analytics:     loadFromCacheAny(CACHE_KEYS.analytics),
-    skills:        loadFromCacheAny(CACHE_KEYS.skills),
-    projects:      loadFromCacheAny(CACHE_KEYS.projects),
-    skillsSummary: loadFromCacheAny(CACHE_KEYS.skillsSummary),
-  }));
+  /* ── Load ALL cached data synchronously as initial state ─────────
+     Page renders immediately with cached data on reload.            */
+  const [data, setData] = useState(() =>
+    API_TASKS.reduce((acc, task) => {
+      acc[task.key] = loadFromCacheAny(CACHE_KEYS[task.key]); // Load each from cache
+      return acc;
+    }, {})
+  );
 
   /* ── Show loader only if Phase 1 cache is missing ────────────────
-     If profile + analytics are cached, skip the loader entirely.    */
+     If profile + analytics are both cached, skip loader entirely.   */
   const [loading, setLoading] = useState(() => {
-    const hasPhase1Cache =
-      localStorage.getItem(CACHE_KEYS.profile)   !== null &&  // Profile cached
-      localStorage.getItem(CACHE_KEYS.analytics) !== null;    // Analytics cached
-    return !hasPhase1Cache;                                    // false = skip loader
+    const phase1Tasks = API_TASKS.filter(t => t.phase === 1); // Get phase 1 tasks
+    const allCached   = phase1Tasks.every(                    // Check all are cached
+      t => localStorage.getItem(CACHE_KEYS[t.key]) !== null
+    );
+    return !allCached;                                        // True = show loader
   });
 
   const [error,    setError]    = useState(null);
   const [progress, setProgress] = useState(0);
 
+  /**
+   * processSingleTask — fetches one API, checks version, updates if stale.
+   * Works the same for both Phase 1 and Phase 2.
+   * @param {object} task       - One entry from API_TASKS
+   * @param {boolean} showProgress - Whether to advance the progress dots
+   */
+  const processSingleTask = useCallback(async (task, showProgress = false) => {
+    try {
+      const freshData = await task.fetch();                   // Fetch from API
+
+      /* Compare version with cached version */
+      const stale = isCacheStale(CACHE_KEYS[task.key], freshData);
+
+      if (stale) {
+        /* Data changed — update cache and update UI */
+        saveToCache(CACHE_KEYS[task.key], freshData);         // Save new version
+        setData(prev => ({ ...prev, [task.key]: freshData })); // Update UI reactively
+        console.log(`[Data] 🔄 ${task.label} updated — cache busted`);
+      } else {
+        console.log(`[Data] ✓ ${task.label} unchanged — cache valid`);
+      }
+
+    } catch (err) {
+      /* API failed — keep existing cache, log warning */
+      console.warn(`[Data] ✗ ${task.label} failed — keeping cache:`, err.message);
+    } finally {
+      if (showProgress) setProgress(prev => prev + 1);        // Advance loader dot
+    }
+  }, []);
+
   const fetchAll = useCallback(async () => {
 
-    /* Check if Phase 1 is already cached — determines loader visibility */
-    const hasPhase1Cache =
-      localStorage.getItem(CACHE_KEYS.profile)   !== null &&
-      localStorage.getItem(CACHE_KEYS.analytics) !== null;
+    /* Check Phase 1 cache status */
+    const phase1Tasks = API_TASKS.filter(t => t.phase === 1);
+    const phase2Tasks = API_TASKS.filter(t => t.phase === 2);
+    const hasPhase1Cache = phase1Tasks.every(
+      t => localStorage.getItem(CACHE_KEYS[t.key]) !== null
+    );
 
+    /* Show loader only on first visit (no Phase 1 cache) */
     if (!hasPhase1Cache) {
-      setLoading(true);                                        // Show loader first visit
-      setProgress(0);                                          // Reset progress dots
+      setLoading(true);
+      setProgress(0);
     }
 
     setError(null);
 
     /* ═══════════════════════════════════════════════════
-       PHASE 1 — await these two before opening the page
-       Profile + Analytics = enough for OverviewSection
+       PHASE 1 — await Phase 1 tasks sequentially
+       Each one checks version and updates UI if stale.
+       Loader stays visible until both finish.
     ═══════════════════════════════════════════════════ */
-    const phase1Tasks = [
-      profileService.getPublicProfile(),                       // Critical task 0
-      analyticsService.getAnalytics(),                         // Critical task 1
-    ];
+    await Promise.all(
+      phase1Tasks.map(task =>
+        processSingleTask(task, !hasPhase1Cache)               // Show progress if loading
+      )
+    );
 
-    /* Advance progress dots in real time */
-    phase1Tasks.forEach((task, i) => {
-      const names = ['Profile', 'Analytics'];
-      task.finally(() => {
-        console.log(`[Phase 1] ✓ ${names[i]} loaded`);
-        if (!hasPhase1Cache) setProgress(prev => prev + 1);   // Only if loader visible
-      });
-    });
+    /* Check if Phase 1 produced any data at all */
+    const phase1HasData = phase1Tasks.some(
+      t => localStorage.getItem(CACHE_KEYS[t.key]) !== null   // Cache exists after fetch
+    );
 
-    /* ── AWAIT Phase 1 — page stays on loader until here ── */
-    const [profileRes, analyticsRes] = await Promise.allSettled(phase1Tasks);
-
-    /* Save Phase 1 to cache or fall back to existing cache */
-    const phase1Data = {
-      profile: profileRes.status === 'fulfilled'
-        ? (saveToCache(CACHE_KEYS.profile, profileRes.value), profileRes.value)
-        : loadFromCacheAny(CACHE_KEYS.profile),                // Use cache if API failed
-
-      analytics: analyticsRes.status === 'fulfilled'
-        ? (saveToCache(CACHE_KEYS.analytics, analyticsRes.value), analyticsRes.value)
-        : loadFromCacheAny(CACHE_KEYS.analytics),              // Use cache if API failed
-    };
-
-    /* Show error only if Phase 1 has no data at all — no API + no cache */
-    const phase1Failed = !phase1Data.profile && !phase1Data.analytics;
-    if (phase1Failed) {
-      const isOffline = [profileRes, analyticsRes]
-        .find(r => r.status === 'rejected')?.reason?.isNetworkError;
-      setError(isOffline ? 'Backend is offline' : 'Failed to load portfolio data');
+    if (!phase1HasData) {
+      setError('Backend is offline');                          // Nothing cached + API failed
     }
 
-    /* Update state with Phase 1 data and open the page */
-    setData(prev => ({ ...prev, ...phase1Data }));
-    setLoading(false);                                         // ← Page opens HERE
+    /* ── Release loader — page opens here ── */
+    setLoading(false);
 
     /* ═══════════════════════════════════════════════════
-       PHASE 2 — NO await — runs silently after page opens
-       Skills + Projects + Summary load in the background
+       PHASE 2 — no await — runs in background
+       Each task independently checks version + updates UI.
     ═══════════════════════════════════════════════════ */
-    Promise.allSettled([
-      skillsService.getPublicSkills(),                         // Background task 0
-      projectsService.getProjects(),                           // Background task 1
-      skillsService.getSkillsSummary(),                        // Background task 2
-    ]).then(([skillsRes, projectsRes, summaryRes]) => {
-
-      const phase2Data = {
-        skills: skillsRes.status === 'fulfilled'
-          ? (saveToCache(CACHE_KEYS.skills, skillsRes.value), skillsRes.value)
-          : loadFromCacheAny(CACHE_KEYS.skills),               // Use cache if failed
-
-        projects: projectsRes.status === 'fulfilled'
-          ? (saveToCache(CACHE_KEYS.projects, projectsRes.value), projectsRes.value)
-          : loadFromCacheAny(CACHE_KEYS.projects),             // Use cache if failed
-
-        skillsSummary: summaryRes.status === 'fulfilled'
-          ? (saveToCache(CACHE_KEYS.skillsSummary, summaryRes.value), summaryRes.value)
-          : loadFromCacheAny(CACHE_KEYS.skillsSummary),        // Use cache if failed
-      };
-
-      console.log('[Phase 2] ✓ Background data loaded');
-      setData(prev => ({ ...prev, ...phase2Data }));           // Merge into existing state
+    phase2Tasks.forEach(task => {
+      processSingleTask(task, false);                          // Silent — no progress dots
     });
-    /* No catch — allSettled never rejects */
 
-  }, []);
+  }, [processSingleTask]);
 
   useEffect(() => {
     fetchAll();
