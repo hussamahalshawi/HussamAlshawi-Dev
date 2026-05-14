@@ -1,102 +1,127 @@
 /**
  * cache.js
  * ─────────────────────────────────────────────────────────
- * localStorage cache utility for portfolio API responses.
- * Each API has its own key and expiry duration.
- * Stale data is shown immediately while fresh data loads.
+ * localStorage cache utility with automatic cache busting.
+ * Uses a hash of the full response to detect any change.
  * ─────────────────────────────────────────────────────────
  */
 
-/* ── Cache key per API ───────────────────────────────────────────── */
+/* ── Cache keys per API ──────────────────────────────────────────── */
 export const CACHE_KEYS = {
-  profile:       'ha_cache_profile',       // Profile API cache key
-  analytics:     'ha_cache_analytics',     // Analytics API cache key
-  skills:        'ha_cache_skills',        // Skills API cache key
-  projects:      'ha_cache_projects',      // Projects API cache key
-  skillsSummary: 'ha_cache_skills_summary',// Skills summary cache key
+  profile:       'ha_cache_profile',
+  analytics:     'ha_cache_analytics',
+  skills:        'ha_cache_skills',
+  projects:      'ha_cache_projects',
+  skillsSummary: 'ha_cache_skills_summary',
 };
 
-/* ── Cache expiry durations (ms) ─────────────────────────────────── */
-const CACHE_TTL = {
-  profile:       1000 * 60 * 60 * 24,     // 24 hours — profile rarely changes
-  analytics:     1000 * 60 * 60 * 6,      // 6 hours  — analytics change occasionally
-  skills:        1000 * 60 * 60 * 12,     // 12 hours — skills change rarely
-  projects:      1000 * 60 * 60 * 6,      // 6 hours  — projects change occasionally
-  skillsSummary: 1000 * 60 * 60 * 12,     // 12 hours — summary mirrors skills
-};
-
+/* ═══════════════════════════════════════════════════════
+   HASH UTILITY
+   Converts any object to a stable numeric fingerprint.
+   Same data = same hash. Any change = different hash.
+═══════════════════════════════════════════════════════ */
 /**
- * saveToCache — saves API response with a timestamp.
- * @param {string} key   - One of CACHE_KEYS values
- * @param {*}      data  - API response data to store
+ * hashData — converts data to a stable string fingerprint.
+ * Uses JSON.stringify with sorted keys for consistency.
+ * Then applies a simple djb2 hash for a short number.
+ * @param   {*}      data - Any API response
+ * @returns {string}      - Hash string e.g. "2847392847"
  */
-export function saveToCache(key, data) {
+function hashData(data) {
   try {
-    const entry = {
-      data,                                // The actual API response
-      savedAt: Date.now(),                 // Timestamp for expiry check
-    };
-    localStorage.setItem(key, JSON.stringify(entry)); // Serialize and store
+    /* Sort keys for stable JSON regardless of insertion order */
+    const stable = JSON.stringify(data, Object.keys(data || {}).sort());
+
+    /* djb2 hash algorithm — fast and collision-resistant enough */
+    let hash = 5381;                                           // djb2 starting seed
+    for (let i = 0; i < stable.length; i++) {
+      hash = (hash * 33) ^ stable.charCodeAt(i);              // hash * 33 XOR char code
+      hash = hash & hash;                                      // Convert to 32-bit integer
+    }
+
+    return String(Math.abs(hash));                             // Always positive string
   } catch (err) {
-    console.warn(`[Cache] Failed to save ${key}:`, err); // Storage full or blocked
+    console.warn('[Cache] Hash failed:', err);
+    return String(Date.now());                                 // Fallback: always different
   }
 }
 
 /**
- * loadFromCache — reads cached data if it exists and is not expired.
- * @param   {string} key      - One of CACHE_KEYS values
- * @param   {string} ttlKey   - Key to look up TTL duration
- * @returns {*|null}          - Cached data or null if missing/expired
+ * saveToCache — saves API response with its hash fingerprint.
+ * @param {string} key  - One of CACHE_KEYS values
+ * @param {*}      data - API response data to store
  */
-export function loadFromCache(key, ttlKey) {
+export function saveToCache(key, data) {
   try {
-    const raw = localStorage.getItem(key);           // Read raw string
-    if (!raw) return null;                           // Nothing cached yet
-
-    const entry = JSON.parse(raw);                   // Parse JSON
-    const age   = Date.now() - entry.savedAt;        // How old is this cache?
-    const ttl   = CACHE_TTL[ttlKey] || 1000 * 60 * 60; // Default 1 hour if key missing
-
-    if (age > ttl) {                                 // Cache is expired
-      localStorage.removeItem(key);                  // Clean up expired entry
-      return null;                                   // Treat as no cache
-    }
-
-    return entry.data;                               // Return fresh cached data
+    const entry = {
+      data,                                                    // Full API response
+      savedAt: Date.now(),                                     // When saved
+      hash:    hashData(data),                                 // Fingerprint of data
+    };
+    localStorage.setItem(key, JSON.stringify(entry));          // Serialize and store
+    console.log(`[Cache] ✓ Saved ${key} | hash: ${entry.hash}`);
   } catch (err) {
-    console.warn(`[Cache] Failed to load ${key}:`, err); // Corrupted JSON
-    localStorage.removeItem(key);                    // Remove corrupted entry
-    return null;
+    console.warn(`[Cache] Failed to save ${key}:`, err);
   }
 }
 
 /**
  * loadFromCacheAny — reads cached data regardless of expiry.
- * Used to show stale data while fresh data is loading.
+ * Used to show stale data instantly while fresh data loads.
  * @param   {string} key - One of CACHE_KEYS values
- * @returns {*|null}     - Any cached data or null if nothing saved
+ * @returns {*|null}     - Cached data or null if nothing saved
  */
 export function loadFromCacheAny(key) {
   try {
-    const raw = localStorage.getItem(key);           // Read raw string
-    if (!raw) return null;                           // Nothing ever cached
+    const raw = localStorage.getItem(key);                     // Read raw string
+    if (!raw) return null;                                     // Nothing cached yet
 
-    const entry = JSON.parse(raw);                   // Parse JSON
-    return entry.data;                               // Return data ignoring expiry
+    const entry = JSON.parse(raw);                             // Parse JSON
+    return entry.data;                                         // Return data only
   } catch (err) {
-    console.warn(`[Cache] Failed to read ${key}:`, err); // Corrupted entry
-    localStorage.removeItem(key);                    // Remove corrupted entry
+    console.warn(`[Cache] Failed to read ${key}:`, err);
+    localStorage.removeItem(key);                              // Remove corrupted entry
     return null;
   }
 }
 
 /**
+ * isCacheStale — compares fresh API response hash with cached hash.
+ * Returns true if ANY part of the data has changed.
+ * @param   {string} key       - One of CACHE_KEYS values
+ * @param   {*}      freshData - New API response to compare
+ * @returns {boolean}          - True = data changed, update needed
+ */
+export function isCacheStale(key, freshData) {
+  try {
+    const raw = localStorage.getItem(key);                     // Read cached entry
+    if (!raw) return true;                                     // No cache = always stale
+
+    const entry       = JSON.parse(raw);                       // Parse entry
+    const cachedHash  = entry.hash;                            // Saved hash
+    const freshHash   = hashData(freshData);                   // Hash of new data
+
+    const isStale = cachedHash !== freshHash;                  // Different = stale
+
+    console.log(
+      `[Cache] ${isStale ? '🔄 STALE' : '✓ FRESH'} ${key}`,
+      `| cached: ${cachedHash}`,
+      `| fresh:  ${freshHash}`
+    );
+
+    return isStale;
+  } catch (err) {
+    console.warn(`[Cache] Stale check failed for ${key}:`, err);
+    return true;                                               // Treat as stale on error
+  }
+}
+
+/**
  * clearAllCache — removes all portfolio cache entries.
- * Call this on logout or manual refresh.
  */
 export function clearAllCache() {
   Object.values(CACHE_KEYS).forEach(key => {
-    localStorage.removeItem(key);                    // Remove each key individually
+    localStorage.removeItem(key);                              // Remove each key
   });
-  console.log('[Cache] All portfolio cache cleared'); // Dev feedback
+  console.log('[Cache] All portfolio cache cleared');
 }
