@@ -1,100 +1,120 @@
 /**
  * usePortfolioData.js
  * ─────────────────────────────────────────────────────────
- * Central data hook — fetches ALL portfolio data in parallel.
- * Uses Promise.allSettled so a single API failure does NOT
- * crash the whole page (partial data is shown instead).
+ * Central data hook — Priority Loading Strategy:
+ *   Phase 1 (Critical): Profile + Analytics → hides PageLoader
+ *   Phase 2 (Background): Skills + Projects + Summary → loads silently
  * ─────────────────────────────────────────────────────────
  */
 
-import { useState, useEffect, useCallback } from 'react';  // React hooks — useCallback added
-import profileService                        from '../services/profileService';    // Profile API
-import analyticsService                      from '../services/analyticsService';  // Analytics API
-import skillsService                         from '../services/skillsService';     // Skills API
-import projectsService                       from '../services/projectsService';   // Projects API
+import { useState, useEffect, useCallback } from 'react';
+import profileService                        from '../services/profileService';
+import analyticsService                      from '../services/analyticsService';
+import skillsService                         from '../services/skillsService';
+import projectsService                       from '../services/projectsService';
 
-/** Default empty state — prevents undefined crashes before data loads */
+/** Default empty state */
 const INITIAL_STATE = {
-  profile:   null,   // Profile object from /api/portfolio/profile
-  analytics: null,   // Analytics object from /api/portfolio/analytics
-  skills:    null,   // Skills object from /api/portfolio/skills
-  projects:  null,   // Projects object from /api/portfolio/projects
+  profile:      null,
+  analytics:    null,
+  skills:       null,
+  projects:     null,
+  skillsSummary: null,
 };
 
 /**
- * usePortfolioData — fetches all portfolio data concurrently with progress tracking.
+ * usePortfolioData — Phase 1 loads critical data and releases the loader.
+ *                    Phase 2 loads the rest silently in the background.
  * @returns {{ data, loading, error, progress, refetch }}
  */
 export function usePortfolioData() {
-  const [data, setData] = useState(INITIAL_STATE);       // Holds all API responses
-  const [loading, setLoading] = useState(true);          // Global loading state
-  const [error, setError] = useState(null);              // API error messages
-  const [progress, setProgress] = useState(0);           // Tracks number of completed requests
 
-  /**
-   * fetchAll — core fetch function with real-time progress updates.
-   */
+  const [data,     setData]     = useState(INITIAL_STATE); // All API responses
+  const [loading,  setLoading]  = useState(true);          // True only during Phase 1
+  const [error,    setError]    = useState(null);          // Error from Phase 1 only
+  const [progress, setProgress] = useState(0);             // Tracks Phase 1 progress (0-2)
+
   const fetchAll = useCallback(async () => {
-    setLoading(true);                                    // Initialize loading
-    setError(null);                                      // Reset previous errors
-    setProgress(0);                                      // Reset progress counter
+    setLoading(true);                                       // Show PageLoader
+    setError(null);                                         // Clear previous errors
+    setProgress(0);                                         // Reset progress dots
 
-    /* Define the list of API tasks to be executed in parallel */
-    const tasks = [
-      profileService.getPublicProfile(),                 // Task 0: Profile data
-      analyticsService.getAnalytics(),                   // Task 1: Analytics data
-      skillsService.getPublicSkills(),                   // Task 2: Skills list
-      projectsService.getProjects(),                     // Task 3: Projects list
-      skillsService.getSkillsSummary(),                  // Task 4: Skills summary
+    /* ─────────────────────────────────────────
+       PHASE 1 — Critical APIs (blocks the loader)
+       Only Profile + Analytics are needed for OverviewSection
+    ───────────────────────────────────────── */
+    const criticalTasks = [
+      profileService.getPublicProfile(),                    // Task 0: Profile
+      analyticsService.getAnalytics(),                      // Task 1: Analytics
     ];
 
-    /* Attach a listener to each task to increment progress regardless of success or failure */
-    // Track names for each task to show in console during development
-    const taskNames = ['Profile', 'Analytics', 'Skills', 'Projects', 'Skills Summary'];
-
-    tasks.forEach((task, index) => {
+    /* Attach progress listeners to Phase 1 tasks */
+    criticalTasks.forEach((task, index) => {
+      const names = ['Profile', 'Analytics'];               // Task names for logging
       task.finally(() => {
-        console.log(`[Loader] ✓ ${taskNames[index]} loaded`); // Dev feedback
-        setProgress(prev => prev + 1);                         // Advance progress bar
+        console.log(`[Phase 1] ✓ ${names[index]} loaded`); // Dev feedback
+        setProgress(prev => prev + 1);                      // Advance progress bar
       });
     });
 
-    /* Execute all requests simultaneously using Promise.allSettled */
-    const results = await Promise.allSettled(tasks);
+    /* Wait for both critical APIs before releasing the loader */
+    const [profileRes, analyticsRes] = await Promise.allSettled(criticalTasks);
 
-    // Destructure all 5 results including skills summary
-    const [profileRes, analyticsRes, skillsRes, projectsRes, skillsSummaryRes] = results;
-
-    /* Construct the final data object, defaulting to null for failed requests */
-    const newData = {
-      profile:       profileRes.status       === 'fulfilled' ? profileRes.value       : null,
-      analytics:     analyticsRes.status     === 'fulfilled' ? analyticsRes.value     : null,
-      skills:        skillsRes.status        === 'fulfilled' ? skillsRes.value        : null,
-      projects:      projectsRes.status      === 'fulfilled' ? projectsRes.value      : null,
-      skillsSummary: skillsSummaryRes.status === 'fulfilled' ? skillsSummaryRes.value : null,
+    /* Build Phase 1 data slice */
+    const phase1Data = {
+      profile:   profileRes.status   === 'fulfilled' ? profileRes.value   : null,
+      analytics: analyticsRes.status === 'fulfilled' ? analyticsRes.value : null,
     };
 
-    /* Validation: check if all requests failed to display a global error banner */
-    const allFailed = Object.values(newData).every(v => v === null);
-    if (allFailed) {
-      const firstRejection = results.find(r => r.status === 'rejected');
+    /* Check if both critical APIs failed — show error banner */
+    const criticalFailed = phase1Data.profile === null && phase1Data.analytics === null;
+    if (criticalFailed) {
+      const firstRejection = [profileRes, analyticsRes].find(r => r.status === 'rejected');
       const isOffline      = firstRejection?.reason?.isNetworkError;
       setError(isOffline ? 'Backend is offline' : 'Failed to load portfolio data');
     }
 
-    setData(newData);                                    // Update global state
-    setLoading(false);                                   // Dismiss loader
+    /* Update state with Phase 1 data — this triggers re-render */
+    setData(prev => ({ ...prev, ...phase1Data }));          // Merge into existing state
+
+    /* ── Release the PageLoader here ── */
+    setLoading(false);                                       // Hide PageLoader — page is visible now
+
+    /* ─────────────────────────────────────────
+       PHASE 2 — Background APIs (silent, no loader)
+       Skills + Projects + Summary load after page is visible
+    ───────────────────────────────────────── */
+    const backgroundTasks = [
+      skillsService.getPublicSkills(),                      // Background Task 0: Skills
+      projectsService.getProjects(),                        // Background Task 1: Projects
+      skillsService.getSkillsSummary(),                     // Background Task 2: Skills Summary
+    ];
+
+    /* Fire and forget — no await, no loading state change */
+    Promise.allSettled(backgroundTasks).then(([skillsRes, projectsRes, summaryRes]) => {
+
+      /* Build Phase 2 data slice */
+      const phase2Data = {
+        skills:       skillsRes.status   === 'fulfilled' ? skillsRes.value   : null,
+        projects:     projectsRes.status === 'fulfilled' ? projectsRes.value : null,
+        skillsSummary: summaryRes.status  === 'fulfilled' ? summaryRes.value  : null,
+      };
+
+      console.log('[Phase 2] ✓ Background data loaded'); // Dev feedback
+      setData(prev => ({ ...prev, ...phase2Data }));       // Merge Phase 2 into state
+    });
+
   }, []);
 
   useEffect(() => {
-    fetchAll();                                          // Auto-fetch on component mount
+    fetchAll();                                              // Auto-fetch on mount
   }, [fetchAll]);
 
   return {
     data,
-    loading,
+    loading,    // Now only true during Phase 1
     error,
-    progress,                                            // Expose progress for UI components
+    progress,   // 0-2 now (two critical tasks only)
     refetch: fetchAll,
   };
 }
