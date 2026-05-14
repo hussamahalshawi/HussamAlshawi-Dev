@@ -1,18 +1,20 @@
 /**
  * usePortfolioData.js
  * ─────────────────────────────────────────────────────────
- * Cache-first + Auto Cache Busting strategy:
+ * Cache-first + Auto Cache Busting + Background Polling:
  *
- *   On every load:
- *     1. Show cached data instantly (no loader)
- *     2. Fetch fresh data in background (no timeout)
- *     3. Compare versions — if changed bust cache + update UI
- *     4. If no cache exists → show loader → await Phase 1 only
+ *   On load:
+ *     1. Show cache instantly
+ *     2. Phase 1 await → hide loader
+ *     3. Phase 2 background fetch
  *
+ *   After load (polling):
+ *     Every 30s → fetch all APIs silently
+ *     If hash changed → bust cache → update UI automatically
  * ─────────────────────────────────────────────────────────
  */
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react'; // Added useRef
 import profileService                        from '../services/profileService';
 import analyticsService                      from '../services/analyticsService';
 import skillsService                         from '../services/skillsService';
@@ -24,104 +26,128 @@ import {
   isCacheStale,
 } from '../utils/cache';
 
-/** API task definitions — key maps to CACHE_KEYS */
+/* ── Polling interval — how often to check for changes ──────────── */
+const POLL_INTERVAL_MS = 20_000; // 30 seconds — adjust as needed
+
+/** API task definitions */
 const API_TASKS = [
   {
-    key:     'profile',                              // Maps to CACHE_KEYS.profile
-    label:   'Profile',                             // For console logs
-    fetch:   () => profileService.getPublicProfile(), // API call
-    phase:   1,                                     // Phase 1 = critical (awaited)
+    key:   'profile',
+    label: 'Profile',
+    fetch: () => profileService.getPublicProfile(),
+    phase: 1,
   },
   {
-    key:     'analytics',
-    label:   'Analytics',
-    fetch:   () => analyticsService.getAnalytics(),
-    phase:   1,                                     // Phase 1 = critical (awaited)
+    key:   'analytics',
+    label: 'Analytics',
+    fetch: () => analyticsService.getAnalytics(),
+    phase: 1,
   },
   {
-    key:     'skills',
-    label:   'Skills',
-    fetch:   () => skillsService.getPublicSkills(),
-    phase:   2,                                     // Phase 2 = background
+    key:   'skills',
+    label: 'Skills',
+    fetch: () => skillsService.getPublicSkills(),
+    phase: 2,
   },
   {
-    key:     'projects',
-    label:   'Projects',
-    fetch:   () => projectsService.getProjects(),
-    phase:   2,                                     // Phase 2 = background
+    key:   'projects',
+    label: 'Projects',
+    fetch: () => projectsService.getProjects(),
+    phase: 2,
   },
   {
-    key:     'skillsSummary',
-    label:   'Skills Summary',
-    fetch:   () => skillsService.getSkillsSummary(),
-    phase:   2,                                     // Phase 2 = background
+    key:   'skillsSummary',
+    label: 'Skills Summary',
+    fetch: () => skillsService.getSkillsSummary(),
+    phase: 2,
   },
 ];
 
 export function usePortfolioData() {
 
-  /* ── Load ALL cached data synchronously as initial state ─────────
-     Page renders immediately with cached data on reload.            */
+  /* ── Load ALL cached data synchronously as initial state ─────── */
   const [data, setData] = useState(() =>
     API_TASKS.reduce((acc, task) => {
-      acc[task.key] = loadFromCacheAny(CACHE_KEYS[task.key]); // Load each from cache
+      acc[task.key] = loadFromCacheAny(CACHE_KEYS[task.key]);
       return acc;
     }, {})
   );
 
-  /* ── Show loader only if Phase 1 cache is missing ────────────────
-     If profile + analytics are both cached, skip loader entirely.   */
+  /* ── Show loader only if Phase 1 cache is missing ────────────── */
   const [loading, setLoading] = useState(() => {
-    const phase1Tasks = API_TASKS.filter(t => t.phase === 1); // Get phase 1 tasks
-    const allCached   = phase1Tasks.every(                    // Check all are cached
+    const phase1Tasks = API_TASKS.filter(t => t.phase === 1);
+    const allCached   = phase1Tasks.every(
       t => localStorage.getItem(CACHE_KEYS[t.key]) !== null
     );
-    return !allCached;                                        // True = show loader
+    return !allCached;
   });
 
   const [error,    setError]    = useState(null);
   const [progress, setProgress] = useState(0);
 
+  /* ── Ref to hold the polling timer ──────────────────────────── */
+  const pollTimerRef = useRef(null);                             // Stores setInterval ID
+
+  /* ── Ref to prevent overlapping poll calls ───────────────────── */
+  const isPollingRef = useRef(false);                            // True while poll runs
+
   /**
-   * processSingleTask — fetches one API, checks version, updates if stale.
-   * Works the same for both Phase 1 and Phase 2.
-   * @param {object} task       - One entry from API_TASKS
-   * @param {boolean} showProgress - Whether to advance the progress dots
+   * processSingleTask — fetches one API and updates UI if data changed.
+   * @param {object}  task         - One entry from API_TASKS
+   * @param {boolean} showProgress - Whether to advance progress dots
    */
   const processSingleTask = useCallback(async (task, showProgress = false) => {
     try {
-      const freshData = await task.fetch();                   // Fetch from API
+      const freshData = await task.fetch();                      // Call the API
 
-      /* Compare version with cached version */
-      const stale = isCacheStale(CACHE_KEYS[task.key], freshData);
+      const stale = isCacheStale(CACHE_KEYS[task.key], freshData); // Compare hash
 
       if (stale) {
-        /* Data changed — update cache and update UI */
-        saveToCache(CACHE_KEYS[task.key], freshData);         // Save new version
-        setData(prev => ({ ...prev, [task.key]: freshData })); // Update UI reactively
-        console.log(`[Data] 🔄 ${task.label} updated — cache busted`);
+        saveToCache(CACHE_KEYS[task.key], freshData);            // Update cache
+        setData(prev => ({ ...prev, [task.key]: freshData }));   // Update UI
+        console.log(`[Data] 🔄 ${task.label} changed — UI updated`);
       } else {
-        console.log(`[Data] ✓ ${task.label} unchanged — cache valid`);
+        console.log(`[Data] ✓ ${task.label} unchanged`);
       }
 
     } catch (err) {
-      /* API failed — keep existing cache, log warning */
-      console.warn(`[Data] ✗ ${task.label} failed — keeping cache:`, err.message);
+      console.warn(`[Data] ✗ ${task.label} failed:`, err.message);
     } finally {
-      if (showProgress) setProgress(prev => prev + 1);        // Advance loader dot
+      if (showProgress) setProgress(prev => prev + 1);           // Advance loader dot
     }
   }, []);
 
-  const fetchAll = useCallback(async () => {
+  /**
+   * pollForChanges — silently checks all APIs for changes.
+   * Runs on interval after initial load completes.
+   * Skips if a poll is already in progress.
+   */
+  const pollForChanges = useCallback(async () => {
+    if (isPollingRef.current) return;                            // Skip overlapping polls
+    isPollingRef.current = true;                                 // Lock
 
-    /* Check Phase 1 cache status */
+    console.log('[Poll] 🔍 Checking for data changes...');
+
+    /* Check all APIs silently — no loader, no progress dots */
+    await Promise.all(
+      API_TASKS.map(task => processSingleTask(task, false))      // Silent for all
+    );
+
+    isPollingRef.current = false;                                // Unlock
+  }, [processSingleTask]);
+
+  /**
+   * fetchAll — initial load with loader for Phase 1.
+   * Phase 2 runs in background after loader hides.
+   */
+  const fetchAll = useCallback(async () => {
     const phase1Tasks = API_TASKS.filter(t => t.phase === 1);
     const phase2Tasks = API_TASKS.filter(t => t.phase === 2);
+
     const hasPhase1Cache = phase1Tasks.every(
       t => localStorage.getItem(CACHE_KEYS[t.key]) !== null
     );
 
-    /* Show loader only on first visit (no Phase 1 cache) */
     if (!hasPhase1Cache) {
       setLoading(true);
       setProgress(0);
@@ -129,42 +155,50 @@ export function usePortfolioData() {
 
     setError(null);
 
-    /* ═══════════════════════════════════════════════════
-       PHASE 1 — await Phase 1 tasks sequentially
-       Each one checks version and updates UI if stale.
-       Loader stays visible until both finish.
-    ═══════════════════════════════════════════════════ */
+    /* ── PHASE 1: await both critical APIs ── */
     await Promise.all(
-      phase1Tasks.map(task =>
-        processSingleTask(task, !hasPhase1Cache)               // Show progress if loading
-      )
+      phase1Tasks.map(task => processSingleTask(task, !hasPhase1Cache))
     );
 
-    /* Check if Phase 1 produced any data at all */
-    const phase1HasData = phase1Tasks.some(
-      t => localStorage.getItem(CACHE_KEYS[t.key]) !== null   // Cache exists after fetch
+    /* Check if anything loaded at all */
+    const hasAnyData = phase1Tasks.some(
+      t => localStorage.getItem(CACHE_KEYS[t.key]) !== null
     );
 
-    if (!phase1HasData) {
-      setError('Backend is offline');                          // Nothing cached + API failed
+    if (!hasAnyData) {
+      setError('Backend is offline');
     }
 
-    /* ── Release loader — page opens here ── */
-    setLoading(false);
+    setLoading(false);                                           // Page opens here
 
-    /* ═══════════════════════════════════════════════════
-       PHASE 2 — no await — runs in background
-       Each task independently checks version + updates UI.
-    ═══════════════════════════════════════════════════ */
-    phase2Tasks.forEach(task => {
-      processSingleTask(task, false);                          // Silent — no progress dots
-    });
+    /* ── PHASE 2: background, no await ── */
+    phase2Tasks.forEach(task => processSingleTask(task, false));
 
   }, [processSingleTask]);
 
+  /* ── Start polling after initial load ───────────────────────── */
   useEffect(() => {
-    fetchAll();
-  }, [fetchAll]);
+    fetchAll().then(() => {
+
+      /* Clear any existing timer before starting new one */
+      if (pollTimerRef.current) clearInterval(pollTimerRef.current);
+
+      /* Start polling every POLL_INTERVAL_MS */
+      pollTimerRef.current = setInterval(() => {
+        pollForChanges();                                        // Silent background check
+      }, POLL_INTERVAL_MS);
+
+      console.log(`[Poll] ✓ Started — checking every ${POLL_INTERVAL_MS / 1000}s`);
+    });
+
+    /* Cleanup: stop polling when component unmounts */
+    return () => {
+      if (pollTimerRef.current) {
+        clearInterval(pollTimerRef.current);                     // Stop the interval
+        console.log('[Poll] ✗ Stopped — component unmounted');
+      }
+    };
+  }, [fetchAll, pollForChanges]);
 
   return { data, loading, error, progress, refetch: fetchAll };
 }
