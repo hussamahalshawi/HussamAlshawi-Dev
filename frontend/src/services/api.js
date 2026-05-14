@@ -1,66 +1,38 @@
 /**
  * api.js — Centralized Axios instance for API requests.
- * Features: Exponential backoff retries, Timeout handling, and Interceptors.
+ * Simplified: fast timeout + no retry = faster failure feedback.
  */
 
-import axios from 'axios';
-import axiosRetry from 'axios-retry';
+import axios from 'axios';                              // HTTP client library
 
 // ── ENVIRONMENT CONFIGURATION ─────────────────────────────────────
-const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+const BASE_URL = import.meta.env.VITE_API_URL           // Read from .env file
+  || 'http://localhost:5000/api';                       // Fallback for local dev
 
 // ── AXIOS INSTANCE CREATION ───────────────────────────────────────
 const apiClient = axios.create({
-  baseURL: BASE_URL,
-  timeout: 0, // Increased to 10 seconds for unstable networks
-  headers: { 'Content-Type': 'application/json' },
+  baseURL: BASE_URL,                                    // All requests relative to this
+  timeout: 8000,                                        // 8s max — fail fast, no hanging
+  headers: { 'Content-Type': 'application/json' },     // Default JSON header
 });
-
-// ── RETRY LOGIC CONFIGURATION ─────────────────────────────────────
-/**
- * Configures automatic retries to handle network flakiness.
- * It will retry 3 times before returning a final error.
- */
-axiosRetry(apiClient, {
-  retries: 3, // Total number of retry attempts
-  retryDelay: (retryCount) => {
-    // Exponential backoff: waits 2s, 4s, then 6s between retries
-    console.warn(`[API] Connection issue. Retrying attempt #${retryCount}...`);
-    return retryCount * 2000;
-  },
-  retryCondition: (error) => {
-  // Only retry on network errors, NOT on timeout since timeout is disabled
-  return axiosRetry.isNetworkOrIdempotentRequestError(error);
-},
-  shouldResetTimeout: true, // Reset timeout clock for each retry attempt
-});
-
-// ── REQUEST INTERCEPTOR ───────────────────────────────────────────
-apiClient.interceptors.request.use(
-  (config) => {
-    // Logic for injecting Auth tokens can be added here in the future
-    return config;
-  },
-  (error) => Promise.reject(error)
-);
 
 // ── RESPONSE INTERCEPTOR ──────────────────────────────────────────
 apiClient.interceptors.response.use(
-  (response) => response.data, // Directly return the data payload
+  (response) => response.data,                          // Unwrap data directly
   (error) => {
-    const status = error.response?.status;
-    const message = error.response?.data?.message || error.message;
+    const status  = error.response?.status;             // HTTP status code if any
+    const message = error.response?.data?.message      // Server error message
+      || error.message;                                 // Fallback to axios message
 
-    // Log final error after all retry attempts fail
-    console.error(`[API Final Error] ${status || 'NETWORK'}: ${message}`);
+    console.error(`[API Error] ${status || 'NETWORK'}: ${message}`); // Dev log
 
     return Promise.reject({
-      status,
-      message,
-      isNetworkError: !error.response,
-      isTimeout: error.code === 'ECONNABORTED',
+      status,                                           // e.g. 404, 500
+      message,                                          // Human-readable error
+      isNetworkError: !error.response,                  // True if no response at all
+      isTimeout:      error.code === 'ECONNABORTED',    // True if 8s exceeded
     });
   }
 );
 
-export default apiClient;
+export default apiClient;                               // Single instance for all services
