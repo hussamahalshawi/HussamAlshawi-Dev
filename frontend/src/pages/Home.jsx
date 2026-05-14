@@ -128,10 +128,21 @@ export default function Home() {
         <OfflineBanner message={error} />
       )}
 
-      {/* SECTION 1 — Overview */}
-      <AnimatedSection id="overview" className="section">
-          <OverviewSection profile={data.profile} analytics={data.analytics} />
-        </AnimatedSection>
+      {/* SECTION 1 — Overview: uses Phase 1 data (always ready) */}
+    <AnimatedSection id="overview" className="section">
+      <OverviewSection profile={data.profile} analytics={data.analytics} />
+    </AnimatedSection>
+
+    {/* SECTION 2 — Analytics: uses Phase 1 data (always ready) */}
+    <AnimatedSection id="analytics" className="section section--alt">
+      <AnalyticsSection analytics={data.analytics} />
+    </AnimatedSection>
+
+    {/* SECTION 3 — Skills: uses Phase 2 data (loads in background) */}
+    {/* data.skills will be null initially then update when Phase 2 finishes */}
+    <AnimatedSection id="skills" className="section">
+      <SkillsSection skills={data.skills} summary={data.skillsSummary} />
+    </AnimatedSection>
 
       {/* Rest of sections... */}
     </DashboardLayout>
