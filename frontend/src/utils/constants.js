@@ -165,13 +165,20 @@ export const ANIMATION = {
    Cycled through by the PageLoader component.
 ══════════════════════════════════════════════════════════ */
 export const LOADER_MESSAGES = [
-  'Connecting to server...',       // Step 0 — before any response
-  'Loading your profile...',       // Step 1 — profile done
-  'Crunching the analytics...',    // Step 2 — analytics done
-  'Mapping your skills...',        // Step 3 — skills done
-  'Fetching your projects...',     // Step 4 — projects done
-  'Everything is ready!',          // Step 5 — all done, dashboard opens
+  'Connecting to server...',  // Step 0 — before any response
+  'Loading your profile...',  // Step 1 — profile done
+  'Almost ready...',          // Step 2 — analytics done → loader hides next
 ];
+
+//export const LOADER_MESSAGES = [
+//  'Connecting to server...',       // Step 0 — before any response
+//  'Loading your profile...',       // Step 1 — profile done
+//  'Crunching the analytics...',    // Step 2 — analytics done
+//  'Mapping your skills...',        // Step 3 — skills done
+//  'Fetching your projects...',     // Step 4 — projects done
+//  'Everything is ready!',          // Step 5 — all done, dashboard opens
+//];
+
 
 /* ══════════════════════════════════════════════════════════
    9. REQUEST TIMEOUT
