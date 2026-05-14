@@ -99,15 +99,26 @@
   overflow:   hidden;
   border-radius: var(--r-xl);
   padding:    var(--s6);
-  transition: border-color 0.25s ease, background 0.35s ease;
+  transition: border-color 0.30s ease, background 0.35s ease,
+              box-shadow 0.30s ease, transform 0.25s ease;
 
-  background:              rgba(14, 20, 40, 0.78);
-  backdrop-filter:         blur(24px) saturate(1.5);
-  -webkit-backdrop-filter: blur(24px) saturate(1.5);
-  border:                  1px solid rgba(255, 255, 255, 0.09);
-  box-shadow:              0 8px 32px rgba(0, 0, 0, 0.40),
-                           0 0 0 1px rgba(255, 255, 255, 0.04),
-                           inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  background:              rgba(10, 15, 32, 0.50);
+  backdrop-filter:         blur(32px) saturate(1.7) brightness(0.88);
+  -webkit-backdrop-filter: blur(32px) saturate(1.7) brightness(0.88);
+  border:                  1px solid rgba(255, 255, 255, 0.08);
+  box-shadow:              0 8px 40px rgba(0,0,0,0.35),
+                           0 0 0 1px rgba(255,255,255,0.04),
+                           inset 0 1px 0 rgba(255,255,255,0.08);
+}
+
+/* Hover: white glass brighten effect */
+.ov-panel:hover {
+  border-color: rgba(255, 255, 255, 0.18);
+  background:   rgba(255, 255, 255, 0.06);
+  box-shadow:   0 12px 48px rgba(0,0,0,0.40),
+                0 0 0 1px rgba(255,255,255,0.10),
+                inset 0 1px 0 rgba(255,255,255,0.14);
+  transform:    translateY(-2px);
 }
 
 /* Top gloss line — Devoryn signature detail */
@@ -958,18 +969,21 @@
    Maintain glassmorphism with lighter palette
 ══════════════════════════════════════════════════════ */
 [data-theme="light"] .ov-panel {
-  background: rgba(255,255,255,0.28);
-backdrop-filter: blur(24px) saturate(1.8);
-border: 1px solid rgba(255,255,255,0.50);
-  border-color: rgba(79,100,145,0.18);
-  box-shadow:
-    0 4px 24px rgba(79,100,145,0.14),
-    0 1px 0 rgba(255,255,255,0.90) inset;
+  background:   rgba(255, 255, 255, 0.32);
+  backdrop-filter: blur(32px) saturate(2.0) brightness(1.04);
+  -webkit-backdrop-filter: blur(32px) saturate(2.0) brightness(1.04);
+  border-color: rgba(255, 255, 255, 0.60);
+  box-shadow:   0 4px 24px rgba(79,100,145,0.10),
+                inset 0 1px 0 rgba(255,255,255,0.80);
 }
 
+/* Hover: white milk glass pop */
 [data-theme="light"] .ov-panel:hover {
-  border-color: rgba(79,145,247,0.35);
-  background:   rgba(255,255,255,0.82);
+  border-color: rgba(255, 255, 255, 0.90);
+  background:   rgba(255, 255, 255, 0.58);
+  box-shadow:   0 8px 32px rgba(79,100,145,0.16),
+                inset 0 1px 0 rgba(255,255,255,0.95);
+  transform:    translateY(-2px);
 }
 
 /* Panel title in light mode */
@@ -1152,3 +1166,24 @@ border: 1px solid rgba(255,255,255,0.50);
 .ov-stat__divider { display: none; }
 .ov-stat__icon    { display: none; }
 .ov-stat__text    { display: none; }
+
+/* Light mode: fix all colored numbers/scores to use dark readable colors */
+[data-theme="light"] .ov-proj-row__pct,
+[data-theme="light"] .ov-skill-row__score,
+[data-theme="light"] .ov-legend-pct,
+[data-theme="light"] .ov-record-item__num,
+[data-theme="light"] .ov-stat__num {
+  filter: brightness(0.72) saturate(1.2);  /* Darken vivid colors for readability */
+}
+
+[data-theme="light"] .ov-panel__title  { color: #1a2332; }
+[data-theme="light"] .ov-panel__subtitle { color: #5a7499; }
+[data-theme="light"] .ov-profile__name  { color: #1a2332; }
+[data-theme="light"] .ov-profile__bio   { color: #3d5a80; }
+[data-theme="light"] .ov-legend-label   { color: #3d5a80; }
+[data-theme="light"] .ov-legend-range   { color: #6b8aaa; }
+[data-theme="light"] .ov-skill-row__name,
+[data-theme="light"] .ov-proj-row__name { color: #1e2d42; }
+[data-theme="light"] .ov-record-item__label { color: #5a7499; }
+[data-theme="light"] .ov-donut-center__num  { color: #1a2332; }
+[data-theme="light"] .ov-donut-center__sub  { color: #6b8aaa; }
