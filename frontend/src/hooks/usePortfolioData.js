@@ -1,15 +1,13 @@
 /**
  * usePortfolioData.js
  * ─────────────────────────────────────────────────────────
- * Cache-first loading strategy:
- *   1. Load cached data instantly → no loader if cache exists
- *   2. Always fetch fresh data in background
- *   3. Update state when fresh data arrives
- *   4. Save every successful response to cache
+ * Cache-first + Priority Loading:
+ *   Phase 1: Profile + Analytics → await → hide loader → save cache
+ *   Phase 2: Skills + Projects + Summary → no await → save cache silently
  * ─────────────────────────────────────────────────────────
  */
 
-import { useState, useEffect, useCallback } from 'react';           // React hooks
+import { useState, useEffect, useCallback } from 'react';
 import profileService                        from '../services/profileService';
 import analyticsService                      from '../services/analyticsService';
 import skillsService                         from '../services/skillsService';
@@ -17,8 +15,8 @@ import projectsService                       from '../services/projectsService';
 import {
   CACHE_KEYS,
   saveToCache,
-  loadFromCacheAny,                                                  // Ignore expiry — show stale
-} from '../utils/cache';                                             // Cache utility
+  loadFromCacheAny,
+} from '../utils/cache';
 
 /** Default empty state */
 const INITIAL_STATE = {
@@ -29,128 +27,122 @@ const INITIAL_STATE = {
   skillsSummary: null,
 };
 
-/**
- * usePortfolioData — cache-first strategy with background refresh.
- * @returns {{ data, loading, error, progress, refetch }}
- */
 export function usePortfolioData() {
 
-  /* ── Load cached data as initial state ──────────────────────────── */
-  /* This runs synchronously before first render — no flicker */
+  /* ── Load ALL cached data as initial state synchronously ─────────
+     Every key loads from cache instantly before first render.
+     Phase 2 sections show cached data immediately on reload.        */
   const [data, setData] = useState(() => ({
-    profile:       loadFromCacheAny(CACHE_KEYS.profile),       // Instant from cache
-    analytics:     loadFromCacheAny(CACHE_KEYS.analytics),     // Instant from cache
-    skills:        loadFromCacheAny(CACHE_KEYS.skills),        // Instant from cache
-    projects:      loadFromCacheAny(CACHE_KEYS.projects),      // Instant from cache
-    skillsSummary: loadFromCacheAny(CACHE_KEYS.skillsSummary), // Instant from cache
+    profile:       loadFromCacheAny(CACHE_KEYS.profile),
+    analytics:     loadFromCacheAny(CACHE_KEYS.analytics),
+    skills:        loadFromCacheAny(CACHE_KEYS.skills),
+    projects:      loadFromCacheAny(CACHE_KEYS.projects),
+    skillsSummary: loadFromCacheAny(CACHE_KEYS.skillsSummary),
   }));
 
-  /* ── Loading is false immediately if ANY cache exists ───────────── */
-  const [loading,  setLoading]  = useState(() => {
-    const hasAnyCache = Object.values(CACHE_KEYS).some(          // Check all keys
-      key => localStorage.getItem(key) !== null                  // True if key exists
-    );
-    return !hasAnyCache;                                         // False = skip loader
+  /* ── Show loader only if Phase 1 cache is missing ────────────────
+     If profile + analytics are cached, skip the loader entirely.    */
+  const [loading, setLoading] = useState(() => {
+    const hasPhase1Cache =
+      localStorage.getItem(CACHE_KEYS.profile)   !== null &&  // Profile cached
+      localStorage.getItem(CACHE_KEYS.analytics) !== null;    // Analytics cached
+    return !hasPhase1Cache;                                    // false = skip loader
   });
 
-  const [error,    setError]    = useState(null);                // Global error
-  const [progress, setProgress] = useState(0);                   // Loader progress 0→5
+  const [error,    setError]    = useState(null);
+  const [progress, setProgress] = useState(0);
 
   const fetchAll = useCallback(async () => {
 
-    /* Only show loader if there is NO cache at all */
-    const hasAnyCache = Object.values(CACHE_KEYS).some(
-      key => localStorage.getItem(key) !== null
-    );
+    /* Check if Phase 1 is already cached — determines loader visibility */
+    const hasPhase1Cache =
+      localStorage.getItem(CACHE_KEYS.profile)   !== null &&
+      localStorage.getItem(CACHE_KEYS.analytics) !== null;
 
-    if (!hasAnyCache) {
-      setLoading(true);                                          // First ever visit
-      setProgress(0);                                            // Reset dots
+    if (!hasPhase1Cache) {
+      setLoading(true);                                        // Show loader first visit
+      setProgress(0);                                          // Reset progress dots
     }
 
-    setError(null);                                              // Always clear errors
+    setError(null);
 
-    /* Define all 5 tasks */
-    const tasks = [
-      profileService.getPublicProfile(),    // Task 0: Profile
-      analyticsService.getAnalytics(),      // Task 1: Analytics
-      skillsService.getPublicSkills(),      // Task 2: Skills
-      projectsService.getProjects(),        // Task 3: Projects
-      skillsService.getSkillsSummary(),     // Task 4: Summary
+    /* ═══════════════════════════════════════════════════
+       PHASE 1 — await these two before opening the page
+       Profile + Analytics = enough for OverviewSection
+    ═══════════════════════════════════════════════════ */
+    const phase1Tasks = [
+      profileService.getPublicProfile(),                       // Critical task 0
+      analyticsService.getAnalytics(),                         // Critical task 1
     ];
 
-    const taskNames = ['Profile', 'Analytics', 'Skills', 'Projects', 'Summary'];
-
-    /* Advance progress only when loader is visible */
-    tasks.forEach((task, index) => {
+    /* Advance progress dots in real time */
+    phase1Tasks.forEach((task, i) => {
+      const names = ['Profile', 'Analytics'];
       task.finally(() => {
-        console.log(`[Loader] ✓ ${taskNames[index]} loaded`);   // Dev feedback
-        if (!hasAnyCache) setProgress(prev => prev + 1);        // Dots only if loading
+        console.log(`[Phase 1] ✓ ${names[i]} loaded`);
+        if (!hasPhase1Cache) setProgress(prev => prev + 1);   // Only if loader visible
       });
     });
 
-    /* Wait for ALL APIs */
-    const [profileRes, analyticsRes, skillsRes, projectsRes, summaryRes] =
-      await Promise.allSettled(tasks);
+    /* ── AWAIT Phase 1 — page stays on loader until here ── */
+    const [profileRes, analyticsRes] = await Promise.allSettled(phase1Tasks);
 
-    /* ── Process each result — save to cache if successful ─────────── */
-    const newData = {};                                          // Build fresh data object
+    /* Save Phase 1 to cache or fall back to existing cache */
+    const phase1Data = {
+      profile: profileRes.status === 'fulfilled'
+        ? (saveToCache(CACHE_KEYS.profile, profileRes.value), profileRes.value)
+        : loadFromCacheAny(CACHE_KEYS.profile),                // Use cache if API failed
 
-    if (profileRes.status === 'fulfilled') {
-      newData.profile = profileRes.value;                       // Use fresh data
-      saveToCache(CACHE_KEYS.profile, profileRes.value);        // Save to cache
-    } else {
-      newData.profile = loadFromCacheAny(CACHE_KEYS.profile);   // Fall back to cache
-      console.warn('[Data] Profile failed — using cached version');
-    }
+      analytics: analyticsRes.status === 'fulfilled'
+        ? (saveToCache(CACHE_KEYS.analytics, analyticsRes.value), analyticsRes.value)
+        : loadFromCacheAny(CACHE_KEYS.analytics),              // Use cache if API failed
+    };
 
-    if (analyticsRes.status === 'fulfilled') {
-      newData.analytics = analyticsRes.value;
-      saveToCache(CACHE_KEYS.analytics, analyticsRes.value);
-    } else {
-      newData.analytics = loadFromCacheAny(CACHE_KEYS.analytics);
-      console.warn('[Data] Analytics failed — using cached version');
-    }
-
-    if (skillsRes.status === 'fulfilled') {
-      newData.skills = skillsRes.value;
-      saveToCache(CACHE_KEYS.skills, skillsRes.value);
-    } else {
-      newData.skills = loadFromCacheAny(CACHE_KEYS.skills);
-      console.warn('[Data] Skills failed — using cached version');
-    }
-
-    if (projectsRes.status === 'fulfilled') {
-      newData.projects = projectsRes.value;
-      saveToCache(CACHE_KEYS.projects, projectsRes.value);
-    } else {
-      newData.projects = loadFromCacheAny(CACHE_KEYS.projects);
-      console.warn('[Data] Projects failed — using cached version');
-    }
-
-    if (summaryRes.status === 'fulfilled') {
-      newData.skillsSummary = summaryRes.value;
-      saveToCache(CACHE_KEYS.skillsSummary, summaryRes.value);
-    } else {
-      newData.skillsSummary = loadFromCacheAny(CACHE_KEYS.skillsSummary);
-      console.warn('[Data] Summary failed — using cached version');
-    }
-
-    /* ── Check if everything is null (no cache + all APIs failed) ─── */
-    const allFailed = Object.values(newData).every(v => v === null);
-    if (allFailed) {
-      const firstRejection = [profileRes, analyticsRes, skillsRes, projectsRes, summaryRes]
-        .find(r => r.status === 'rejected');
-      const isOffline = firstRejection?.reason?.isNetworkError;
+    /* Show error only if Phase 1 has no data at all — no API + no cache */
+    const phase1Failed = !phase1Data.profile && !phase1Data.analytics;
+    if (phase1Failed) {
+      const isOffline = [profileRes, analyticsRes]
+        .find(r => r.status === 'rejected')?.reason?.isNetworkError;
       setError(isOffline ? 'Backend is offline' : 'Failed to load portfolio data');
     }
 
-    setData(newData);    // Update UI with fresh or fallback data
-    setLoading(false);   // Hide loader regardless
+    /* Update state with Phase 1 data and open the page */
+    setData(prev => ({ ...prev, ...phase1Data }));
+    setLoading(false);                                         // ← Page opens HERE
+
+    /* ═══════════════════════════════════════════════════
+       PHASE 2 — NO await — runs silently after page opens
+       Skills + Projects + Summary load in the background
+    ═══════════════════════════════════════════════════ */
+    Promise.allSettled([
+      skillsService.getPublicSkills(),                         // Background task 0
+      projectsService.getProjects(),                           // Background task 1
+      skillsService.getSkillsSummary(),                        // Background task 2
+    ]).then(([skillsRes, projectsRes, summaryRes]) => {
+
+      const phase2Data = {
+        skills: skillsRes.status === 'fulfilled'
+          ? (saveToCache(CACHE_KEYS.skills, skillsRes.value), skillsRes.value)
+          : loadFromCacheAny(CACHE_KEYS.skills),               // Use cache if failed
+
+        projects: projectsRes.status === 'fulfilled'
+          ? (saveToCache(CACHE_KEYS.projects, projectsRes.value), projectsRes.value)
+          : loadFromCacheAny(CACHE_KEYS.projects),             // Use cache if failed
+
+        skillsSummary: summaryRes.status === 'fulfilled'
+          ? (saveToCache(CACHE_KEYS.skillsSummary, summaryRes.value), summaryRes.value)
+          : loadFromCacheAny(CACHE_KEYS.skillsSummary),        // Use cache if failed
+      };
+
+      console.log('[Phase 2] ✓ Background data loaded');
+      setData(prev => ({ ...prev, ...phase2Data }));           // Merge into existing state
+    });
+    /* No catch — allSettled never rejects */
+
   }, []);
 
   useEffect(() => {
-    fetchAll();          // Run on mount
+    fetchAll();
   }, [fetchAll]);
 
   return { data, loading, error, progress, refetch: fetchAll };
