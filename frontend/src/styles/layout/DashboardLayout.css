@@ -1,117 +1,93 @@
 /* ═══════════════════════════════════════════════════════════════
-   DashboardLayout.css — Devoryn-Grade Glassmorphism Shell
-   Fully theme-aware: uses CSS variables from index.css
-   Fixed sidebar + sticky topbar + scrollable content area
+   DashboardLayout.css — Premium Glassmorphism Dashboard Shell
+   Redesigned Topbar: full-width frosted bar with gradient border
+   Redesigned Sidebar: transparent bg, pill-style nav items
+   Fully theme-aware: CSS variables from index.css
    ═══════════════════════════════════════════════════════════════ */
 
 /* ── Root wrapper ─────────────────────────────────────────────── */
 .dashboard-root {
-  display:    flex;
-  min-height: 100vh;
-  background: var(--body-bg-base);                /* Theme-aware background */
-  position:   relative;
-  overflow-x: hidden;
-  transition: background 0.35s ease;            /* Smooth theme switch */
+  display:    flex;                             /* Side-by-side: sidebar + main      */
+  min-height: 100vh;                            /* Full viewport height              */
+  background: var(--body-bg-base);              /* Theme-aware base color            */
+  position:   relative;                         /* Stacking context                  */
+  overflow-x: hidden;                           /* Prevent horizontal scroll         */
+  transition: background 0.35s ease;           /* Smooth theme switch               */
 }
 
 /* ═══════════════════════════════════════════════════
-   SIDEBAR — Deep Frosted Glass Panel
-   Uses --sidebar-bg which switches per theme
+   SIDEBAR — Fully Transparent Glass Shell
+   No solid background — only frosted blur
+   Each nav item is its own pill card
 ═══════════════════════════════════════════════════ */
 .sidebar {
-  width:          var(--sidebar-width, 260px);
-  min-height:     100vh;
-  position:       fixed;
-  top:            0;
-  left:           0;
-  z-index:        200;
-  display:        flex;
-  flex-direction: column;
-  padding:        var(--s5) var(--s4) var(--s6);
-  overflow-y:     auto;
-  overflow-x:     hidden;
-  transition:     transform var(--t-slow),
-                  background 0.35s ease,        /* Smooth theme switch */
-                  border-color 0.35s ease;
+  width:          var(--sidebar-width, 260px);  /* Fixed sidebar width               */
+  min-height:     100vh;                        /* Full height                       */
+  position:       fixed;                        /* Pinned to left edge               */
+  top:            0;                            /* From top                          */
+  left:           0;                            /* From left                         */
+  z-index:        200;                          /* Above main content                */
+  display:        flex;                         /* Flex column layout                */
+  flex-direction: column;                       /* Stack children vertically         */
+  padding:        var(--s5) var(--s4) var(--s6);/* Inner spacing                    */
+  overflow-y:     auto;                         /* Scroll if content overflows       */
+  overflow-x:     hidden;                       /* No horizontal scroll              */
+  transition:     transform var(--t-slow),      /* Slide animation on mobile         */
+                  border-color 0.35s ease;      /* Smooth theme switch               */
 
-  background:              var(--sidebar-bg);   /* Switches between dark/light */
-  backdrop-filter:         blur(40px) saturate(1.8);
-  -webkit-backdrop-filter: blur(40px) saturate(1.8);
-  border-right:            1px solid var(--sidebar-border);
-  box-shadow:              var(--sidebar-shadow),
-                           inset -1px 0 0 rgba(255,255,255,0.04);
+  /* Fully transparent — no background color at all */
+  background:   transparent;                    /* See-through sidebar               */
+  border-right: 1px solid var(--border-subtle); /* Subtle right divider              */
+
+  /* No box-shadow — clean transparent look */
+  box-shadow: none;
 }
 
-/* Thin custom scrollbar inside sidebar */
+/* Custom scrollbar — thin cyan line */
 .sidebar::-webkit-scrollbar       { width: 2px; }
 .sidebar::-webkit-scrollbar-track { background: transparent; }
 .sidebar::-webkit-scrollbar-thumb {
-  background:    var(--cyan-dim);
+  background:    var(--cyan-dim);               /* Themed scrollbar */
   border-radius: var(--r-full);
 }
 
-/* Right-edge glow line */
-.sidebar::after {
-  content:  '';
-  position: absolute;
-  right:    0;
-  top:      8%;
-  bottom:   8%;
-  width:    1px;
-  background: linear-gradient(
-    to bottom,
-    transparent 0%,
-    var(--border-cyan) 35%,
-    var(--cyan-dim) 65%,
-    transparent 100%
-  );
-  pointer-events: none;
-}
+/* Remove old pseudo-element decorations */
+.sidebar::after  { display: none; }             /* Remove right glow line            */
+.sidebar::before { display: none; }             /* Remove top gloss line             */
 
-/* Top gloss line */
-.sidebar::before {
-  content:    '';
-  position:   absolute;
-  top:        0;
-  left:       0;
-  right:      0;
-  height:     1px;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.20), transparent);
-  pointer-events: none;
-}
-
-/* Water-droplet texture overlay (decorative) */
+/* Water-droplet texture overlay — keep subtle */
 .sidebar__texture {
   position:         absolute;
   inset:            0;
   pointer-events:   none;
   z-index:          0;
   background-image:
-    radial-gradient(circle at 18% 28%, rgba(255,255,255,0.035) 1.5px, transparent 1.5px),
-    radial-gradient(circle at 72% 14%, rgba(255,255,255,0.025) 1px,   transparent 1px),
-    radial-gradient(circle at 84% 60%, rgba(255,255,255,0.03)  2px,   transparent 2px),
-    radial-gradient(circle at 33% 76%, rgba(255,255,255,0.02)  1.5px, transparent 1.5px);
+    radial-gradient(circle at 18% 28%, rgba(255,255,255,0.018) 1.5px, transparent 1.5px),
+    radial-gradient(circle at 72% 14%, rgba(255,255,255,0.012) 1px,   transparent 1px),
+    radial-gradient(circle at 84% 60%, rgba(255,255,255,0.015) 2px,   transparent 2px);
   border-radius: inherit;
 }
 
 /* All sidebar content above texture */
 .sidebar > *:not(.sidebar__texture) { position: relative; z-index: 1; }
 
-/* ── Logo ─────────────────────────────────────────── */
+/* ── Sidebar Logo ─────────────────────────────────── */
 .sidebar__logo {
-  display:         flex;
-  align-items:     center;
-  gap:             var(--s3);
-  padding:         var(--s3) var(--s2);
-  margin-bottom:   var(--s6);
-  text-decoration: none;
-  border-radius:   var(--r-lg);
-  transition:      background var(--t-fast);
+  display:         flex;                        /* Row: mark + text                  */
+  align-items:     center;                      /* Vertically centered               */
+  gap:             var(--s3);                   /* 12px gap                          */
+  padding:         var(--s3) var(--s2);         /* Inner padding                     */
+  margin-bottom:   var(--s6);                   /* Space below logo                  */
+  text-decoration: none;                        /* No underline                      */
+  border-radius:   var(--r-lg);                 /* Rounded corners                   */
+  transition:      background var(--t-fast);   /* Hover transition                  */
 }
 
-.sidebar__logo:hover { background: var(--glass-light); }
+.sidebar__logo:hover {
+  background: var(--glass-light);               /* Subtle glass on hover             */
+}
 
-/* Brand gradient square */
+/* Brand gradient square mark */
 .sidebar__logo-mark {
   width:           38px;
   height:          38px;
@@ -126,21 +102,34 @@
   color:           #fff;
   flex-shrink:     0;
   box-shadow:      0 0 20px var(--cyan-dim), 0 4px 12px rgba(0,0,0,0.3);
+  overflow:        hidden;                      /* Clip avatar image                 */
 }
 
+/* Logo text with subtle glow */
 .sidebar__logo-text {
   font-family:     var(--font-display);
   font-size:       1.22rem;
   font-weight:     800;
-  color:           var(--text-white);           /* Inverted in light mode → dark text */
+  color:           var(--text-white);
   letter-spacing:  0.01em;
   line-height:     1;
   transition:      color 0.35s ease;
+  text-shadow:
+    0 0 10px var(--cyan),
+    0 0 20px var(--cyan-dim),
+    0 0 40px rgba(79,195,247,0.15);
 }
 
 .sidebar__logo-text em {
-  color:      var(--cyan);
+  color:      var(--cyan);                      /* Cyan dot accent                   */
   font-style: normal;
+}
+
+.sidebar__logo:hover .sidebar__logo-text {
+  text-shadow:
+    0 0 14px var(--cyan),
+    0 0 28px var(--cyan),
+    0 0 60px rgba(79,195,247,0.30);
 }
 
 /* ── Nav section label ────────────────────────────── */
@@ -156,49 +145,62 @@
   transition:     color 0.35s ease;
 }
 
-/* ── Nav links ────────────────────────────────────── */
+/* ── Nav links — each item is a self-contained pill card ── */
 .sidebar__nav {
   display:        flex;
   flex-direction: column;
-  gap:            2px;
+  gap:            4px;                          /* Tight gap between pill cards      */
   flex:           1;
 }
 
+/* Each nav item: pill card with glass background */
 .nav-item {
   display:         flex;
   align-items:     center;
-  gap:             var(--s3);
-  padding:         0.6rem var(--s3);
-  border-radius:   var(--r-md);
-  color:           var(--text-secondary);
+  gap:             var(--s3);                   /* Gap between icon and label        */
+  padding:         0.65rem var(--s4);           /* Comfortable click area            */
+  border-radius:   var(--r-lg);                 /* Pill-like rounded card            */
+  color:           var(--text-secondary);       /* Default muted text                */
   font-size:       0.85rem;
   font-weight:     500;
   text-decoration: none;
-  border:          1px solid transparent;
-  transition:      all var(--t-base);
-  position:        relative;
   cursor:          pointer;
+  position:        relative;
+  transition:      all var(--t-base);
+
+  /* Each item has its own subtle glass card */
+  background:      var(--glass-faint);          /* Very subtle glass base            */
+  border:          1px solid var(--border-faint);/* Barely-visible border            */
+  backdrop-filter: blur(12px);                  /* Blur behind each pill             */
+  -webkit-backdrop-filter: blur(12px);
 }
 
+/* Hover state — card becomes more visible */
 .nav-item:hover {
-  background:   var(--glass-medium);
-  color:        var(--text-primary);
-  border-color: var(--border-subtle);
+  background:      var(--glass-medium);         /* Brighter glass on hover           */
+  color:           var(--text-primary);         /* Brighter text on hover            */
+  border-color:    var(--border-subtle);        /* Slightly more visible border      */
+  transform:       translateX(4px);             /* Subtle right nudge                */
+  box-shadow:      0 4px 16px rgba(0,0,0,0.20);/* Depth shadow on hover             */
 }
 
-/* Active state — uses theme-aware nav variables */
+/* Active state — highlighted cyan pill card */
 .nav-item--active {
-  background:   var(--nav-active-bg);
-  color:        var(--nav-active-color);
-  border-color: var(--nav-active-border);
-  box-shadow:   inset 0 0 0 1px var(--nav-active-border);
+  background:   rgba(79,195,247,0.12);          /* Cyan-tinted glass                 */
+  color:        var(--nav-active-color);        /* Cyan text                         */
+  border-color: rgba(79,195,247,0.30);          /* Cyan border                       */
+  box-shadow:
+    0 0 0 1px rgba(79,195,247,0.20),            /* Inner ring                        */
+    0 4px 20px rgba(79,195,247,0.10),           /* Outer glow                        */
+    inset 0 1px 0 rgba(255,255,255,0.08);       /* Top gloss line                    */
+  transform: translateX(0);                    /* No nudge when active              */
 }
 
-/* Left accent bar on active item */
+/* Left accent bar — only on active item */
 .nav-item--active::before {
   content:       '';
   position:      absolute;
-  left:          -1px;
+  left:          0;                             /* Flush with card left edge         */
   top:           20%;
   height:        60%;
   width:         3px;
@@ -207,6 +209,12 @@
   box-shadow:    0 0 10px var(--cyan), 0 0 20px var(--cyan-dim);
 }
 
+/* Active label glow */
+.nav-item--active .nav-item__label {
+  text-shadow: 0 0 8px var(--cyan), 0 0 16px var(--cyan-dim);
+}
+
+/* Nav icon */
 .nav-item__icon {
   width:           22px;
   height:          22px;
@@ -266,7 +274,6 @@
   border-color: var(--border-medium);
 }
 
-/* Avatar circle */
 .sidebar__avatar {
   width:           38px;
   height:          38px;
@@ -311,7 +318,6 @@
   transition:     color 0.35s ease;
 }
 
-/* Pulsing green online dot */
 .sidebar__online-dot {
   width:         8px;
   height:        8px;
@@ -326,78 +332,200 @@
    MAIN CONTENT AREA
 ═══════════════════════════════════════════════════ */
 .dashboard-main {
-  margin-left:    var(--sidebar-width, 260px); /* Space for fixed sidebar       */
+  margin-left:    var(--sidebar-width, 260px);  /* Offset for fixed sidebar          */
   flex:           1;
   min-height:     100vh;
   display:        flex;
   flex-direction: column;
   min-width:      0;
-  overflow-y:     hidden;    /* Enable scroll on this container so sticky works  */
-  height:         100vh;   /* Must have defined height for sticky to function  */
+  overflow-y:     hidden;
+  height:         100vh;
 }
 
 /* ═══════════════════════════════════════════════════
-   TOPBAR — Sticky Frosted Glass
+   TOPBAR — Full-Width Premium Glassmorphism Bar
+   Inspired by reference design:
+   - Strong blur + saturation
+   - Gradient bottom border (cyan glow line)
+   - Floating pill elements
 ═══════════════════════════════════════════════════ */
 .topbar {
-  height:          76px;
-  position:        sticky;
-  top:             0;
-  z-index:         100;
-  display:         flex;
-  align-items:     center;
-  justify-content: space-between;
-  padding:         0 var(--s8);
-  transition:      background 0.35s ease,
-                   border-color 0.35s ease;
+  height:          76px;                        /* Fixed topbar height               */
+  position:        sticky;                      /* Sticks to top on scroll           */
+  top:             0;                           /* Pin to top                        */
+  z-index:         100;                         /* Above page content                */
+  display:         flex;                        /* Row layout                        */
+  align-items:     center;                      /* Vertically centered               */
+  justify-content: space-between;               /* Left vs right groups              */
+  padding:         0 var(--s8);                 /* Horizontal padding                */
 
-  background:              var(--topbar-bg);    /* Theme-aware topbar background */
-  backdrop-filter:         blur(32px) saturate(1.6);
-  -webkit-backdrop-filter: blur(32px) saturate(1.6);
-  border-bottom:           1px solid var(--sidebar-border);
-  box-shadow:              0 2px 24px rgba(0,0,0,0.15);
+  /* Premium glass background */
+  background:              rgba(10, 14, 28, 0.55);     /* Dark glass base           */
+  backdrop-filter:         blur(40px) saturate(2.0) brightness(0.92);
+  -webkit-backdrop-filter: blur(40px) saturate(2.0) brightness(0.92);
+
+  /* Gradient border bottom — the key visual signature */
+  border-bottom: 1px solid transparent;
+  background-clip: padding-box;
+
+  /* Use box-shadow for the gradient bottom border effect */
+  box-shadow:
+    0 1px 0 0 rgba(79,195,247,0.35),            /* Cyan bottom glow line             */
+    0 2px 24px rgba(0,0,0,0.30),                /* Depth shadow                      */
+    inset 0 1px 0 rgba(255,255,255,0.06);       /* Top inner gloss                   */
+
+  transition:      background 0.35s ease;       /* Smooth theme switch               */
 }
 
-/* Bottom glow line on topbar */
+/* Animated gradient bottom line — Devoryn signature detail */
 .topbar::after {
   content:    '';
   position:   absolute;
   bottom:     0;
-  left:       4%;
-  right:      4%;
-  height:     1px;
-  background: linear-gradient(90deg, transparent, var(--border-cyan), transparent);
+  left:       0;
+  right:      0;
+  height:     1px;                              /* 1px gradient line                 */
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(79,195,247,0.60) 20%,                 /* Cyan peak left                    */
+    rgba(155,127,234,0.50) 50%,                /* Violet center                     */
+    rgba(79,195,247,0.60) 80%,                 /* Cyan peak right                   */
+    transparent 100%
+  );
   pointer-events: none;
 }
 
-/* Greeting text */
+/* Top inner gloss line */
+.topbar::before {
+  content:    '';
+  position:   absolute;
+  top:        0;
+  left:       5%;
+  right:      5%;
+  height:     1px;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.12), transparent);
+  pointer-events: none;
+}
+
+/* ── Topbar Left: Greeting ─────────────────────── */
+.topbar__greeting {
+  display:        flex;
+  flex-direction: column;
+  gap:            2px;
+}
+
 .topbar__greeting-hi {
   font-family:    var(--font-display);
-  font-size:      2rem;
+  font-size:      1.45rem;                      /* Large greeting text               */
   font-weight:    700;
-  color:          var(--text-white);            /* Dark text in light mode */
+  color:          var(--text-white);
   line-height:    1.2;
-  letter-spacing: -0.01em;
+  letter-spacing: -0.02em;
   transition:     color 0.35s ease;
 }
 
 .topbar__greeting-sub {
   font-family:    var(--font-mono);
-  font-size:      0.8rem;
+  font-size:      0.72rem;                      /* Small subtitle                    */
   color:          var(--text-muted);
-  letter-spacing: 0.04em;
-  margin-top:     2px;
+  letter-spacing: 0.06em;
   transition:     color 0.35s ease;
+  /* Truncate long titles on small screens */
+  overflow:       hidden;
+  text-overflow:  ellipsis;
+  white-space:    nowrap;
+  max-width:      600px;
 }
 
-/* Actions row — right side of topbar */
+/* ── Topbar Right: Actions ─────────────────────── */
 .topbar__actions {
   display:     flex;
   align-items: center;
-  gap:         var(--s3);
+  gap:         var(--s3);                       /* 12px between action items         */
 }
 
-/* Generic icon buttons (bell, settings) */
+/* ── Availability Pill ─────────────────────────── */
+/* Self-contained pill — used inside topbar actions  */
+.availability-pill {
+  display:        inline-flex;
+  align-items:    center;
+  gap:            var(--s2);
+  padding:        0.42rem var(--s4);
+  background:     var(--glass-medium);
+  border:         1px solid var(--border-subtle);
+  border-radius:  var(--r-full);
+  font-family:    var(--font-mono);
+  font-size:      0.62rem;
+  font-weight:    500;
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+  color:          var(--text-muted);
+  transition:     all 0.35s ease;
+  white-space:    nowrap;                       /* Never wrap the pill text          */
+}
+
+.availability-pill--open {
+  background:   rgba(78,204,163,0.12);          /* Green tinted glass                */
+  border-color: rgba(78,204,163,0.40);          /* Green border                      */
+  color:        var(--green);                   /* Green text                        */
+  box-shadow:   0 0 16px rgba(78,204,163,0.12); /* Subtle green glow                 */
+}
+
+.availability-pill__dot {
+  width:         7px;
+  height:        7px;
+  border-radius: 50%;
+  background:    var(--text-muted);
+  flex-shrink:   0;
+  transition:    background 0.35s ease;
+}
+
+.availability-pill--open .availability-pill__dot {
+  background: var(--green);
+  box-shadow: 0 0 8px var(--green);
+  animation:  pulseDot 2.5s ease infinite;
+}
+
+/* ── Theme Toggle Pill ─────────────────────────── */
+.topbar__theme-toggle {
+  display:       flex;
+  align-items:   center;
+  padding:       4px;
+  background:    var(--glass-light);
+  border:        1px solid var(--border-subtle);
+  border-radius: var(--r-full);
+  gap:           2px;
+  transition:    background 0.35s ease, border-color 0.35s ease;
+}
+
+.theme-btn {
+  width:         32px;
+  height:        28px;
+  border-radius: var(--r-full);
+  font-size:     0.85rem;
+  display:       flex;
+  align-items:   center;
+  justify-content: center;
+  color:         var(--toggle-text);
+  cursor:        pointer;
+  transition:    all var(--t-fast);
+  border:        none;
+  background:    transparent;
+  outline:       none;
+}
+
+.theme-btn--active {
+  background: var(--toggle-active-bg);
+  color:      var(--toggle-text-dark);
+  box-shadow: 0 1px 4px rgba(0,0,0,0.15);
+}
+
+.theme-btn:not(.theme-btn--active):hover {
+  background: var(--glass-medium);
+}
+
+/* ── Icon Buttons ──────────────────────────────── */
 .topbar__icon-btn {
   width:           38px;
   height:          38px;
@@ -424,7 +552,6 @@
   box-shadow:   var(--shadow-sm);
 }
 
-/* Notification red dot */
 .topbar__notif-dot {
   position:      absolute;
   top:           8px;
@@ -437,49 +564,7 @@
   animation:     pulseDot 2s ease infinite;
 }
 
-/* ── Theme Toggle Pill ────────────────────────────── */
-/* Container — pill shape holding both buttons */
-.topbar__theme-toggle {
-  display:       flex;
-  align-items:   center;
-  padding:       4px;                           /* Inner padding around buttons */
-  background:    var(--glass-light);            /* Theme-aware container bg */
-  border:        1px solid var(--border-subtle);
-  border-radius: var(--r-full);                 /* Pill shape */
-  gap:           2px;                           /* Space between buttons */
-  transition:    background 0.35s ease,
-                 border-color 0.35s ease;
-}
-
-/* Individual toggle button (moon / sun) */
-.theme-btn {
-  width:         32px;
-  height:        28px;
-  border-radius: var(--r-full);                 /* Round pill shape */
-  font-size:     0.85rem;
-  display:       flex;
-  align-items:   center;
-  justify-content: center;
-  color:         var(--toggle-text);            /* Inactive: muted color */
-  cursor:        pointer;
-  transition:    all var(--t-fast);
-  border:        none;
-  background:    transparent;
-  outline:       none;
-}
-
-/* Active toggle button — highlighted */
-.theme-btn--active {
-  background: var(--toggle-active-bg);          /* White highlight in both modes */
-  color:      var(--toggle-text-dark);          /* Darker text on active */
-  box-shadow: 0 1px 4px rgba(0,0,0,0.15);       /* Subtle lift shadow */
-}
-
-.theme-btn:not(.theme-btn--active):hover {
-  background: var(--glass-medium);              /* Hover state for inactive button */
-}
-
-/* ── User pill ────────────────────────────────────── */
+/* ── User Pill ─────────────────────────────────── */
 .topbar__user {
   display:       flex;
   align-items:   center;
@@ -530,7 +615,7 @@
   margin-left: 2px;
 }
 
-/* Hamburger — shown only on mobile */
+/* Mobile hamburger */
 .topbar__hamburger { display: none; }
 
 /* ═══════════════════════════════════════════════════
@@ -540,7 +625,7 @@
   flex:       1;
   padding:    var(--s8);
   animation:  fadeIn 0.4s ease both;
-  overflow-y: scroll; /* Let dashboard-main handle the scroll, not page-content */
+  overflow-y: scroll;
   height:     calc(100vh - 76px);
 }
 
@@ -558,42 +643,143 @@
 }
 
 /* ═══════════════════════════════════════════════════
-   RESPONSIVE
+   LIGHT MODE OVERRIDES
+═══════════════════════════════════════════════════ */
+
+/* Sidebar: transparent in light mode too */
+[data-theme="light"] .sidebar {
+  background:   transparent;                    /* No background in light mode       */
+  border-right: 1px solid rgba(79,100,145,0.15);/* Subtle blue divider               */
+  box-shadow:   none;                           /* No shadow                         */
+}
+
+/* Nav items in light mode */
+[data-theme="light"] .nav-item {
+  background:   rgba(255,255,255,0.25);         /* Soft white glass                  */
+  border-color: rgba(79,100,145,0.10);          /* Soft blue border                  */
+}
+
+[data-theme="light"] .nav-item:hover {
+  background:   rgba(255,255,255,0.65);         /* Brighter white on hover           */
+  border-color: rgba(79,145,247,0.25);          /* Blue border on hover              */
+  color:        #1a2332;                        /* Dark text                         */
+}
+
+[data-theme="light"] .nav-item--active {
+  background:   rgba(79,145,247,0.12);          /* Blue tinted glass                 */
+  border-color: rgba(79,145,247,0.35);          /* Blue border                       */
+  color:        #1a5faa;                        /* Deep blue text                    */
+  box-shadow:
+    0 0 0 1px rgba(79,145,247,0.18),
+    0 4px 16px rgba(79,145,247,0.10),
+    inset 0 1px 0 rgba(255,255,255,0.60);
+}
+
+[data-theme="light"] .nav-item--active .nav-item__label {
+  text-shadow: 0 0 8px rgba(79,145,247,0.35);
+}
+
+/* Topbar in light mode */
+[data-theme="light"] .topbar {
+  background:              rgba(207,224,245,0.55);
+  backdrop-filter:         blur(40px) saturate(2.2) brightness(1.05);
+  -webkit-backdrop-filter: blur(40px) saturate(2.2) brightness(1.05);
+  box-shadow:
+    0 1px 0 0 rgba(79,145,247,0.30),
+    0 2px 16px rgba(79,100,145,0.12),
+    inset 0 1px 0 rgba(255,255,255,0.50);
+}
+
+[data-theme="light"] .topbar::after {
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(79,145,247,0.50) 20%,
+    rgba(124,91,212,0.35) 50%,
+    rgba(79,145,247,0.50) 80%,
+    transparent 100%
+  );
+}
+
+/* Light mode theme toggle */
+[data-theme="light"] .topbar__theme-toggle {
+  background:   rgba(255,255,255,0.70);
+  border-color: rgba(79,100,145,0.20);
+}
+
+/* Light mode icon buttons */
+[data-theme="light"] .topbar__icon-btn {
+  background:   rgba(255,255,255,0.65);
+  border-color: rgba(79,100,145,0.18);
+  color:        #3d5a80;
+}
+
+/* Light mode user pill */
+[data-theme="light"] .topbar__user {
+  background:   rgba(255,255,255,0.65);
+  border-color: rgba(79,100,145,0.18);
+}
+
+/* Light mode sidebar user card */
+[data-theme="light"] .sidebar__user-card {
+  background:   rgba(255,255,255,0.65);
+  border-color: rgba(79,100,145,0.18);
+}
+
+/* Light mode logo text */
+[data-theme="light"] .sidebar__logo-text {
+  color:       #1a2332;
+  text-shadow: none;
+}
+
+[data-theme="light"] .sidebar__logo:hover .sidebar__logo-text {
+  text-shadow:
+    0 0 12px rgba(79,145,247,0.35),
+    0 0 24px rgba(79,145,247,0.20);
+}
+
+/* Light mode greeting text */
+[data-theme="light"] .topbar__greeting-hi { color: #1a2332; }
+[data-theme="light"] .topbar__greeting-sub { color: #5a7499; }
+
+/* Light mode page content */
+[data-theme="light"] .page-content { background: transparent; }
+
+/* ═══════════════════════════════════════════════════
+   RESPONSIVE BREAKPOINTS
 ═══════════════════════════════════════════════════ */
 @media (max-width: 1024px) {
   /* Sidebar slides off-screen on tablet */
   .sidebar {
     transform:  translateX(-100%);
     box-shadow: none;
+    /* Add glass background when sidebar slides in on mobile */
+    background: var(--sidebar-bg);
+    backdrop-filter: blur(40px) saturate(1.8);
+    -webkit-backdrop-filter: blur(40px) saturate(1.8);
   }
 
-  /* Open state — slides back in */
+  /* Open state on mobile */
   .sidebar--open {
     transform:  translateX(0);
     box-shadow: var(--sidebar-shadow);
     animation:  slideInLeft 0.35s cubic-bezier(0.16,1,0.3,1);
   }
 
-  /* No left margin when sidebar is hidden */
-  .dashboard-main { margin-left: 0; }
-
-  /* Show hamburger on tablet/mobile */
-  .topbar__hamburger { display: flex; }
-
+  .dashboard-main { margin-left: 0; }           /* No offset when sidebar hidden     */
+  .topbar__hamburger { display: flex; }          /* Show hamburger                    */
   .page-content { padding: var(--s5); }
   .topbar       { padding: 0 var(--s5); }
 }
 
 @media (max-width: 640px) {
-  /* Hide text elements on very small screens */
-  .topbar__greeting-sub { display: none; }
-  .topbar__user-name    { display: none; }
-  .topbar__user-chevron { display: none; }
+  .topbar__greeting-sub { display: none; }      /* Hide subtitle on mobile           */
+  .topbar__user-name    { display: none; }      /* Hide name in user pill            */
+  .topbar__user-chevron { display: none; }      /* Hide chevron                      */
+  .availability-pill    { display: none; }      /* Hide availability on mobile       */
   .topbar               { padding: 0 var(--s4); }
   .page-content         { padding: var(--s4); }
-  .topbar__greeting-hi {
-    font-size: 1.10rem;   /* Scale back on small screens */
-  }
+  .topbar__greeting-hi  { font-size: 1.10rem; }
 }
 
 /* ═══════════════════════════════════════════════════
@@ -617,115 +803,4 @@
 @keyframes pulseDot {
   0%, 100% { transform: scale(1);    opacity: 1;   }
   50%       { transform: scale(1.45); opacity: 0.65; }
-}
-/* ── Cyberpunk 3D text glow on logo ──────────────── */
-.sidebar__logo-text {
-  text-shadow:
-    0 0 10px var(--cyan),
-    0 0 20px var(--cyan-dim),
-    0 0 40px rgba(79,195,247,0.15);
-  transition: text-shadow 0.3s ease;
-}
-
-.sidebar__logo:hover .sidebar__logo-text {
-  text-shadow:
-    0 0 14px var(--cyan),
-    0 0 28px var(--cyan),
-    0 0 60px rgba(79,195,247,0.30),
-    2px 2px 0px rgba(91,141,239,0.5),
-    -1px -1px 0px rgba(155,127,234,0.3);
-}
-
-/* ── Glow pulse on nav active items ─────────────── */
-.nav-item--active .nav-item__label {
-  text-shadow:
-    0 0 8px var(--cyan),
-    0 0 16px var(--cyan-dim);
-}
-/* ── Light mode sidebar fix ── */
-[data-theme="light"] .sidebar {
-  background: rgba(207,224,245,0.35);
-  backdrop-filter: blur(40px) saturate(2.2);
-  border-right: 1px solid rgba(255,255,255,0.45);
-  border-right-color:      rgba(79,100,145,0.15);
-  box-shadow:              2px 0 24px rgba(79,100,145,0.10);
-}
-
-/* ── Light mode topbar fix ── */
-[data-theme="light"] .topbar {
-  background: rgba(207,224,245,0.30);
-  backdrop-filter: blur(32px) saturate(2.0);
-  border-bottom: 1px solid rgba(255,255,255,0.40);
-  border-bottom-color:     rgba(79,100,145,0.15);
-  box-shadow:              0 2px 16px rgba(79,100,145,0.10);
-}
-
-/* ── Light mode topbar bottom glow ── */
-[data-theme="light"] .topbar::after {
-  background: linear-gradient(90deg, transparent, rgba(79,145,247,0.25), transparent);
-}
-
-/* ── Light mode nav item hover ── */
-[data-theme="light"] .nav-item:hover {
-  background:   rgba(79,145,247,0.08);
-  border-color: rgba(79,145,247,0.18);
-  color:        #1a2332;
-}
-
-/* ── Light mode user card ── */
-[data-theme="light"] .sidebar__user-card {
-  background:   rgba(255,255,255,0.65);
-  border-color: rgba(79,100,145,0.18);
-}
-
-/* ── Light mode theme toggle ── */
-[data-theme="light"] .topbar__theme-toggle {
-  background:   rgba(255,255,255,0.70);
-  border-color: rgba(79,100,145,0.20);
-}
-
-/* ── Light mode icon buttons ── */
-[data-theme="light"] .topbar__icon-btn {
-  background:   rgba(255,255,255,0.65);
-  border-color: rgba(79,100,145,0.18);
-  color:        #3d5a80;
-}
-
-/* ── Light mode user pill ── */
-[data-theme="light"] .topbar__user {
-  background:   rgba(255,255,255,0.65);
-  border-color: rgba(79,100,145,0.18);
-}
-
-/* ── Light mode page content bg ── */
-[data-theme="light"] .page-content {
-  background: transparent;
-}
-
-/* ── Light mode logo text ── */
-[data-theme="light"] .sidebar__logo-text {
-  color:       #1a2332;
-  text-shadow: none;
-}
-
-[data-theme="light"] .sidebar__logo:hover .sidebar__logo-text {
-  text-shadow:
-    0 0 12px rgba(79,145,247,0.35),
-    0 0 24px rgba(79,145,247,0.20);
-}
-
-/* ── Light mode nav active ── */
-[data-theme="light"] .nav-item--active .nav-item__label {
-  text-shadow: 0 0 8px rgba(79,145,247,0.35);
-}
-
-/* ── Light mode sidebar right glow ── */
-[data-theme="light"] .sidebar::after {
-  background: linear-gradient(
-    to bottom,
-    transparent 0%,
-    rgba(79,145,247,0.20) 35%,
-    rgba(79,145,247,0.10) 65%,
-    transparent 100%
-  );
 }
