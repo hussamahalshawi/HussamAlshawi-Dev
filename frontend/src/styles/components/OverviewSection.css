@@ -95,30 +95,32 @@
    All .ov-panel elements inherit this base
 ══════════════════════════════════════════════════════ */
 .ov-panel {
-  position:   relative;
-  overflow:   hidden;
-  border-radius: var(--r-xl);
-  padding:    var(--s6);
-  transition: border-color 0.30s ease, background 0.35s ease,
-              box-shadow 0.30s ease, transform 0.25s ease;
+  position:      relative;                         /* Stacking context for children              */
+  overflow:      hidden;                           /* Clip decorative elements                   */
+  border-radius: var(--r-xl);                      /* Rounded corners                            */
+  padding:       var(--s6);                        /* Inner spacing                              */
+  transition:    border-color 0.30s ease,
+                 background   0.35s ease,
+                 box-shadow   0.30s ease,
+                 transform    0.25s ease;          /* Smooth all property changes                */
 
-  background:              rgba(10, 15, 32, 0.50);
-  backdrop-filter:         blur(32px) saturate(1.7) brightness(0.88);
-  -webkit-backdrop-filter: blur(32px) saturate(1.7) brightness(0.88);
-  border:                  1px solid rgba(255, 255, 255, 0.08);
-  box-shadow:              0 8px 40px rgba(0,0,0,0.35),
-                           0 0 0 1px rgba(255,255,255,0.04),
-                           inset 0 1px 0 rgba(255,255,255,0.08);
+  background:              rgba(10,15,32,0.30);    /* Lighter dark — more transparent            */
+  backdrop-filter:         blur(20px) saturate(1.5) brightness(0.92); /* Less heavy blur        */
+  -webkit-backdrop-filter: blur(20px) saturate(1.5) brightness(0.92);
+  border:                  1px solid rgba(255,255,255,0.07); /* Subtle border                   */
+  box-shadow:              0 4px 24px rgba(0,0,0,0.25),      /* Lighter shadow                  */
+                           0 0 0 1px rgba(255,255,255,0.03),
+                           inset 0 1px 0 rgba(255,255,255,0.06);
 }
 
 /* Hover: white glass brighten effect */
 .ov-panel:hover {
-  border-color: rgba(255, 255, 255, 0.18);
-  background:   rgba(255, 255, 255, 0.06);
-  box-shadow:   0 12px 48px rgba(0,0,0,0.40),
-                0 0 0 1px rgba(255,255,255,0.10),
-                inset 0 1px 0 rgba(255,255,255,0.14);
-  transform:    translateY(-2px);
+  border-color: rgba(255,255,255,0.14);            /* Slightly brighter border                   */
+  background:   rgba(79,195,247,0.05);             /* Subtle cyan tint on hover                  */
+  box-shadow:   0 8px 32px rgba(0,0,0,0.30),       /* Lighter shadow                             */
+                0 0 0 1px rgba(79,195,247,0.08),   /* Cyan ring                                  */
+                inset 0 1px 0 rgba(255,255,255,0.10);
+  transform:    translateY(-2px);                  /* Lift effect                                */
 }
 
 /* Top gloss line — Devoryn signature detail */
@@ -965,65 +967,104 @@
 }
 
 /* ══════════════════════════════════════════════════════
-   LIGHT MODE OVERRIDES
-   Maintain glassmorphism with lighter palette
+   LIGHT MODE OVERRIDES — mirrors dark mode transparency
+   Same glassmorphism logic, sky-blue palette instead
 ══════════════════════════════════════════════════════ */
+
+/* Main panel — same transparency as dark mode .ov-panel */
 [data-theme="light"] .ov-panel {
-  background:              rgba(255,255,255,0.38);
-  backdrop-filter:         blur(36px) saturate(1.9) brightness(1.02);
-  -webkit-backdrop-filter: blur(36px) saturate(1.9) brightness(1.02);
-  border-color:            rgba(255,255,255,0.68);
+  background:              rgba(120,180,255,0.04); /* Nearly invisible blue tint     */
+  backdrop-filter:         blur(20px) saturate(1.5) brightness(1.0);
+  -webkit-backdrop-filter: blur(20px) saturate(1.5) brightness(1.0);
+  border-color:            rgba(79,143,199,0.14);  /* Faint blue border              */
   box-shadow:
-    0 4px 28px rgba(79,100,145,0.12),
-    0 0 0 1px rgba(79,130,200,0.08),
-    inset 0 1px 0 rgba(255,255,255,0.85);
+    0 4px 20px rgba(79,100,145,0.06),              /* Very soft shadow               */
+    0 0 0 1px rgba(79,143,199,0.06),               /* Faint blue ring                */
+    inset 0 1px 0 rgba(255,255,255,0.40);          /* Subtle top gloss               */
 }
 
-/* Hover: white milk glass pop */
+/* Hover — same as dark mode hover logic */
 [data-theme="light"] .ov-panel:hover {
-  border-color: rgba(255,255,255,0.95);
-  background:   rgba(255,255,255,0.62);
+  border-color: rgba(26,143,199,0.30);             /* Brighter blue border           */
+  background:   rgba(79,143,199,0.08);             /* Gentle blue tint               */
   box-shadow:
-    0 8px 36px rgba(79,100,145,0.18),
-    0 0 0 1px rgba(79,130,200,0.12),
-    inset 0 1px 0 rgba(255,255,255,0.98);
-  transform: translateY(-2px);
+    0 8px 28px rgba(26,143,199,0.08),              /* Soft blue glow                 */
+    0 0 0 1px rgba(26,143,199,0.10),               /* Blue ring                      */
+    inset 0 1px 0 rgba(255,255,255,0.50);          /* Top gloss                      */
+  transform: translateY(-2px);                     /* Same lift as dark mode         */
 }
 
-/* Panel title in light mode */
-[data-theme="light"] .ov-panel__title {
-  color: #1a2332;
-}
+/* Panel title */
+[data-theme="light"] .ov-panel__title  { color: #1a2332; }
 
-/* Panel subtitle in light mode */
-[data-theme="light"] .ov-panel__subtitle {
-  color: #5a7499;
-}
+/* Panel subtitle */
+[data-theme="light"] .ov-panel__subtitle { color: #5a7499; }
 
-[data-theme="light"] .ov-record-item {
-  background: rgba(255,255,255,0.52);
-}
+/* Profile name */
+[data-theme="light"] .ov-profile__name  { color: #1a2332; }
 
-[data-theme="light"] .ov-record-item:hover {
-  background: rgba(255,255,255,0.72);
-}
+/* Profile bio */
+[data-theme="light"] .ov-profile__bio   { color: #3d5a80; }
 
+/* Legend label */
+[data-theme="light"] .ov-legend-label   { color: #3d5a80; }
+
+/* Legend range */
+[data-theme="light"] .ov-legend-range   { color: #6b8aaa; }
+
+/* Skill and category names */
+[data-theme="light"] .ov-skill-row__name,
+[data-theme="light"] .ov-proj-row__name { color: #1e2d42; }
+
+/* Record item label */
+[data-theme="light"] .ov-record-item__label { color: #5a7499; }
+
+/* Donut center number */
+[data-theme="light"] .ov-donut-center__num  { color: #1a2332; }
+
+/* Donut center sub label */
+[data-theme="light"] .ov-donut-center__sub  { color: #6b8aaa; }
+
+/* Records grid — faint blue dividers */
 [data-theme="light"] .ov-records-grid {
-  background:   rgba(79,100,145,0.10);
-  border-color: rgba(79,100,145,0.10);
+  background:   rgba(26,143,199,0.05);             /* Nearly invisible blue          */
+  border-color: rgba(26,143,199,0.07);             /* Very faint border              */
 }
 
+/* Record cell — nearly transparent */
+[data-theme="light"] .ov-record-item {
+  background: rgba(120,180,255,0.03);              /* Nearly invisible               */
+}
+
+/* Record cell hover */
+[data-theme="light"] .ov-record-item:hover {
+  background: rgba(79,143,199,0.08);               /* Subtle blue on hover           */
+}
+
+/* Language card */
 [data-theme="light"] .ov-lang-card {
-  background: rgba(255,255,255,0.55);
+  background:   rgba(120,180,255,0.04);            /* Nearly transparent             */
+  border-color: rgba(79,143,199,0.13);             /* Soft blue border               */
 }
 
+/* Donut track ring */
 [data-theme="light"] .ov-donut-track {
-  stroke: rgba(79,100,145,0.12);
+  stroke: rgba(26,143,199,0.14);                   /* Blue-tinted track              */
 }
 
+/* Progress bar tracks */
 [data-theme="light"] .ov-proj-row__track,
 [data-theme="light"] .ov-skill-row__track {
-  background: rgba(79,100,145,0.10);
+  background: rgba(26,143,199,0.10);               /* Blue-tinted track              */
+}
+
+/* Colored numbers — darken for readability on light bg */
+[data-theme="light"] .ov-proj-row__pct,
+[data-theme="light"] .ov-skill-row__score,
+[data-theme="light"] .ov-legend-pct,
+[data-theme="light"] .ov-record-item__num,
+[data-theme="light"] .ov-stat__num {
+  filter: brightness(0.72) saturate(1.2);          /* Darken vivid colors            */
 }
 
 /* ══════════════════════════════════════════════════════
@@ -1171,23 +1212,3 @@
 .ov-stat__icon    { display: none; }
 .ov-stat__text    { display: none; }
 
-/* Light mode: fix all colored numbers/scores to use dark readable colors */
-[data-theme="light"] .ov-proj-row__pct,
-[data-theme="light"] .ov-skill-row__score,
-[data-theme="light"] .ov-legend-pct,
-[data-theme="light"] .ov-record-item__num,
-[data-theme="light"] .ov-stat__num {
-  filter: brightness(0.72) saturate(1.2);  /* Darken vivid colors for readability */
-}
-
-[data-theme="light"] .ov-panel__title  { color: #1a2332; }
-[data-theme="light"] .ov-panel__subtitle { color: #5a7499; }
-[data-theme="light"] .ov-profile__name  { color: #1a2332; }
-[data-theme="light"] .ov-profile__bio   { color: #3d5a80; }
-[data-theme="light"] .ov-legend-label   { color: #3d5a80; }
-[data-theme="light"] .ov-legend-range   { color: #6b8aaa; }
-[data-theme="light"] .ov-skill-row__name,
-[data-theme="light"] .ov-proj-row__name { color: #1e2d42; }
-[data-theme="light"] .ov-record-item__label { color: #5a7499; }
-[data-theme="light"] .ov-donut-center__num  { color: #1a2332; }
-[data-theme="light"] .ov-donut-center__sub  { color: #6b8aaa; }
