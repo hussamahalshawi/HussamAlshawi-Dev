@@ -973,11 +973,11 @@
 
 /* Main panel — same transparency as dark mode .ov-panel */
 [data-theme="light"] .ov-panel {
-  background:              rgba(207,224,245,0.35); /* Same as nav items in light mode  */
-  border:                  1px solid rgba(79,143,199,0.12); /* Same subtle blue border */
-  backdrop-filter:         blur(12px) saturate(1.4); /* Same glass blur as buttons    */
-  -webkit-backdrop-filter: blur(12px) saturate(1.4);
-  box-shadow:              none;                  /* Clean — no heavy shadow           */
+  background:              rgba(207,224,245,0.35); /* Same as nav items                */
+  border:                  1px solid rgba(79,143,199,0.12); /* Same subtle border      */
+  backdrop-filter:         blur(20px) saturate(1.6) brightness(0.96); /* Frosted glass effect */
+  -webkit-backdrop-filter: blur(20px) saturate(1.6) brightness(0.96);
+  box-shadow:              none;                  /* Clean look                        */
 }
 
 [data-theme="light"] .ov-panel:hover {
