@@ -74,7 +74,9 @@
   transition:      background var(--t-fast);
 }
 
-.sidebar__logo:hover { background: rgba(255,255,255,0.06); }
+.sidebar__logo:hover {
+  background: rgba(79,195,247,0.10);               /* Cyan tint on logo hover                    */
+}
 
 .sidebar__logo-mark {
   width:           38px;
@@ -163,11 +165,11 @@
 }
 
 .nav-item:hover {
-  background:   rgba(255,255,255,0.10);
-  color:        rgba(255,255,255,0.96);          /* Near-white on hover               */
-  border-color: rgba(255,255,255,0.18);
-  transform:    translateX(3px);
-  box-shadow:   0 4px 20px rgba(0,0,0,0.25);
+  background:   rgba(79,195,247,0.12);             /* Cyan tint — matches light mode logic       */
+  color:        rgba(255,255,255,0.96);            /* Near-white text                            */
+  border-color: rgba(79,195,247,0.30);             /* Cyan border                                */
+  transform:    translateX(3px);                   /* Slide right                                */
+  box-shadow:   0 4px 20px rgba(79,195,247,0.10); /* Cyan glow shadow                           */
 }
 
 .nav-item--active {
@@ -254,8 +256,8 @@
 }
 
 .sidebar__user-card:hover {
-  background:   rgba(255,255,255,0.10);
-  border-color: rgba(255,255,255,0.18);
+  background:   rgba(79,195,247,0.10);             /* Cyan tint on hover                         */
+  border-color: rgba(79,195,247,0.28);             /* Cyan border                                */
 }
 
 .sidebar__avatar {
@@ -489,8 +491,8 @@
 }
 
 .theme-btn:not(.theme-btn--active):hover {
-  background: rgba(255,255,255,0.08);
-  color:      rgba(255,255,255,0.80);
+  background: rgba(79,195,247,0.12);               /* Cyan tint on inactive button hover         */
+  color:      rgba(255,255,255,0.90);              /* Brighter white                             */
 }
 
 /* Icon buttons */
@@ -513,10 +515,10 @@
 }
 
 .topbar__icon-btn:hover {
-  background:   rgba(255,255,255,0.12);
-  color:        #FFFFFF;
-  border-color: rgba(255,255,255,0.20);
-  transform:    translateY(-1px);
+  background:   rgba(79,195,247,0.14);             /* Cyan tint hover                            */
+  color:        #FFFFFF;                           /* White icon                                 */
+  border-color: rgba(79,195,247,0.35);             /* Cyan border                                */
+  transform:    translateY(-1px);                  /* Lift effect                                */
 }
 
 .topbar__notif-dot {
@@ -543,8 +545,8 @@
 }
 
 .topbar__user:hover {
-  background:   rgba(255,255,255,0.12);
-  border-color: rgba(255,255,255,0.22);
+  background:   rgba(79,195,247,0.12);             /* Cyan tint hover                            */
+  border-color: rgba(79,195,247,0.32);             /* Cyan border                                */
 }
 
 .topbar__user-avatar {
