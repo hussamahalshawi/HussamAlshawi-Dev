@@ -792,3 +792,143 @@
 [data-theme="light"] .topbar__user-chevron { color: rgba(30,45,66,0.50); }
 
 [data-theme="light"] .page-content { background: transparent; }
+
+/* ═══════════════════════════════════════════════════
+   RESPONSIVE — FIXED Mobile & Tablet breakpoints
+   Breakpoints: ≥1200 Desktop | 900-1199 Tablet L | 600-899 Tablet S | ≤599 Mobile
+═══════════════════════════════════════════════════ */
+
+/* ── Tablet L (900-1199px) ─────────────────────────── */
+@media (max-width: 1199px) {
+  /* Sidebar: narrower on tablet */
+  .sidebar {
+    width: 220px;                                /* Reduce sidebar width on tablet */
+  }
+
+  .dashboard-main {
+    margin-left: 220px;                          /* Match reduced sidebar width */
+  }
+
+  /* Topbar: tighter padding */
+  .topbar {
+    padding: 0 var(--s5);                        /* Less horizontal padding on tablet */
+  }
+
+  /* Page content: less horizontal padding */
+  .page-content {
+    padding: var(--s4) var(--s5);               /* Tighter content padding on tablet */
+  }
+}
+
+/* ── Tablet S (600-899px) ─────────────────────────── */
+@media (max-width: 899px) {
+
+  /* Sidebar: becomes a drawer (slides out) */
+  .sidebar {
+    width:     260px;                            /* Full width drawer */
+    transform: translateX(-100%);               /* HIDDEN by default — off-screen left */
+    transition: transform var(--t-slow);        /* Smooth slide transition */
+    background:              rgba(10,15,32,0.96);/* Opaque background on mobile */
+    backdrop-filter:         blur(20px);        /* Frosted glass effect */
+    -webkit-backdrop-filter: blur(20px);        /* Safari support */
+    z-index:   300;                              /* Above overlay */
+  }
+
+  /* Sidebar open state — JS adds this class */
+  .sidebar--open {
+    transform: translateX(0);                   /* Slide in to visible position */
+  }
+
+  /* Main content: full width when sidebar is hidden */
+  .dashboard-main {
+    margin-left: 0;                              /* Remove sidebar offset on mobile */
+  }
+
+  /* Topbar: compact for tablet-S */
+  .topbar {
+    padding: 0 var(--s4);                        /* Tighten topbar padding */
+    height:  60px;                               /* Slightly shorter topbar */
+  }
+
+  /* Page content: tighter all-round */
+  .page-content {
+    padding: var(--s4) var(--s4);               /* Compact content padding */
+    height:  calc(100vh - 60px);               /* Adjust for shorter topbar */
+  }
+
+  /* Hamburger: SHOW on tablet-S and mobile */
+  .topbar__hamburger {
+    display: flex;                               /* Show hamburger menu button */
+  }
+
+  /* Availability pill: hide on small screens to save space */
+  .availability-pill {
+    display: none;                               /* Hide hire status on tablet-S */
+  }
+
+  /* Greeting: truncate long names */
+  .topbar__greeting-hi {
+    font-size:     1.1rem;                       /* Smaller greeting on tablet */
+    white-space:   nowrap;
+    overflow:      hidden;
+    text-overflow: ellipsis;
+    max-width:     200px;                        /* Prevent overflow into actions */
+  }
+
+  /* User pill: hide name, show avatar only */
+  .topbar__user-name,
+  .topbar__user-chevron {
+    display: none;                               /* Show avatar only on small screens */
+  }
+
+  .topbar__user {
+    padding: 0.40rem;                            /* Tighter user avatar pill */
+  }
+}
+
+/* ── Mobile (≤599px) ─────────────────────────────── */
+@media (max-width: 599px) {
+
+  /* Topbar: minimum height, full condensed layout */
+  .topbar {
+    height:  56px;                               /* Compact topbar on mobile */
+    padding: 0 var(--s3);                        /* Minimal padding on mobile */
+  }
+
+  /* Page content: minimal padding on mobile */
+  .page-content {
+    padding: var(--s3) var(--s3);               /* Minimal content padding */
+    height:  calc(100vh - 56px);               /* Adjust for compact topbar */
+  }
+
+  /* Greeting subtitle: hide on mobile to save vertical space */
+  .topbar__greeting-sub {
+    display: none;                               /* Hide subtitle on mobile */
+  }
+
+  .topbar__greeting-hi {
+    font-size:  1rem;                            /* Smallest greeting size */
+    max-width:  150px;                           /* Tighter name truncation */
+  }
+
+  /* Actions: reduce gap */
+  .topbar__actions {
+    gap: var(--s2);                              /* Tighter action button spacing */
+  }
+
+  /* Theme toggle: hide individual buttons label */
+  .topbar__theme-toggle {
+    padding: 3px;                               /* Minimal padding */
+  }
+
+  .theme-btn {
+    width:  28px;                                /* Smaller theme buttons */
+    height: 24px;                               /* Shorter on mobile */
+  }
+
+  /* Sidebar: full-screen width on small mobile */
+  .sidebar {
+    width: 100%;                                 /* Full width on very small screens */
+    max-width: 280px;                           /* But capped for readability */
+  }
+}

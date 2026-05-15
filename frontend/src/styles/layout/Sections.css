@@ -1,43 +1,41 @@
 /* ═══════════════════════════════════════════════════
    Sections.css — Shared Section Layout Styles
-   FIX: removed min-height: 100vh — was causing huge
-   gap between topbar and first content card
+   Unified 4-tier responsive system
    ═══════════════════════════════════════════════════ */
 
 /* ── Base section ─────────────────────────────────── */
 .section {
-  padding:  var(--s8) 0;                        /* FIX: was s16, reduced to s8       */
-  position: relative;
-  overflow: hidden;
-  /* FIX: removed min-height: 100vh — caused giant empty space */
+  padding:  var(--s8) 0;                        /* Vertical padding per section */
+  position: relative;                           /* Stacking context for children */
+  overflow: hidden;                             /* Clip decorative background elements */
 }
 
-/* First section — even tighter top padding */
+/* First section: tighter top padding */
 .section:first-child {
-  padding-top: var(--s6);                       /* FIX: tighten first card to topbar */
+  padding-top: var(--s6);                       /* Closer to topbar for first section */
 }
 
 /* Alternate-background sections */
 .section--alt {
-  background:    rgba(14, 19, 38, 0.50);
-  border-top:    1px solid var(--border-faint);
-  border-bottom: 1px solid var(--border-faint);
+  background:    rgba(14, 19, 38, 0.50);       /* Semi-transparent dark overlay */
+  border-top:    1px solid var(--border-faint); /* Subtle top separator */
+  border-bottom: 1px solid var(--border-faint); /* Subtle bottom separator */
 }
 
-/* ── Container ────────────────────────────────────── */
+/* ── Container — centers content with max-width ────── */
 .container {
-  max-width: var(--content-max);
-  margin:    0 auto;
-  padding:   0 var(--s8);
+  max-width: var(--content-max);               /* Max content width from tokens */
+  margin:    0 auto;                            /* Center horizontally */
+  padding:   0 var(--s8);                       /* Default: 32px horizontal padding */
 }
 
 /* ── Section head block ───────────────────────────── */
 .s-head {
-  margin-bottom: var(--s10);
-  animation:     fadeUp 0.5s ease both;
+  margin-bottom: var(--s10);                   /* Space between header and content */
+  animation:     fadeUp 0.5s ease both;        /* Fade-up entrance animation */
 }
 
-/* Decorative background blob (subtle) */
+/* Decorative radial background blob */
 .section::before {
   content:        '';
   position:       absolute;
@@ -45,25 +43,90 @@
   height:         400px;
   border-radius:  50%;
   background:     radial-gradient(ellipse at center, rgba(79,195,247,0.04) 0%, transparent 70%);
-  pointer-events: none;
+  pointer-events: none;                        /* Non-interactive decoration */
   top:            0;
   left:           -200px;
   z-index:        0;
 }
 
-/* Content sits above decorative bg */
+/* Content sits above decorative background */
 .section > .container {
   position: relative;
-  z-index:  1;
+  z-index:  1;                                  /* Above the pseudo-element blob */
 }
 
-/* ── Responsive ───────────────────────────────────── */
-@media (max-width: 1024px) {
-  .container { padding: 0 var(--s6); }
-  .section   { padding: var(--s8) 0; }
+/* ══════════════════════════════════════════════════════
+   RESPONSIVE — 4-tier system
+══════════════════════════════════════════════════════ */
+
+/* ── Tablet L (≤1199px) ──────────────────────────── */
+@media (max-width: 1199px) {
+  .container {
+    padding: 0 var(--s6);                        /* 24px padding on large tablet */
+  }
+
+  .section {
+    padding: var(--s8) 0;                        /* Keep vertical padding */
+  }
 }
 
-@media (max-width: 600px) {
-  .container { padding: 0 var(--s4); }
-  .section   { padding: var(--s6) 0; }
+/* ── Tablet S (≤899px) ────────────────────────────── */
+@media (max-width: 899px) {
+  .container {
+    padding: 0 var(--s5);                        /* 20px padding on tablet-S */
+  }
+
+  .section {
+    padding: var(--s6) 0;                        /* Less vertical padding */
+  }
+
+  .section:first-child {
+    padding-top: var(--s4);                      /* Even tighter first section */
+  }
+
+  .s-head {
+    margin-bottom: var(--s8);                    /* Less space below section header */
+  }
+
+  /* Bento grids: 1 column */
+  .bento-grid,
+  .bento-grid--3 {
+    grid-template-columns: 1fr;                  /* Stack all panels on tablet-S */
+  }
+}
+
+/* ── Mobile (≤599px) ──────────────────────────────── */
+@media (max-width: 599px) {
+  .container {
+    padding: 0 var(--s4);                        /* 16px padding on mobile */
+  }
+
+  .section {
+    padding: var(--s5) 0;                        /* Compact vertical padding */
+  }
+
+  .section:first-child {
+    padding-top: var(--s3);                      /* Minimal top padding on mobile */
+  }
+
+  .s-head {
+    margin-bottom: var(--s6);                    /* Minimal space below header */
+  }
+
+  /* Section title: smaller on mobile */
+  .s-title {
+    font-size: 1.6rem;                           /* Cap display size on mobile */
+  }
+
+  /* Projects grid: single column */
+  .projects-grid {
+    grid-template-columns: 1fr;                  /* Single column on mobile */
+  }
+}
+
+/* ── Very small (≤375px) ──────────────────────────── */
+@media (max-width: 375px) {
+  .container {
+    padding: 0 var(--s3);                        /* 12px on very small screens */
+  }
 }
