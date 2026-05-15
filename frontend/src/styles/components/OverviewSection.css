@@ -969,21 +969,25 @@
    Maintain glassmorphism with lighter palette
 ══════════════════════════════════════════════════════ */
 [data-theme="light"] .ov-panel {
-  background:   rgba(255, 255, 255, 0.32);
-  backdrop-filter: blur(32px) saturate(2.0) brightness(1.04);
-  -webkit-backdrop-filter: blur(32px) saturate(2.0) brightness(1.04);
-  border-color: rgba(255, 255, 255, 0.60);
-  box-shadow:   0 4px 24px rgba(79,100,145,0.10),
-                inset 0 1px 0 rgba(255,255,255,0.80);
+  background:              rgba(255,255,255,0.38);
+  backdrop-filter:         blur(36px) saturate(1.9) brightness(1.02);
+  -webkit-backdrop-filter: blur(36px) saturate(1.9) brightness(1.02);
+  border-color:            rgba(255,255,255,0.68);
+  box-shadow:
+    0 4px 28px rgba(79,100,145,0.12),
+    0 0 0 1px rgba(79,130,200,0.08),
+    inset 0 1px 0 rgba(255,255,255,0.85);
 }
 
 /* Hover: white milk glass pop */
 [data-theme="light"] .ov-panel:hover {
-  border-color: rgba(255, 255, 255, 0.90);
-  background:   rgba(255, 255, 255, 0.58);
-  box-shadow:   0 8px 32px rgba(79,100,145,0.16),
-                inset 0 1px 0 rgba(255,255,255,0.95);
-  transform:    translateY(-2px);
+  border-color: rgba(255,255,255,0.95);
+  background:   rgba(255,255,255,0.62);
+  box-shadow:
+    0 8px 36px rgba(79,100,145,0.18),
+    0 0 0 1px rgba(79,130,200,0.12),
+    inset 0 1px 0 rgba(255,255,255,0.98);
+  transform: translateY(-2px);
 }
 
 /* Panel title in light mode */
