@@ -973,25 +973,18 @@
 
 /* Main panel — same transparency as dark mode .ov-panel */
 [data-theme="light"] .ov-panel {
-  background:              rgba(120,180,255,0.04); /* Nearly invisible blue tint     */
-  backdrop-filter:         blur(20px) saturate(1.5) brightness(1.0);
-  -webkit-backdrop-filter: blur(20px) saturate(1.5) brightness(1.0);
-  border-color:            rgba(79,143,199,0.14);  /* Faint blue border              */
-  box-shadow:
-    0 4px 20px rgba(79,100,145,0.06),              /* Very soft shadow               */
-    0 0 0 1px rgba(79,143,199,0.06),               /* Faint blue ring                */
-    inset 0 1px 0 rgba(255,255,255,0.40);          /* Subtle top gloss               */
+  background:              rgba(255,255,255,0.05); /* Same as .nav-item in dark mode  */
+  backdrop-filter:         blur(10px) saturate(1.4);
+  -webkit-backdrop-filter: blur(10px) saturate(1.4);
+  border:                  1px solid rgba(255,255,255,0.09); /* Same as .nav-item     */
+  box-shadow:              none;                  /* Clean — no heavy shadow          */
 }
 
-/* Hover — same as dark mode hover logic */
 [data-theme="light"] .ov-panel:hover {
-  border-color: rgba(26,143,199,0.30);             /* Brighter blue border           */
-  background:   rgba(79,143,199,0.08);             /* Gentle blue tint               */
-  box-shadow:
-    0 8px 28px rgba(26,143,199,0.08),              /* Soft blue glow                 */
-    0 0 0 1px rgba(26,143,199,0.10),               /* Blue ring                      */
-    inset 0 1px 0 rgba(255,255,255,0.50);          /* Top gloss                      */
-  transform: translateY(-2px);                     /* Same lift as dark mode         */
+  background:   rgba(79,195,247,0.12);            /* Same cyan tint as nav-item hover */
+  border-color: rgba(79,195,247,0.30);            /* Same cyan border as nav-item     */
+  box-shadow:   0 4px 20px rgba(79,195,247,0.10); /* Same cyan glow                  */
+  transform:    translateY(-2px);                 /* Same lift                        */
 }
 
 /* Panel title */
