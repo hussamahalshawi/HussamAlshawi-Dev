@@ -328,26 +328,22 @@
    TOPBAR — Premium Gradient Border Bar
 ═══════════════════════════════════════════════════ */
 .topbar {
-  height:          72px;
-  position:        sticky;
-  top:             0;
-  z-index:         100;
-  display:         flex;
-  align-items:     center;
-  justify-content: space-between;
-  padding:         0 var(--s8);
+  height:          72px;                        /* Fixed topbar height               */
+  position:        sticky;                      /* Sticks to top on scroll           */
+  top:             0;                           /* Pin to top edge                   */
+  z-index:         100;                         /* Above content, below sidebar      */
+  display:         flex;                        /* Horizontal flex layout            */
+  align-items:     center;                      /* Vertically center all items       */
+  justify-content: space-between;               /* Push greeting left, actions right */
+  padding:         0 var(--s8);                 /* Horizontal padding                */
 
-  background:              rgba(8, 12, 26, 0.60);
-  backdrop-filter:         blur(40px) saturate(2.0) brightness(0.90);
-  -webkit-backdrop-filter: blur(40px) saturate(2.0) brightness(0.90);
+  background:              transparent;         /* Fully transparent — like sidebar  */
+  backdrop-filter:         none;                /* No blur — pure see-through        */
+  -webkit-backdrop-filter: none;                /* Safari: no blur                   */
 
-  box-shadow:
-    0 1px 0 0 rgba(79,195,247,0.45),            /* Cyan bottom line                  */
-    0 2px 32px rgba(0,0,0,0.35),
-    inset 0 1px 0 rgba(255,255,255,0.07);
-
-  border-bottom: none;
-  transition:    background 0.35s ease;
+  box-shadow:      none;                        /* Remove card shadow                */
+  border-bottom:   none;                        /* No hard border                    */
+  transition:      background 0.35s ease;       /* Smooth theme switch               */
 }
 
 /* Animated gradient bottom line — strong + visible */
@@ -628,10 +624,10 @@
 }
 
 [data-theme="light"] .nav-item:hover {
-  background:   rgba(255,255,255,0.55);
-  border-color: rgba(79,130,200,0.38);
-  color:        #0d1a2d;
-  box-shadow:   0 4px 16px rgba(79,100,145,0.14);
+  background:   rgba(79,143,199,0.14);          /* Sky-blue tint — no white flash    */
+  border-color: rgba(26,143,199,0.42);          /* Cyan-blue border                  */
+  color:        #0d1a2d;                        /* Deep dark text                    */
+  box-shadow:   0 4px 16px rgba(26,143,199,0.14); /* Blue glow shadow               */
 }
 
 /* Active: sky-blue highlight — same logic as dark cyan */
@@ -672,7 +668,7 @@
 }
 
 [data-theme="light"] .sidebar__logo:hover {
-  background: rgba(255,255,255,0.30);
+  background: rgba(79,143,199,0.12);            /* Sky-blue tint on logo hover       */
 }
 
 /* Sidebar user card */
@@ -682,8 +678,8 @@
 }
 
 [data-theme="light"] .sidebar__user-card:hover {
-  background:   rgba(255,255,255,0.68);
-  border-color: rgba(79,130,200,0.40);
+  background:   rgba(79,143,199,0.16);          /* Sky-blue glass on hover           */
+  border-color: rgba(26,143,199,0.50);          /* Bright cyan-blue border           */
 }
 
 [data-theme="light"] .sidebar__user-name  { color: #1a2332; }
@@ -692,14 +688,12 @@
 [data-theme="light"] .sidebar__user       { border-top-color: rgba(79,130,200,0.15); }
 
 /* ── Topbar: sky-blue glass — same logic as dark ── */
+/* ── Topbar: fully transparent in light mode — matches sidebar ── */
 [data-theme="light"] .topbar {
-  background:              rgba(207,224,245,0.55);
-  backdrop-filter:         blur(40px) saturate(2.0) brightness(1.04);
-  -webkit-backdrop-filter: blur(40px) saturate(2.0) brightness(1.04);
-  box-shadow:
-    0 1px 0 0 rgba(26,143,199,0.50),
-    0 2px 24px rgba(79,100,145,0.14),
-    inset 0 1px 0 rgba(255,255,255,0.75);
+  background:              transparent;         /* Pure transparent — see-through    */
+  backdrop-filter:         none;                /* No blur overlay                   */
+  -webkit-backdrop-filter: none;                /* Safari: no blur                   */
+  box-shadow:              none;                /* Remove all shadows                */
 }
 
 /* Cyan/blue gradient bottom line — mirrors dark mode */
@@ -759,9 +753,9 @@
 }
 
 [data-theme="light"] .topbar__icon-btn:hover {
-  background:   rgba(255,255,255,0.82);
-  border-color: rgba(79,130,200,0.42);
-  color:        #1a2332;
+  background:   rgba(79,143,199,0.18);          /* Sky-blue tint on hover            */
+  border-color: rgba(26,143,199,0.55);          /* Bright cyan-blue border           */
+  color:        #1a2332;                        /* Dark readable text                */
 }
 
 /* User pill */
@@ -771,8 +765,8 @@
 }
 
 [data-theme="light"] .topbar__user:hover {
-  background:   rgba(255,255,255,0.80);
-  border-color: rgba(79,130,200,0.42);
+  background:   rgba(79,143,199,0.16);          /* Sky-blue glass on hover           */
+  border-color: rgba(26,143,199,0.52);          /* Cyan-blue border                  */
 }
 
 [data-theme="light"] .topbar__user-name    { color: rgba(26,35,50,0.88); }
