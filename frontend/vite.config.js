@@ -37,8 +37,16 @@ export default defineConfig({
 
   // ── Build output ─────────────────────────────────────────────
   build: {
-    outDir:                 'dist',              // Production output directory
-    sourcemap:              false,               // Disable sourcemaps in production
-    chunkSizeWarningLimit:  600,                 // Suppress warnings under 600 kB
+  outDir:                 'dist',              /* Production output directory        */
+  sourcemap:              false,               /* Disable sourcemaps in production   */
+  chunkSizeWarningLimit:  600,                 /* Suppress warnings under 600 kB     */
+  rollupOptions: {
+    output: {
+      /* Add content hash to every file — forces browser to reload on change        */
+      entryFileNames:  'assets/[name]-[hash].js',
+      chunkFileNames:  'assets/[name]-[hash].js',
+      assetFileNames:  'assets/[name]-[hash][extname]',
+    },
   },
+},
 });
