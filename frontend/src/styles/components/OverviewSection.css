@@ -973,18 +973,18 @@
 
 /* Main panel — same transparency as dark mode .ov-panel */
 [data-theme="light"] .ov-panel {
-  background:              rgba(255,255,255,0.05); /* Same as .nav-item in dark mode  */
-  backdrop-filter:         blur(10px) saturate(1.4);
-  -webkit-backdrop-filter: blur(10px) saturate(1.4);
-  border:                  1px solid rgba(255,255,255,0.09); /* Same as .nav-item     */
-  box-shadow:              none;                  /* Clean — no heavy shadow          */
+  background:              rgba(207,224,245,0.35); /* Same as nav items in light mode  */
+  border:                  1px solid rgba(79,143,199,0.12); /* Same subtle blue border */
+  backdrop-filter:         blur(12px) saturate(1.4); /* Same glass blur as buttons    */
+  -webkit-backdrop-filter: blur(12px) saturate(1.4);
+  box-shadow:              none;                  /* Clean — no heavy shadow           */
 }
 
 [data-theme="light"] .ov-panel:hover {
-  background:   rgba(79,195,247,0.12);            /* Same cyan tint as nav-item hover */
-  border-color: rgba(79,195,247,0.30);            /* Same cyan border as nav-item     */
-  box-shadow:   0 4px 20px rgba(79,195,247,0.10); /* Same cyan glow                  */
-  transform:    translateY(-2px);                 /* Same lift                        */
+  background:   rgba(26,143,199,0.14);            /* Same cyan tint as button hover    */
+  border-color: rgba(26,143,199,0.35);            /* Same cyan border as button hover  */
+  box-shadow:   0 4px 16px rgba(26,143,199,0.10); /* Same glow as nav-item hover      */
+  transform:    translateY(-2px);                 /* Same lift                         */
 }
 
 /* Panel title */
@@ -1020,24 +1020,25 @@
 
 /* Records grid — faint blue dividers */
 [data-theme="light"] .ov-records-grid {
-  background:   rgba(26,143,199,0.05);             /* Nearly invisible blue          */
-  border-color: rgba(26,143,199,0.07);             /* Very faint border              */
+  background:   rgba(79,143,199,0.08);            /* Slightly visible blue dividers    */
+  border-color: rgba(79,143,199,0.10);            /* Matching border                   */
 }
 
 /* Record cell — nearly transparent */
 [data-theme="light"] .ov-record-item {
-  background: rgba(120,180,255,0.03);              /* Nearly invisible               */
+  background: rgba(207,224,245,0.35);             /* Same as nav items                 */
 }
 
-/* Record cell hover */
 [data-theme="light"] .ov-record-item:hover {
-  background: rgba(79,143,199,0.08);               /* Subtle blue on hover           */
+  background: rgba(26,143,199,0.14);              /* Same cyan tint as button hover    */
 }
 
 /* Language card */
 [data-theme="light"] .ov-lang-card {
-  background:   rgba(120,180,255,0.04);            /* Nearly transparent             */
-  border-color: rgba(79,143,199,0.13);             /* Soft blue border               */
+  background:              rgba(207,224,245,0.35); /* Same as nav items                */
+  border:                  1px solid rgba(79,143,199,0.12); /* Same border             */
+  backdrop-filter:         blur(12px) saturate(1.4);
+  -webkit-backdrop-filter: blur(12px) saturate(1.4);
 }
 
 /* Donut track ring */
