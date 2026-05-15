@@ -620,16 +620,18 @@
 
 /* Nav items: sky-blue glass pills */
 [data-theme="light"] .nav-item {
-  background:   rgba(255,255,255,0.28);
-  border-color: rgba(79,130,200,0.18);
-  color:        #1e2d42;
+  background:              rgba(207,224,245,0.35); /* Sky-blue tinted navy equivalent */
+  border:                  1px solid rgba(79,143,199,0.12); /* Soft blue border       */
+  color:                   #1e2d42;               /* Dark readable text               */
+  backdrop-filter:         blur(12px) saturate(1.4);
+  -webkit-backdrop-filter: blur(12px) saturate(1.4);
 }
 
 [data-theme="light"] .nav-item:hover {
-  background:   rgba(79,143,199,0.14);          /* Sky-blue tint — no white flash    */
-  border-color: rgba(26,143,199,0.42);          /* Cyan-blue border                  */
-  color:        #0d1a2d;                        /* Deep dark text                    */
-  box-shadow:   0 4px 16px rgba(26,143,199,0.14); /* Blue glow shadow               */
+  background:   rgba(26,143,199,0.14);            /* Cyan-blue tint on hover          */
+  border-color: rgba(26,143,199,0.35);            /* Cyan border                      */
+  color:        #0d1a2d;                          /* Deep dark text                   */
+  box-shadow:   0 4px 16px rgba(26,143,199,0.10); /* Soft blue glow                  */
 }
 
 /* Active: sky-blue highlight — same logic as dark cyan */
@@ -670,18 +672,20 @@
 }
 
 [data-theme="light"] .sidebar__logo:hover {
-  background: rgba(79,143,199,0.12);            /* Sky-blue tint on logo hover       */
+  background: rgba(26,143,199,0.12);              /* Consistent cyan tint             */
 }
 
 /* Sidebar user card */
 [data-theme="light"] .sidebar__user-card {
-  background:   rgba(255,255,255,0.40);
-  border-color: rgba(79,130,200,0.22);
+  background:              rgba(207,224,245,0.35); /* Same sky-blue as nav items      */
+  border:                  1px solid rgba(79,143,199,0.12);
+  backdrop-filter:         blur(12px) saturate(1.4);
+  -webkit-backdrop-filter: blur(12px) saturate(1.4);
 }
 
 [data-theme="light"] .sidebar__user-card:hover {
-  background:   rgba(79,143,199,0.16);          /* Sky-blue glass on hover           */
-  border-color: rgba(26,143,199,0.50);          /* Bright cyan-blue border           */
+  background:   rgba(26,143,199,0.14);            /* Cyan tint hover                  */
+  border-color: rgba(26,143,199,0.35);            /* Cyan border                      */
 }
 
 [data-theme="light"] .sidebar__user-name  { color: #1a2332; }
@@ -723,9 +727,11 @@
 
 /* Availability pill */
 [data-theme="light"] .availability-pill {
-  background:   rgba(255,255,255,0.45);
-  border-color: rgba(79,130,200,0.25);
-  color:        rgba(30,45,66,0.72);
+  background:              rgba(207,224,245,0.35); /* Same sky-blue as nav items      */
+  border:                  1px solid rgba(79,143,199,0.12);
+  color:                   rgba(30,45,66,0.72);   /* Dark readable text               */
+  backdrop-filter:         blur(12px) saturate(1.4);
+  -webkit-backdrop-filter: blur(12px) saturate(1.4);
 }
 
 [data-theme="light"] .availability-pill--open {
@@ -736,8 +742,10 @@
 
 /* Theme toggle */
 [data-theme="light"] .topbar__theme-toggle {
-  background:   rgba(255,255,255,0.50);
-  border-color: rgba(79,130,200,0.22);
+  background:              rgba(207,224,245,0.35); /* Same sky-blue as nav items      */
+  border:                  1px solid rgba(79,143,199,0.12);
+  backdrop-filter:         blur(12px) saturate(1.4);
+  -webkit-backdrop-filter: blur(12px) saturate(1.4);
 }
 
 [data-theme="light"] .theme-btn         { color: rgba(30,45,66,0.60); }
@@ -749,26 +757,30 @@
 
 /* Icon buttons */
 [data-theme="light"] .topbar__icon-btn {
-  background:   rgba(255,255,255,0.45);
-  border-color: rgba(79,130,200,0.20);
-  color:        rgba(30,45,66,0.68);
+  background:              rgba(207,224,245,0.35); /* Same sky-blue as nav items      */
+  border:                  1px solid rgba(79,143,199,0.12);
+  color:                   rgba(30,45,66,0.68);   /* Dark readable icon color         */
+  backdrop-filter:         blur(12px) saturate(1.4);
+  -webkit-backdrop-filter: blur(12px) saturate(1.4);
 }
 
 [data-theme="light"] .topbar__icon-btn:hover {
-  background:   rgba(79,143,199,0.18);          /* Sky-blue tint on hover            */
-  border-color: rgba(26,143,199,0.55);          /* Bright cyan-blue border           */
-  color:        #1a2332;                        /* Dark readable text                */
+  background:   rgba(26,143,199,0.14);            /* Cyan tint hover                  */
+  border-color: rgba(26,143,199,0.35);            /* Cyan border                      */
+  color:        #1a2332;                          /* Dark text                        */
 }
 
 /* User pill */
 [data-theme="light"] .topbar__user {
-  background:   rgba(255,255,255,0.45);
-  border-color: rgba(79,130,200,0.22);
+  background:              rgba(207,224,245,0.35); /* Same sky-blue as nav items      */
+  border:                  1px solid rgba(79,143,199,0.12);
+  backdrop-filter:         blur(12px) saturate(1.4);
+  -webkit-backdrop-filter: blur(12px) saturate(1.4);
 }
 
 [data-theme="light"] .topbar__user:hover {
-  background:   rgba(79,143,199,0.16);          /* Sky-blue glass on hover           */
-  border-color: rgba(26,143,199,0.52);          /* Cyan-blue border                  */
+  background:   rgba(26,143,199,0.14);            /* Cyan tint hover                  */
+  border-color: rgba(26,143,199,0.35);            /* Cyan border                      */
 }
 
 [data-theme="light"] .topbar__user-name    { color: rgba(26,35,50,0.88); }
