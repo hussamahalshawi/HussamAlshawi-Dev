@@ -19,72 +19,15 @@ from flask import Blueprint, jsonify                               # Core Flask 
 from App.models.profile import Profile                             # Profile model
 from App.models.goal    import Goal                                # Career goals model
 from App.models.skills  import ProfileSkill                        # Skill scores for gap analysis
-
+from App.routes.helpers.route_helpers import (  # Shared helpers — no duplication
+    get_profile,
+    build_token_map,
+    resolve_skill_score,
+    calc_progress_pct,
+)
 
 # ── Blueprint registration ────────────────────────────────────────────────────
 goals_charts_bp = Blueprint('goals_charts', __name__)
-
-
-# ─────────────────────────────────────────────────────────────────────────────
-# HELPER — fetch active profile
-# ─────────────────────────────────────────────────────────────────────────────
-def _get_profile():
-    """Fetches the first active portfolio Profile document."""
-    return Profile.objects.first()
-
-
-# ─────────────────────────────────────────────────────────────────────────────
-# HELPER — build token score map from ProfileSkill documents
-# Used for skill-gap analysis — mirrors the scoring logic in RoadmapService
-# ─────────────────────────────────────────────────────────────────────────────
-def _build_token_map(profile):
-    """
-    Builds a {token: best_score} map from all ProfileSkill documents.
-    Identical matching logic to RoadmapService.calculate_goal_progress().
-
-    Args:
-        profile: Profile document.
-
-    Returns:
-        dict: {token_str: best_score}
-    """
-    token_map = {}
-
-    for ps in ProfileSkill.objects(profile=profile).select_related():
-        if not ps.skill:
-            continue
-
-        tokens = ps.skill.skill_name.strip().lower().split()       # Tokenize skill name
-
-        for token in tokens:
-            # Keep highest score per token
-            if token not in token_map or ps.score > token_map[token]:
-                token_map[token] = ps.score
-
-    return token_map
-
-
-# ─────────────────────────────────────────────────────────────────────────────
-# HELPER — resolve skill match from token map
-# ─────────────────────────────────────────────────────────────────────────────
-def _resolve_skill_score(skill_name, token_map):
-    """
-    Resolves the best matching score for a required skill from the token map.
-
-    Args:
-        skill_name (str): Required skill name from a Goal.
-        token_map  (dict): Pre-built {token: score} map.
-
-    Returns:
-        tuple: (score: int, matched: bool)
-    """
-    req_tokens = skill_name.strip().lower().split()                # Tokenize required skill
-
-    for token in req_tokens:
-        if token in token_map:
-            return token_map[token], True                          # First match wins
-
-    return 0, False                                                # No match found
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -111,7 +54,7 @@ def goals_gauge():
     }
     """
     try:
-        profile = _get_profile()
+        profile = get_profile()
         if not profile:
             return jsonify({'error': 'Profile not found'}), 404
 
@@ -137,7 +80,7 @@ def goals_gauge():
         for goal in goals:
             target  = goal.target_score  or 100
             current = goal.current_score or 0
-            pct     = min(round((current / target) * 100, 1), 100)
+            pct     = calc_progress_pct(current, target)
             pct_values.append(pct)
 
             status = goal.status or 'Planned'
@@ -185,7 +128,7 @@ def goals_status_donut():
     }
     """
     try:
-        profile = _get_profile()
+        profile = get_profile()
         if not profile:
             return jsonify({'error': 'Profile not found'}), 404
 
@@ -252,7 +195,7 @@ def goals_priority_donut():
     }
     """
     try:
-        profile = _get_profile()
+        profile = get_profile()
         if not profile:
             return jsonify({'error': 'Profile not found'}), 404
 
@@ -325,7 +268,7 @@ def goals_year_progress():
     }
     """
     try:
-        profile = _get_profile()
+        profile = get_profile()
         if not profile:
             return jsonify({'error': 'Profile not found'}), 404
 
@@ -335,7 +278,7 @@ def goals_year_progress():
             year   = str(goal.target_year) if goal.target_year else 'Unknown'
             target = goal.target_score  or 100
             current= goal.current_score or 0
-            pct    = min(round((current / target) * 100, 1), 100)
+            pct    = calc_progress_pct(current, target)
 
             if year not in year_map:
                 year_map[year] = {'pcts': [], 'goals': []}
@@ -410,12 +353,12 @@ def goals_skill_gap():
     }
     """
     try:
-        profile = _get_profile()
+        profile = get_profile()
         if not profile:
             return jsonify({'error': 'Profile not found'}), 404
 
         # Build token map once — reused for all goals
-        token_map = _build_token_map(profile)
+        token_map = build_token_map(profile)
 
         goals = Goal.objects(profile=profile).order_by('target_year', '-priority')
         result = []
@@ -423,7 +366,7 @@ def goals_skill_gap():
         for goal in goals:
             target  = goal.target_score  or 100
             current = goal.current_score or 0
-            pct     = min(round((current / target) * 100, 1), 100)
+            pct     = calc_progress_pct(current, target)
 
             skill_gaps      = []
             matched_count   = 0
@@ -434,7 +377,7 @@ def goals_skill_gap():
                 if not skill_name:
                     continue
 
-                skill_score, matched = _resolve_skill_score(skill_name, token_map)
+                skill_score, matched = resolve_skill_score(skill_name, token_map)
                 gap                  = max(0, target - skill_score)    # Gap to target
                 pct_of_target        = round(skill_score / target * 100, 1) if target else 0.0
 
@@ -517,7 +460,7 @@ def roadmap_timeline():
     }
     """
     try:
-        profile = _get_profile()
+        profile = get_profile()
         if not profile:
             return jsonify({'error': 'Profile not found'}), 404
 
@@ -546,7 +489,7 @@ def roadmap_timeline():
         for goal in goals:
             target  = goal.target_score  or 100
             current = goal.current_score or 0
-            pct     = min(round((current / target) * 100, 1), 100)
+            pct     = calc_progress_pct(current, target)
             status  = goal.status   or 'Planned'
             pri     = goal.priority or 'Medium'
 
