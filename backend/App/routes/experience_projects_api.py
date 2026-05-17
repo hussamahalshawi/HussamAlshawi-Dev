@@ -14,7 +14,7 @@ from flask import Blueprint, jsonify                          # Core Flask utili
 from App.models.profile    import Profile                     # Profile model
 from App.models.experience import Experience                  # Work history model
 from App.models.project    import Project                     # Project model
-
+from App import cache                            # Import shared cache instance
 
 # ── Blueprint registration ────────────────────────────────────────────────────
 experience_projects_bp = Blueprint('experience_projects', __name__)
@@ -45,6 +45,7 @@ def _fmt_date(dt):
 # Full work history, sorted by is_current then start_date descending
 # ─────────────────────────────────────────────────────────────────────────────
 @experience_projects_bp.route('/portfolio/experience', methods=['GET'])
+@cache.cached(timeout=300, key_prefix='public_experience')
 def get_experience():
     """
     Returns all professional experience records for the active portfolio.
@@ -197,6 +198,7 @@ def get_experience_timeline():
 # Full project list with filters support via query params
 # ─────────────────────────────────────────────────────────────────────────────
 @experience_projects_bp.route('/portfolio/projects', methods=['GET'])
+@cache.cached(timeout=300, key_prefix='public_projects')
 def get_projects():
     """
     Returns all portfolio projects, sorted by end_date descending.

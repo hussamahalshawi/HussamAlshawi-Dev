@@ -12,7 +12,7 @@ import logging                                                # Error tracking
 from flask import Blueprint, jsonify                          # Core Flask utilities
 from App.models.profile import Profile                        # Profile model
 from App.models.skills  import ProfileSkill, SkillType        # Skill models
-
+from App import cache                            # Import shared cache instance
 
 # ── Blueprint registration ────────────────────────────────────────────────────
 skills_public_bp = Blueprint('skills_public', __name__)
@@ -60,6 +60,7 @@ def _build_skill_payload(ps):
 # Full skill list, sorted by score descending, grouped by category
 # ─────────────────────────────────────────────────────────────────────────────
 @skills_public_bp.route('/portfolio/skills', methods=['GET'])
+@cache.cached(timeout=300, key_prefix='public_skills')
 def get_public_skills():
     """
     Returns all ProfileSkill scores for the active portfolio profile.
@@ -130,6 +131,7 @@ def get_public_skills():
 # Lightweight summary for overview widgets and charts
 # ─────────────────────────────────────────────────────────────────────────────
 @skills_public_bp.route('/portfolio/skills/summary', methods=['GET'])
+@cache.cached(timeout=300, key_prefix='public_skills_summary')
 def get_skills_summary():
     """
     Returns a compact summary designed for dashboard-style widgets.

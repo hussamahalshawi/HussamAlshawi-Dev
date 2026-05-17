@@ -19,7 +19,7 @@ from App.models.education   import Education                  # Academic records
 from App.models.project     import Project                    # Portfolio projects
 from App.models.self_study  import SelfStudy                  # Self-learning records
 from App.models.achievement import Achievement                # Awards
-
+from App import cache                            # Import shared cache instance
 
 # ── Blueprint registration ────────────────────────────────────────────────────
 analytics_public_bp = Blueprint('analytics_public', __name__)
@@ -30,6 +30,7 @@ analytics_public_bp = Blueprint('analytics_public', __name__)
 # Mega aggregate payload — a single call that feeds ALL frontend charts
 # ─────────────────────────────────────────────────────────────────────────────
 @analytics_public_bp.route('/portfolio/analytics', methods=['GET'])
+@cache.cached(timeout=300, key_prefix='public_analytics')  # Cache 5 min in RAM
 def get_portfolio_analytics():
     """
     Returns a comprehensive analytics snapshot for the entire portfolio.
@@ -231,6 +232,7 @@ def get_portfolio_analytics():
 # Tech stack frequency across ALL source records
 # ─────────────────────────────────────────────────────────────────────────────
 @analytics_public_bp.route('/portfolio/analytics/tech-stack', methods=['GET'])
+@cache.cached(timeout=300, key_prefix='public_tech_stack')
 def get_tech_stack():
     """
     Aggregates skill/technology usage frequency across ALL models:
@@ -306,6 +308,7 @@ def get_tech_stack():
 # Combined career timeline across education + experience
 # ─────────────────────────────────────────────────────────────────────────────
 @analytics_public_bp.route('/portfolio/analytics/timeline', methods=['GET'])
+@cache.cached(timeout=300, key_prefix='public_timeline')
 def get_career_timeline():
     """
     Returns a unified career timeline merging Education + Experience events.

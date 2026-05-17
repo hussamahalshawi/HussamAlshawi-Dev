@@ -9,7 +9,7 @@ Author    : HussamAlshawi-Dev
 
 from flask import Blueprint, jsonify                          # Core Flask utilities
 from App.models.profile import Profile                        # Profile MongoEngine document
-
+from App import cache                            # Import shared cache instance
 
 # ── Blueprint registration ────────────────────────────────────────────────────
 portfolio_profile_bp = Blueprint('portfolio_profile', __name__)
@@ -20,6 +20,7 @@ portfolio_profile_bp = Blueprint('portfolio_profile', __name__)
 # Returns a single profile document with all public-facing fields.
 # ─────────────────────────────────────────────────────────────────────────────
 @portfolio_profile_bp.route('/portfolio/profile', methods=['GET'])
+@cache.cached(timeout=300, key_prefix='public_profile')  # Cache 5 min in RAM
 def get_public_profile():
     """
     Returns the complete public portfolio profile.

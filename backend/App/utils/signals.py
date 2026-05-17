@@ -31,6 +31,34 @@ _worker_lock      = threading.Lock()                                   # Thread-
 
 COOLDOWN_SECONDS  = 2                                                  # Wait 2s after job before next
 
+def _clear_public_cache():
+    """
+    Clears all public API cache entries from RAM.
+    Called automatically after any data change via signals.
+    Ensures visitors always get fresh data after admin updates.
+    """
+    try:
+        from App import cache                    # Import here to avoid circular import
+
+        # List of all cached public API keys
+        keys_to_clear = [
+            'public_profile',
+            'public_analytics',
+            'public_tech_stack',
+            'public_timeline',
+            'public_skills',
+            'public_skills_summary',
+            'public_projects',
+            'public_experience',
+        ]
+
+        for key in keys_to_clear:
+            cache.delete(key)                    # Remove each key from RAM
+
+        logging.info('[CACHE] Public API cache cleared after data change.')
+
+    except Exception as e:
+        logging.error(f'[CACHE] Failed to clear cache: {str(e)}')
 
 def _pipeline_worker():
     """
@@ -160,7 +188,8 @@ def master_sync_signal(sender, document, **kwargs):
         logging.warning(f"[SIGNAL post_save] {sender.__name__}: no profile — sync skipped.")
         return
 
-    _enqueue_pipeline(profile.id)
+    _clear_public_cache()                        # Clear RAM cache on every data change
+    _enqueue_pipeline(profile.id)                # Then recalculate scores
 
 
 def master_delete_signal(sender, document, **kwargs):
@@ -172,7 +201,8 @@ def master_delete_signal(sender, document, **kwargs):
         return
 
     logging.info(f"[SIGNAL post_delete] {sender.__name__} deleted — enqueuing pipeline.")
-    _enqueue_pipeline(profile.id)
+    _clear_public_cache()                        # Clear RAM cache on delete
+    _enqueue_pipeline(profile.id)                # Then recalculate scores
 
 
 def _resolve_profile(document):

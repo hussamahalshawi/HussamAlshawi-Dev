@@ -3,7 +3,13 @@ import os                                                             # OS envir
 from datetime import timedelta                                        # Session duration configuration
 from flask import Flask                                               # Core Flask framework
 from flask_cors import CORS                                           # Cross-Origin Resource Sharing
-from flask_admin import Admin                                         # Admin dashboard framework
+from flask_admin import Admin           # Admin dashboard framework
+from flask_caching import Cache  # Server-side RAM cache library
+
+cache = Cache()  # Create instance — attached to app later
+
+
+
 
 from config import get_config                                         # Environment configuration factory
 from App.models.database import init_db                              # MongoDB connection initializer
@@ -82,7 +88,13 @@ def create_app():
     # -------------------------------------------------------------------------
     # STEP 4: CORS
     # -------------------------------------------------------------------------
-    CORS(app, resources={r'/api/*': {'origins': '*'}})                # Allow API access from any origin
+    CORS(app, resources={r'/api/*': {'origins': '*'}})
+    # ── Server-side RAM Cache ─────────────────────────────────
+    app.config['CACHE_TYPE'] = 'SimpleCache'  # Store in server RAM
+    app.config['CACHE_DEFAULT_TIMEOUT'] = 300  # Expire after 5 minutes
+    app.config['CACHE_THRESHOLD'] = 500  # Max 500 items in RAM
+    cache.init_app(app)  # Attach cache to Flask app
+    # Allow API access from any origin
 
     # -------------------------------------------------------------------------
     # STEP 5: LOGGING
