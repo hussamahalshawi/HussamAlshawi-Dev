@@ -335,22 +335,24 @@
    TOPBAR — Premium Gradient Border Bar
 ═══════════════════════════════════════════════════ */
 .topbar {
-  height:          72px;                        /* Fixed topbar height               */
-  position:        sticky;                      /* Sticks to top on scroll           */
-  top:             0;                           /* Pin to top edge                   */
-  z-index:         100;                         /* Above content, below sidebar      */
-  display:         flex;                        /* Horizontal flex layout            */
-  align-items:     center;                      /* Vertically center all items       */
-  justify-content: space-between;               /* Push greeting left, actions right */
-  padding:         0 var(--s8);                 /* Horizontal padding                */
+  height:          72px;                        /* Fixed topbar height */
+  position:        sticky;                      /* Stick to top on scroll */
+  top:             0;                           /* Pin to viewport top */
+  z-index:         100;                         /* Above content, below sidebar */
+  display:         flex;                        /* Horizontal flex layout */
+  align-items:     center;                      /* Vertically center all items */
+  justify-content: space-between;               /* Greeting left, actions right */
+  padding:         0 var(--s6);                 /* Horizontal padding */
+  gap:             var(--s3);                   /* Gap between greeting and actions */
+  overflow:        hidden;                      /* CRITICAL: prevent horizontal scroll */
+  min-width:       0;                           /* Allow flex shrinking */
 
-  background:              transparent;         /* Fully transparent — like sidebar  */
-  backdrop-filter:         none;                /* No blur — pure see-through        */
-  -webkit-backdrop-filter: none;                /* Safari: no blur                   */
-
-  box-shadow:      none;                        /* Remove card shadow                */
-  border-bottom:   none;                        /* No hard border                    */
-  transition:      background 0.35s ease;       /* Smooth theme switch               */
+  background:              transparent;
+  backdrop-filter:         none;
+  -webkit-backdrop-filter: none;
+  box-shadow:      none;
+  border-bottom:   none;
+  transition:      background 0.35s ease;
 }
 
 /* Animated gradient bottom line — strong + visible */
@@ -386,20 +388,26 @@
   pointer-events: none;
 }
 
-/* ── Greeting ─────────────────────────────────────── */
+/* ── Greeting — left side ─────────────────────────── */
 .topbar__greeting {
-  display:        flex;
+  display:    flex;
   flex-direction: column;
-  gap:            1px;
+  gap:        1px;
+  flex:       1;                                /* Takes available space — pushes actions right */
+  min-width:  0;                                /* CRITICAL: allows text to truncate */
+  overflow:   hidden;                           /* Clip overflowing text */
 }
 
 .topbar__greeting-hi {
   font-family:    var(--font-display);
   font-size:      1.45rem;
   font-weight:    700;
-  color:          #FFFFFF;                      /* Pure white                        */
+  color:          #FFFFFF;
   line-height:    1.2;
   letter-spacing: -0.02em;
+  white-space:    nowrap;                       /* Single line always */
+  overflow:       hidden;                       /* Hide overflow */
+  text-overflow:  ellipsis;                     /* Show ... when truncated */
   transition:     color 0.35s ease;
 }
 
@@ -408,36 +416,39 @@
   font-size:      0.70rem;
   color:          rgba(255,255,255,0.50);
   letter-spacing: 0.04em;
+  white-space:    nowrap;
   overflow:       hidden;
   text-overflow:  ellipsis;
-  white-space:    nowrap;
-  max-width:      620px;
+  max-width:      100%;                         /* Respect parent width instead of fixed 620px */
   transition:     color 0.35s ease;
 }
 
-/* ── Actions ──────────────────────────────────────── */
+/* ── Actions — right side ─────────────────────────── */
 .topbar__actions {
   display:     flex;
   align-items: center;
-  gap:         var(--s3);
+  gap:         var(--s2);                       /* Default gap between action items */
+  flex-shrink: 0;                               /* Don't shrink the actions group */
+  flex-wrap:   nowrap;                          /* Stay on one line always */
 }
 
-/* Availability pill */
+/* ── Availability pill ────────────────────────────── */
 .availability-pill {
   display:        inline-flex;
   align-items:    center;
   gap:            var(--s2);
-  padding:        0.42rem var(--s4);
+  padding:        0.42rem var(--s3);            /* Slightly tighter default padding */
   background:     rgba(255,255,255,0.06);
   border:         1px solid rgba(255,255,255,0.12);
   border-radius:  var(--r-full);
   font-family:    var(--font-mono);
-  font-size:      0.62rem;
+  font-size:      0.60rem;                      /* Slightly smaller text */
   font-weight:    500;
-  letter-spacing: 0.10em;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
   color:          rgba(255,255,255,0.60);
   white-space:    nowrap;
+  flex-shrink:    0;                            /* Never compress the pill */
   transition:     all 0.35s ease;
 }
 
@@ -536,7 +547,7 @@
   animation:     pulseDot 2s ease infinite;
 }
 
-/* User pill */
+/* ── User pill — right side ───────────────────────── */
 .topbar__user {
   display:       flex;
   align-items:   center;
@@ -546,7 +557,18 @@
   border:        1px solid rgba(255,255,255,0.12);
   border-radius: var(--r-full);
   cursor:        pointer;
+  flex-shrink:   0;                             /* Don't compress the user pill */
   transition:    all var(--t-base);
+}
+
+.topbar__user-name {
+  font-size:     0.82rem;
+  font-weight:   500;
+  color:         rgba(255,255,255,0.80);
+  white-space:   nowrap;
+  overflow:      hidden;
+  text-overflow: ellipsis;
+  max-width:     120px;                         /* Cap name width to prevent overflow */
 }
 
 .topbar__user:hover {
@@ -794,141 +816,161 @@
 [data-theme="light"] .page-content { background: transparent; }
 
 /* ═══════════════════════════════════════════════════
-   RESPONSIVE — FIXED Mobile & Tablet breakpoints
-   Breakpoints: ≥1200 Desktop | 900-1199 Tablet L | 600-899 Tablet S | ≤599 Mobile
+   TOPBAR RESPONSIVE — Progressive icon hiding
+   Strategy: as screen shrinks, hide text/labels first,
+   then non-essential icons, keep only core actions.
 ═══════════════════════════════════════════════════ */
 
-/* ── Tablet L (900-1199px) ─────────────────────────── */
+/* ── Below 1200px: tighter gaps ──────────────────── */
 @media (max-width: 1199px) {
-  /* Sidebar: narrower on tablet */
-  .sidebar {
-    width: 220px;                                /* Reduce sidebar width on tablet */
-  }
-
-  .dashboard-main {
-    margin-left: 220px;                          /* Match reduced sidebar width */
-  }
-
-  /* Topbar: tighter padding */
   .topbar {
-    padding: 0 var(--s5);                        /* Less horizontal padding on tablet */
+    padding: 0 var(--s5);                        /* Reduce side padding */
   }
 
-  /* Page content: less horizontal padding */
-  .page-content {
-    padding: var(--s4) var(--s5);               /* Tighter content padding on tablet */
+  .topbar__greeting-hi {
+    font-size: 1.2rem;                           /* Slightly smaller greeting */
   }
 }
 
-/* ── Tablet S (600-899px) ─────────────────────────── */
-@media (max-width: 899px) {
-
-  /* Sidebar: becomes a drawer (slides out) */
-  .sidebar {
-    width:     260px;                            /* Full width drawer */
-    transform: translateX(-100%);               /* HIDDEN by default — off-screen left */
-    transition: transform var(--t-slow);        /* Smooth slide transition */
-    background:              rgba(10,15,32,0.96);/* Opaque background on mobile */
-    backdrop-filter:         blur(20px);        /* Frosted glass effect */
-    -webkit-backdrop-filter: blur(20px);        /* Safari support */
-    z-index:   300;                              /* Above overlay */
-  }
-
-  /* Sidebar open state — JS adds this class */
-  .sidebar--open {
-    transform: translateX(0);                   /* Slide in to visible position */
-  }
-
-  /* Main content: full width when sidebar is hidden */
-  .dashboard-main {
-    margin-left: 0;                              /* Remove sidebar offset on mobile */
-  }
-
-  /* Topbar: compact for tablet-S */
-  .topbar {
-    padding: 0 var(--s4);                        /* Tighten topbar padding */
-    height:  60px;                               /* Slightly shorter topbar */
-  }
-
-  /* Page content: tighter all-round */
-  .page-content {
-    padding: var(--s4) var(--s4);               /* Compact content padding */
-    height:  calc(100vh - 60px);               /* Adjust for shorter topbar */
-  }
-
-  /* Hamburger: SHOW on tablet-S and mobile */
-  .topbar__hamburger {
-    display: flex;                               /* Show hamburger menu button */
-  }
-
-  /* Availability pill: hide on small screens to save space */
+/* ── Below 1024px: hide availability pill ────────── */
+@media (max-width: 1024px) {
   .availability-pill {
-    display: none;                               /* Hide hire status on tablet-S */
+    display: none;                               /* Hide hire status — saves ~140px */
   }
 
-  /* Greeting: truncate long names */
-  .topbar__greeting-hi {
-    font-size:     1.1rem;                       /* Smaller greeting on tablet */
-    white-space:   nowrap;
-    overflow:      hidden;
-    text-overflow: ellipsis;
-    max-width:     200px;                        /* Prevent overflow into actions */
+  .topbar__actions {
+    gap: var(--s2);                              /* Tighter gap between icons */
   }
+}
 
-  /* User pill: hide name, show avatar only */
+/* ── Below 860px: hide user name, keep avatar ────── */
+@media (max-width: 860px) {
   .topbar__user-name,
   .topbar__user-chevron {
-    display: none;                               /* Show avatar only on small screens */
+    display: none;                               /* Avatar only — saves ~100px */
   }
 
   .topbar__user {
-    padding: 0.40rem;                            /* Tighter user avatar pill */
-  }
-}
-
-/* ── Mobile (≤599px) ─────────────────────────────── */
-@media (max-width: 599px) {
-
-  /* Topbar: minimum height, full condensed layout */
-  .topbar {
-    height:  56px;                               /* Compact topbar on mobile */
-    padding: 0 var(--s3);                        /* Minimal padding on mobile */
+    padding:       0.40rem;                      /* Square avatar button */
+    border-radius: var(--r-full);               /* Circle shape */
   }
 
-  /* Page content: minimal padding on mobile */
-  .page-content {
-    padding: var(--s3) var(--s3);               /* Minimal content padding */
-    height:  calc(100vh - 56px);               /* Adjust for compact topbar */
-  }
-
-  /* Greeting subtitle: hide on mobile to save vertical space */
   .topbar__greeting-sub {
-    display: none;                               /* Hide subtitle on mobile */
+    display: none;                               /* Hide job title on mid screens */
   }
 
   .topbar__greeting-hi {
-    font-size:  1rem;                            /* Smallest greeting size */
-    max-width:  150px;                           /* Tighter name truncation */
+    font-size: 1.1rem;                           /* Smaller name */
+  }
+}
+
+/* ── Below 768px (tablet): show hamburger ────────── */
+@media (max-width: 768px) {
+  .topbar {
+    padding: 0 var(--s4);                        /* Tighter padding */
+    height:  60px;                               /* Shorter topbar */
   }
 
-  /* Actions: reduce gap */
-  .topbar__actions {
-    gap: var(--s2);                              /* Tighter action button spacing */
+  /* Show hamburger menu button */
+  .topbar__hamburger {
+    display:         flex;                       /* Visible on mobile */
+    align-items:     center;
+    justify-content: center;
   }
 
-  /* Theme toggle: hide individual buttons label */
+  /* Sidebar: becomes hidden off-screen */
+  .sidebar {
+    transform:       translateX(-100%);          /* Hide sidebar left */
+    transition:      transform var(--t-slow);   /* Smooth slide */
+    background:      rgba(10, 15, 32, 0.97);    /* Solid opaque background */
+    backdrop-filter: blur(20px);                /* Frosted glass effect */
+    -webkit-backdrop-filter: blur(20px);
+    z-index:         300;                        /* Above overlay */
+  }
+
+  /* Sidebar open state */
+  .sidebar--open {
+    transform: translateX(0);                    /* Slide in from left */
+  }
+
+  /* Main content: full width */
+  .dashboard-main {
+    margin-left: 0;                              /* Remove sidebar offset */
+  }
+
+  /* Page content: adjust height */
+  .page-content {
+    padding: var(--s4) var(--s4);               /* Compact padding */
+    height:  calc(100vh - 60px);               /* Account for shorter topbar */
+  }
+}
+
+/* ── Below 600px (mobile): minimal topbar ────────── */
+@media (max-width: 599px) {
+  .topbar {
+    padding: 0 var(--s3);                        /* Minimal side padding */
+    height:  56px;                               /* Compact height */
+    gap:     var(--s2);                          /* Tighter overall gap */
+  }
+
+  /* Hide theme toggle labels, keep buttons */
   .topbar__theme-toggle {
-    padding: 3px;                               /* Minimal padding */
+    padding: 3px;                                /* Tightest padding */
+    gap:     1px;                                /* Minimal gap between buttons */
   }
 
   .theme-btn {
-    width:  28px;                                /* Smaller theme buttons */
-    height: 24px;                               /* Shorter on mobile */
+    width:  28px;                                /* Smaller square */
+    height: 26px;                                /* Slightly shorter */
+    font-size: 0.78rem;                          /* Smaller emoji icons */
   }
 
-  /* Sidebar: full-screen width on small mobile */
-  .sidebar {
-    width: 100%;                                 /* Full width on very small screens */
-    max-width: 280px;                           /* But capped for readability */
+  /* Tighten action gaps */
+  .topbar__actions {
+    gap: 6px;                                    /* 6px between all action items */
+  }
+
+  /* Icon buttons: smaller */
+  .topbar__icon-btn {
+    width:     32px;                             /* Smaller icon button */
+    height:    32px;                             /* Square */
+    font-size: 0.85rem;                          /* Smaller icon */
+  }
+
+  /* User avatar: smaller */
+  .topbar__user-avatar {
+    width:  26px;                                /* Smaller avatar circle */
+    height: 26px;
+  }
+
+  /* Greeting: minimal */
+  .topbar__greeting-hi {
+    font-size: 0.95rem;                          /* Smallest readable greeting */
+    max-width: 140px;                            /* Hard cap to prevent overflow */
+  }
+
+  /* Adjust page content */
+  .page-content {
+    padding: var(--s3) var(--s3);               /* Minimal content padding */
+    height:  calc(100vh - 56px);               /* Account for compact topbar */
+  }
+}
+
+/* ── Below 400px (very small): ultra compact ─────── */
+@media (max-width: 399px) {
+  .topbar__greeting-hi {
+    font-size: 0.88rem;                          /* Smallest greeting */
+    max-width: 100px;                            /* Very tight cap */
+  }
+
+  /* Theme toggle: icon only */
+  .theme-btn {
+    width:  24px;                                /* Minimal width */
+    height: 24px;
+    font-size: 0.70rem;
+  }
+
+  .topbar__actions {
+    gap: 4px;                                    /* Tightest possible gap */
   }
 }
