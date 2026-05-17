@@ -13,46 +13,10 @@ from flask import Blueprint, jsonify                          # Core Flask utili
 from App.models.profile import Profile                        # Profile model
 from App.models.skills  import ProfileSkill, SkillType        # Skill models
 from App import cache                            # Import shared cache instance
-
+from App.routes.helpers.route_helpers import build_skill_payload  # Shared helper — replaces local _build_skill_payload
 # ── Blueprint registration ────────────────────────────────────────────────────
 skills_public_bp = Blueprint('skills_public', __name__)
 
-
-# ─────────────────────────────────────────────────────────────────────────────
-# HELPER  build_skill_payload
-# Converts a ProfileSkill document into a serialisable dict
-# ─────────────────────────────────────────────────────────────────────────────
-def _build_skill_payload(ps):
-    """
-    Converts a ProfileSkill MongoEngine document into a plain dict.
-    Resolves icon, color, and category from the linked SkillType keywords.
-
-    Args:
-        ps (ProfileSkill): A single ProfileSkill document.
-
-    Returns:
-        dict | None: Serialised payload, or None if skill reference is broken.
-    """
-    if not ps.skill:                                          # Skip orphaned ProfileSkill references
-        return None
-
-    # Resolve icon + color via the Skill's own helper method
-    meta        = ps.skill.get_display_meta()                 # Returns {icon, color}
-    skill_type  = ''                                          # Default: no category label
-
-    if ps.skill.skill_type:                                   # Dereference SkillType safely
-        try:
-            skill_type = ps.skill.skill_type.name or ''
-        except Exception:
-            skill_type = ''                                   # Handle broken reference silently
-
-    return {
-        'skill_name' : ps.skill.skill_name or '',
-        'skill_type' : skill_type,
-        'score'      : int(ps.score or 0),
-        'icon'       : meta.get('icon',  'fas fa-code'),
-        'color'      : meta.get('color', '#64748b'),
-    }
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -103,7 +67,7 @@ def get_public_skills():
         raw_skills = ProfileSkill.objects(profile=profile).select_related()
 
         # Build serialisable list, dropping broken references
-        skills_list = [p for p in (_build_skill_payload(ps) for ps in raw_skills) if p]
+        skills_list = [p for p in (build_skill_payload(ps) for ps in raw_skills) if p]
 
         # Sort: highest score first
         skills_list.sort(key=lambda x: x['score'], reverse=True)
@@ -162,7 +126,7 @@ def get_skills_summary():
             return jsonify({'error': 'Profile not found'}), 404
 
         raw_skills  = ProfileSkill.objects(profile=profile).select_related()
-        skills_list = [p for p in (_build_skill_payload(ps) for ps in raw_skills) if p]
+        skills_list = [p for p in (build_skill_payload(ps) for ps in raw_skills) if p]
         skills_list.sort(key=lambda x: x['score'], reverse=True)
 
         # ── Top 10 skills ─────────────────────────────────────────────────────
