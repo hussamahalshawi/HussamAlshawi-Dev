@@ -521,3 +521,72 @@ def roadmap_timeline():
     except Exception as e:
         logging.error(f'[CHARTS] /charts/goals/roadmap-timeline failed: {str(e)}')
         return jsonify({'error': str(e)}), 500
+
+# ─────────────────────────────────────────────────────────────────────────────
+# ROUTE 7 — GET /api/goals-dashboard
+# Moved from dashboard_api.py — belongs here as goals analytics route
+# ─────────────────────────────────────────────────────────────────────────────
+@goals_charts_bp.route('/goals-dashboard', methods=['GET'])
+def get_goals_dashboard():
+    """
+    Returns all Goal documents for a given profile with progress metrics.
+    Scoped to a specific profile_id passed as a query parameter.
+
+    Query param:
+        profile_id (str): MongoDB ObjectId of the target profile.
+
+    Response shape:
+    {
+        "count": 4,
+        "goals": [
+            {
+                "id"           : "...",
+                "goal_name"    : "Senior Python Developer",
+                "sub_title"    : "...",
+                "status"       : "In Progress",
+                "priority"     : "Critical",
+                "target_year"  : 2025,
+                "target_score" : 95,
+                "current_score": 72,
+                "progress_pct" : 75.8
+            }
+        ]
+    }
+    """
+    from flask import request                                          # Import inside route — avoids circular import
+    from App.models.profile import Profile                            # Profile model for ID lookup
+
+    profile_id = request.args.get('profile_id')                       # Read query parameter
+
+    if not profile_id:
+        return jsonify({'error': 'profile_id is required'}), 400       # Guard: missing param
+
+    try:
+        profile = Profile.objects.get(id=profile_id)                   # Validate profile exists
+
+        goals = Goal.objects(profile=profile).order_by('target_year', '-priority')  # Ordered goals
+
+        goals_data = []
+        for g in goals:
+            pct = calc_progress_pct(g.current_score, g.target_score)   # Progress % via shared helper
+
+            goals_data.append({
+                'id'           : str(g.id),                            # MongoDB ObjectId as string
+                'goal_name'    : g.goal_name or '',                    # Goal display name
+                'sub_title'    : g.sub_title or '',                    # Optional subtitle
+                'status'       : g.status    or 'Planned',             # Status enum value
+                'priority'     : g.priority  or 'Medium',              # Priority enum value
+                'target_year'  : g.target_year,                        # Target achievement year
+                'target_score' : int(g.target_score  or 100),          # Target score
+                'current_score': int(g.current_score or 0),            # Current score
+                'progress_pct' : pct,                                  # Percentage toward target
+            })
+
+        return jsonify({'count': len(goals_data), 'goals': goals_data}), 200
+
+    except Profile.DoesNotExist:
+        return jsonify({'error': 'Profile not found'}), 404            # Guard: invalid profile ID
+
+    except Exception as e:
+        logging.error(f'[GOALS DASHBOARD] /goals-dashboard failed: {str(e)}')
+        return jsonify({'error': str(e)}), 500                         # Return error with details
