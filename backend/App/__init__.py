@@ -192,6 +192,24 @@ def create_app():
     app.register_blueprint(goals_charts_bp, url_prefix='/api')  # Charts: goals
     app.register_blueprint(analytics_public_bp, url_prefix='/api')  # Charts: analytics
 
+    # ── Suppress favicon 404 noise in logs ────────────────────────────────────
+    from flask import send_file                                               # File serving utility
+    import io                                                                 # In-memory byte stream
+
+    @app.route('/favicon.ico')
+    def favicon():
+        """Returns an empty 1x1 transparent ICO — silences browser favicon 404 logs."""
+        return send_file(
+            io.BytesIO(bytes([                                                # Minimal valid ICO file bytes
+                0,0,1,0,1,0,1,1,0,0,1,0,1,0,40,0,
+                0,0,22,0,0,0,40,0,0,0,1,0,0,0,2,0,
+                0,0,1,0,1,0,0,0,0,0,4,0,0,0,0,0,
+                0,0,0,0,0,0,0,0,0,0,0,0,0,0,255,255,
+                255,0,0,0,0,0,0,0,0,0,0,0
+            ])),
+            mimetype='image/x-icon',                                          # ICO MIME type
+            max_age=86400                                                      # Cache in browser for 24 hours
+        )
 
     # -------------------------------------------------------------------------
     # STEP 10: SIGNALS (MongoEngine automation)
@@ -200,7 +218,6 @@ def create_app():
 
     app.logger.info(f'🚀 {current_config.PROJECT_NAME} is fully operational.')
     return app
-
 
 def setup_app_logging(app, config_obj):
     """
