@@ -151,54 +151,47 @@ def create_app():
     # -------------------------------------------------------------------------
     # STEP 9: API ROUTES
     # -------------------------------------------------------------------------
-    from App.routes import Api as main_bp                             # Main API blueprint
-    app.register_blueprint(main_bp, url_prefix='/api')               # Mount under /api
+    from App.routes.admin import Api as main_bp  # Dev cache-status route
+    from App.routes.admin.dashboard_api import dashboard_bp  # Admin dashboard routes
 
-    from App.routes import goals_bp  # Goals API blueprint
-    app.register_blueprint(goals_bp, url_prefix='/api')  # Mount under /api
+    from App.routes.public.profile_api import portfolio_profile_bp  # GET /portfolio/profile
+    from App.routes.public.skills_api import skills_public_bp  # GET /portfolio/skills
+    from App.routes.public.feedback_api import feedback_bp  # POST/GET /feedback
+    from App.routes.public.goals_api import goals_public_bp  # GET /portfolio/goals
+    from App.routes.public.languages_api import languages_public_bp  # GET /portfolio/languages
+    from App.routes.public.education_api import education_public_bp  # GET /portfolio/education
+    from App.routes.public.courses_api import courses_public_bp  # GET /portfolio/courses
+    from App.routes.public.achievements_api import achievements_public_bp  # GET /portfolio/achievements
+    from App.routes.public.self_study_api import self_study_public_bp  # GET /portfolio/self-study
+    from App.routes.public.experience_api import experience_public_bp  # GET /portfolio/experience
+    from App.routes.public.projects_api import projects_public_bp  # GET /portfolio/projects
 
-    from App.routes import dashboard_bp  # Dashboard API blueprint
-    app.register_blueprint(dashboard_bp, url_prefix='/api')  # Mount under /api
+    from App.routes.charts.skills_charts_api import skills_charts_bp  # /api/charts/skills/*
+    from App.routes.charts.career_charts_api import career_charts_bp  # /api/charts/career/*
+    from App.routes.charts.learning_charts_api import learning_charts_bp  # /api/charts/learning/*
+    from App.routes.charts.goals_charts_api import goals_charts_bp  # /api/charts/goals/*
+    from App.routes.charts.analytics_api import analytics_public_bp  # /api/portfolio/analytics/*
 
-    from App.routes import feedback_bp
-    app.register_blueprint(feedback_bp, url_prefix='/api')
+    # ── Register all blueprints ────────────────────────────────────────────────
+    app.register_blueprint(main_bp, url_prefix='/api')  # Dev routes
+    app.register_blueprint(dashboard_bp, url_prefix='/api')  # Admin dashboard
+    app.register_blueprint(portfolio_profile_bp, url_prefix='/api')  # Public profile
+    app.register_blueprint(skills_public_bp, url_prefix='/api')  # Public skills
+    app.register_blueprint(feedback_bp, url_prefix='/api')  # Feedback/contact
+    app.register_blueprint(goals_public_bp, url_prefix='/api')  # Public goals
+    app.register_blueprint(languages_public_bp, url_prefix='/api')  # Public languages
+    app.register_blueprint(education_public_bp, url_prefix='/api')  # Public education
+    app.register_blueprint(courses_public_bp, url_prefix='/api')  # Public courses
+    app.register_blueprint(achievements_public_bp, url_prefix='/api')  # Public achievements
+    app.register_blueprint(self_study_public_bp, url_prefix='/api')  # Public self-study
+    app.register_blueprint(experience_public_bp, url_prefix='/api')  # Public experience
+    app.register_blueprint(projects_public_bp, url_prefix='/api')  # Public projects
+    app.register_blueprint(skills_charts_bp, url_prefix='/api')  # Charts: skills
+    app.register_blueprint(career_charts_bp, url_prefix='/api')  # Charts: career
+    app.register_blueprint(learning_charts_bp, url_prefix='/api')  # Charts: learning
+    app.register_blueprint(goals_charts_bp, url_prefix='/api')  # Charts: goals
+    app.register_blueprint(analytics_public_bp, url_prefix='/api')  # Charts: analytics
 
-    from App.routes import languages_feedback_bp
-    app.register_blueprint(languages_feedback_bp, url_prefix='/api')
-
-    from App.routes import portfolio_profile_bp
-    from App.routes import skills_public_bp
-    from App.routes import experience_projects_bp
-    from App.routes import education_courses_bp
-    from App.routes import goals_languages_public_bp
-    from App.routes import analytics_public_bp
-
-    # Then register them inside create_app() after the existing blueprint registrations:
-
-    app.register_blueprint(portfolio_profile_bp,    url_prefix='/api')
-    app.register_blueprint(skills_public_bp,        url_prefix='/api')
-    app.register_blueprint(experience_projects_bp,  url_prefix='/api')
-    app.register_blueprint(education_courses_bp,    url_prefix='/api')
-    app.register_blueprint(goals_languages_public_bp, url_prefix='/api')
-    app.register_blueprint(analytics_public_bp,     url_prefix='/api')
-
-    # ─────────────────────────────────────────────────────────────────────────────
-    # ADD THESE IMPORTS at the top of App/__init__.py (inside create_app or top-level)
-    # ─────────────────────────────────────────────────────────────────────────────
-
-    from App.routes import skills_charts_bp  # Skills chart endpoints
-    from App.routes import career_charts_bp  # Career chart endpoints
-    from App.routes import learning_charts_bp  # Learning chart endpoints
-    from App.routes import goals_charts_bp  # Goals chart endpoints
-
-    # ─────────────────────────────────────────────────────────────────────────────
-    # ADD THESE REGISTER CALLS inside create_app() after the existing blueprints
-    # ─────────────────────────────────────────────────────────────────────────────
-
-    app.register_blueprint(skills_charts_bp, url_prefix='/api')  # /api/charts/skills/*
-    app.register_blueprint(career_charts_bp, url_prefix='/api')  # /api/charts/career/*
-    app.register_blueprint(learning_charts_bp, url_prefix='/api')  # /api/charts/learning/*
-    app.register_blueprint(goals_charts_bp, url_prefix='/api')  # /api/charts/goals/*
 
     # -------------------------------------------------------------------------
     # STEP 10: SIGNALS (MongoEngine automation)

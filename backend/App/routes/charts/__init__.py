@@ -1,0 +1,1 @@
+# charts routes package — all analytics and chart API blueprints
