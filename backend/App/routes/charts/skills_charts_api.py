@@ -23,59 +23,11 @@ from App.models.experience  import Experience                      # For skill s
 from App.models.self_study  import SelfStudy                       # For skill source tracking
 from App.models.achievement import Achievement                     # For skill source tracking
 from App.models.education   import Education                       # For skill source tracking
-
+from App.routes.helpers.route_helpers import get_profile, build_skill_payload  # Shared helpers — no duplication
 
 # ── Blueprint registration ────────────────────────────────────────────────────
 skills_charts_bp = Blueprint('skills_charts', __name__)
 
-
-# ─────────────────────────────────────────────────────────────────────────────
-# HELPER — fetch active profile or return error dict
-# ─────────────────────────────────────────────────────────────────────────────
-def _get_profile():
-    """
-    Fetches the first (active) portfolio Profile document.
-
-    Returns:
-        Profile | None
-    """
-    return Profile.objects.first()                                 # Single portfolio profile
-
-
-# ─────────────────────────────────────────────────────────────────────────────
-# HELPER — build a serialisable skill payload from a ProfileSkill doc
-# ─────────────────────────────────────────────────────────────────────────────
-def _skill_payload(ps):
-    """
-    Converts a ProfileSkill document into a plain serialisable dict.
-    Resolves icon, color, and category name from linked references.
-
-    Args:
-        ps (ProfileSkill): Single ProfileSkill document.
-
-    Returns:
-        dict | None: Serialised payload, None if skill reference is broken.
-    """
-    if not ps.skill:                                               # Skip orphaned references
-        return None
-
-    meta = ps.skill.get_display_meta()                             # Resolve icon + color
-
-    # Resolve category name safely — avoid crashing on broken references
-    skill_type = ''
-    if ps.skill.skill_type:
-        try:
-            skill_type = ps.skill.skill_type.name or ''
-        except Exception:
-            skill_type = ''
-
-    return {
-        'skill_name': ps.skill.skill_name or '',                   # Official skill name
-        'skill_type': skill_type,                                  # Parent category label
-        'score'     : int(ps.score or 0),                         # Proficiency 0-100
-        'icon'      : meta.get('icon',  'fas fa-code'),           # FontAwesome class
-        'color'     : meta.get('color', '#64748b'),                # Hex brand color
-    }
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -100,7 +52,7 @@ def skills_radar():
     }
     """
     try:
-        profile = _get_profile()
+        profile = get_profile()
         if not profile:
             return jsonify({'error': 'Profile not found'}), 404
 
@@ -110,7 +62,7 @@ def skills_radar():
         # Build category → scores map
         cat_map = {}
         for ps in raw:
-            payload = _skill_payload(ps)
+            payload = build_skill_payload(ps)
             if not payload:
                 continue
 
@@ -177,7 +129,7 @@ def skills_distribution():
     }
     """
     try:
-        profile = _get_profile()
+        profile = get_profile()
         if not profile:
             return jsonify({'error': 'Profile not found'}), 404
 
@@ -249,7 +201,7 @@ def skills_top_bars():
     }
     """
     try:
-        profile = _get_profile()
+        profile = get_profile()
         if not profile:
             return jsonify({'error': 'Profile not found'}), 404
 
@@ -257,7 +209,7 @@ def skills_top_bars():
         limit = min(max(int(request.args.get('limit', 12)), 1), 30)
 
         raw     = ProfileSkill.objects(profile=profile).select_related()
-        skills  = [p for p in (_skill_payload(ps) for ps in raw) if p]
+        skills  = [p for p in (build_skill_payload(ps) for ps in raw) if p]
         skills.sort(key=lambda x: -x['score'])                     # Highest score first
         top     = skills[:limit]
 
@@ -296,12 +248,12 @@ def skills_heatmap():
     }
     """
     try:
-        profile = _get_profile()
+        profile = get_profile()
         if not profile:
             return jsonify({'error': 'Profile not found'}), 404
 
         raw    = ProfileSkill.objects(profile=profile).select_related()
-        skills = [p for p in (_skill_payload(ps) for ps in raw) if p]
+        skills = [p for p in (build_skill_payload(ps) for ps in raw) if p]
 
         # Score band definitions
         BANDS      = ['Expert', 'Advanced', 'Intermediate', 'Beginner']
@@ -376,7 +328,7 @@ def skills_sources():
     }
     """
     try:
-        profile = _get_profile()
+        profile = get_profile()
         if not profile:
             return jsonify({'error': 'Profile not found'}), 404
 
