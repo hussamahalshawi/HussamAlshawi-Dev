@@ -22,37 +22,10 @@ from App.models.experience  import Experience                      # Work histor
 from App.models.education   import Education                       # Academic records model
 from App.models.project     import Project                         # Projects model
 from App.models.achievement import Achievement                     # Achievements model
-
+from App.routes.helpers.route_helpers import get_profile, fmt_date  # Shared helpers — no duplication
 
 # ── Blueprint registration ────────────────────────────────────────────────────
 career_charts_bp = Blueprint('career_charts', __name__)
-
-
-# ─────────────────────────────────────────────────────────────────────────────
-# HELPER — fetch active profile
-# ─────────────────────────────────────────────────────────────────────────────
-def _get_profile():
-    """Fetches the first active portfolio Profile document."""
-    return Profile.objects.first()
-
-
-# ─────────────────────────────────────────────────────────────────────────────
-# HELPER — safe date format
-# ─────────────────────────────────────────────────────────────────────────────
-def _fmt(dt):
-    """
-    Safely converts a datetime to ISO string.
-
-    Args:
-        dt: datetime | None
-
-    Returns:
-        str | None
-    """
-    try:
-        return dt.isoformat() if dt else None
-    except Exception:
-        return None
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -117,7 +90,7 @@ def career_gantt():
     }
     """
     try:
-        profile = _get_profile()
+        profile = get_profile()
         if not profile:
             return jsonify({'error': 'Profile not found'}), 404
 
@@ -132,8 +105,8 @@ def career_gantt():
                 'sub_label'      : edu.institution or '',
                 'start_year'     : edu.start_date.year if edu.start_date else None,
                 'end_year'       : edu.end_date.year   if edu.end_date   else None,
-                'start_date'     : _fmt(edu.start_date),
-                'end_date'       : _fmt(edu.end_date),
+                'start_date'     : fmt_date(edu.start_date),
+                'end_date'       : fmt_date(edu.end_date),
                 'duration_months': _months(edu.start_date, edu.end_date),
                 'is_current'     : False,
                 'color'          : '#7F77DD',                      # Purple for education
@@ -151,8 +124,8 @@ def career_gantt():
                 'location'       : exp.location or '',
                 'start_year'     : exp.start_date.year if exp.start_date else None,
                 'end_year'       : exp.end_date.year   if exp.end_date   else None,
-                'start_date'     : _fmt(exp.start_date),
-                'end_date'       : _fmt(exp.end_date),
+                'start_date'     : fmt_date(exp.start_date),
+                'end_date'       : fmt_date(exp.end_date),
                 'duration_months': _months(exp.start_date, exp.end_date),
                 'is_current'     : bool(exp.is_current),
                 'color'          : '#1D9E75',                      # Teal for experience
@@ -203,7 +176,7 @@ def employment_mix():
     }
     """
     try:
-        profile = _get_profile()
+        profile = get_profile()
         if not profile:
             return jsonify({'error': 'Profile not found'}), 404
 
@@ -278,7 +251,7 @@ def projects_treemap():
     }
     """
     try:
-        profile = _get_profile()
+        profile = get_profile()
         if not profile:
             return jsonify({'error': 'Profile not found'}), 404
 
@@ -388,7 +361,7 @@ def projects_heatmap():
     }
     """
     try:
-        profile = _get_profile()
+        profile = get_profile()
         if not profile:
             return jsonify({'error': 'Profile not found'}), 404
 
@@ -478,7 +451,7 @@ def stack_frequency():
     }
     """
     try:
-        profile = _get_profile()
+        profile = get_profile()
         if not profile:
             return jsonify({'error': 'Profile not found'}), 404
 
@@ -560,7 +533,7 @@ def achievements_timeline():
     }
     """
     try:
-        profile = _get_profile()
+        profile = get_profile()
         if not profile:
             return jsonify({'error': 'Profile not found'}), 404
 
@@ -576,7 +549,7 @@ def achievements_timeline():
                 'id'                  : str(ach.id),
                 'title'               : ach.title or '',
                 'issuing_organization': ach.issuing_organization or '',
-                'date_obtained'       : _fmt(ach.date_obtained),
+                'date_obtained'       : fmt_date(ach.date_obtained),
                 'skills_demonstrated' : list(ach.skills_demonstrated or []),
                 'certificate_image'   : ach.certificate_image or None,
             })
