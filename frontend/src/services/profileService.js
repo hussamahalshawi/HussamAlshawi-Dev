@@ -1,19 +1,19 @@
 /**
- * profileService.js — كل طلبات الـ Profile
+ * profileService.js —  Profile
  */
 import apiClient from './api';
 
 const profileService = {
 
-  /** جلب الـ profile العام */
+  /** Fetches the public portfolio profile for the hero and about sections. */
   getPublicProfile: () =>
     apiClient.get('/portfolio/profile'),
 
-  /** جلب الـ profiles كلها (للـ dashboard) */
+    /** Fetches all profiles for the admin dashboard selector dropdown. */
   getAllProfiles: () =>
     apiClient.get('/profiles'),
 
-  /** جلب profile محدد بالـ ID */
+    /** Fetches a single profile by MongoDB ObjectId string. */
   getProfileById: (id) =>
     apiClient.get(`/profile/${id}`),
 
