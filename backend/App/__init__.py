@@ -171,6 +171,24 @@ def create_app():
     app.register_blueprint(goals_languages_public_bp, url_prefix='/api')
     app.register_blueprint(analytics_public_bp,     url_prefix='/api')
 
+    # ─────────────────────────────────────────────────────────────────────────────
+    # ADD THESE IMPORTS at the top of App/__init__.py (inside create_app or top-level)
+    # ─────────────────────────────────────────────────────────────────────────────
+
+    from App.routes.skills_charts_api import skills_charts_bp  # Skills chart endpoints
+    from App.routes.career_charts_api import career_charts_bp  # Career chart endpoints
+    from App.routes.learning_charts_api import learning_charts_bp  # Learning chart endpoints
+    from App.routes.goals_charts_api import goals_charts_bp  # Goals chart endpoints
+
+    # ─────────────────────────────────────────────────────────────────────────────
+    # ADD THESE REGISTER CALLS inside create_app() after the existing blueprints
+    # ─────────────────────────────────────────────────────────────────────────────
+
+    app.register_blueprint(skills_charts_bp, url_prefix='/api')  # /api/charts/skills/*
+    app.register_blueprint(career_charts_bp, url_prefix='/api')  # /api/charts/career/*
+    app.register_blueprint(learning_charts_bp, url_prefix='/api')  # /api/charts/learning/*
+    app.register_blueprint(goals_charts_bp, url_prefix='/api')  # /api/charts/goals/*
+
     # -------------------------------------------------------------------------
     # STEP 10: SIGNALS (MongoEngine automation)
     # -------------------------------------------------------------------------
