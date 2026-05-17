@@ -46,7 +46,6 @@ from admin_views.language_view import LanguageAdminView       # Language managem
 from admin_views.feedback_view import FeedbackAdminView       # Feedback inbox and testimonials view
 
 # --- AUTH IMPORTS ---
-from auth.secure_views import SecureAdminIndexView                    # Keep for reference (unused now)
 from admin_views.dashboard_view import DashboardIndexView             # New analytics dashboard index
 from auth.routes       import auth_bp                                 # Login/logout route blueprint
 from auth.cli          import cli_bp                                  # CLI commands (create-admin)
@@ -155,24 +154,24 @@ def create_app():
     from App.routes import Api as main_bp                             # Main API blueprint
     app.register_blueprint(main_bp, url_prefix='/api')               # Mount under /api
 
-    from App.routes.goals import goals_bp  # Goals API blueprint
+    from App.routes import goals_bp  # Goals API blueprint
     app.register_blueprint(goals_bp, url_prefix='/api')  # Mount under /api
 
-    from App.routes.dashboard_api import dashboard_bp  # Dashboard API blueprint
+    from App.routes import dashboard_bp  # Dashboard API blueprint
     app.register_blueprint(dashboard_bp, url_prefix='/api')  # Mount under /api
 
-    from App.routes.feedback_api import feedback_bp
+    from App.routes import feedback_bp
     app.register_blueprint(feedback_bp, url_prefix='/api')
 
-    from App.routes.languages_feedback_api import languages_feedback_bp
+    from App.routes import languages_feedback_bp
     app.register_blueprint(languages_feedback_bp, url_prefix='/api')
 
-    from App.routes.portfolio_api              import portfolio_profile_bp
-    from App.routes.skills_api                 import skills_public_bp
-    from App.routes.experience_projects_api    import experience_projects_bp
-    from App.routes.education_courses_api      import education_courses_bp
-    from App.routes.goals_languages_api        import goals_languages_public_bp
-    from App.routes.analytics_api              import analytics_public_bp
+    from App.routes import portfolio_profile_bp
+    from App.routes import skills_public_bp
+    from App.routes import experience_projects_bp
+    from App.routes import education_courses_bp
+    from App.routes import goals_languages_public_bp
+    from App.routes import analytics_public_bp
 
     # Then register them inside create_app() after the existing blueprint registrations:
 
@@ -187,10 +186,10 @@ def create_app():
     # ADD THESE IMPORTS at the top of App/__init__.py (inside create_app or top-level)
     # ─────────────────────────────────────────────────────────────────────────────
 
-    from App.routes.skills_charts_api import skills_charts_bp  # Skills chart endpoints
-    from App.routes.career_charts_api import career_charts_bp  # Career chart endpoints
-    from App.routes.learning_charts_api import learning_charts_bp  # Learning chart endpoints
-    from App.routes.goals_charts_api import goals_charts_bp  # Goals chart endpoints
+    from App.routes import skills_charts_bp  # Skills chart endpoints
+    from App.routes import career_charts_bp  # Career chart endpoints
+    from App.routes import learning_charts_bp  # Learning chart endpoints
+    from App.routes import goals_charts_bp  # Goals chart endpoints
 
     # ─────────────────────────────────────────────────────────────────────────────
     # ADD THESE REGISTER CALLS inside create_app() after the existing blueprints
