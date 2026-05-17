@@ -482,3 +482,87 @@ def learning_vs_output():
     except Exception as e:
         logging.error(f'[CHARTS] /charts/learning/learning-vs-output failed: {str(e)}')
         return jsonify({'error': str(e)}), 500
+
+# ─────────────────────────────────────────────────────────────────────────────
+# ROUTE 7 — GET /api/portfolio/courses/stats
+# Moved from education_courses_api.py — belongs here as analytics/charts route
+# ─────────────────────────────────────────────────────────────────────────────
+@learning_charts_bp.route('/portfolio/courses/stats', methods=['GET'])
+def get_courses_stats():
+    """
+    Returns aggregated statistics about courses for use in charts.
+
+    Includes:
+        - total_courses      : overall count
+        - by_category        : count per category
+        - by_year            : count per completion year
+        - top_skill_sources  : skills most frequently learned across courses
+        - providers          : list of unique organisations
+
+    Used by:
+        - Courses analytics widget
+        - Learning trajectory chart (by year)
+        - Provider distribution chart
+
+    Response shape:
+    {
+        "total_courses"     : 18,
+        "by_category"       : [ { "category": "Python", "count": 6 } ],
+        "by_year"           : [ { "year": "2022", "count": 8 } ],
+        "top_skill_sources" : [ { "skill": "Python", "count": 12 } ],
+        "providers"         : ["Udemy", "Coursera", "Udacity"]
+    }
+    """
+    try:
+        profile = _get_profile()                                       # Fetch active profile
+
+        if not profile:
+            return jsonify({'error': 'Profile not found'}), 404        # Guard: no profile configured
+
+        courses = list(Course.objects(profile=profile))                # Fetch all course documents
+
+        by_category = {}                                               # Accumulate count per category
+        providers   = set()                                            # Unique provider names
+        by_year     = {}                                               # Accumulate count per year
+        skill_freq  = {}                                               # Skill frequency across courses
+
+        for course in courses:
+            # Resolve category name safely
+            cat = ''
+            if course.category:
+                try:
+                    cat = course.category.name or ''                   # Dereference Category document
+                except Exception:
+                    cat = ''                                           # Handle broken reference
+
+            if cat:
+                by_category[cat] = by_category.get(cat, 0) + 1        # Increment category count
+
+            if course.organization:
+                providers.add(course.organization)                     # Track unique providers
+
+            if course.end_date:
+                yr        = str(course.end_date.year)                  # Year as string key
+                by_year[yr] = by_year.get(yr, 0) + 1                  # Increment year count
+
+            for skill in (course.acquired_skills or []):
+                if skill:
+                    skill_freq[skill] = skill_freq.get(skill, 0) + 1  # Increment skill frequency
+
+        # Top 10 skills by frequency across all courses
+        top_skill_sources = sorted(
+            [{'skill': k, 'count': v} for k, v in skill_freq.items()],
+            key=lambda x: -x['count']                                  # Most frequent first
+        )[:10]
+
+        return jsonify({
+            'total_courses'    : len(courses),
+            'by_category'      : [{'category': k, 'count': v} for k, v in sorted(by_category.items())],
+            'by_year'          : [{'year': k, 'count': v} for k, v in sorted(by_year.items())],
+            'top_skill_sources': top_skill_sources,
+            'providers'        : sorted(providers),                    # Sorted provider list
+        }), 200
+
+    except Exception as e:
+        logging.error(f'[COURSES STATS] /portfolio/courses/stats failed: {str(e)}')
+        return jsonify({'error': str(e)}), 500                         # Return error with details
