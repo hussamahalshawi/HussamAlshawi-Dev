@@ -1,0 +1,93 @@
+/* ═══════════════════════════════════════════════════════════════
+   ProgressBar.css — Reusable Animated Progress Bar
+   ═══════════════════════════════════════════════════════════════ */
+
+.progress-bar {
+  display:        flex;
+  flex-direction: column;
+  gap:            var(--s2);
+  width:          100%;
+}
+
+/* Label + band row */
+.progress-bar__header {
+  display:     flex;
+  align-items: center;
+  justify-content: space-between;
+  gap:         var(--s2);
+}
+
+.progress-bar__label {
+  font-size:     0.80rem;
+  font-weight:   500;
+  color:         var(--text-primary);
+  white-space:   nowrap;
+  overflow:      hidden;
+  text-overflow: ellipsis;
+  transition:    color 0.35s ease;
+}
+
+/* Band badge */
+.progress-bar__band {
+  font-family:    var(--font-mono);
+  font-size:      0.50rem;
+  font-weight:    500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding:        0.10rem 0.32rem;
+  border-radius:  var(--r-xs);
+  border:         1px solid currentColor;
+  opacity:        0.80;
+  flex-shrink:    0;
+}
+
+/* Track + value row */
+.progress-bar__row {
+  display:     flex;
+  align-items: center;
+  gap:         var(--s3);
+}
+
+/* Track background */
+.progress-bar__track {
+  flex:          1;
+  background:    var(--border-subtle);
+  border-radius: var(--r-full);
+  overflow:      visible;
+  position:      relative;
+}
+
+/* Animated fill */
+.progress-bar__fill {
+  height:        100%;
+  border-radius: var(--r-full);
+  position:      relative;
+}
+
+/* Glow tip dot */
+.progress-bar__fill::after {
+  content:       '';
+  position:      absolute;
+  right:         -3px;
+  top:           50%;
+  transform:     translateY(-50%);
+  width:         8px;
+  height:        8px;
+  border-radius: 50%;
+  background:    var(--bar-color, var(--cyan));
+  filter:        brightness(1.5);
+  box-shadow:    0 0 8px var(--bar-color, var(--cyan));
+}
+
+/* Value */
+.progress-bar__value {
+  font-family: var(--font-mono);
+  font-size:   0.65rem;
+  font-weight: 600;
+  min-width:   36px;
+  text-align:  right;
+}
+
+/* Light mode */
+[data-theme="light"] .progress-bar__label { color: #1e2d42; }
+[data-theme="light"] .progress-bar__track { background: rgba(79,100,145,0.10); }
