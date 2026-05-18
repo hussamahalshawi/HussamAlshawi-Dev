@@ -1,0 +1,91 @@
+/* ═══════════════════════════════════════════════════════════════
+   BarChart.css — Reusable Animated Bar Chart Styles
+   Theme-aware: uses CSS variables from index.css
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ── Wrapper ──────────────────────────────────────────────────── */
+.bar-chart {
+  display:        flex;
+  flex-direction: column;
+  gap:            var(--s3);      /* Space between bar rows         */
+  width:          100%;
+}
+
+/* ── Single bar row: label + track + value ─────────────────────── */
+.bar-chart__row {
+  display:     flex;
+  align-items: center;
+  gap:         var(--s3);        /* Gap between label, track, value */
+}
+
+/* ── Label ─────────────────────────────────────────────────────── */
+.bar-chart__label {
+  font-size:     0.80rem;
+  font-weight:   500;
+  color:         var(--text-primary);
+  min-width:     90px;            /* Fixed column for alignment     */
+  max-width:     110px;
+  white-space:   nowrap;
+  overflow:      hidden;
+  text-overflow: ellipsis;
+  transition:    color 0.35s ease;
+}
+
+/* ── Track (background) ────────────────────────────────────────── */
+.bar-chart__track {
+  flex:          1;               /* Fill remaining row space       */
+  background:    var(--border-subtle);
+  border-radius: var(--r-full);
+  overflow:      visible;         /* Allow glow dot to overflow     */
+  position:      relative;
+}
+
+/* ── Fill bar (animated) ───────────────────────────────────────── */
+.bar-chart__fill {
+  height:        100%;
+  border-radius: var(--r-full);
+  position:      relative;
+}
+
+/* Glowing tip dot at right end of fill */
+.bar-chart__fill::after {
+  content:       '';
+  position:      absolute;
+  right:         -3px;
+  top:           50%;
+  transform:     translateY(-50%);
+  width:         8px;
+  height:        8px;
+  border-radius: 50%;
+  background:    var(--bar-color, var(--cyan));  /* Uses CSS var set inline */
+  filter:        brightness(1.5);
+  box-shadow:    0 0 8px var(--bar-color, var(--cyan));
+}
+
+/* ── Value label ───────────────────────────────────────────────── */
+.bar-chart__value {
+  font-family: var(--font-mono);
+  font-size:   0.65rem;
+  font-weight: 600;
+  min-width:   36px;
+  text-align:  right;
+  transition:  color 0.35s ease;
+}
+
+/* ── Empty state ───────────────────────────────────────────────── */
+.bar-chart--empty {
+  display:     flex;
+  align-items: center;
+  justify-content: center;
+  padding:     var(--s6) 0;
+}
+
+.bar-chart__empty-msg {
+  font-family: var(--font-mono);
+  font-size:   0.78rem;
+  color:       var(--text-muted);
+}
+
+/* ── Light mode ────────────────────────────────────────────────── */
+[data-theme="light"] .bar-chart__label { color: #1e2d42; }
+[data-theme="light"] .bar-chart__track { background: rgba(79,100,145,0.10); }
