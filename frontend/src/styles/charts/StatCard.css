@@ -1,0 +1,130 @@
+/* ═══════════════════════════════════════════════════════════════
+   StatCard.css — Reusable KPI Stat Card Styles
+   Theme-aware: uses CSS variables from index.css
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ── Base card ────────────────────────────────────────────────── */
+.stat-card {
+  position:        relative;
+  overflow:        hidden;
+  border-radius:   var(--r-xl);
+  display:         flex;
+  flex-direction:  column;
+  gap:             var(--s2);
+
+  background:              rgba(14,20,40,0.88);
+  backdrop-filter:         blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border:                  1px solid var(--border-subtle);
+  transition:              background 0.15s ease, border-color 0.35s ease;
+}
+
+.stat-card:hover {
+  background:   rgba(20,28,55,0.95);
+  border-color: var(--border-medium);
+}
+
+/* ── Size presets ─────────────────────────────────────────────── */
+.stat-card--sm { padding: 1rem 1rem; }
+.stat-card--md { padding: 1.4rem 1.3rem; }
+.stat-card--lg { padding: 1.8rem 1.6rem; }
+
+/* ── Radial glow blob — bottom-right corner ───────────────────── */
+.stat-card__glow {
+  position:      absolute;
+  bottom:        -20px;
+  right:         -20px;
+  width:         70px;
+  height:        70px;
+  border-radius: 50%;
+  background:    radial-gradient(circle, var(--stat-color, var(--cyan)) 0%, transparent 70%);
+  opacity:       0.06;
+  pointer-events:none;
+  transition:    opacity 0.25s ease;
+}
+
+.stat-card:hover .stat-card__glow { opacity: 0.20; }
+
+/* ── Top gloss line ───────────────────────────────────────────── */
+.stat-card__gloss {
+  position:   absolute;
+  top:        0;
+  left:       10%;
+  right:      10%;
+  height:     1px;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.14), transparent);
+  pointer-events: none;
+}
+
+/* ── Icon ─────────────────────────────────────────────────────── */
+.stat-card__icon {
+  font-size:   1.1rem;
+  line-height: 1;
+  position:    relative;
+  z-index:     1;
+}
+
+/* ── Number row ───────────────────────────────────────────────── */
+.stat-card__num-row {
+  display:     flex;
+  align-items: baseline;
+  gap:         2px;
+  position:    relative;
+  z-index:     1;
+  line-height: 1;
+}
+
+/* Large animated number */
+.stat-card__num {
+  font-family:    var(--font-display);
+  font-weight:    800;
+  letter-spacing: -0.025em;
+  line-height:    1;
+  transition:     color 0.35s ease;
+}
+
+/* Size-responsive number font */
+.stat-card--sm .stat-card__num { font-size: 1.8rem; }
+.stat-card--md .stat-card__num { font-size: 2.3rem; }
+.stat-card--lg .stat-card__num { font-size: 3rem;   }
+
+/* Prefix and suffix */
+.stat-card__prefix,
+.stat-card__suffix {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size:   1rem;
+  transition:  color 0.35s ease;
+}
+
+/* ── Label ────────────────────────────────────────────────────── */
+.stat-card__label {
+  font-family:    var(--font-mono);
+  font-size:      0.57rem;
+  font-weight:    500;
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+  color:          var(--text-muted);
+  position:       relative;
+  z-index:        1;
+  transition:     color 0.35s ease;
+}
+
+/* ── Light mode ───────────────────────────────────────────────── */
+[data-theme="light"] .stat-card {
+  background:   rgba(255,255,255,0.52);
+  border-color: rgba(79,100,145,0.14);
+  box-shadow:   0 4px 24px rgba(79,100,145,0.10);
+}
+
+[data-theme="light"] .stat-card:hover {
+  background: rgba(255,255,255,0.72);
+}
+
+[data-theme="light"] .stat-card__num,
+[data-theme="light"] .stat-card__prefix,
+[data-theme="light"] .stat-card__suffix {
+  filter: brightness(0.72) saturate(1.2);  /* Darken vivid colors for readability */
+}
+
+[data-theme="light"] .stat-card__label { color: #6b8aaa; }
