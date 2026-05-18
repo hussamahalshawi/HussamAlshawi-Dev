@@ -1,0 +1,590 @@
+/* ═══════════════════════════════════════════════════════════════
+   OverviewBento.css — Bento Grid Layout Extensions
+   Supplements OverviewSection.css with all bento-specific classes
+   used in the comprehensive dashboard overview.
+
+   Class prefixes used here:
+     .ov-bento-*  → bento grid layout + widget classes
+   All .ov-panel, .ov-records-grid, etc. remain in OverviewSection.css
+
+   Theme-aware: all colors via CSS variables from index.css
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ══════════════════════════════════════════════════════
+   BENTO ROW GRIDS
+   Stacked horizontal rows with responsive column counts
+══════════════════════════════════════════════════════ */
+
+/* Base row — adds spacing between rows */
+.ov-bento-row {
+  display:       grid;                          /* CSS Grid layout                    */
+  gap:           var(--s5);                     /* 20px gap between all cells         */
+  margin-bottom: var(--s5);                     /* 20px space below each row          */
+  align-items:   start;                         /* Panels align to their content top  */
+}
+
+/* 3-column bento row — Row 1 and Row 2 */
+.ov-bento-row--3col {
+  grid-template-columns: 1fr 1fr 1fr;           /* Three equal columns                */
+}
+
+/* 2-column bento row — Row 4 */
+.ov-bento-row--2col {
+  grid-template-columns: 1fr 1fr;               /* Two equal columns                  */
+}
+
+/* ══════════════════════════════════════════════════════
+   BENTO CARD — Glass panel base for non-profile cells
+   Inherits from .ov-panel but re-declared here for
+   standalone use without the full profile variant
+══════════════════════════════════════════════════════ */
+.ov-bento-card {
+  position:      relative;                      /* Stacking context                   */
+  overflow:      hidden;                        /* Clip decorations                   */
+  border-radius: var(--r-xl);                   /* Rounded corners matching ov-panel  */
+  padding:       var(--s6);                     /* Inner spacing                      */
+  transition:    border-color 0.30s ease,
+                 background   0.35s ease,
+                 box-shadow   0.30s ease,
+                 transform    0.25s ease;       /* Smooth all property transitions    */
+
+  /* Glassmorphism — same recipe as .ov-panel */
+  background:              rgba(10,15,32,0.30); /* Lighter transparent dark surface   */
+  backdrop-filter:         blur(20px) saturate(1.5) brightness(0.92);
+  -webkit-backdrop-filter: blur(20px) saturate(1.5) brightness(0.92);
+  border:                  1px solid rgba(255,255,255,0.07);
+  box-shadow:              0 4px 24px rgba(0,0,0,0.25),
+                           0 0 0 1px rgba(255,255,255,0.03),
+                           inset 0 1px 0 rgba(255,255,255,0.06);
+}
+
+/* Chrome/Safari: use actual blur */
+@supports (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px)) {
+  .ov-bento-card {
+    background:              rgba(10,15,32,0.30);
+    backdrop-filter:         blur(20px) saturate(1.5) brightness(0.92);
+    -webkit-backdrop-filter: blur(20px) saturate(1.5) brightness(0.96);
+  }
+}
+
+/* Top gloss line */
+.ov-bento-card::before {
+  content:    '';
+  position:   absolute;
+  top:        0;
+  left:       8%;
+  right:      8%;
+  height:     1px;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.18), transparent);
+  pointer-events: none;
+  z-index:    2;
+}
+
+/* Water-droplet texture overlay */
+.ov-bento-card::after {
+  content:    '';
+  position:   absolute;
+  inset:      0;
+  background-image:
+    radial-gradient(circle at 18% 28%, rgba(255,255,255,0.028) 1.5px, transparent 1.5px),
+    radial-gradient(circle at 72% 14%, rgba(255,255,255,0.020) 1px,   transparent 1px),
+    radial-gradient(circle at 84% 62%, rgba(255,255,255,0.025) 2px,   transparent 2px);
+  pointer-events: none;
+  border-radius:  inherit;
+  z-index:    0;
+}
+
+/* All direct children above texture */
+.ov-bento-card > * { position: relative; z-index: 1; }
+
+/* Hover: lift + subtle cyan tint */
+.ov-bento-card:hover {
+  border-color: rgba(255,255,255,0.14);
+  background:   rgba(79,195,247,0.05);
+  box-shadow:   0 8px 32px rgba(0,0,0,0.30),
+                0 0 0 1px rgba(79,195,247,0.08),
+                inset 0 1px 0 rgba(255,255,255,0.10);
+  transform:    translateY(-2px);
+}
+
+/* ══════════════════════════════════════════════════════
+   PROFILE CARD BENTO VARIANT
+   The profile card spans both rows in a 3-col grid
+══════════════════════════════════════════════════════ */
+.ov-bento-profile {
+  grid-row:       1 / 3;                        /* Span both rows in 3-col grids      */
+  align-self:     start;                        /* Align to content top               */
+  display:        flex;                         /* Flex column for profile content    */
+  flex-direction: column;                       /* Stack children vertically          */
+}
+
+/* ══════════════════════════════════════════════════════
+   BADGE PILLS
+   Small count / status chips in panel headers
+══════════════════════════════════════════════════════ */
+.ov-bento-badge {
+  display:        inline-flex;
+  align-items:    center;
+  padding:        0.20rem 0.60rem;              /* Compact pill padding               */
+  border-radius:  var(--r-full);               /* Full pill shape                    */
+  font-family:    var(--font-mono);
+  font-size:      0.56rem;
+  font-weight:    600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  white-space:    nowrap;
+  border:         1px solid;                   /* Border color from variant           */
+}
+
+/* Cyan variant — for goals / skills counts */
+.ov-bento-badge--cyan {
+  background:   rgba(79,195,247,0.10);
+  border-color: rgba(79,195,247,0.35);
+  color:        var(--cyan);
+}
+
+/* Violet variant — for skills count */
+.ov-bento-badge--violet {
+  background:   rgba(155,127,234,0.10);
+  border-color: rgba(155,127,234,0.35);
+  color:        var(--violet);
+}
+
+/* Gold variant — for projects count */
+.ov-bento-badge--gold {
+  background:   rgba(245,166,35,0.10);
+  border-color: rgba(245,166,35,0.35);
+  color:        var(--orange);
+}
+
+/* ══════════════════════════════════════════════════════
+   CHART CENTER WRAPPER
+   Centers DonutChart or other chart in panel
+══════════════════════════════════════════════════════ */
+.ov-bento-chart-center {
+  display:         flex;
+  justify-content: center;                      /* Center chart horizontally          */
+  align-items:     center;
+  margin:          var(--s3) 0;                 /* Vertical breathing room            */
+}
+
+/* ══════════════════════════════════════════════════════
+   PROGRESS ROW
+   Used for avg progress bar in Goals panel
+══════════════════════════════════════════════════════ */
+.ov-bento-progress-row {
+  display:     flex;
+  align-items: center;
+  gap:         var(--s3);                       /* Gap between label, track, value    */
+}
+
+/* Label — left side */
+.ov-bento-progress-label {
+  font-family:    var(--font-mono);
+  font-size:      0.62rem;
+  font-weight:    500;
+  color:          var(--text-muted);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  white-space:    nowrap;
+  min-width:      72px;                         /* Fixed label column width           */
+}
+
+/* Track — fills remaining space */
+.ov-bento-progress-track {
+  flex:          1;                             /* Expand to fill row                 */
+  height:        4px;
+  background:    rgba(255,255,255,0.07);
+  border-radius: var(--r-full);
+  overflow:      hidden;
+}
+
+/* Animated fill bar */
+.ov-bento-progress-fill {
+  height:        100%;
+  border-radius: var(--r-full);
+  transition:    width 1.2s cubic-bezier(0.16,1,0.3,1); /* Spring animate            */
+}
+
+/* Value label — right side */
+.ov-bento-progress-value {
+  font-family: var(--font-mono);
+  font-size:   0.66rem;
+  font-weight: 600;
+  min-width:   36px;
+  text-align:  right;
+}
+
+/* ══════════════════════════════════════════════════════
+   LANGUAGE STRIP — inside profile card
+   Compact horizontal language chips
+══════════════════════════════════════════════════════ */
+.ov-bento-lang-strip {
+  display:    flex;
+  flex-wrap:  wrap;                             /* Wrap to second row if needed       */
+  gap:        var(--s2);                        /* 8px between chips                  */
+  margin-top: var(--s4);                        /* Space above language strip         */
+  padding-top:var(--s4);                        /* Visual separator from stats        */
+  border-top: 1px solid rgba(255,255,255,0.08); /* Faint separator line               */
+}
+
+/* Individual language chip */
+.ov-bento-lang-chip {
+  display:       flex;
+  align-items:   center;
+  gap:           var(--s1);                     /* 4px between flag, name, level      */
+  padding:       0.24rem 0.60rem;
+  border-radius: var(--r-full);
+  background:    rgba(255,255,255,0.06);        /* Subtle glass surface               */
+  border:        1px solid rgba(255,255,255,0.10);
+  transition:    all var(--t-fast);
+}
+
+/* Hover: cyan tint matching theme */
+.ov-bento-lang-chip:hover {
+  background:   rgba(79,195,247,0.10);
+  border-color: rgba(79,195,247,0.30);
+}
+
+/* Flag emoji */
+.ov-bento-lang-chip__flag {
+  font-size:   0.85rem;                         /* Slightly smaller for compact chip  */
+  line-height: 1;
+}
+
+/* Language name */
+.ov-bento-lang-chip__name {
+  font-family: var(--font-mono);
+  font-size:   0.60rem;
+  font-weight: 600;
+  color:       var(--text-primary);
+  letter-spacing: 0.04em;
+  transition:  color 0.35s ease;
+}
+
+/* Proficiency level label — colored by level */
+.ov-bento-lang-chip__level {
+  font-family:    var(--font-mono);
+  font-size:      0.52rem;
+  font-weight:    500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  opacity:        0.85;
+}
+
+/* ══════════════════════════════════════════════════════
+   MINI STATS — small supplementary stat rows
+   Used in Goals priority panel for status summary
+══════════════════════════════════════════════════════ */
+.ov-bento-mini-stats {
+  display:        flex;
+  flex-direction: column;
+  gap:            var(--s2);                    /* 8px between mini stat rows         */
+  padding-top:    var(--s3);                    /* Space above mini stats             */
+  border-top:     1px solid rgba(255,255,255,0.07); /* Faint separator               */
+}
+
+/* Single mini stat row */
+.ov-bento-mini-stat {
+  display:     flex;
+  align-items: center;
+  gap:         var(--s2);
+}
+
+/* Color indicator dot */
+.ov-bento-mini-stat__dot {
+  width:         7px;
+  height:        7px;
+  border-radius: 50%;
+  flex-shrink:   0;
+}
+
+/* Status label */
+.ov-bento-mini-stat__label {
+  font-family:    var(--font-mono);
+  font-size:      0.62rem;
+  color:          var(--text-secondary);
+  letter-spacing: 0.03em;
+  flex:           1;                            /* Push number right                  */
+  transition:     color 0.35s ease;
+}
+
+/* Count number */
+.ov-bento-mini-stat__num {
+  font-family: var(--font-mono);
+  font-size:   0.70rem;
+  font-weight: 700;
+  transition:  color 0.35s ease;
+}
+
+/* ══════════════════════════════════════════════════════
+   SKILL SCROLL — scrollable skill bar container
+   Used in Top Skills panel
+══════════════════════════════════════════════════════ */
+.ov-bento-skill-scroll {
+  overflow-y:    auto;                          /* Scroll if more than max-height     */
+  max-height:    280px;                         /* Cap height for visual balance      */
+  padding-right: var(--s1);                     /* Space for custom scrollbar         */
+}
+
+/* Custom thin scrollbar */
+.ov-bento-skill-scroll::-webkit-scrollbar       { width: 2px; }
+.ov-bento-skill-scroll::-webkit-scrollbar-track { background: transparent; }
+.ov-bento-skill-scroll::-webkit-scrollbar-thumb {
+  background:    var(--cyan-dim);
+  border-radius: var(--r-full);
+}
+
+/* ══════════════════════════════════════════════════════
+   BIG STAT — hero metric display
+   Used in Projects panel for large count
+══════════════════════════════════════════════════════ */
+.ov-bento-big-stat {
+  display:        flex;
+  flex-direction: column;
+  align-items:    center;                       /* Center the big number              */
+  padding:        var(--s5) 0;                  /* Generous vertical padding          */
+  gap:            var(--s1);
+}
+
+/* Large hero number */
+.ov-bento-big-stat__num {
+  font-family:    var(--font-display);
+  font-size:      3.5rem;                       /* Large for visual impact            */
+  font-weight:    800;
+  line-height:    1;
+  letter-spacing: -0.04em;
+  transition:     color 0.35s ease;
+}
+
+/* Sub-label below big number */
+.ov-bento-big-stat__label {
+  font-family:    var(--font-mono);
+  font-size:      0.62rem;
+  font-weight:    500;
+  color:          var(--text-muted);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  transition:     color 0.35s ease;
+}
+
+/* ══════════════════════════════════════════════════════
+   SUPPORT METRICS GRID
+   2×2 small metric grid below big stat
+══════════════════════════════════════════════════════ */
+.ov-bento-support-grid {
+  display:               grid;
+  grid-template-columns: 1fr 1fr;               /* 2 columns                          */
+  gap:                   1px;                   /* 1px creates visual dividers        */
+  background:            rgba(255,255,255,0.06); /* Gap/divider color                 */
+  border:                1px solid rgba(255,255,255,0.06);
+  border-radius:         var(--r-lg);
+  overflow:              hidden;
+  margin-top:            var(--s3);
+}
+
+/* Individual support metric cell */
+.ov-bento-support-item {
+  background:      rgba(14,20,40,0.70);         /* Slightly darker than card          */
+  padding:         var(--s3) var(--s4);         /* Inner cell padding                 */
+  display:         flex;
+  flex-direction:  column;
+  gap:             var(--s1);
+  align-items:     center;                      /* Center content                     */
+  text-align:      center;
+  transition:      background 0.15s ease;
+}
+
+.ov-bento-support-item:hover {
+  background: rgba(20,28,55,0.90);              /* Darken on hover                    */
+}
+
+/* Colored number in support cell */
+.ov-bento-support-item__num {
+  font-family:    var(--font-display);
+  font-size:      1.4rem;
+  font-weight:    800;
+  line-height:    1;
+  letter-spacing: -0.02em;
+  transition:     color 0.35s ease;
+}
+
+/* Label in support cell */
+.ov-bento-support-item__label {
+  font-family:    var(--font-mono);
+  font-size:      0.52rem;
+  font-weight:    500;
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+  color:          var(--text-muted);
+  transition:     color 0.35s ease;
+}
+
+/* ══════════════════════════════════════════════════════
+   METRIC ROWS — Learning & Growth panel
+   Horizontal progress rows with fixed labels
+══════════════════════════════════════════════════════ */
+.ov-bento-metric-row {
+  display:       flex;
+  align-items:   center;
+  gap:           var(--s3);
+  margin-bottom: var(--s3);
+}
+
+.ov-bento-metric-row:last-child { margin-bottom: 0; } /* Remove trailing margin      */
+
+/* Metric label — fixed width for column alignment */
+.ov-bento-metric-label {
+  font-size:     0.78rem;
+  font-weight:   500;
+  color:         var(--text-primary);
+  min-width:     80px;                          /* Fixed label column                 */
+  white-space:   nowrap;
+  transition:    color 0.35s ease;
+}
+
+/* Metric track — fills remaining space */
+.ov-bento-metric-track {
+  flex:          1;
+  height:        4px;
+  background:    rgba(255,255,255,0.07);
+  border-radius: var(--r-full);
+  overflow:      hidden;
+}
+
+/* Animated fill */
+.ov-bento-metric-fill {
+  height:        100%;
+  border-radius: var(--r-full);
+  transition:    width 1.3s cubic-bezier(0.16,1,0.3,1); /* Spring animate            */
+}
+
+/* Numeric value — right column */
+.ov-bento-metric-num {
+  font-family: var(--font-mono);
+  font-size:   0.66rem;
+  font-weight: 600;
+  min-width:   38px;
+  text-align:  right;
+  transition:  color 0.35s ease;
+}
+
+/* ══════════════════════════════════════════════════════
+   RECORDS PANEL — full-width KPI strip
+   Extends .ov-panel base for full-width bottom strip
+══════════════════════════════════════════════════════ */
+.ov-bento-records {
+  margin-bottom: var(--s5);                     /* Space below records strip          */
+}
+
+/* ══════════════════════════════════════════════════════
+   LIGHT MODE OVERRIDES
+   Mirror the existing OverviewSection.css light mode
+   patterns for all new bento-specific classes
+══════════════════════════════════════════════════════ */
+[data-theme="light"] .ov-bento-card {
+  background:              rgba(120,160,210,0.08);
+  border:                  1px solid rgba(79,143,199,0.15);
+  backdrop-filter:         blur(20px) saturate(1.6);
+  -webkit-backdrop-filter: blur(20px) saturate(1.6);
+  box-shadow:              none;
+}
+
+[data-theme="light"] .ov-bento-card:hover {
+  background:   rgba(26,143,199,0.10);
+  border-color: rgba(26,143,199,0.30);
+  box-shadow:   0 4px 16px rgba(26,143,199,0.08);
+}
+
+[data-theme="light"] .ov-bento-lang-chip {
+  background:   rgba(207,224,245,0.35);
+  border-color: rgba(79,143,199,0.12);
+}
+
+[data-theme="light"] .ov-bento-lang-chip:hover {
+  background:   rgba(26,143,199,0.12);
+  border-color: rgba(26,143,199,0.30);
+}
+
+[data-theme="light"] .ov-bento-lang-chip__name { color: #1e2d42; }
+
+[data-theme="light"] .ov-bento-mini-stat__label { color: #3d5a80; }
+
+[data-theme="light"] .ov-bento-big-stat__label { color: #6b8aaa; }
+
+[data-theme="light"] .ov-bento-support-item {
+  background: rgba(120,160,210,0.08);
+}
+
+[data-theme="light"] .ov-bento-support-item:hover {
+  background: rgba(26,143,199,0.12);
+}
+
+[data-theme="light"] .ov-bento-support-grid {
+  background:   rgba(79,143,199,0.08);
+  border-color: rgba(79,143,199,0.10);
+}
+
+[data-theme="light"] .ov-bento-support-item__label,
+[data-theme="light"] .ov-bento-metric-label,
+[data-theme="light"] .ov-bento-progress-label { color: #5a7499; }
+
+[data-theme="light"] .ov-bento-progress-track,
+[data-theme="light"] .ov-bento-metric-track {
+  background: rgba(26,143,199,0.10);
+}
+
+[data-theme="light"] .ov-bento-support-item__num,
+[data-theme="light"] .ov-bento-metric-num,
+[data-theme="light"] .ov-bento-big-stat__num {
+  filter: brightness(0.72) saturate(1.2);       /* Darken vivid colors on light bg    */
+}
+
+[data-theme="light"] .ov-bento-lang-strip {
+  border-top-color: rgba(79,143,199,0.12);
+}
+
+/* ══════════════════════════════════════════════════════
+   RESPONSIVE BREAKPOINTS
+══════════════════════════════════════════════════════ */
+
+/* Tablet ≤1100px — collapse 3-col to 2-col */
+@media (max-width: 1100px) {
+  .ov-bento-row--3col {
+    grid-template-columns: 1fr 1fr;             /* Two columns on tablet              */
+  }
+
+  /* Profile card: full width on tablet */
+  .ov-bento-profile {
+    grid-column: 1 / 3;                         /* Span both columns                  */
+    grid-row:    1;                             /* First row only                     */
+  }
+
+  /* Other row 1 cards stay in their positions */
+  .ov-bento-row--3col > *:not(.ov-bento-profile) {
+    /* Auto-placed in remaining spots */
+  }
+
+  .ov-bento-big-stat__num { font-size: 2.8rem; } /* Slightly smaller on tablet       */
+}
+
+/* Mobile ≤700px — all single column */
+@media (max-width: 700px) {
+  .ov-bento-row--3col,
+  .ov-bento-row--2col {
+    grid-template-columns: 1fr;                 /* Full-width single column           */
+  }
+
+  .ov-bento-profile {
+    grid-column: 1;                             /* Reset span                         */
+    grid-row:    auto;                          /* Auto placement                     */
+  }
+
+  .ov-bento-skill-scroll { max-height: none; } /* Remove scroll cap on mobile        */
+
+  .ov-bento-support-grid {
+    grid-template-columns: 1fr 1fr;             /* Keep 2×2 on mobile                 */
+  }
+
+  .ov-bento-big-stat__num { font-size: 2.4rem; } /* Compact on mobile                */
+}
