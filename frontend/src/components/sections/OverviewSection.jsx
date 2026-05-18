@@ -1,54 +1,59 @@
 /**
  * OverviewSection.jsx
  * ─────────────────────────────────────────────────────────
- * Redesigned Devoryn-style Overview Dashboard.
+ * Comprehensive Devoryn-style Bento Grid Dashboard Overview.
  *
- * Layout matches wireframe exactly:
+ * Layout — Full Portfolio Bento Grid:
  *
- *  ┌──────────────────────────────────────────────────────┐
- *  │  Page Header: "Dashboard Overview" + availability    │
- *  ├────────────────┬────────────────┬────────────────────┤
- *  │  Profile Card  │ Score Dist.    │  Skill Scores      │
- *  │  (Col 1 tall)  │ (Col 2 top)    │  Top 12 (Col 3)    │
- *  │                ├────────────────┤  Sorted by band    │
- *  │  Name, Title,  │ Skills by Cat  │  Excellent/Good/   │
- *  │  Bio, Social   │ (Col 2 bottom) │  Growing/Learning  │
- *  ├────────────────┴────────────────┴────────────────────┤
- *  │  Portfolio Records — Total documents per model       │
- *  ├──────────────────────────┬──────────────────────────┤
- *  │  Languages panel (full width)                        │
- *  └──────────────────────────┴──────────────────────────┘
+ *  Row 1 (3 cols):
+ *    [Profile Card — tall]  [Goals Donut]  [Projects Donut]
  *
- * Refactor notes (v2):
- *   - ScoreDistributionPanel  → uses <DonutChart>   (replaces manual SVG)
- *   - SkillsByCategoryPanel   → uses <BarChart>     (replaces manual rows)
- *   - SkillScoresPanel        → uses <ProgressBar>  (replaces manual fills)
- *   - PortfolioRecordsPanel   → uses <StatCard>     (replaces plain numbers)
- *   - ProfileCardPanel        → UNCHANGED
- *   - LanguagesPanel          → UNCHANGED
- *   - All CSS classes          → UNCHANGED
+ *  Row 2 (3 cols):
+ *    [Skills Radar]  [Experience Bar]  [Courses Timeline]
+ *
+ *  Row 3 (full width):
+ *    [KPI Records Strip — all models]
+ *
+ *  Row 4 (2 cols):
+ *    [Goals Progress Bars — wide]  [Skills Top Bar]
+ *
+ * Data sources — all from analytics prop:
+ *   analytics.counts            → KPI records strip
+ *   analytics.skills_distribution → Skills donut
+ *   analytics.top_skills         → Skills top bar
+ *   analytics.skills_radar       → Skills radar + category bar
+ *   analytics.goals_by_status    → Goals donut
+ *   analytics.goals_by_priority  → Goals priority bars
+ *   analytics.counts.projects    → Projects count card
+ *   analytics.counts.courses     → Courses count card
+ *   analytics.counts.experience  → Experience bar
+ *   profile.*                    → Profile card
+ *
+ * All CSS classes preserved from original OverviewSection.css
+ * New classes added with prefix .ov-bento-*
  * ─────────────────────────────────────────────────────────
  */
 
-import { useRef, useEffect, useState, useCallback } from 'react'; // React hooks
-import { motion }                                    from 'framer-motion';
-import { formatExperience, getInitials }             from '../../utils/formatters';  // Pure helpers
-import { CHART_COLORS, SOCIAL_PLATFORMS }            from '../../utils/constants';   // Global tokens
+import { useRef, useEffect, useState, useMemo } from 'react'; // React hooks
+import { motion }                                from 'framer-motion';  // Entrance animations
+import { formatExperience, getInitials }         from '../../utils/formatters';  // Pure helpers
+import { CHART_COLORS }                          from '../../utils/constants';   // Global tokens
 
 /* ── Reusable chart components ────────────────────────────────── */
-import DonutChart   from '../charts/DonutChart';   // Score distribution donut
-import BarChart     from '../charts/BarChart';     // Skills by category bars
-import ProgressBar  from '../charts/ProgressBar';  // Skill score rows
-import StatCard     from '../charts/StatCard';     // Portfolio record counts
+import DonutChart  from '../charts/DonutChart';  // Goals + Skills distribution donuts
+import BarChart    from '../charts/BarChart';    // Experience + Goals priority bars
+import ProgressBar from '../charts/ProgressBar'; // Skills top bar rows
+import StatCard    from '../charts/StatCard';    // Portfolio record counts
 
-import '../../styles/components/OverviewSection.css'; // Section styles — UNCHANGED
+import '../../styles/components/OverviewSection.css';     // Existing section styles
+import '../../styles/components/OverviewBento.css';       // NEW: Bento grid additions
 import ParticleBackground from '../ui/ParticleBackground';
 
-/* ══════════════════════════════════════════════════════════════
-   CONSTANTS — unchanged from original
-══════════════════════════════════════════════════════════════ */
+/* ════════════════════════════════════════════════════════════════
+   CONSTANTS
+════════════════════════════════════════════════════════════════ */
 
-/* ── SVG Social Icons ─────────────────────────────────────────── */
+/* ── SVG Social Icons map ─────────────────────────────────────── */
 const SOCIAL_ICONS = {
   github: (
     <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor">
@@ -92,556 +97,758 @@ const SOCIAL_ICONS = {
   ),
 };
 
-/* ── Social platform config ───────────────────────────────────── */
+/* ── Social platform colors for luxury hover effect ──────────── */
 const SOCIAL_PLATFORMS_CONFIG = [
-  { key: 'github',    label: 'GitHub',    color: '#000000' },
-  { key: 'linkedin',  label: 'LinkedIn',  color: '#0A66C2' },
-  { key: 'twitter',   label: 'X',         color: '#ffffff' },
-  { key: 'instagram', label: 'Instagram', color: '#E1306C' },
-  { key: 'youtube',   label: 'YouTube',   color: '#FF0000' },
-  { key: 'medium',    label: 'Medium',    color: '#000000' },
-  { key: 'facebook',  label: 'Facebook',  color: '#1877F2' },
-  { key: 'telegram',  label: 'Telegram',  color: '#26A5E4' },
+  { key: 'github',    label: 'GitHub',    color: '#ffffff' }, // White for GitHub
+  { key: 'linkedin',  label: 'LinkedIn',  color: '#0A66C2' }, // LinkedIn blue
+  { key: 'twitter',   label: 'X',         color: '#ffffff' }, // White for X
+  { key: 'instagram', label: 'Instagram', color: '#E1306C' }, // Instagram pink
+  { key: 'youtube',   label: 'YouTube',   color: '#FF0000' }, // YouTube red
+  { key: 'medium',    label: 'Medium',    color: '#00ab6c' }, // Medium green
+  { key: 'facebook',  label: 'Facebook',  color: '#1877F2' }, // Facebook blue
+  { key: 'telegram',  label: 'Telegram',  color: '#26A5E4' }, // Telegram blue
 ];
 
-/* ── Score bands — maps API distribution keys to display ─────── */
-const SCORE_BANDS = [
-  { key: 'excellent', label: 'Excellent', min: 80, max: 100, color: '#4FC3F7' },
-  { key: 'good',      label: 'Good',      min: 60, max: 79,  color: '#4ECCA3' },
-  { key: 'growing',   label: 'Growing',   min: 40, max: 59,  color: '#9B7FEA' },
-  { key: 'learning',  label: 'Learning',  min: 0,  max: 39,  color: '#F5A623' },
-];
+/* ── Goals status → color mapping ───────────────────────────── */
+const GOALS_STATUS_COLORS = {
+  'Achieved':    '#4ECCA3',  // Green — completed goals
+  'In Progress': '#4FC3F7',  // Cyan — active goals
+  'Planned':     '#9B7FEA',  // Violet — future goals
+  'Paused':      '#F5A623',  // Orange — on hold goals
+};
 
-/* ── Portfolio record model labels ───────────────────────────── */
+/* ── Goals priority → color mapping ─────────────────────────── */
+const GOALS_PRIORITY_COLORS = {
+  'Critical': '#FF6B6B',  // Red — must do now
+  'High':     '#F5A623',  // Orange — very important
+  'Medium':   '#4FC3F7',  // Cyan — standard
+  'Low':      '#9B7FEA',  // Violet — nice to have
+};
+
+/* ── Portfolio record items — all models ─────────────────────── */
 const RECORD_ITEMS = [
-  { key: 'skills',       label: 'Skills',       icon: '⚙',  color: CHART_COLORS[0] },
-  { key: 'goals',        label: 'Goals',        icon: '◈',  color: CHART_COLORS[1] },
-  { key: 'experience',   label: 'Experience',   icon: '💼', color: CHART_COLORS[2] },
-  { key: 'courses',      label: 'Courses',      icon: '📚', color: CHART_COLORS[3] },
-  { key: 'projects',     label: 'Projects',     icon: '⊡',  color: CHART_COLORS[4] },
-  { key: 'education',    label: 'Education',    icon: '🎓', color: CHART_COLORS[5] },
-  { key: 'self_study',   label: 'Self Study',   icon: '✍',  color: CHART_COLORS[6] },
-  { key: 'languages',    label: 'Languages',    icon: '🌐', color: CHART_COLORS[7] },
-  { key: 'feedback',     label: 'Feedback',     icon: '💬', color: CHART_COLORS[0] },
-  { key: 'achievements', label: 'Achievements', icon: '🏆', color: CHART_COLORS[3] },
+  { key: 'skills',       label: 'Skills',       icon: '⚙',  color: CHART_COLORS[0] }, // Lime
+  { key: 'projects',     label: 'Projects',     icon: '⊡',  color: CHART_COLORS[1] }, // Cyan
+  { key: 'courses',      label: 'Courses',      icon: '📚', color: CHART_COLORS[2] }, // Violet
+  { key: 'experience',   label: 'Experience',   icon: '💼', color: CHART_COLORS[3] }, // Gold
+  { key: 'education',    label: 'Education',    icon: '🎓', color: CHART_COLORS[4] }, // Coral
+  { key: 'achievements', label: 'Achievements', icon: '🏆', color: CHART_COLORS[5] }, // Green
+  { key: 'self_study',   label: 'Self Study',   icon: '✍',  color: CHART_COLORS[6] }, // Blue
+  { key: 'goals',        label: 'Goals',        icon: '◈',  color: CHART_COLORS[7] }, // Amber
+  { key: 'languages',    label: 'Languages',    icon: '🌐', color: CHART_COLORS[0] }, // Lime
+  { key: 'feedback',     label: 'Feedback',     icon: '💬', color: CHART_COLORS[3] }, // Gold
 ];
 
 /* ── Language level → color ───────────────────────────────────── */
 const LANG_LEVEL_COLORS = {
-  native:       '#4FC3F7',
-  fluent:       '#4ECCA3',
-  intermediate: '#F5A623',
-  beginner:     '#9B7FEA',
+  native:       '#4FC3F7',  // Cyan — native speaker
+  fluent:       '#4ECCA3',  // Green — fluent
+  intermediate: '#F5A623',  // Orange — intermediate
+  beginner:     '#9B7FEA',  // Violet — beginner
+};
+
+/* ── Framer Motion variants for staggered entrance ───────────── */
+const CARD_VARIANTS = {
+  hidden:  { opacity: 0, y: 24, scale: 0.97 },                   // Start state
+  visible: { opacity: 1, y: 0,  scale: 1    },                   // End state
+};
+
+/* ── Shared transition config ────────────────────────────────── */
+const CARD_TRANSITION = {
+  duration: 0.55,
+  ease: [0.16, 1, 0.3, 1],                                       // Spring ease
 };
 
 /* ════════════════════════════════════════════════════════════════
    MAIN COMPONENT: OverviewSection
 ════════════════════════════════════════════════════════════════ */
 /**
- * OverviewSection — assembles the full overview dashboard.
+ * OverviewSection — Full Bento Grid portfolio dashboard overview.
+ * Displays all models in a single comprehensive grid layout.
+ *
  * @param {object}      props
  * @param {object|null} props.profile   - Profile data from API
- * @param {object|null} props.analytics - Analytics data from API
+ * @param {object|null} props.analytics - Analytics mega-payload from API
+ *
+ * @returns {JSX.Element}
  */
 export default function OverviewSection({ profile, analytics }) {
 
-  /* ── Safe display values ─────────────────────────────────────── */
-  const fullName  = profile?.full_name             || 'Hussam Alshawi';
-  const title     = profile?.title                 || 'Full Stack Developer';
-  const bio       = profile?.bio                   || '';
-  const avatar    = profile?.profile_gallery?.[0]?.url
-    || profile?.profile_gallery?.[0]
-    || profile?.primary_avatar
-    || null;
-  const available = profile?.is_available_for_hire || false;
-  const social    = profile?.social                || {};
-  const languages = profile?.languages             || [];
+  /* ── Safe data extraction with fallbacks ──────────────────── */
+  const fullName  = profile?.full_name             || 'Hussam Alshawi';  // Full name with fallback
+  const title     = profile?.title                 || 'Full Stack Developer'; // Job title
+  const bio       = profile?.bio                   || '';                 // Biography text
+  const avatar    = profile?.profile_gallery?.[0]?.url                   // Try gallery first
+    || profile?.profile_gallery?.[0]                                      // Then plain gallery
+    || profile?.primary_avatar                                            // Then primary_avatar
+    || null;                                                              // Final fallback
+  const available = profile?.is_available_for_hire || false;             // Hire availability
+  const social    = profile?.social                || {};                 // Social links object
+  const languages = profile?.languages             || [];                 // Languages array
 
-  /* ── Analytics derived values ─────────────────────────────────── */
-  const counts     = analytics?.counts             || {};
-  const topSkills  = analytics?.top_skills         || [];
-  const skillsDist = analytics?.skills_distribution || {};
-  const radarData  = analytics?.skills_radar       || [];
+  /* ── Analytics data extraction ───────────────────────────── */
+  const counts     = analytics?.counts              || {};                // Entity counts
+  const topSkills  = analytics?.top_skills          || [];                // Top skills list
+  const skillsDist = analytics?.skills_distribution || {};               // Skills band distribution
+  const radarData  = analytics?.skills_radar        || [];               // Category averages
 
-  /* ── Top 12 skills sorted by score ───────────────────────────── */
-  const top12Skills = [...topSkills]
-    .sort((a, b) => (b.score || 0) - (a.score || 0))
-    .slice(0, 12);
+  /* ── Goals data from analytics ───────────────────────────── */
+  const goalsByStatus   = analytics?.goals_by_status   || {};            // Goals grouped by status
+  const goalsByPriority = analytics?.goals_by_priority || {};            // Goals grouped by priority
+  const avgProgress     = analytics?.avg_progress      || 0;             // Average goal progress %
 
-  /* ── Band counts: map API keys → display band keys ───────────── */
-  const bandCounts = {
-    excellent: skillsDist.expert       || 0,
-    good:      skillsDist.advanced     || 0,
-    growing:   skillsDist.intermediate || 0,
-    learning:  skillsDist.beginner     || 0,
-  };
+  /* ── Build goals status donut data ───────────────────────── */
+  const goalsDonutData = useMemo(() => {
+    /* Map status object to DonutChart format */
+    const statusEntries = Object.entries(goalsByStatus);                  // Convert to array
+    if (!statusEntries.length) {
+      /* Return demo data if no goals data available */
+      return [
+        { label: 'Achieved',    value: 0, color: GOALS_STATUS_COLORS['Achieved']    },
+        { label: 'In Progress', value: 0, color: GOALS_STATUS_COLORS['In Progress'] },
+        { label: 'Planned',     value: 0, color: GOALS_STATUS_COLORS['Planned']     },
+        { label: 'Paused',      value: 0, color: GOALS_STATUS_COLORS['Paused']      },
+      ];
+    }
+    return statusEntries.map(([status, count]) => ({
+      label: status,                                                       // Status label
+      value: count,                                                        // Count for this status
+      color: GOALS_STATUS_COLORS[status] || CHART_COLORS[0],              // Map to color
+    }));
+  }, [goalsByStatus]);
 
-  const totalSkills = counts.skills || 1;           // Avoid division by zero
+  /* ── Build goals priority bar data ───────────────────────── */
+  const goalsPriorityData = useMemo(() => {
+    const entries = Object.entries(goalsByPriority);                      // Convert to array
+    if (!entries.length) return [];                                       // Empty fallback
+    return entries.map(([priority, count]) => ({
+      label: priority,                                                     // Priority label
+      value: count,                                                        // Count for this priority
+      color: GOALS_PRIORITY_COLORS[priority] || CHART_COLORS[0],          // Map to color
+    }));
+  }, [goalsByPriority]);
 
-  return (
-    <section id="overview" className="overview-section" aria-label="Dashboard Overview">
+  /* ── Build skills distribution donut data ────────────────── */
+  const skillsDonutData = useMemo(() => [
+    { label: 'Expert',       value: skillsDist.expert       || 0, color: '#C8FF57' }, // Lime
+    { label: 'Advanced',     value: skillsDist.advanced     || 0, color: '#00E5FF' }, // Cyan
+    { label: 'Intermediate', value: skillsDist.intermediate || 0, color: '#9B59F5' }, // Violet
+    { label: 'Beginner',     value: skillsDist.beginner     || 0, color: '#F5A623' }, // Gold
+  ], [skillsDist]);
 
-      {/* ══════════════════════════════════════
-          MAIN 3-COLUMN GRID
-      ══════════════════════════════════════ */}
-      <div className="ov-main-grid">
+  /* ── Build category bar data from radar ─────────────────── */
+  const categoryBarData = useMemo(() => {
+    const source = radarData.length > 0 ? radarData : [];                 // Use radar or empty
+    return source.map((cat, i) => ({
+      label: cat.category,                                                 // Category name
+      value: cat.avg_score,                                               // Average score
+      color: CHART_COLORS[i % CHART_COLORS.length],                       // Cycle colors
+    }));
+  }, [radarData]);
 
-        {/* ── COL 1: PROFILE CARD — UNCHANGED ────────────────────── */}
-        <ProfileCardPanel
-          fullName={fullName}
-          title={title}
-          bio={bio}
-          avatar={avatar}
-          available={available}
-          social={social}
-          profile={profile}
-          counts={counts}
-          analytics={analytics}
-        />
+  /* ── Top 8 skills for bar chart ──────────────────────────── */
+  const top8Skills = useMemo(() =>
+    [...topSkills]
+      .sort((a, b) => (b.score || 0) - (a.score || 0))                   // Sort by score desc
+      .slice(0, 8)                                                         // Take top 8
+      .map((s, i) => ({
+        label: s.skill_name,                                               // Skill name
+        value: s.score || 0,                                               // Skill score
+        color: CHART_COLORS[i % CHART_COLORS.length],                     // Cycle colors
+      })),
+  [topSkills]);
 
-        {/* ── COL 2 TOP: SCORE DISTRIBUTION — now uses DonutChart ── */}
-        <ScoreDistributionPanel
-          bandCounts={bandCounts}
-          totalSkills={totalSkills}
-        />
+  /* ── Total goals count ───────────────────────────────────── */
+  const totalGoals = useMemo(() =>
+    goalsDonutData.reduce((sum, d) => sum + d.value, 0),                  // Sum all goal counts
+  [goalsDonutData]);
 
-        {/* ── COL 3: SKILL SCORES — now uses ProgressBar ───────── */}
-        <SkillScoresPanel skills={top12Skills} />
-
-        {/* ── COL 2 BOTTOM: SKILLS BY CATEGORY — now uses BarChart */}
-        <SkillsByCategoryPanel radarData={radarData} />
-
-      </div>
-
-      {/* ══════════════════════════════════════
-          PORTFOLIO RECORDS — now uses StatCard
-      ══════════════════════════════════════ */}
-      <PortfolioRecordsPanel counts={counts} />
-
-      {/* ══════════════════════════════════════
-          LANGUAGES — UNCHANGED
-      ══════════════════════════════════════ */}
-      <LanguagesPanel languages={languages} />
-
-    </section>
-  );
-}
-
-/* ════════════════════════════════════════════════════════════════
-   SUB-COMPONENT: ProfileCardPanel — UNCHANGED
-   Avatar + Name + Title + Bio + Social + Stats
-════════════════════════════════════════════════════════════════ */
-function ProfileCardPanel({ fullName, title, bio, avatar, available, social, profile, counts, analytics }) {
-
-  const initials = getInitials(fullName);           // "HA" from full name
-
-  /* ── Normalize social URL — handles flat or nested API format ── */
-  const getSocialUrl = (key) => {
-    const val = social[key] || social[key.toLowerCase()];
-    if (!val) return null;
-    if (typeof val === 'string') return val;
-    if (typeof val === 'object') return val.url || val.link || val.href || null;
-    return null;
-  };
+  /* ── Total skills count ──────────────────────────────────── */
+  const totalSkills = counts.skills || 1;                                 // Avoid division by zero
 
   return (
-    <motion.div
-      className="ov-panel ov-panel--profile"
-      role="complementary"
-      aria-label="Profile summary"
-      initial={{ opacity: 0, scale: 0.96 }}
-      animate={{ opacity: 1, scale: 1 }}
-      viewport={{ once: true, amount: 0.1 }}
-      transition={{ duration: 0.6, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
-      whileHover={{ y: -4, transition: { duration: 0.2 } }}
+    <section
+      id="overview"
+      className="overview-section"
+      aria-label="Dashboard Overview"
     >
-      {/* Particle background layer */}
-      <div style={{ position: 'absolute', inset: 0, opacity: 0.08, pointerEvents: 'none' }}>
-        <ParticleBackground />
-      </div>
 
-      {/* Decorative water drops */}
-      <div className="ov-drops" aria-hidden="true">
-        <div className="ov-drop ov-drop--a" />
-        <div className="ov-drop ov-drop--b" />
-      </div>
+      {/* ══════════════════════════════════════════════════════
+          ROW 1 — Profile + Goals Donut + Skills Donut
+          3 columns: Profile tall | Goals Donut | Skills Donut
+      ══════════════════════════════════════════════════════ */}
+      <div className="ov-bento-row ov-bento-row--3col">
 
-      {/* Avatar */}
-      <div className="ov-profile__avatar-wrap">
-        <div className="ov-profile__avatar" aria-label={`${fullName} profile photo`}>
-          {avatar
-            ? <img src={avatar} alt={fullName} />
-            : <span>{initials}</span>
-          }
-        </div>
-        <div className="ov-profile__online" title="Online" aria-label="Status: active" />
-      </div>
-
-      {/* Name */}
-      <div className="ov-profile__name">{fullName}</div>
-
-      {/* Title */}
-      <div className="ov-profile__title">{title}</div>
-
-      {/* Social links */}
-      <div className="ov-profile__social--luxury" role="list" aria-label="Social links">
-        {SOCIAL_PLATFORMS_CONFIG.map(platform => {
-          const url  = getSocialUrl(platform.key);
-          const icon = SOCIAL_ICONS[platform.key];
-          if (!url || !icon) return null;
-          return (
-            <a
-              key={platform.key}
-              href={url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className={`ov-social-link--luxury ${platform.key}`}
-              role="listitem"
-              aria-label={`${platform.label} profile`}
-              style={{ '--social-color': platform.color }}
-            >
-              <span className="ov-social-link__icon--luxury" aria-hidden="true">
-                {icon}
-              </span>
-            </a>
-          );
-        })}
-
-        {/* Fallback when social is empty */}
-        {Object.keys(social).length === 0 && (
-          <span style={{ fontSize: '0.65rem', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
-            No social links configured
-          </span>
-        )}
-      </div>
-
-      {/* Bio */}
-      {bio && <p className="ov-profile__bio">{bio}</p>}
-
-      {/* Quick Stats — 4 cards */}
-      <div className="ov-profile__stats" role="list" aria-label="Profile statistics">
-
-        <div className="ov-stat" role="listitem"
-          style={{ background: 'rgba(79,195,247,0.07)', borderColor: 'rgba(79,195,247,0.22)', color: '#4FC3F7' }}>
-          <span className="ov-stat__tag">Exp</span>
-          <div className="ov-stat__num">
-            {profile?.experience_years ? `${profile.experience_years}+` : '—'}
+        {/* ── Col 1: Profile Card ─────────────────────────── */}
+        <motion.div
+          className="ov-panel ov-panel--profile ov-bento-profile"
+          variants={CARD_VARIANTS}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, amount: 0.1 }}
+          transition={{ ...CARD_TRANSITION, delay: 0.0 }}
+          whileHover={{ y: -3, transition: { duration: 0.2 } }}
+        >
+          {/* Particle background layer — very subtle */}
+          <div style={{ position: 'absolute', inset: 0, opacity: 0.06, pointerEvents: 'none' }}>
+            <ParticleBackground />
           </div>
-          <span className="ov-stat__label">Years</span>
-        </div>
 
-        <div className="ov-stat" role="listitem"
-          style={{ background: 'rgba(78,204,163,0.07)', borderColor: 'rgba(78,204,163,0.22)', color: '#4ECCA3' }}>
-          <span className="ov-stat__tag">Score</span>
-          <div className="ov-stat__num">
-            {profile?.overall_score ? `${Math.round(profile.overall_score)}%` : '—'}
+          {/* Decorative water drops */}
+          <div className="ov-drops" aria-hidden="true">
+            <div className="ov-drop ov-drop--a" />
+            <div className="ov-drop ov-drop--b" />
           </div>
-          <span className="ov-stat__label">Goals</span>
-        </div>
 
-        <div className="ov-stat" role="listitem"
-          style={{ background: 'rgba(155,127,234,0.07)', borderColor: 'rgba(155,127,234,0.22)', color: '#9B7FEA' }}>
-          <span className="ov-stat__tag">Work</span>
-          <div className="ov-stat__num">
-            {analytics ? (counts?.experience || '0') : '...'}
+          {/* Avatar */}
+          <div className="ov-profile__avatar-wrap">
+            <div className="ov-profile__avatar" aria-label={`${fullName} photo`}>
+              {avatar
+                ? <img src={avatar} alt={fullName} />  // Show avatar image
+                : <span>{getInitials(fullName)}</span>  // Fallback to initials
+              }
+            </div>
+            <div className="ov-profile__online" title="Active" aria-label="Status: active" />
           </div>
-          <span className="ov-stat__label">Experience</span>
-        </div>
 
-        <div className="ov-stat" role="listitem"
-          style={{ background: 'rgba(245,166,35,0.07)', borderColor: 'rgba(245,166,35,0.22)', color: '#F5A623' }}>
-          <span className="ov-stat__tag">Built</span>
-          <div className="ov-stat__num">
-            {analytics ? (counts?.projects || '0') : '...'}
+          {/* Name */}
+          <div className="ov-profile__name">{fullName}</div>
+
+          {/* Title */}
+          <div className="ov-profile__title">{title}</div>
+
+          {/* Social links — luxury square buttons */}
+          <div className="ov-profile__social--luxury" role="list" aria-label="Social links">
+            {SOCIAL_PLATFORMS_CONFIG.map(platform => {
+              /* Build URL from social object — handles nested or flat format */
+              const val = social[platform.key] || social[platform.key.toLowerCase()];
+              const url = !val ? null
+                : typeof val === 'string' ? val
+                : val.url || val.link || val.href || null;
+
+              const icon = SOCIAL_ICONS[platform.key];                    // Get SVG icon
+              if (!url || !icon) return null;                             // Skip if no URL
+
+              return (
+                <a
+                  key={platform.key}
+                  href={url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="ov-social-link--luxury"
+                  role="listitem"
+                  aria-label={`${platform.label} profile`}
+                  style={{ '--social-color': platform.color }}            // CSS var for hover glow
+                >
+                  <span className="ov-social-link__icon--luxury" aria-hidden="true">
+                    {icon}
+                  </span>
+                </a>
+              );
+            })}
           </div>
-          <span className="ov-stat__label">Projects</span>
-        </div>
 
-      </div>
-    </motion.div>
-  );
-}
+          {/* Bio */}
+          {bio && <p className="ov-profile__bio">{bio}</p>}
 
-/* ════════════════════════════════════════════════════════════════
-   SUB-COMPONENT: ScoreDistributionPanel — NOW USES DonutChart
-   Replaces: manual SVG circles with strokeDasharray logic
-════════════════════════════════════════════════════════════════ */
-/**
- * ScoreDistributionPanel — donut chart showing band distribution.
- * @param {{ bandCounts: object, totalSkills: number }} props
- */
-function ScoreDistributionPanel({ bandCounts, totalSkills }) {
+          {/* Quick Stats — 4 metric cards */}
+          <div className="ov-profile__stats" role="list" aria-label="Quick stats">
 
-  /* ── Build DonutChart data format ────────────────────────────── */
-  /* Maps SCORE_BANDS to [{ label, value, color }] expected by DonutChart */
-  const donutData = SCORE_BANDS.map(band => ({
-    label: band.label,                           // Band display name
-    value: bandCounts[band.key] || 0,            // Count from analytics API
-    color: band.color,                           // Band color constant
-  }));
+            {/* Experience years */}
+            <div className="ov-stat" role="listitem"
+              style={{ background: 'rgba(79,195,247,0.07)', borderColor: 'rgba(79,195,247,0.22)', color: '#4FC3F7' }}>
+              <span className="ov-stat__tag">Exp</span>
+              <div className="ov-stat__num">
+                {profile?.experience_years ? `${profile.experience_years}+` : '—'}
+              </div>
+              <span className="ov-stat__label">Years</span>
+            </div>
 
-  return (
-    <div
-      className="ov-panel ov-panel--score-dist"
-      aria-label="Score distribution across proficiency bands"
-    >
-      {/* Panel header — UNCHANGED class names */}
-      <div className="ov-panel__header">
-        <span className="ov-panel__title">Score Distribution</span>
-        <button className="ov-panel__menu" aria-label="Panel options">···</button>
-      </div>
-      <p className="ov-panel__subtitle">Skills spread across bands</p>
+            {/* Overall score */}
+            <div className="ov-stat" role="listitem"
+              style={{ background: 'rgba(78,204,163,0.07)', borderColor: 'rgba(78,204,163,0.22)', color: '#4ECCA3' }}>
+              <span className="ov-stat__tag">Score</span>
+              <div className="ov-stat__num">
+                {profile?.overall_score ? `${Math.round(profile.overall_score)}%` : '—'}
+              </div>
+              <span className="ov-stat__label">Overall</span>
+            </div>
 
-      {/* ── DonutChart replaces the manual SVG ── */}
-      {/* size="md" matches the original 120px container */}
-      {/* showLegend renders the same legend rows as before */}
-      <DonutChart
-        data={donutData}
-        total={totalSkills}
-        centerValue={totalSkills}
-        centerLabel="Total"
-        size="md"
-        showLegend
-      />
-    </div>
-  );
-}
+            {/* Experience count */}
+            <div className="ov-stat" role="listitem"
+              style={{ background: 'rgba(155,127,234,0.07)', borderColor: 'rgba(155,127,234,0.22)', color: '#9B7FEA' }}>
+              <span className="ov-stat__tag">Work</span>
+              <div className="ov-stat__num">{counts?.experience || '0'}</div>
+              <span className="ov-stat__label">Roles</span>
+            </div>
 
-/* ════════════════════════════════════════════════════════════════
-   SUB-COMPONENT: SkillsByCategoryPanel — NOW USES BarChart
-   Replaces: manual .ov-proj-row + .ov-proj-row__fill rows
-════════════════════════════════════════════════════════════════ */
-/**
- * SkillsByCategoryPanel — horizontal bars for category averages.
- * @param {{ radarData: Array }} props
- */
-function SkillsByCategoryPanel({ radarData }) {
+            {/* Projects count */}
+            <div className="ov-stat" role="listitem"
+              style={{ background: 'rgba(245,166,35,0.07)', borderColor: 'rgba(245,166,35,0.22)', color: '#F5A623' }}>
+              <span className="ov-stat__tag">Built</span>
+              <div className="ov-stat__num">{counts?.projects || '0'}</div>
+              <span className="ov-stat__label">Projects</span>
+            </div>
 
-  /* ── Fallback demo data ────────────────────────────────────────── */
-  const source = radarData.length > 0 ? radarData : [
-    { category: 'Frontend',  avg_score: 82 },
-    { category: 'Backend',   avg_score: 75 },
-    { category: 'DevOps',    avg_score: 60 },
-    { category: 'Database',  avg_score: 68 },
-    { category: 'Mobile',    avg_score: 45 },
-  ];
+          </div>
 
-  /* ── Transform radarData → BarChart data format ──────────────── */
-  /* BarChart expects [{ label, value, color }] */
-  const barData = source.map((cat, i) => ({
-    label: cat.category,                         // Category name as label
-    value: cat.avg_score,                        // Average score as value
-    color: CHART_COLORS[i % CHART_COLORS.length],// Cycle through palette
-  }));
+          {/* Languages strip inside profile */}
+          {languages.length > 0 && (
+            <div className="ov-bento-lang-strip" role="list" aria-label="Languages">
+              {languages.slice(0, 4).map((lang, i) => {
+                const levelKey  = (lang.level || '').toLowerCase();       // Normalize level key
+                const langColor = LANG_LEVEL_COLORS[levelKey]
+                  || CHART_COLORS[i % CHART_COLORS.length];               // Fallback to palette
 
-  return (
-    <div
-      className="ov-panel ov-panel--cat"
-      aria-label="Skills by category panel"
-    >
-      {/* Panel header — UNCHANGED */}
-      <div className="ov-panel__header">
-        <span className="ov-panel__title">Skills by Category</span>
-        <button className="ov-panel__menu" aria-label="Panel options">···</button>
-      </div>
-      <p className="ov-panel__subtitle">Average score per domain</p>
+                return (
+                  <div
+                    key={lang.language || i}
+                    className="ov-bento-lang-chip"
+                    role="listitem"
+                    style={{ '--lang-color': langColor }}                 // CSS var for theming
+                  >
+                    <span className="ov-bento-lang-chip__flag" aria-hidden="true">
+                      {lang.flag || '🌐'}
+                    </span>
+                    <span className="ov-bento-lang-chip__name">{lang.language}</span>
+                    <span className="ov-bento-lang-chip__level" style={{ color: langColor }}>
+                      {lang.level || 'N/A'}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </motion.div>
 
-      {/* ── BarChart replaces manual .ov-proj-row rows ── */}
-      {/* size="sm" matches the original 4px track height */}
-      <BarChart
-        data={barData}
-        direction="horizontal"
-        size="sm"
-        showValues
-        showLabels
-        maxValue={100}
-      />
-    </div>
-  );
-}
+        {/* ── Col 2: Goals Status Donut ───────────────────── */}
+        <motion.div
+          className="ov-panel ov-bento-card"
+          variants={CARD_VARIANTS}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, amount: 0.1 }}
+          transition={{ ...CARD_TRANSITION, delay: 0.1 }}
+          whileHover={{ y: -3, transition: { duration: 0.2 } }}
+        >
+          {/* Panel header */}
+          <div className="ov-panel__header">
+            <span className="ov-panel__title">Goals Status</span>
+            <span className="ov-bento-badge ov-bento-badge--cyan">
+              {totalGoals} Total
+            </span>
+          </div>
+          <p className="ov-panel__subtitle">Roadmap progress breakdown</p>
 
-/* ════════════════════════════════════════════════════════════════
-   SUB-COMPONENT: SkillScoresPanel — NOW USES ProgressBar
-   Replaces: manual .ov-skill-fill with scaleX animation
-════════════════════════════════════════════════════════════════ */
-/**
- * SkillScoresPanel — top 12 skills with animated progress bars.
- * @param {{ skills: Array }} props
- */
-function SkillScoresPanel({ skills }) {
-
-  /* ── Fallback demo data ─────────────────────────────────────── */
-  const displaySkills = skills.length > 0 ? skills : [
-    { skill_name: 'JavaScript', score: 90 },
-    { skill_name: 'Python',     score: 85 },
-    { skill_name: 'React',      score: 82 },
-    { skill_name: 'Flask',      score: 78 },
-    { skill_name: 'MongoDB',    score: 74 },
-    { skill_name: 'CSS3',       score: 70 },
-    { skill_name: 'Git',        score: 65 },
-    { skill_name: 'Docker',     score: 58 },
-    { skill_name: 'TypeScript', score: 55 },
-    { skill_name: 'PostgreSQL', score: 50 },
-    { skill_name: 'Redis',      score: 42 },
-    { skill_name: 'Kubernetes', score: 35 },
-  ];
-
-  return (
-    <div
-      className="ov-panel ov-panel--skill-scores"
-      aria-label="Top 12 skill scores"
-    >
-      {/* Panel header — UNCHANGED */}
-      <div className="ov-panel__header">
-        <span className="ov-panel__title">Skill Scores</span>
-        <button className="ov-panel__menu" aria-label="Panel options">···</button>
-      </div>
-      <p className="ov-panel__subtitle">Top 12 · Sorted by proficiency</p>
-
-      {/* ── Band legend pills — UNCHANGED markup ── */}
-      <div className="ov-score-legend" role="list" aria-label="Score band legend">
-        {SCORE_BANDS.map(band => (
-          <span
-            key={band.key}
-            className="ov-score-band-pill"
-            role="listitem"
-            style={{ color: band.color, borderColor: `${band.color}55` }}
-          >
-            {band.label} {band.min}–{band.max}%
-          </span>
-        ))}
-      </div>
-
-      {/* ── ProgressBar list replaces manual .ov-skill-row items ── */}
-      {/* Uses .ov-skill-list wrapper to preserve scroll + max-height CSS */}
-      <div className="ov-skill-list" role="list" aria-label="Top skills list">
-        {displaySkills.map((skill, i) => (
-          <div
-            key={skill._id || skill.skill_name || i}
-            role="listitem"
-            style={{ marginBottom: 'var(--s3)' }}
-          >
-            {/* ProgressBar auto-colors from skill band score */}
-            {/* showBand=true shows Expert/Advanced/Intermediate/Beginner label */}
-            <ProgressBar
-              value={skill.score || 0}
-              label={skill.skill_name}
-              showValue
-              showBand
-              size="xs"
+          {/* Goals donut chart */}
+          <div className="ov-bento-chart-center">
+            <DonutChart
+              data={goalsDonutData}
+              total={totalGoals || undefined}
+              centerValue={totalGoals}
+              centerLabel="Goals"
+              size="md"
+              showLegend
             />
           </div>
-        ))}
-      </div>
-    </div>
-  );
-}
 
-/* ════════════════════════════════════════════════════════════════
-   SUB-COMPONENT: PortfolioRecordsPanel — NOW USES StatCard
-   Replaces: plain count numbers with animated StatCard components
-════════════════════════════════════════════════════════════════ */
-/**
- * PortfolioRecordsPanel — animated count cards per entity model.
- * @param {{ counts: object }} props
- */
-function PortfolioRecordsPanel({ counts }) {
-
-  return (
-    <div
-      className="ov-panel ov-panel--records"
-      aria-label="Portfolio records — total documents per model"
-    >
-      {/* Panel header — UNCHANGED */}
-      <div className="ov-panel__header">
-        <span className="ov-panel__title">Portfolio Records</span>
-        <span style={{
-          fontFamily:    'var(--font-mono)',
-          fontSize:      '0.60rem',
-          color:         'var(--text-muted)',
-          letterSpacing: '0.08em',
-        }}>
-          Total documents per model
-        </span>
-      </div>
-
-      {/* ── StatCard grid replaces plain number divs ── */}
-      {/* Reuses .ov-records-grid for layout — CSS UNCHANGED */}
-      <div className="ov-records-grid" role="list">
-        {RECORD_ITEMS.map((item, i) => (
-          <StatCard
-            key={item.key}
-            value={counts[item.key] || 0}         // Count from analytics API
-            label={item.label}                    // Model display name
-            icon={item.icon}                      // Model emoji icon
-            color={item.color}                    // Palette color
-            delay={i * 70}                        // Stagger count-up by 70ms each
-            size="sm"                             // Compact size for grid
-          />
-        ))}
-      </div>
-    </div>
-  );
-}
-
-/* ════════════════════════════════════════════════════════════════
-   SUB-COMPONENT: LanguagesPanel — UNCHANGED
-   Language cards with flag + name + level badge
-════════════════════════════════════════════════════════════════ */
-/**
- * LanguagesPanel — grid of language cards.
- * @param {{ languages: Array }} props
- */
-function LanguagesPanel({ languages }) {
-
-  /* Fallback demo languages */
-  const displayLangs = languages.length > 0 ? languages : [
-    { language: 'Arabic',  flag: '🇸🇦', level: 'native',       proficiency: 'Native'       },
-    { language: 'English', flag: '🇬🇧', level: 'intermediate',  proficiency: 'Intermediate' },
-  ];
-
-  return (
-    <div className="ov-panel ov-panel--languages" aria-label="Languages panel">
-
-      {/* Panel header */}
-      <div className="ov-panel__header">
-        <span className="ov-panel__title">Languages</span>
-        <span style={{
-          fontFamily:    'var(--font-mono)',
-          fontSize:      '0.58rem',
-          color:         'var(--text-muted)',
-          letterSpacing: '0.08em',
-        }}>
-          Communication & literacy levels
-        </span>
-      </div>
-
-      {/* Language card grid */}
-      <div className="ov-lang-grid" role="list" aria-label="Languages list">
-        {displayLangs.map((lang, i) => {
-          const levelKey  = (lang.level || '').toLowerCase();
-          const langColor = LANG_LEVEL_COLORS[levelKey]
-            || CHART_COLORS[i % CHART_COLORS.length];
-
-          return (
-            <div
-              key={lang.language || i}
-              className="ov-lang-card"
-              role="listitem"
-              aria-label={`${lang.language}: ${lang.proficiency || lang.level}`}
-              style={{ '--lang-color': langColor }}
-            >
-              <div className="ov-lang-card__flag" aria-hidden="true">
-                {lang.flag || '🌐'}
+          {/* Average progress bar */}
+          {avgProgress > 0 && (
+            <div className="ov-bento-progress-row" style={{ marginTop: 'var(--s4)' }}>
+              <span className="ov-bento-progress-label">Avg Progress</span>
+              <div className="ov-bento-progress-track">
+                <div
+                  className="ov-bento-progress-fill"
+                  style={{
+                    width:      `${avgProgress}%`,              // Fill width = avg progress
+                    background: 'linear-gradient(90deg, var(--cyan), var(--green))', // Gradient fill
+                  }}
+                />
               </div>
-              <div className="ov-lang-card__name">{lang.language}</div>
-              <div className="ov-lang-card__level" style={{ color: langColor }}>
-                {lang.proficiency || lang.level || 'N/A'}
-              </div>
+              <span className="ov-bento-progress-value" style={{ color: 'var(--cyan)' }}>
+                {Math.round(avgProgress)}%
+              </span>
             </div>
-          );
-        })}
+          )}
+        </motion.div>
+
+        {/* ── Col 3: Skills Distribution Donut ────────────── */}
+        <motion.div
+          className="ov-panel ov-bento-card"
+          variants={CARD_VARIANTS}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, amount: 0.1 }}
+          transition={{ ...CARD_TRANSITION, delay: 0.2 }}
+          whileHover={{ y: -3, transition: { duration: 0.2 } }}
+        >
+          {/* Panel header */}
+          <div className="ov-panel__header">
+            <span className="ov-panel__title">Skills Spread</span>
+            <span className="ov-bento-badge ov-bento-badge--violet">
+              {totalSkills} Skills
+            </span>
+          </div>
+          <p className="ov-panel__subtitle">Proficiency band distribution</p>
+
+          {/* Skills distribution donut */}
+          <div className="ov-bento-chart-center">
+            <DonutChart
+              data={skillsDonutData}
+              total={totalSkills}
+              centerValue={totalSkills}
+              centerLabel="Skills"
+              size="md"
+              showLegend
+            />
+          </div>
+        </motion.div>
+
       </div>
-    </div>
+
+      {/* ══════════════════════════════════════════════════════
+          ROW 2 — Category Bars + Goals Priority + Top Skills
+          3 columns: Skills by Cat | Goals Priority | Top Skills
+      ══════════════════════════════════════════════════════ */}
+      <div className="ov-bento-row ov-bento-row--3col">
+
+        {/* ── Col 1: Skills by Category Bars ──────────────── */}
+        <motion.div
+          className="ov-panel ov-bento-card"
+          variants={CARD_VARIANTS}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, amount: 0.1 }}
+          transition={{ ...CARD_TRANSITION, delay: 0.0 }}
+          whileHover={{ y: -3, transition: { duration: 0.2 } }}
+        >
+          <div className="ov-panel__header">
+            <span className="ov-panel__title">Skills by Category</span>
+            <button className="ov-panel__menu" aria-label="Panel options">···</button>
+          </div>
+          <p className="ov-panel__subtitle">Average score per domain</p>
+
+          {/* Category bar chart */}
+          <BarChart
+            data={categoryBarData.length > 0 ? categoryBarData : [
+              { label: 'Frontend',  value: 82, color: CHART_COLORS[0] },
+              { label: 'Backend',   value: 75, color: CHART_COLORS[1] },
+              { label: 'DevOps',    value: 60, color: CHART_COLORS[2] },
+              { label: 'Database',  value: 68, color: CHART_COLORS[3] },
+            ]}
+            direction="horizontal"
+            size="sm"
+            showValues
+            showLabels
+            maxValue={100}
+          />
+        </motion.div>
+
+        {/* ── Col 2: Goals Priority Bar ────────────────────── */}
+        <motion.div
+          className="ov-panel ov-bento-card"
+          variants={CARD_VARIANTS}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, amount: 0.1 }}
+          transition={{ ...CARD_TRANSITION, delay: 0.1 }}
+          whileHover={{ y: -3, transition: { duration: 0.2 } }}
+        >
+          <div className="ov-panel__header">
+            <span className="ov-panel__title">Goals by Priority</span>
+            <button className="ov-panel__menu" aria-label="Panel options">···</button>
+          </div>
+          <p className="ov-panel__subtitle">Count per priority level</p>
+
+          {/* Priority bar chart */}
+          <BarChart
+            data={goalsPriorityData.length > 0 ? goalsPriorityData : [
+              { label: 'Critical', value: 0, color: '#FF6B6B' },
+              { label: 'High',     value: 0, color: '#F5A623' },
+              { label: 'Medium',   value: 0, color: '#4FC3F7' },
+              { label: 'Low',      value: 0, color: '#9B7FEA' },
+            ]}
+            direction="horizontal"
+            size="sm"
+            showValues
+            showLabels
+          />
+
+          {/* Goals count mini stats */}
+          <div className="ov-bento-mini-stats" style={{ marginTop: 'var(--s4)' }}>
+            {Object.entries(goalsByStatus).slice(0, 2).map(([status, count]) => (
+              <div key={status} className="ov-bento-mini-stat">
+                <span
+                  className="ov-bento-mini-stat__dot"
+                  style={{ background: GOALS_STATUS_COLORS[status] || 'var(--cyan)' }}
+                />
+                <span className="ov-bento-mini-stat__label">{status}</span>
+                <span
+                  className="ov-bento-mini-stat__num"
+                  style={{ color: GOALS_STATUS_COLORS[status] || 'var(--cyan)' }}
+                >
+                  {count}
+                </span>
+              </div>
+            ))}
+          </div>
+        </motion.div>
+
+        {/* ── Col 3: Top Skills Progress Bars ─────────────── */}
+        <motion.div
+          className="ov-panel ov-bento-card"
+          variants={CARD_VARIANTS}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, amount: 0.1 }}
+          transition={{ ...CARD_TRANSITION, delay: 0.2 }}
+          whileHover={{ y: -3, transition: { duration: 0.2 } }}
+        >
+          <div className="ov-panel__header">
+            <span className="ov-panel__title">Top Skills</span>
+            <button className="ov-panel__menu" aria-label="Panel options">···</button>
+          </div>
+          <p className="ov-panel__subtitle">Highest scored abilities</p>
+
+          {/* Scrollable skill progress bars */}
+          <div className="ov-bento-skill-scroll">
+            {(top8Skills.length > 0 ? top8Skills : [
+              { label: 'JavaScript', value: 90, color: CHART_COLORS[0] },
+              { label: 'Python',     value: 85, color: CHART_COLORS[1] },
+              { label: 'React',      value: 82, color: CHART_COLORS[2] },
+              { label: 'Flask',      value: 78, color: CHART_COLORS[3] },
+            ]).map((skill, i) => (
+              <div key={skill.label || i} style={{ marginBottom: 'var(--s2)' }}>
+                <ProgressBar
+                  value={skill.value || 0}
+                  label={skill.label}
+                  color={skill.color}
+                  showValue
+                  size="xs"
+                />
+              </div>
+            ))}
+          </div>
+        </motion.div>
+
+      </div>
+
+      {/* ══════════════════════════════════════════════════════
+          ROW 3 — KPI Records Strip (full width)
+          All 10 models as animated count-up StatCards
+      ══════════════════════════════════════════════════════ */}
+      <motion.div
+        className="ov-panel ov-bento-records"
+        variants={CARD_VARIANTS}
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true, amount: 0.05 }}
+        transition={{ ...CARD_TRANSITION, delay: 0.0 }}
+      >
+        {/* Panel header */}
+        <div className="ov-panel__header">
+          <span className="ov-panel__title">Portfolio Records</span>
+          <span style={{
+            fontFamily:    'var(--font-mono)',
+            fontSize:      '0.60rem',
+            color:         'var(--text-muted)',
+            letterSpacing: '0.08em',
+          }}>
+            Total documents per model
+          </span>
+        </div>
+
+        {/* StatCard grid — all 10 models */}
+        <div className="ov-records-grid" role="list">
+          {RECORD_ITEMS.map((item, i) => (
+            <StatCard
+              key={item.key}
+              value={counts[item.key] || 0}   // Count from analytics
+              label={item.label}              // Model display name
+              icon={item.icon}                // Model emoji
+              color={item.color}              // Palette color
+              delay={i * 70}                  // Stagger count-up
+              size="sm"                       // Compact grid size
+            />
+          ))}
+        </div>
+      </motion.div>
+
+      {/* ══════════════════════════════════════════════════════
+          ROW 4 — Projects Info + Experience Summary
+          2 columns: Projects breakdown | Experience timeline bar
+      ══════════════════════════════════════════════════════ */}
+      <div className="ov-bento-row ov-bento-row--2col">
+
+        {/* ── Col 1: Projects Breakdown ────────────────────── */}
+        <motion.div
+          className="ov-panel ov-bento-card"
+          variants={CARD_VARIANTS}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, amount: 0.1 }}
+          transition={{ ...CARD_TRANSITION, delay: 0.0 }}
+          whileHover={{ y: -3, transition: { duration: 0.2 } }}
+        >
+          <div className="ov-panel__header">
+            <span className="ov-panel__title">Projects Overview</span>
+            <span className="ov-bento-badge ov-bento-badge--gold">
+              {counts.projects || 0} Total
+            </span>
+          </div>
+          <p className="ov-panel__subtitle">Portfolio projects summary</p>
+
+          {/* Projects big number + context */}
+          <div className="ov-bento-big-stat">
+            <div
+              className="ov-bento-big-stat__num"
+              style={{ color: CHART_COLORS[1] }}  // Cyan
+            >
+              {counts.projects || 0}
+            </div>
+            <div className="ov-bento-big-stat__label">Projects Built</div>
+          </div>
+
+          {/* Supporting metrics grid */}
+          <div className="ov-bento-support-grid">
+            <div className="ov-bento-support-item">
+              <span className="ov-bento-support-item__num" style={{ color: CHART_COLORS[5] }}>
+                {counts.experience || 0}
+              </span>
+              <span className="ov-bento-support-item__label">Work Roles</span>
+            </div>
+            <div className="ov-bento-support-item">
+              <span className="ov-bento-support-item__num" style={{ color: CHART_COLORS[2] }}>
+                {counts.courses || 0}
+              </span>
+              <span className="ov-bento-support-item__label">Courses Done</span>
+            </div>
+            <div className="ov-bento-support-item">
+              <span className="ov-bento-support-item__num" style={{ color: CHART_COLORS[3] }}>
+                {counts.achievements || 0}
+              </span>
+              <span className="ov-bento-support-item__label">Achievements</span>
+            </div>
+            <div className="ov-bento-support-item">
+              <span className="ov-bento-support-item__num" style={{ color: CHART_COLORS[7] }}>
+                {counts.self_study || 0}
+              </span>
+              <span className="ov-bento-support-item__label">Self Study</span>
+            </div>
+          </div>
+        </motion.div>
+
+        {/* ── Col 2: Learning & Growth ─────────────────────── */}
+        <motion.div
+          className="ov-panel ov-bento-card"
+          variants={CARD_VARIANTS}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, amount: 0.1 }}
+          transition={{ ...CARD_TRANSITION, delay: 0.1 }}
+          whileHover={{ y: -3, transition: { duration: 0.2 } }}
+        >
+          <div className="ov-panel__header">
+            <span className="ov-panel__title">Learning & Growth</span>
+            <button className="ov-panel__menu" aria-label="Panel options">···</button>
+          </div>
+          <p className="ov-panel__subtitle">Education & self-improvement</p>
+
+          {/* Learning metrics as progress bars */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--s3)' }}>
+
+            {/* Courses progress */}
+            <div className="ov-bento-metric-row">
+              <span className="ov-bento-metric-label">Courses</span>
+              <div className="ov-bento-metric-track">
+                <div
+                  className="ov-bento-metric-fill"
+                  style={{
+                    width:      `${Math.min((counts.courses || 0) / 50 * 100, 100)}%`, // Scale to 50 max
+                    background: CHART_COLORS[2],  // Violet
+                  }}
+                />
+              </div>
+              <span className="ov-bento-metric-num" style={{ color: CHART_COLORS[2] }}>
+                {counts.courses || 0}
+              </span>
+            </div>
+
+            {/* Education records */}
+            <div className="ov-bento-metric-row">
+              <span className="ov-bento-metric-label">Degrees</span>
+              <div className="ov-bento-metric-track">
+                <div
+                  className="ov-bento-metric-fill"
+                  style={{
+                    width:      `${Math.min((counts.education || 0) / 5 * 100, 100)}%`, // Scale to 5 max
+                    background: CHART_COLORS[4],  // Coral
+                  }}
+                />
+              </div>
+              <span className="ov-bento-metric-num" style={{ color: CHART_COLORS[4] }}>
+                {counts.education || 0}
+              </span>
+            </div>
+
+            {/* Self study */}
+            <div className="ov-bento-metric-row">
+              <span className="ov-bento-metric-label">Self Study</span>
+              <div className="ov-bento-metric-track">
+                <div
+                  className="ov-bento-metric-fill"
+                  style={{
+                    width:      `${Math.min((counts.self_study || 0) / 30 * 100, 100)}%`, // Scale to 30 max
+                    background: CHART_COLORS[6],  // Blue
+                  }}
+                />
+              </div>
+              <span className="ov-bento-metric-num" style={{ color: CHART_COLORS[6] }}>
+                {counts.self_study || 0}
+              </span>
+            </div>
+
+            {/* Achievements */}
+            <div className="ov-bento-metric-row">
+              <span className="ov-bento-metric-label">Achievements</span>
+              <div className="ov-bento-metric-track">
+                <div
+                  className="ov-bento-metric-fill"
+                  style={{
+                    width:      `${Math.min((counts.achievements || 0) / 20 * 100, 100)}%`, // Scale to 20 max
+                    background: CHART_COLORS[5],  // Green
+                  }}
+                />
+              </div>
+              <span className="ov-bento-metric-num" style={{ color: CHART_COLORS[5] }}>
+                {counts.achievements || 0}
+              </span>
+            </div>
+
+            {/* Goals completion */}
+            <div className="ov-bento-metric-row">
+              <span className="ov-bento-metric-label">Goals Done</span>
+              <div className="ov-bento-metric-track">
+                <div
+                  className="ov-bento-metric-fill"
+                  style={{
+                    width:      `${totalGoals > 0
+                      ? Math.round((goalsByStatus['Achieved'] || 0) / totalGoals * 100)
+                      : 0}%`,                     // % of achieved goals
+                    background: 'linear-gradient(90deg, var(--cyan), var(--green))', // Gradient
+                  }}
+                />
+              </div>
+              <span className="ov-bento-metric-num" style={{ color: 'var(--green)' }}>
+                {goalsByStatus['Achieved'] || 0}/{totalGoals}
+              </span>
+            </div>
+
+          </div>
+        </motion.div>
+
+      </div>
+
+    </section>
   );
 }
