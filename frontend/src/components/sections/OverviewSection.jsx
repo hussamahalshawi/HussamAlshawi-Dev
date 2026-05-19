@@ -5,49 +5,49 @@
  *
  * Layout — Full Portfolio Bento Grid:
  *
- *  Row 1 (3 cols):
- *    [Profile Card — tall]  [Goals Donut]  [Projects Donut]
+ * Row 1 (3 cols):
+ * [Profile Card — tall]  [Goals Donut]  [Projects Donut]
  *
- *  Row 2 (3 cols):
- *    [Skills Radar]  [Experience Bar]  [Courses Timeline]
+ * Row 2 (3 cols):
+ * [Skills Radar]  [Experience Bar]  [Courses Timeline]
  *
- *  Row 3 (full width):
- *    [KPI Records Strip — all models]
+ * Row 3 (full width):
+ * [KPI Records Strip — all models]
  *
- *  Row 4 (2 cols):
- *    [Goals Progress Bars — wide]  [Skills Top Bar]
+ * Row 4 (2 cols):
+ * [Goals Progress Bars — wide]  [Skills Top Bar]
  *
  * Data sources — all from analytics prop:
- *   analytics.counts            → KPI records strip
- *   analytics.skills_distribution → Skills donut
- *   analytics.top_skills         → Skills top bar
- *   analytics.skills_radar       → Skills radar + category bar
- *   analytics.goals_by_status    → Goals donut
- *   analytics.goals_by_priority  → Goals priority bars
- *   analytics.counts.projects    → Projects count card
- *   analytics.counts.courses     → Courses count card
- *   analytics.counts.experience  → Experience bar
- *   profile.*                    → Profile card
+ * analytics.counts            → KPI records strip
+ * analytics.skills_distribution → Skills donut
+ * analytics.top_skills         → Skills top bar
+ * analytics.skills_radar       → Skills radar + category bar
+ * analytics.goals_by_status    → Goals donut
+ * analytics.goals_by_priority  → Goals priority bars
+ * analytics.counts.projects    → Projects count card
+ * analytics.counts.courses     → Courses count card
+ * analytics.counts.experience  → Experience bar
+ * profile.* → Profile card
  *
  * All CSS classes preserved from original OverviewSection.css
  * New classes added with prefix .ov-bento-*
  * ─────────────────────────────────────────────────────────
  */
 
-import { useRef, useEffect, useState, useMemo } from 'react'; // React hooks
-import { motion }                                from 'framer-motion';  // Entrance animations
-import { formatExperience, getInitials }         from '../../utils/formatters';  // Pure helpers
-import { CHART_COLORS }                          from '../../utils/constants';   // Global tokens
+import { useRef, useEffect, useState, useMemo } from 'react'; // Import standard React hooks for state and lifecycle management
+import { motion }                                from 'framer-motion';  // Import motion from framer-motion for smooth bento grid entrance animations
+import { formatExperience, getInitials }         from '../../utils/formatters';  // Import pure utility functions for data formatting and string initials
+import { CHART_COLORS }                          from '../../utils/constants';   // Import global color design tokens for standard chart palette styling
 
 /* ── Reusable chart components ────────────────────────────────── */
-import DonutChart  from '../charts/DonutChart';  // Goals + Skills distribution donuts
-import BarChart    from '../charts/BarChart';    // Experience + Goals priority bars
-import ProgressBar from '../charts/ProgressBar'; // Skills top bar rows
-import StatCard    from '../charts/StatCard';    // Portfolio record counts
+import DonutChart  from '../charts/DonutChart';  // Import DonutChart component to display goals and skills distribution metrics
+import BarChart    from '../charts/BarChart';    // Import BarChart component to render horizontal bars for experience and goal priority levels
+import ProgressBar from '../charts/ProgressBar'; // Import ProgressBar component for granular visualization of top skills rows
+import StatCard    from '../charts/StatCard';    // Import StatCard component to show compact totals for overall portfolio records
 
-import '../../styles/components/OverviewSection.css';     // Existing section styles
-import '../../styles/components/OverviewBento.css';       // NEW: Bento grid additions
-import ParticleBackground from '../ui/ParticleBackground';
+import '../../styles/components/OverviewSection.css';     // Import existing dashboard section styles to maintain overall core layouts
+import '../../styles/components/OverviewBento.css';       // Import new Bento grid specific additions for layout cells alignment
+import ParticleBackground from '../ui/ParticleBackground'; // Import stylized particle canvas overlay component for high-end aesthetics
 
 /* ════════════════════════════════════════════════════════════════
    CONSTANTS
@@ -99,64 +99,64 @@ const SOCIAL_ICONS = {
 
 /* ── Social platform colors for luxury hover effect ──────────── */
 const SOCIAL_PLATFORMS_CONFIG = [
-  { key: 'github',    label: 'GitHub',    color: '#ffffff' }, // White for GitHub
-  { key: 'linkedin',  label: 'LinkedIn',  color: '#0A66C2' }, // LinkedIn blue
-  { key: 'twitter',   label: 'X',         color: '#ffffff' }, // White for X
-  { key: 'instagram', label: 'Instagram', color: '#E1306C' }, // Instagram pink
-  { key: 'youtube',   label: 'YouTube',   color: '#FF0000' }, // YouTube red
-  { key: 'medium',    label: 'Medium',    color: '#00ab6c' }, // Medium green
-  { key: 'facebook',  label: 'Facebook',  color: '#1877F2' }, // Facebook blue
-  { key: 'telegram',  label: 'Telegram',  color: '#26A5E4' }, // Telegram blue
+  { key: 'github',    label: 'GitHub',    color: '#ffffff' }, // Set color token to white for GitHub brand design
+  { key: 'linkedin',  label: 'LinkedIn',  color: '#0A66C2' }, // Set color token to blue for LinkedIn brand identity
+  { key: 'twitter',   label: 'X',         color: '#ffffff' }, // Set color token to white for modern X platform branding
+  { key: 'instagram', label: 'Instagram', color: '#E1306C' }, // Set color token to gradient pink for Instagram identity
+  { key: 'youtube',   label: 'YouTube',   color: '#FF0000' }, // Set color token to deep red for YouTube brand guidelines
+  { key: 'medium',    label: 'Medium',    color: '#00ab6c' }, // Set color token to sleek green for Medium publishing brand
+  { key: 'facebook',  label: 'Facebook',  color: '#1877F2' }, // Set color token to classical blue for Facebook identity
+  { key: 'telegram',  label: 'Telegram',  color: '#26A5E4' }, // Set color token to standard light blue for Telegram channel
 ];
 
 /* ── Goals status → color mapping ───────────────────────────── */
 const GOALS_STATUS_COLORS = {
-  'Achieved':    '#4ECCA3',  // Green — completed goals
-  'In Progress': '#4FC3F7',  // Cyan — active goals
-  'Planned':     '#9B7FEA',  // Violet — future goals
-  'Paused':      '#F5A623',  // Orange — on hold goals
+  'Achieved':    '#4ECCA3',  // Assign mint green color hex for successfully completed portfolio goals
+  'In Progress': '#4FC3F7',  // Assign bright cyan color hex for active and currently pending goals
+  'Planned':     '#9B7FEA',  // Assign soft violet color hex for future planned milestones on roadmap
+  'Paused':      '#F5A623',  // Assign amber orange color hex for items temporarily put on hold
 };
 
 /* ── Goals priority → color mapping ─────────────────────────── */
 const GOALS_PRIORITY_COLORS = {
-  'Critical': '#FF6B6B',  // Red — must do now
-  'High':     '#F5A623',  // Orange — very important
-  'Medium':   '#4FC3F7',  // Cyan — standard
-  'Low':      '#9B7FEA',  // Violet — nice to have
+  'Critical': '#FF6B6B',  // Assign deep red color hex for immediate top priority block items
+  'High':     '#F5A623',  // Assign vivid orange color hex for heavy operational importance items
+  'Medium':   '#4FC3F7',  // Assign ocean cyan color hex for normal operational velocity tasks
+  'Low':      '#9B7FEA',  // Assign calm violet color hex for backlog or soft optional items
 };
 
 /* ── Portfolio record items — all models ─────────────────────── */
 const RECORD_ITEMS = [
-  { key: 'skills',       label: 'Skills',       icon: '⚙',  color: CHART_COLORS[0] }, // Lime
-  { key: 'projects',     label: 'Projects',     icon: '⊡',  color: CHART_COLORS[1] }, // Cyan
-  { key: 'courses',      label: 'Courses',      icon: '📚', color: CHART_COLORS[2] }, // Violet
-  { key: 'experience',   label: 'Experience',   icon: '💼', color: CHART_COLORS[3] }, // Gold
-  { key: 'education',    label: 'Education',    icon: '🎓', color: CHART_COLORS[4] }, // Coral
-  { key: 'achievements', label: 'Achievements', icon: '🏆', color: CHART_COLORS[5] }, // Green
-  { key: 'self_study',   label: 'Self Study',   icon: '✍',  color: CHART_COLORS[6] }, // Blue
-  { key: 'goals',        label: 'Goals',        icon: '◈',  color: CHART_COLORS[7] }, // Amber
-  { key: 'languages',    label: 'Languages',    icon: '🌐', color: CHART_COLORS[0] }, // Lime
-  { key: 'feedback',     label: 'Feedback',     icon: '💬', color: CHART_COLORS[3] }, // Gold
+  { key: 'skills',       label: 'Skills',       icon: '⚙',  color: CHART_COLORS[0] }, // Bind skills counts item parameters with primary chart theme palette color
+  { key: 'projects',     label: 'Projects',     icon: '⊡',  color: CHART_COLORS[1] }, // Bind projects metadata item parameters with secondary chart theme palette color
+  { key: 'courses',      label: 'Courses',      icon: '📚', color: CHART_COLORS[2] }, // Bind courses tracked item parameters with tertiary chart theme palette color
+  { key: 'experience',   label: 'Experience',   icon: '💼', color: CHART_COLORS[3] }, // Bind work experiences parameters with quaternary chart theme palette color
+  { key: 'education',    label: 'Education',    icon: '🎓', color: CHART_COLORS[4] }, // Bind academic degrees parameters with quinary chart theme palette color
+  { key: 'achievements', label: 'Achievements', icon: '🏆', color: CHART_COLORS[5] }, // Bind awards parameters with senary chart theme palette color
+  { key: 'self_study',   label: 'Self Study',   icon: '✍',  color: CHART_COLORS[6] }, // Bind personal study hours parameters with septenary chart theme palette color
+  { key: 'goals',        label: 'Goals',        icon: '◈',  color: CHART_COLORS[7] }, // Bind personal tracking milestones parameters with octenary chart theme palette color
+  { key: 'languages',    label: 'Languages',    icon: '🌐', color: CHART_COLORS[0] }, // Bind spoken language modules parameters with recycled primary theme palette color
+  { key: 'feedback',     label: 'Feedback',     icon: '💬', color: CHART_COLORS[3] }, // Bind recommendation and comment components with recycled quaternary theme color
 ];
 
 /* ── Language level → color ───────────────────────────────────── */
 const LANG_LEVEL_COLORS = {
-  native:       '#4FC3F7',  // Cyan — native speaker
-  fluent:       '#4ECCA3',  // Green — fluent
-  intermediate: '#F5A623',  // Orange — intermediate
-  beginner:     '#9B7FEA',  // Violet — beginner
+  native:       '#4FC3F7',  // Define brilliant cyan for mother tongue or native standard linguistic level
+  fluent:       '#4ECCA3',  // Define deep emerald green for professional fluent communication level
+  intermediate: '#F5A623',  // Define warning amber orange for functional conversational intermediate standard
+  beginner:     '#9B7FEA',  // Define light purple violet token for basic entry beginner level
 };
 
 /* ── Framer Motion variants for staggered entrance ───────────── */
 const CARD_VARIANTS = {
-  hidden:  { opacity: 0, y: 24, scale: 0.97 },                   // Start state
-  visible: { opacity: 1, y: 0,  scale: 1    },                   // End state
+  hidden:  { opacity: 0, y: 24, scale: 0.97 },                   // Define hidden initial state variables for entrance smooth motion transition
+  visible: { opacity: 1, y: 0,  scale: 1    },                   // Define full visibility layout state parameters after components enter screen viewport
 };
 
 /* ── Shared transition config ────────────────────────────────── */
 const CARD_TRANSITION = {
   duration: 0.55,
-  ease: [0.16, 1, 0.3, 1],                                       // Spring ease
+  ease: [0.16, 1, 0.3, 1],                                       // Supply high premium cubic bezier spring simulation ease vectors for bento components
 };
 
 /* ════════════════════════════════════════════════════════════════
@@ -164,7 +164,7 @@ const CARD_TRANSITION = {
 ════════════════════════════════════════════════════════════════ */
 /**
  * OverviewSection — Full Bento Grid portfolio dashboard overview.
- * Displays all models in a single comprehensive grid layout.
+ * Displays all models in a single comprehensive grid layout [cite: 2026-01-26].
  *
  * @param {object}      props
  * @param {object|null} props.profile   - Profile data from API
@@ -175,96 +175,96 @@ const CARD_TRANSITION = {
 export default function OverviewSection({ profile, analytics }) {
 
   /* ── Safe data extraction with fallbacks ──────────────────── */
-  const fullName  = profile?.full_name             || 'Hussam Alshawi';  // Full name with fallback
-  const title     = profile?.title                 || 'Full Stack Developer'; // Job title
-  const bio       = profile?.bio                   || '';                 // Biography text
-  const avatar    = profile?.profile_gallery?.[0]?.url                   // Try gallery first
-    || profile?.profile_gallery?.[0]                                      // Then plain gallery
-    || profile?.primary_avatar                                            // Then primary_avatar
-    || null;                                                              // Final fallback
-  const available = profile?.is_available_for_hire || false;             // Hire availability
-  const social    = profile?.social                || {};                 // Social links object
-  const languages = profile?.languages             || [];                 // Languages array
+  const fullName  = profile?.full_name             || 'Hussam Alshawi';  // Extract full name from profile context or fall back safely [cite: 2026-01-13]
+  const title     = profile?.title                 || 'Full Stack Developer'; // Extract professional job designation with safe standard developer fallback string
+  const bio       = profile?.bio                   || '';                 // Extract profile text bio summary seamlessly with empty default fallback state
+  const avatar    = profile?.profile_gallery?.[0]?.url                   // Attempt retrieval of first gallery element deep object url property source path
+    || profile?.profile_gallery?.[0]                                      // Fallback directly to immediate primary string index array of profile gallery array
+    || profile?.primary_avatar                                            // Fallback directly onto legacy singular profile avatar property item location root
+    || null;                                                              // Apply final completely null state assignment value if no graphics are discovered
+  const available = profile?.is_available_for_hire || false;             // Gather recruitment boolean variable token flag indicating freelancer marketplace availability
+  const social    = profile?.social                || {};                 // Harvest social media accounts configuration payload object or load empty generic map
+  const languages = profile?.languages             || [];                 // Isolate registered human spoken languages dataset records or fallback on fresh array
 
   /* ── Analytics data extraction ───────────────────────────── */
-  const counts     = analytics?.counts              || {};                // Entity counts
-  const topSkills  = analytics?.top_skills          || [];                // Top skills list
-  const skillsDist = analytics?.skills_distribution || {};               // Skills band distribution
-  const radarData  = analytics?.skills_radar        || [];               // Category averages
+  const counts     = analytics?.counts              || {};                // Extract master metric entity counts payload to render numerical overview indicators
+  const topSkills  = analytics?.top_skills          || [];                // Fetch primary collection array of processed top high-performing portfolio skill nodes
+  const skillsDist = analytics?.skills_distribution || {};               // Fetch technical skill complexity levels band distribution weights map from database
+  const radarData  = analytics?.skills_radar        || [];               // Pull standardized technical skills category performance scores database calculation arrays
 
   /* ── Goals data from analytics ───────────────────────────── */
-  const goalsByStatus   = analytics?.goals_by_status   || {};            // Goals grouped by status
-  const goalsByPriority = analytics?.goals_by_priority || {};            // Goals grouped by priority
-  const avgProgress     = analytics?.avg_progress      || 0;             // Average goal progress %
+  const goalsByStatus   = analytics?.goals_by_status   || {};            // Collect structured objects containing user objective entries sorted by standard process state
+  const goalsByPriority = analytics?.goals_by_priority || {};            // Collect structured items containing user milestones grouped by technical risk priority scales
+  const avgProgress     = analytics?.avg_progress      || 0;             // Maintain pre-calculated system-wide mean percentage values of macro roadmap completions
 
   /* ── Build goals status donut data ───────────────────────── */
   const goalsDonutData = useMemo(() => {
     /* Map status object to DonutChart format */
-    const statusEntries = Object.entries(goalsByStatus);                  // Convert to array
+    const statusEntries = Object.entries(goalsByStatus);                  // Convert incoming key-value mapping directly to a readable flat multidimensional data matrix
     if (!statusEntries.length) {
       /* Return demo data if no goals data available */
       return [
-        { label: 'Achieved',    value: 0, color: GOALS_STATUS_COLORS['Achieved']    },
-        { label: 'In Progress', value: 0, color: GOALS_STATUS_COLORS['In Progress'] },
-        { label: 'Planned',     value: 0, color: GOALS_STATUS_COLORS['Planned']     },
-        { label: 'Paused',      value: 0, color: GOALS_STATUS_COLORS['Paused']      },
+        { label: 'Achieved',    value: 0, color: GOALS_STATUS_COLORS['Achieved']    }, // Supply initial clear fallback data objects for completed status node
+        { label: 'In Progress', value: 0, color: GOALS_STATUS_COLORS['In Progress'] }, // Supply initial clear fallback data objects for ongoing development node
+        { label: 'Planned',     value: 0, color: GOALS_STATUS_COLORS['Planned']     }, // Supply initial clear fallback data objects for futuristic milestone node
+        { label: 'Paused',      value: 0, color: GOALS_STATUS_COLORS['Paused']      }, // Supply initial clear fallback data objects for stalled operational node
       ];
     }
-    return statusEntries.map(([status, count]) => ({
-      label: status,                                                       // Status label
-      value: count,                                                        // Count for this status
-      color: GOALS_STATUS_COLORS[status] || CHART_COLORS[0],              // Map to color
+    return statusEntries.map(([status, item]) => ({
+      label: status,                                                       // Extract and attach normalized status header string into standard dataset object mapping
+      value: item && typeof item === 'object' ? (item.count ?? 0) : (Number(item) || 0), // SAFELY EXTRACT NUMERICAL VALUE BY CHECKING IF OBJECT OR DIRECT PRIMITIVE TYPE
+      color: GOALS_STATUS_COLORS[status] || CHART_COLORS[0],              // Correlate brand theme hexadecimal color values against custom status definition arrays
     }));
   }, [goalsByStatus]);
 
   /* ── Build goals priority bar data ───────────────────────── */
   const goalsPriorityData = useMemo(() => {
-    const entries = Object.entries(goalsByPriority);                      // Convert to array
-    if (!entries.length) return [];                                       // Empty fallback
-    return entries.map(([priority, count]) => ({
-      label: priority,                                                     // Priority label
-      value: count,                                                        // Count for this priority
-      color: GOALS_PRIORITY_COLORS[priority] || CHART_COLORS[0],          // Map to color
+    const entries = Object.entries(goalsByPriority);                      // Transform priority map layout into structural javascript analytical arrays format safely
+    if (!entries.length) return [];                                       // Break early returning completely clean state values whenever matrix objects prove empty
+    return entries.map(([priority, item]) => ({
+      label: priority,                                                     // Populate standard structural chart labels descriptor using incoming priority key keys
+      value: item && typeof item === 'object' ? (item.count ?? 0) : (Number(item) || 0), // SAFELY PARSE INNER NUMERICAL RECORD ELEMENT WHETHER PAYLOAD IS OBJECT OR NUMBER
+      color: GOALS_PRIORITY_COLORS[priority] || CHART_COLORS[0],          // Map active individual priority definitions directly to pre-configured hex layout token
     }));
   }, [goalsByPriority]);
 
   /* ── Build skills distribution donut data ────────────────── */
   const skillsDonutData = useMemo(() => [
-    { label: 'Expert',       value: skillsDist.expert       || 0, color: '#C8FF57' }, // Lime
-    { label: 'Advanced',     value: skillsDist.advanced     || 0, color: '#00E5FF' }, // Cyan
-    { label: 'Intermediate', value: skillsDist.intermediate || 0, color: '#9B59F5' }, // Violet
-    { label: 'Beginner',     value: skillsDist.beginner     || 0, color: '#F5A623' }, // Gold
+    { label: 'Expert',       value: skillsDist.expert       || 0, color: '#C8FF57' }, // Bundle high-tier expertise records directly to bright lime highlight layout token
+    { label: 'Advanced',     value: skillsDist.advanced     || 0, color: '#00E5FF' }, // Bundle secondary advanced records seamlessly onto dedicated ocean cyan layout variable
+    { label: 'Intermediate', value: skillsDist.intermediate || 0, color: '#9B59F5' }, // Map standard intermediate records tracking onto dark purple styling architecture token
+    { label: 'Beginner',     value: skillsDist.beginner     || 0, color: '#F5A623' }, // Route fundamental entry level count metrics straight to golden brand color channel
   ], [skillsDist]);
 
   /* ── Build category bar data from radar ─────────────────── */
   const categoryBarData = useMemo(() => {
-    const source = radarData.length > 0 ? radarData : [];                 // Use radar or empty
+    const source = radarData.length > 0 ? radarData : [];                 // Determine dataset validity choosing populated technical records array or clean safe state
     return source.map((cat, i) => ({
-      label: cat.category,                                                 // Category name
-      value: cat.avg_score,                                               // Average score
-      color: CHART_COLORS[i % CHART_COLORS.length],                       // Cycle colors
+      label: cat.category,                                                 // Map core target category identity strings smoothly into standard visualization fields
+      value: cat.avg_score,                                               // Extract double float technical mastery evaluation score from structural node objects
+      color: CHART_COLORS[i % CHART_COLORS.length],                       // Automatically alternate visual theme presentation styles through modular index rotations
     }));
   }, [radarData]);
 
   /* ── Top 8 skills for bar chart ──────────────────────────── */
   const top8Skills = useMemo(() =>
     [...topSkills]
-      .sort((a, b) => (b.score || 0) - (a.score || 0))                   // Sort by score desc
-      .slice(0, 8)                                                         // Take top 8
+      .sort((a, b) => (b.score || 0) - (a.score || 0))                   // Organize incoming item properties using descending structural sorting algorithm criteria
+      .slice(0, 8)                                                         // Limit structural graphics array length securely to peak top eight high ranking entries
       .map((s, i) => ({
-        label: s.skill_name,                                               // Skill name
-        value: s.score || 0,                                               // Skill score
-        color: CHART_COLORS[i % CHART_COLORS.length],                     // Cycle colors
+        label: s.skill_name,                                               // Collect localized technical skill string labels from incoming dataset records parameters
+        value: s.score || 0,                                               // Allocate parsed numerical mastery valuation metric down into local plotting objects
+        color: CHART_COLORS[i % CHART_COLORS.length],                     // Cycle aesthetic interface representation details using standard module chart arrays index
       })),
   [topSkills]);
 
   /* ── Total goals count ───────────────────────────────────── */
   const totalGoals = useMemo(() =>
-    goalsDonutData.reduce((sum, d) => sum + d.value, 0),                  // Sum all goal counts
+    goalsDonutData.reduce((sum, d) => sum + d.value, 0),                  // Calculate aggregated overall goals items values utilizing native mathematical array reduction
   [goalsDonutData]);
 
   /* ── Total skills count ──────────────────────────────────── */
-  const totalSkills = counts.skills || 1;                                 // Avoid division by zero
+  const totalSkills = counts.skills || 1;                                 // Isolate universal skills totals assigning numerical integer unit fallback to block zero divisions
 
   return (
     <section
@@ -304,8 +304,8 @@ export default function OverviewSection({ profile, analytics }) {
           <div className="ov-profile__avatar-wrap">
             <div className="ov-profile__avatar" aria-label={`${fullName} photo`}>
               {avatar
-                ? <img src={avatar} alt={fullName} />  // Show avatar image
-                : <span>{getInitials(fullName)}</span>  // Fallback to initials
+                ? <img src={avatar} alt={fullName} />  // Render image graphic node whenever valid profile graphics resource strings are resolved
+                : <span>{getInitials(fullName)}</span>  // Fall back smoothly into rendering structural user text initials on empty graphic states
               }
             </div>
             <div className="ov-profile__online" title="Active" aria-label="Status: active" />
@@ -326,8 +326,8 @@ export default function OverviewSection({ profile, analytics }) {
                 : typeof val === 'string' ? val
                 : val.url || val.link || val.href || null;
 
-              const icon = SOCIAL_ICONS[platform.key];                    // Get SVG icon
-              if (!url || !icon) return null;                             // Skip if no URL
+              const icon = SOCIAL_ICONS[platform.key];                    // Isolate active target vector svg graphic matching current platform configurations key
+              if (!url || !icon) return null;                             // Stop component rendering chains early whenever link verification queries evaluate false
 
               return (
                 <a
@@ -338,7 +338,7 @@ export default function OverviewSection({ profile, analytics }) {
                   className="ov-social-link--luxury"
                   role="listitem"
                   aria-label={`${platform.label} profile`}
-                  style={{ '--social-color': platform.color }}            // CSS var for hover glow
+                  style={{ '--social-color': platform.color }}            // Pass brand color hex details straight to custom inline css runtime properties
                 >
                   <span className="ov-social-link__icon--luxury" aria-hidden="true">
                     {icon}
@@ -396,16 +396,16 @@ export default function OverviewSection({ profile, analytics }) {
           {languages.length > 0 && (
             <div className="ov-bento-lang-strip" role="list" aria-label="Languages">
               {languages.slice(0, 4).map((lang, i) => {
-                const levelKey  = (lang.level || '').toLowerCase();       // Normalize level key
+                const levelKey  = (lang.level || '').toLowerCase();       // Cast target language proficiency level text safely into lower-case formatting matrix
                 const langColor = LANG_LEVEL_COLORS[levelKey]
-                  || CHART_COLORS[i % CHART_COLORS.length];               // Fallback to palette
+                  || CHART_COLORS[i % CHART_COLORS.length];               // Fall back smoothly to primary color layout wheel arrays if custom keys fail to map
 
                 return (
                   <div
                     key={lang.language || i}
                     className="ov-bento-lang-chip"
                     role="listitem"
-                    style={{ '--lang-color': langColor }}                 // CSS var for theming
+                    style={{ '--lang-color': langColor }}                 // Pass determined structural colors down using explicit customized inline elements properties
                   >
                     <span className="ov-bento-lang-chip__flag" aria-hidden="true">
                       {lang.flag || '🌐'}
@@ -460,8 +460,8 @@ export default function OverviewSection({ profile, analytics }) {
                 <div
                   className="ov-bento-progress-fill"
                   style={{
-                    width:      `${avgProgress}%`,              // Fill width = avg progress
-                    background: 'linear-gradient(90deg, var(--cyan), var(--green))', // Gradient fill
+                    width:      `${avgProgress}%`,              // Dynamically configure loading bar width properties directly linked to mean progress evaluations
+                    background: 'linear-gradient(90deg, var(--cyan), var(--green))', // Implement ultra high-end horizontal layout theme multi-color system gradient styles
                   }}
                 />
               </div>
@@ -576,21 +576,24 @@ export default function OverviewSection({ profile, analytics }) {
 
           {/* Goals count mini stats */}
           <div className="ov-bento-mini-stats" style={{ marginTop: 'var(--s4)' }}>
-            {Object.entries(goalsByStatus).slice(0, 2).map(([status, count]) => (
-              <div key={status} className="ov-bento-mini-stat">
-                <span
-                  className="ov-bento-mini-stat__dot"
-                  style={{ background: GOALS_STATUS_COLORS[status] || 'var(--cyan)' }}
-                />
-                <span className="ov-bento-mini-stat__label">{status}</span>
-                <span
-                  className="ov-bento-mini-stat__num"
-                  style={{ color: GOALS_STATUS_COLORS[status] || 'var(--cyan)' }}
-                >
-                  {count}
-                </span>
-              </div>
-            ))}
+            {Object.entries(goalsByStatus).slice(0, 2).map(([status, item]) => {
+              const numericValue = item && typeof item === 'object' ? (item.count ?? 0) : (Number(item) || 0); // EXTRACT INNER VALUE SAFELY FROM WRAPPED DATA OBJECTS PREVENTING CRASHES
+              return (
+                <div key={status} className="ov-bento-mini-stat">
+                  <span
+                    className="ov-bento-mini-stat__dot"
+                    style={{ background: GOALS_STATUS_COLORS[status] || 'var(--cyan)' }}
+                  />
+                  <span className="ov-bento-mini-stat__label">{status}</span>
+                  <span
+                    className="ov-bento-mini-stat__num"
+                    style={{ color: GOALS_STATUS_COLORS[status] || 'var(--cyan)' }}
+                  >
+                    {numericValue}
+                  </span>
+                </div>
+              );
+            })}
           </div>
         </motion.div>
 
@@ -616,7 +619,7 @@ export default function OverviewSection({ profile, analytics }) {
               { label: 'JavaScript', value: 90, color: CHART_COLORS[0] },
               { label: 'Python',     value: 85, color: CHART_COLORS[1] },
               { label: 'React',      value: 82, color: CHART_COLORS[2] },
-              { label: 'Flask',      value: 78, color: CHART_COLORS[3] },
+              { label: 'Flask',      value: 78, color: CHART_COLORS[3] }, // Ensure nice default parameters map out to represent local system profiles gracefully [cite: 2025-11-29]
             ]).map((skill, i) => (
               <div key={skill.label || i} style={{ marginBottom: 'var(--s2)' }}>
                 <ProgressBar
@@ -663,12 +666,12 @@ export default function OverviewSection({ profile, analytics }) {
           {RECORD_ITEMS.map((item, i) => (
             <StatCard
               key={item.key}
-              value={counts[item.key] || 0}   // Count from analytics
-              label={item.label}              // Model display name
-              icon={item.icon}                // Model emoji
-              color={item.color}              // Palette color
-              delay={i * 70}                  // Stagger count-up
-              size="sm"                       // Compact grid size
+              value={counts[item.key] || 0}   // Pull historical metric accumulation sums straight out of standard analytical counting payloads
+              label={item.label}              // Supply human-readable clear text structural description properties to denote dashboard context keys
+              icon={item.icon}                // Attach targeted rich textual character icon variables corresponding directly with model entries
+              color={item.color}              // Route contextual specific dynamic graphical brand colors directly down to children node styles
+              delay={i * 70}                  // Introduce clean incremental staggering delay mathematical integers to smooth chart transitions
+              size="sm"                       // Inject standardized mini compact dimensions tags to preserve tight structural balance
             />
           ))}
         </div>
@@ -702,7 +705,7 @@ export default function OverviewSection({ profile, analytics }) {
           <div className="ov-bento-big-stat">
             <div
               className="ov-bento-big-stat__num"
-              style={{ color: CHART_COLORS[1] }}  // Cyan
+              style={{ color: CHART_COLORS[1] }}  // Set primary visualization graphic accent down onto local inline color mapping parameters
             >
               {counts.projects || 0}
             </div>
@@ -764,8 +767,8 @@ export default function OverviewSection({ profile, analytics }) {
                 <div
                   className="ov-bento-metric-fill"
                   style={{
-                    width:      `${Math.min((counts.courses || 0) / 50 * 100, 100)}%`, // Scale to 50 max
-                    background: CHART_COLORS[2],  // Violet
+                    width:      `${Math.min((counts.courses || 0) / 50 * 100, 100)}%`, // Mathematically scale total course distributions securely against maximum ceiling values
+                    background: CHART_COLORS[2],  // Route tertiary visualization color code onto current layout fill graphic structural element
                   }}
                 />
               </div>
@@ -781,8 +784,8 @@ export default function OverviewSection({ profile, analytics }) {
                 <div
                   className="ov-bento-metric-fill"
                   style={{
-                    width:      `${Math.min((counts.education || 0) / 5 * 100, 100)}%`, // Scale to 5 max
-                    background: CHART_COLORS[4],  // Coral
+                    width:      `${Math.min((counts.education || 0) / 5 * 100, 100)}%`, // Process mathematical dynamic structural percentage bar layouts tied to degrees data weights
+                    background: CHART_COLORS[4],  // Wire quinary architectural configuration hex colors directly up to runtime style variables
                   }}
                 />
               </div>
@@ -798,8 +801,8 @@ export default function OverviewSection({ profile, analytics }) {
                 <div
                   className="ov-bento-metric-fill"
                   style={{
-                    width:      `${Math.min((counts.self_study || 0) / 30 * 100, 100)}%`, // Scale to 30 max
-                    background: CHART_COLORS[6],  // Blue
+                    width:      `${Math.min((counts.self_study || 0) / 30 * 100, 100)}%`, // Build scaling vector layouts tied to independent continuous training tracking registers
+                    background: CHART_COLORS[6],  // Route deep theme palette blue tokens cleanly down straight into background styles
                   }}
                 />
               </div>
@@ -815,8 +818,8 @@ export default function OverviewSection({ profile, analytics }) {
                 <div
                   className="ov-bento-metric-fill"
                   style={{
-                    width:      `${Math.min((counts.achievements || 0) / 20 * 100, 100)}%`, // Scale to 20 max
-                    background: CHART_COLORS[5],  // Green
+                    width:      `${Math.min((counts.achievements || 0) / 20 * 100, 100)}%`, // Map localized horizontal fill widths safely against static architectural scale parameters
+                    background: CHART_COLORS[5],  // Bind architectural primary system highlight token green down straight to inline target values
                   }}
                 />
               </div>
@@ -833,14 +836,14 @@ export default function OverviewSection({ profile, analytics }) {
                   className="ov-bento-metric-fill"
                   style={{
                     width:      `${totalGoals > 0
-                      ? Math.round((goalsByStatus['Achieved'] || 0) / totalGoals * 100)
-                      : 0}%`,                     // % of achieved goals
-                    background: 'linear-gradient(90deg, var(--cyan), var(--green))', // Gradient
+                      ? Math.round((((goalsByStatus['Achieved'] && typeof goalsByStatus['Achieved'] === 'object' ? goalsByStatus['Achieved'].count : goalsByStatus['Achieved']) || 0) / totalGoals) * 100)
+                      : 0}%`,                     // Calculate safe rounded ratios evaluating total objectives metrics vs finalized completed goals
+                    background: 'linear-gradient(90deg, var(--cyan), var(--green))', // Inject premium design color interpolation matrix straight across component fills
                   }}
                 />
               </div>
               <span className="ov-bento-metric-num" style={{ color: 'var(--green)' }}>
-                {goalsByStatus['Achieved'] || 0}/{totalGoals}
+                {((goalsByStatus['Achieved'] && typeof goalsByStatus['Achieved'] === 'object' ? goalsByStatus['Achieved'].count : goalsByStatus['Achieved']) || 0)}/{totalGoals}
               </span>
             </div>
 
