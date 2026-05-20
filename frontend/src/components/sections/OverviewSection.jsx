@@ -300,97 +300,121 @@ export default function OverviewSection({ profile, analytics }) {
               <div className="ov-drop ov-drop--b" />
             </div>
 
-            {/* ── ROW 1: Avatar + Name + Title side-by-side ── */}
-            <div style={{ display: 'flex', alignItems: 'flex-start', gap: 'var(--s4)', marginBottom: 'var(--s4)' }}>
+            {/* ── ROW 1: Avatar + Name + Title + Social side-by-side ── */}
+                <div style={{ display: 'flex', alignItems: 'flex-start', gap: 'var(--s4)', marginBottom: 'var(--s4)' }}>
 
-              {/* Avatar — larger size */}
-              <div
-                className="ov-profile__avatar"
-                style={{ width: '140px', height: '160px', flexShrink: 0, borderRadius: '16px' }}
-                aria-label={`${fullName} photo`}
-              >
-                {avatar
-                  ? <img src={avatar} alt={fullName} />
-                  : <span>{getInitials(fullName)}</span>
-                }
-              </div>
-
-              {/* Name + Title + pill — constrained to avatar height */}
-              <div style={{
-                minWidth: 0,
-                flex: 1,
-                height: '150px',          /* matches avatar height exactly */
-                display: 'flex',
-                flexDirection: 'column',
-                justifyContent: 'flex-start',
-                paddingTop: '4px',
-                overflow: 'hidden',       /* clip anything that exceeds the height */
-              }}>
-                <div
-                  className="ov-profile__name"
-                  style={{
-                    textAlign: 'left',
-                    fontSize: '1.15rem',
-                    marginBottom: 'var(--s1)',
-                    whiteSpace: 'nowrap',
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                  }}
-                >
-                  {fullName}
-                </div>
-
-                <div
-                  className="ov-profile__title"
-                  style={{
-                    textAlign: 'left',
-                    marginBottom: 'var(--s2)',
-                  }}
-                >
-                  {title}
-                </div>
-
-                {/* Availability pill */}
-                <div
-                  className={`availability-pill ${available ? 'availability-pill--open' : ''}`}
-                  role="status"
-                  aria-label={available ? 'Available for hire' : 'Currently employed'}
-                  style={{ fontSize: '0.58rem', alignSelf: 'flex-start' }}
-                >
-                  <span className="availability-pill__dot" aria-hidden="true" />
-                  {available ? 'Available for Hire' : 'Currently Employed'}
-                </div>
-              </div>
-
-            </div>
-
-            {/* ── ROW 2: Social links ── */}
-            <div className="ov-profile__social--luxury" role="list" aria-label="Social links" style={{ marginBottom: 'var(--s4)', paddingBottom: 'var(--s4)', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
-              {SOCIAL_PLATFORMS_CONFIG.map(platform => {
-                const val = social[platform.key] || social[platform.key.toLowerCase()];
-                const url = !val ? null
-                  : typeof val === 'string' ? val
-                  : val.url || val.link || val.href || null;
-                const icon = SOCIAL_ICONS[platform.key];
-                if (!url || !icon) return null;
-                return (
-                    <a
-                    key={platform.key}
-                    href={url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="ov-social-link--luxury"
-                    role="listitem"
-                    aria-label={`${platform.label} profile`}
-                    style={{ '--social-color': platform.color }}
+                  {/* Avatar — larger */}
+                  <div
+                    className="ov-profile__avatar"
+                    style={{ width: '180px', height: '210px', flexShrink: 0, borderRadius: '16px' }}
+                    aria-label={`${fullName} photo`}
                   >
-                    <span className="ov-social-link__icon--luxury" aria-hidden="true">
-                      {icon}
-                    </span>
-                  </a>
-                );
-              })}
-            </div>
+                    {avatar
+                      ? <img src={avatar} alt={fullName} />
+                      : <span>{getInitials(fullName)}</span>
+                    }
+                  </div>
+
+                  {/* Right column — name, title, pill, social */}
+                  <div style={{
+                    minWidth: 0,
+                    flex: 1,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: 'var(--s2)',
+                    paddingTop: '4px',
+                  }}>
+
+                    {/* Name */}
+                    <div
+                      className="ov-profile__name"
+                      style={{ textAlign: 'left', fontSize: '1.15rem' }}
+                    >
+                      {fullName}
+                    </div>
+
+                    {/* Title — wraps naturally */}
+                    <div
+                      className="ov-profile__title"
+                      style={{ textAlign: 'left' }}
+                    >
+                      {title}
+                    </div>
+
+                    {/* Availability pill */}
+                    <div
+                      className={`availability-pill ${available ? 'availability-pill--open' : ''}`}
+                      role="status"
+                      aria-label={available ? 'Available for hire' : 'Currently employed'}
+                      style={{ fontSize: '0.58rem', alignSelf: 'flex-start' }}
+                    >
+                      <span className="availability-pill__dot" aria-hidden="true" />
+                      {available ? 'Available for Hire' : 'Currently Employed'}
+                    </div>
+
+                    {/* Social links — below pill, inside avatar column bounds */}
+                    <div
+                      className="ov-profile__social--luxury"
+                      role="list"
+                      aria-label="Social links"
+                      style={{ flexWrap: 'wrap', gap: '8px', marginTop: 'var(--s1)' , justifyContent: 'flex-start' }}
+                    >
+                      {SOCIAL_PLATFORMS_CONFIG.map(platform => {
+                        const val = social[platform.key] || social[platform.key.toLowerCase()];
+                        const url = !val ? null
+                          : typeof val === 'string' ? val
+                          : val.url || val.link || val.href || null;
+                        const icon = SOCIAL_ICONS[platform.key];
+                        if (!url || !icon) return null;
+                        return (
+                            <a
+                            key={platform.key}
+                            href={url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="ov-social-link--luxury"
+                            role="listitem"
+                            aria-label={`${platform.label} profile`}
+                            style={{ '--social-color': platform.color }}
+                          >
+                            <span className="ov-social-link__icon--luxury" aria-hidden="true">
+                              {icon}
+                            </span>
+                          </a>
+                        );
+                      })}
+                    </div>
+
+                  </div>
+                </div>
+
+{/*             ── ROW 2: Social links ── */}
+{/*             <div className="ov-profile__social--luxury" role="list" aria-label="Social links" style={{ marginBottom: 'var(--s4)', paddingBottom: 'var(--s4)', borderBottom: '1px solid rgba(255,255,255,0.08)' }}> */}
+{/*               {SOCIAL_PLATFORMS_CONFIG.map(platform => { */}
+{/*                 const val = social[platform.key] || social[platform.key.toLowerCase()]; */}
+{/*                 const url = !val ? null */}
+{/*                   : typeof val === 'string' ? val */}
+{/*                   : val.url || val.link || val.href || null; */}
+{/*                 const icon = SOCIAL_ICONS[platform.key]; */}
+{/*                 if (!url || !icon) return null; */}
+{/*                 return ( */}
+{/*                     <a */}
+{/*                     key={platform.key} */}
+{/*                     href={url} */}
+{/*                     target="_blank" */}
+{/*                     rel="noopener noreferrer" */}
+{/*                     className="ov-social-link--luxury" */}
+{/*                     role="listitem" */}
+{/*                     aria-label={`${platform.label} profile`} */}
+{/*                     style={{ '--social-color': platform.color }} */}
+{/*                   > */}
+{/*                     <span className="ov-social-link__icon--luxury" aria-hidden="true"> */}
+{/*                       {icon} */}
+{/*                     </span> */}
+{/*                   </a> */}
+{/*                 ); */}
+{/*               })} */}
+{/*             </div> */}
 
             {/* ── ROW 3: Bio ── */}
             {bio && (
