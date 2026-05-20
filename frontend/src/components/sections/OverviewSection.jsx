@@ -38,6 +38,7 @@ import { useRef, useEffect, useState, useMemo } from 'react'; // Import standard
 import { motion }                                from 'framer-motion';  // Import motion from framer-motion for smooth bento grid entrance animations
 import { formatExperience, getInitials }         from '../../utils/formatters';  // Import pure utility functions for data formatting and string initials
 import { CHART_COLORS }                          from '../../utils/constants';   // Import global color design tokens for standard chart palette styling
+import { useLanguages } from '../../hooks/useLanguages'; // Lazy-load languages on section mount
 
 /* ── Reusable chart components ────────────────────────────────── */
 import DonutChart  from '../charts/DonutChart';  // Import DonutChart component to display goals and skills distribution metrics
@@ -52,6 +53,9 @@ import ParticleBackground from '../ui/ParticleBackground'; // Import stylized pa
 /* ════════════════════════════════════════════════════════════════
    CONSTANTS
 ════════════════════════════════════════════════════════════════ */
+/* ── Languages — fetched separately via dedicated hook ── */
+const { languages } = useLanguages(); // Fetch from /portfolio/languages independently
+
 
 /* ── SVG Social Icons map ─────────────────────────────────────── */
 const SOCIAL_ICONS = {
@@ -184,7 +188,6 @@ export default function OverviewSection({ profile, analytics }) {
     || null;                                                              // Apply final completely null state assignment value if no graphics are discovered
   const available = profile?.is_available_for_hire || false;             // Gather recruitment boolean variable token flag indicating freelancer marketplace availability
   const social    = profile?.social                || {};                 // Harvest social media accounts configuration payload object or load empty generic map
-  const languages = profile?.languages             || [];                 // Isolate registered human spoken languages dataset records or fallback on fresh array
 
   /* ── Analytics data extraction ───────────────────────────── */
   const counts     = analytics?.counts              || {};                // Extract master metric entity counts payload to render numerical overview indicators
