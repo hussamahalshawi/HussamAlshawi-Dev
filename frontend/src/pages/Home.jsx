@@ -1,48 +1,22 @@
 /**
  * Home.jsx — Main Portfolio Dashboard Page
  * ─────────────────────────────────────────────────────────
- * This is the Devoryn-style dashboard home.
- * It wraps all portfolio sections inside DashboardLayout
- * (which provides the fixed glass sidebar + sticky topbar).
- *
- * Data Strategy:
- *   usePortfolioData() fires all API requests in parallel via
- *   Promise.allSettled — so a single failing endpoint never
- *   blocks the entire page. Each section receives its slice
- *   of data as a prop and handles its own loading/error state.
- *
- * Section render order (matches sidebar nav):
- *   #overview   → OverviewSection   (profile card + KPI bento)
- *   #analytics  → AnalyticsSection  (charts + distributions)
- *   #skills     → SkillsSection     (bars + radar + cloud)
- *   #projects   → ProjectsSection   (filterable grid)
- *   #experience → ExperienceSection (career timeline)
- *   #goals      → GoalsSection      (roadmap cards)
- *   #contact    → ContactForm       (message form)
+ * Section visibility is controlled by sidebar nav clicks only.
+ * No scroll between sections — each section shows/hides via CSS.
+ * Data loads once on mount and stays alive (keep-alive pattern).
  * ─────────────────────────────────────────────────────────
  */
 
-import { useEffect, useState }          from 'react';                    // React hooks
+import { useState }                             from 'react';
+import { usePortfolioData }                     from '../hooks/usePortfolioData';
+import DashboardLayout                          from '../components/layout/DashboardLayout';
+import OverviewSection                          from '../components/sections/OverviewSection';
+import AnalyticsSection                         from '../components/sections/AnalyticsSection';
+import SkillsSection                            from '../components/sections/SkillsSection';
+import PageLoader                               from '../components/ui/PageLoader';
+import '../styles/layout/Sections.css';
 
-// ── Central data hook ─────────────────────────────────────────────
-import { usePortfolioData }             from '../hooks/usePortfolioData'; // Parallel API fetcher
-
-// ── Layout shell ──────────────────────────────────────────────────
-import DashboardLayout                  from '../components/layout/DashboardLayout'; // Sidebar + topbar
-
-// ── Portfolio sections ─────────────────────────────────────────────
-import OverviewSection                  from '../components/sections/OverviewSection';   // Section 1
-import AnalyticsSection                 from '../components/sections/AnalyticsSection';  // Section 2
-import SkillsSection                    from '../components/sections/SkillsSection';     // Section 3
-
-// ── UI helpers ────────────────────────────────────────────────────
-import PageLoader                       from '../components/ui/PageLoader';              // Full-screen loader
-
-import AnimatedSection from '../components/ui/AnimatedSection';
-// ── Shared section layout styles ──────────────────────────────────
-import '../styles/layout/Sections.css';                                  // Section padding + container
-
-/** Section IDs — must match NAV_ITEMS order */
+/* ── Section IDs — must match NAV_ITEMS order ───────────────── */
 const SECTION_IDS = [
   'overview',
   'experience',
@@ -58,163 +32,195 @@ const SECTION_IDS = [
   'contact',
 ];
 
-/* ── Offline banner component — shown when all APIs fail ─────────── */
-/**
- * OfflineBanner — displays a warning strip when backend is offline.
- * @param {{ message: string }} props
- * @returns {JSX.Element}
- */
+/* ── Default active section on first load ───────────────────── */
+const DEFAULT_SECTION = 'overview';
+
+/* ── Offline banner ─────────────────────────────────────────── */
 function OfflineBanner({ message }) {
   return (
     <div
-      className="offline-banner"               /* Styled in index.css                  */
-      role="alert"                             /* ARIA: announces as alert             */
-      aria-live="assertive"                    /* Screen reader announces immediately  */
+      className="offline-banner"
+      role="alert"
+      aria-live="assertive"
     >
-      {/* Warning icon */}
       <span aria-hidden="true">⚠</span>
-      {/* Error message from API */}
       <span>{message}</span>
     </div>
   );
 }
 
 /* ════════════════════════════════════════════════════════════════
-   MAIN COMPONENT: Home
-   ──────────────────────────────────────────────────────────────
-   Updated to pass real-time progress to the PageLoader.
+   MAIN COMPONENT
 ════════════════════════════════════════════════════════════════ */
 export default function Home() {
 
-  /* ── 1. Extract 'progress' from the hook ────────────────────── */
-  // We add 'progress' to the destructuring to get the number of settled API calls
+  /* ── Portfolio data — loads once, stays alive ───────────── */
   const { data, loading, error, progress } = usePortfolioData();
 
-  /* ── Track which section is currently in the viewport ────────── */
-  const [activeSection, setActiveSection] = useState('overview');
+  /* ── Active section — driven by sidebar clicks only ────── */
+  const [activeSection, setActiveSection] = useState(DEFAULT_SECTION);
 
-  /* ── IntersectionObserver — sync active nav with scroll ──────── */
-  useEffect(() => {
-    if (loading) return;
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach(entry => {
-          if (entry.isIntersecting) {
-            setActiveSection(entry.target.id);
-          }
-        });
-      },
-      { rootMargin: '-40% 0px -50% 0px' }
-    );
-
-    SECTION_IDS.forEach(id => {
-      const el = document.getElementById(id);
-      if (el) observer.observe(el);
-    });
-
-    return () => observer.disconnect();
-  }, [loading]);
-
-  /* ── 2. Pass 'progress' to the PageLoader ───────────────────── */
+  /* ── Show loader while phase 1 data is loading ──────────── */
   if (loading) {
-    // We pass the numeric progress value so the loader dots and messages sync
     return <PageLoader visible progress={progress} />;
   }
 
-  /* ── Render dashboard ───────────────────────────────────────── */
   return (
-    <DashboardLayout activeSection={activeSection} profile={data.profile}>
+    <DashboardLayout
+      activeSection={activeSection}
+      onSectionChange={setActiveSection}        /* Pass setter to layout for nav clicks */
+      profile={data.profile}
+    >
 
-  {error && <OfflineBanner message={error} />}
+      {error && <OfflineBanner message={error} />}
 
-  {/* SECTION 1 — Overview */}
-  <AnimatedSection id="overview" className="section">
-    <OverviewSection profile={data.profile} analytics={data.analytics} />
-  </AnimatedSection>
+      {/* ── Each section is always mounted but only visible when active ── */}
+      {/* CSS handles show/hide — no remount, no data refetch             */}
 
-  {/* SECTION 2 — Experience & Achievements */}
-  <AnimatedSection id="experience" className="section section--alt">
-    {/* <ExperienceSection /> */}
-    <div style={{ padding: '4rem 2rem', textAlign: 'center', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
-      Experience Section — Coming Soon
-    </div>
-  </AnimatedSection>
+      {/* SECTION 1 — Overview */}
+      <div
+        id="overview"
+        role="region"
+        aria-label="Overview"
+        style={{ display: activeSection === 'overview' ? 'block' : 'none' }}
+      >
+        <OverviewSection
+          profile={data.profile}
+          analytics={data.analytics}
+        />
+      </div>
 
-  {/* SECTION 3 — Projects */}
-  <AnimatedSection id="projects" className="section">
-    {/* <ProjectsSection /> */}
-    <div style={{ padding: '4rem 2rem', textAlign: 'center', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
-      Projects Section — Coming Soon
-    </div>
-  </AnimatedSection>
+      {/* SECTION 2 — Experience */}
+      <div
+        id="experience"
+        role="region"
+        aria-label="Experience"
+        style={{ display: activeSection === 'experience' ? 'block' : 'none' }}
+      >
+        <div className="section-placeholder">
+          Experience Section — Coming Soon
+        </div>
+      </div>
 
-  {/* SECTION 4 — Skills */}
-  <AnimatedSection id="skills" className="section section--alt">
-    <SkillsSection skills={data.skills} summary={data.skillsSummary} />
-  </AnimatedSection>
+      {/* SECTION 3 — Projects */}
+      <div
+        id="projects"
+        role="region"
+        aria-label="Projects"
+        style={{ display: activeSection === 'projects' ? 'block' : 'none' }}
+      >
+        <div className="section-placeholder">
+          Projects Section — Coming Soon
+        </div>
+      </div>
 
-  {/* SECTION 5 — Education + Courses */}
-  <AnimatedSection id="education" className="section">
-    {/* <EducationSection /> */}
-    <div style={{ padding: '4rem 2rem', textAlign: 'center', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
-      Education Section — Coming Soon
-    </div>
-  </AnimatedSection>
+      {/* SECTION 4 — Skills */}
+      <div
+        id="skills"
+        role="region"
+        aria-label="Skills"
+        style={{ display: activeSection === 'skills' ? 'block' : 'none' }}
+      >
+        <SkillsSection
+          skills={data.skills}
+          summary={data.skillsSummary}
+        />
+      </div>
 
-  {/* SECTION 6 — Courses */}
-  <AnimatedSection id="courses" className="section section--alt">
-    {/* <CoursesSection /> */}
-    <div style={{ padding: '4rem 2rem', textAlign: 'center', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
-      Courses Section — Coming Soon
-    </div>
-  </AnimatedSection>
+      {/* SECTION 5 — Education */}
+      <div
+        id="education"
+        role="region"
+        aria-label="Education"
+        style={{ display: activeSection === 'education' ? 'block' : 'none' }}
+      >
+        <div className="section-placeholder">
+          Education Section — Coming Soon
+        </div>
+      </div>
 
-  {/* SECTION 7 — Self Study */}
-  <AnimatedSection id="selfstudy" className="section">
-    {/* <SelfStudySection /> */}
-    <div style={{ padding: '4rem 2rem', textAlign: 'center', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
-      Self Study Section — Coming Soon
-    </div>
-  </AnimatedSection>
+      {/* SECTION 6 — Courses */}
+      <div
+        id="courses"
+        role="region"
+        aria-label="Courses"
+        style={{ display: activeSection === 'courses' ? 'block' : 'none' }}
+      >
+        <div className="section-placeholder">
+          Courses Section — Coming Soon
+        </div>
+      </div>
 
-  {/* SECTION 8 — Analytics */}
-  <AnimatedSection id="analytics" className="section section--alt">
-    <AnalyticsSection analytics={data.analytics} />
-  </AnimatedSection>
+      {/* SECTION 7 — Self Study */}
+      <div
+        id="selfstudy"
+        role="region"
+        aria-label="Self Study"
+        style={{ display: activeSection === 'selfstudy' ? 'block' : 'none' }}
+      >
+        <div className="section-placeholder">
+          Self Study Section — Coming Soon
+        </div>
+      </div>
 
-  {/* SECTION 9 — Goals */}
-  <AnimatedSection id="goals" className="section">
-    {/* <GoalsSection /> */}
-    <div style={{ padding: '4rem 2rem', textAlign: 'center', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
-      Goals Section — Coming Soon
-    </div>
-  </AnimatedSection>
+      {/* SECTION 8 — Analytics */}
+      <div
+        id="analytics"
+        role="region"
+        aria-label="Analytics"
+        style={{ display: activeSection === 'analytics' ? 'block' : 'none' }}
+      >
+        <AnalyticsSection analytics={data.analytics} />
+      </div>
 
-  {/* SECTION 10 — Feedback / Testimonials */}
-  <AnimatedSection id="feedback" className="section section--alt">
-    {/* <FeedbackSection /> */}
-    <div style={{ padding: '4rem 2rem', textAlign: 'center', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
-      Feedback Section — Coming Soon
-    </div>
-  </AnimatedSection>
+      {/* SECTION 9 — Goals */}
+      <div
+        id="goals"
+        role="region"
+        aria-label="Goals"
+        style={{ display: activeSection === 'goals' ? 'block' : 'none' }}
+      >
+        <div className="section-placeholder">
+          Goals Section — Coming Soon
+        </div>
+      </div>
 
-  {/* SECTION 11 — About */}
-  <AnimatedSection id="about" className="section">
-    {/* <AboutSection /> */}
-    <div style={{ padding: '4rem 2rem', textAlign: 'center', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
-      About Section — Coming Soon
-    </div>
-  </AnimatedSection>
+      {/* SECTION 10 — Feedback */}
+      <div
+        id="feedback"
+        role="region"
+        aria-label="Feedback"
+        style={{ display: activeSection === 'feedback' ? 'block' : 'none' }}
+      >
+        <div className="section-placeholder">
+          Feedback Section — Coming Soon
+        </div>
+      </div>
 
-  {/* SECTION 12 — Contact */}
-  <AnimatedSection id="contact" className="section section--alt">
-    {/* <ContactSection /> */}
-    <div style={{ padding: '4rem 2rem', textAlign: 'center', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
-      Contact Section — Coming Soon
-    </div>
-  </AnimatedSection>
+      {/* SECTION 11 — About */}
+      <div
+        id="about"
+        role="region"
+        aria-label="About"
+        style={{ display: activeSection === 'about' ? 'block' : 'none' }}
+      >
+        <div className="section-placeholder">
+          About Section — Coming Soon
+        </div>
+      </div>
 
-</DashboardLayout>
+      {/* SECTION 12 — Contact */}
+      <div
+        id="contact"
+        role="region"
+        aria-label="Contact"
+        style={{ display: activeSection === 'contact' ? 'block' : 'none' }}
+      >
+        <div className="section-placeholder">
+          Contact Section — Coming Soon
+        </div>
+      </div>
+
+    </DashboardLayout>
   );
 }
