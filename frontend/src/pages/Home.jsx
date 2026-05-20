@@ -86,6 +86,7 @@ export default function Home() {
         <OverviewSection
           profile={data.profile}
           analytics={data.analytics}
+          languages={data.languages}
         />
       </div>
 

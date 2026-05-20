@@ -56,15 +56,14 @@ import ParticleBackground from '../ui/ParticleBackground'; // Import stylized pa
 const [languages, setLanguages] = useState([]);  // Languages array from API
 
 useEffect(() => {
-  let cancelled = false;                          // Prevent stale state on unmount
-  import('../../services/languagesService')       // Dynamic import to avoid circular deps
-    .then(mod => mod.default.getLanguages())      // Call the API
+  let cancelled = false;                         // Prevent stale state on unmount
+  languagesService.getLanguages()                // Call API directly
     .then(data => {
       if (!cancelled) setLanguages(data?.languages || []); // Update state safely
     })
-    .catch(() => {});                             // Silently fail — languages are optional
-  return () => { cancelled = true; };            // Cleanup on unmount
-}, []);                                           // Run once on mount
+    .catch(() => {});                            // Silently fail — languages optional
+  return () => { cancelled = true; };           // Cleanup on unmount
+}, []);                                          // Run once on mount                                         // Run once on mount
 /* ── SVG Social Icons map ─────────────────────────────────────── */
 const SOCIAL_ICONS = {
   github: (
@@ -184,7 +183,7 @@ const CARD_TRANSITION = {
  *
  * @returns {JSX.Element}
  */
-export default function OverviewSection({ profile, analytics }) {
+export default function OverviewSection({ profile, analytics, languages = [] }) {
 
   /* ── Safe data extraction with fallbacks ──────────────────── */
   const fullName  = profile?.full_name             || 'Hussam Alshawi';  // Extract full name from profile context or fall back safely [cite: 2026-01-13]

@@ -19,6 +19,7 @@ import profileService                        from '../services/profileService';
 import analyticsService                      from '../services/analyticsService';
 import skillsService                         from '../services/skillsService';
 import projectsService                       from '../services/projectsService';
+import languagesService                      from '../services/languagesService'; // Languages API
 import {
   CACHE_KEYS,
   saveToCache,
