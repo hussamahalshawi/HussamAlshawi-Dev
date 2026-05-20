@@ -19,11 +19,10 @@ import '../styles/layout/Sections.css';
 /* ── Section IDs — must match NAV_ITEMS order ───────────────── */
 const SECTION_IDS = [
   'overview',
-  'experience',
+  'experience',  // Experience & Achievements معاً
   'projects',
   'skills',
-  'education',
-  'courses',
+  'education',   // Education & Courses معاً
   'selfstudy',
   'analytics',
   'goals',
@@ -90,17 +89,17 @@ export default function Home() {
         />
       </div>
 
-      {/* SECTION 2 — Experience */}
-      <div
-        id="experience"
-        role="region"
-        aria-label="Experience"
-        style={{ display: activeSection === 'experience' ? 'block' : 'none' }}
-      >
-        <div className="section-placeholder">
-          Experience Section — Coming Soon
+      {/* SECTION 2 — Experience & Achievements */}
+        <div
+          id="experience"
+          role="region"
+          aria-label="Experience and Achievements"
+          style={{ display: activeSection === 'experience' ? 'block' : 'none' }}
+        >
+          <div className="section-placeholder">
+            Experience &amp; Achievements Section — Coming Soon
+          </div>
         </div>
-      </div>
 
       {/* SECTION 3 — Projects */}
       <div
@@ -127,29 +126,19 @@ export default function Home() {
         />
       </div>
 
-      {/* SECTION 5 — Education */}
-      <div
-        id="education"
-        role="region"
-        aria-label="Education"
-        style={{ display: activeSection === 'education' ? 'block' : 'none' }}
-      >
-        <div className="section-placeholder">
-          Education Section — Coming Soon
+      {/* SECTION 5 — Education & Courses */}
+        <div
+          id="education"
+          role="region"
+          aria-label="Education and Courses"
+          style={{ display: activeSection === 'education' ? 'block' : 'none' }}
+        >
+          <div className="section-placeholder">
+            Education &amp; Courses Section — Coming Soon
+          </div>
         </div>
-      </div>
 
-      {/* SECTION 6 — Courses */}
-      <div
-        id="courses"
-        role="region"
-        aria-label="Courses"
-        style={{ display: activeSection === 'courses' ? 'block' : 'none' }}
-      >
-        <div className="section-placeholder">
-          Courses Section — Coming Soon
-        </div>
-      </div>
+
 
       {/* SECTION 7 — Self Study */}
       <div
