@@ -301,35 +301,67 @@ export default function OverviewSection({ profile, analytics }) {
             </div>
 
             {/* ── ROW 1: Avatar + Name + Title side-by-side ── */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--s4)', marginBottom: 'var(--s4)' }}>
+            <div style={{ display: 'flex', alignItems: 'flex-start', gap: 'var(--s4)', marginBottom: 'var(--s4)' }}>
 
-              {/* Avatar circle */}
-              <div className="ov-profile__avatar" style={{ width: '80px', height: '80px', flexShrink: 0 }} aria-label={`${fullName} photo`}>
+              {/* Avatar — larger size */}
+              <div
+                className="ov-profile__avatar"
+                style={{ width: '140px', height: '160px', flexShrink: 0, borderRadius: '16px' }}
+                aria-label={`${fullName} photo`}
+              >
                 {avatar
                   ? <img src={avatar} alt={fullName} />
                   : <span>{getInitials(fullName)}</span>
                 }
               </div>
 
-              {/* Name + Title + Available pill stacked */}
-              <div style={{ minWidth: 0, flex: 1 }}>
-                <div className="ov-profile__name" style={{ textAlign: 'left', fontSize: '1.25rem', marginBottom: 'var(--s1)' }}>
+              {/* Name + Title + pill — constrained to avatar height */}
+              <div style={{
+                minWidth: 0,
+                flex: 1,
+                height: '150px',          /* matches avatar height exactly */
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'flex-start',
+                paddingTop: '4px',
+                overflow: 'hidden',       /* clip anything that exceeds the height */
+              }}>
+                <div
+                  className="ov-profile__name"
+                  style={{
+                    textAlign: 'left',
+                    fontSize: '1.15rem',
+                    marginBottom: 'var(--s1)',
+                    whiteSpace: 'nowrap',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                  }}
+                >
                   {fullName}
                 </div>
-                <div className="ov-profile__title" style={{ textAlign: 'left', marginBottom: 'var(--s2)' }}>
+
+                <div
+                  className="ov-profile__title"
+                  style={{
+                    textAlign: 'left',
+                    marginBottom: 'var(--s2)',
+                  }}
+                >
                   {title}
                 </div>
+
                 {/* Availability pill */}
                 <div
                   className={`availability-pill ${available ? 'availability-pill--open' : ''}`}
                   role="status"
                   aria-label={available ? 'Available for hire' : 'Currently employed'}
-                  style={{ fontSize: '0.58rem' }}
+                  style={{ fontSize: '0.58rem', alignSelf: 'flex-start' }}
                 >
                   <span className="availability-pill__dot" aria-hidden="true" />
                   {available ? 'Available for Hire' : 'Currently Employed'}
                 </div>
               </div>
+
             </div>
 
             {/* ── ROW 2: Social links ── */}
