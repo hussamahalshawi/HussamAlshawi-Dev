@@ -52,7 +52,7 @@ const NAV_ITEMS = [
  * @param {string}          props.activeSection  - Currently visible section ID
  * @param {object|null}     props.profile        - Profile data from API
  */
-export default function DashboardLayout({ children, activeSection = '', profile }) {
+export default function DashboardLayout({ children, activeSection = '', onSectionChange, profile }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);  // Mobile sidebar open state
 
   /* ── Theme context ────────────────────────────────────────────── */
@@ -135,25 +135,27 @@ useEffect(() => {
           aria-label="Portfolio sections"
         >
           {NAV_ITEMS.map(item => {
-            const isActive = activeSection === item.id;   // Is this the visible section?
-            return (
-              <a
-                key={item.id}
-                href={item.href}
-                className={`nav-item ${isActive ? 'nav-item--active' : ''}`}
-                onClick={closeOnMobile}
-                aria-current={isActive ? 'page' : undefined}
-              >
-                <span className="nav-item__icon" aria-hidden="true">
-                      <item.Icon
-                        size={18}
-                        strokeWidth={1.5}
-                      />
-                    </span>
-                <span className="nav-item__label">{item.label}</span>
-              </a>
-            );
-          })}
+              const isActive = activeSection === item.id;   // Check if this item is currently active
+
+              return (
+
+                  key={item.id}
+                  href={`#${item.id}`}                      // Keep href for accessibility
+                  className={`nav-item ${isActive ? 'nav-item--active' : ''}`}
+                  aria-current={isActive ? 'page' : undefined}
+                  onClick={(e) => {
+                    e.preventDefault();                     // Prevent default scroll behavior
+                    onSectionChange(item.id);               // Update active section via parent state
+                    closeOnMobile();                        // Close sidebar on mobile after click
+                  }}
+                >
+                  <span className="nav-item__icon" aria-hidden="true">
+                    <item.Icon size={18} strokeWidth={1.5} />
+                  </span>
+                  <span className="nav-item__label">{item.label}</span>
+                </a>
+              );
+            })}
         </nav>
 
         {/* ── User card at bottom of sidebar ── */}
