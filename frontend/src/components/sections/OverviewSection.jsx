@@ -53,17 +53,17 @@ import ParticleBackground from '../ui/ParticleBackground'; // Import stylized pa
    CONSTANTS
 ════════════════════════════════════════════════════════════════ */
 /* ── Languages state — fetched directly on mount ── */
-const [languages, setLanguages] = useState([]);  // Languages array from API
+// const [languages, setLanguages] = useState([]);  // Languages array from API
 
-useEffect(() => {
-  let cancelled = false;                         // Prevent stale state on unmount
-  languagesService.getLanguages()                // Call API directly
-    .then(data => {
-      if (!cancelled) setLanguages(data?.languages || []); // Update state safely
-    })
-    .catch(() => {});                            // Silently fail — languages optional
-  return () => { cancelled = true; };           // Cleanup on unmount
-}, []);                                          // Run once on mount                                         // Run once on mount
+// useEffect(() => {
+//   let cancelled = false;                         // Prevent stale state on unmount
+//   languagesService.getLanguages()                // Call API directly
+//     .then(data => {
+//       if (!cancelled) setLanguages(data?.languages || []); // Update state safely
+//     })
+//     .catch(() => {});                            // Silently fail — languages optional
+//   return () => { cancelled = true; };           // Cleanup on unmount
+// }, []);                                          // Run once on mount                                         // Run once on mount
 /* ── SVG Social Icons map ─────────────────────────────────────── */
 const SOCIAL_ICONS = {
   github: (
@@ -433,7 +433,7 @@ export default function OverviewSection({ profile, analytics, languages = [] }) 
               </p>
             )}
 
-            {/* ── ROW 4: Languages ── */}
+{/*             ── ROW 4: Languages ── */}
             {languages.length > 0 && (
               <div style={{ marginBottom: 'var(--s4)', paddingBottom: 'var(--s4)', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
                 <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.56rem', letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 'var(--s2)' }}>
