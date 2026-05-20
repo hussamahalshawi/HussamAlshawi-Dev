@@ -32,16 +32,15 @@ import {
 
 /** Main navigation items — ordered by portfolio story flow */
 const NAV_ITEMS = [
-  { label: 'Overview',   href: '#overview',   id: 'overview',   Icon: LayoutDashboard    },
-  { label: 'Experience', href: '#experience', id: 'experience', Icon: BriefcaseBusiness  },
-  { label: 'Projects',   href: '#projects',   id: 'projects',   Icon: Rocket             },
-  { label: 'Skills',     href: '#skills',     id: 'skills',     Icon: Zap                },
-  { label: 'Education',  href: '#education',  id: 'education',  Icon: GraduationCap      },
-  { label: 'Courses',    href: '#courses',    id: 'courses',    Icon: BookOpen           },
-  { label: 'Self Study', href: '#selfstudy',  id: 'selfstudy',  Icon: FlaskConical       },
-  { label: 'Analytics',  href: '#analytics',  id: 'analytics',  Icon: BarChart3          },
-  { label: 'Goals',      href: '#goals',      id: 'goals',      Icon: Target             },
-  { label: 'Feedback',   href: '#feedback',   id: 'feedback',   Icon: MessageSquareQuote },
+  { label: 'Overview',                  href: '#overview',   id: 'overview',   Icon: LayoutDashboard    },
+  { label: 'Experience & Achievements', href: '#experience', id: 'experience', Icon: BriefcaseBusiness  },
+  { label: 'Projects',                  href: '#projects',   id: 'projects',   Icon: Rocket             },
+  { label: 'Skills',                    href: '#skills',     id: 'skills',     Icon: Zap                },
+  { label: 'Education & Courses',       href: '#education',  id: 'education',  Icon: GraduationCap      },
+  { label: 'Self Study',                href: '#selfstudy',  id: 'selfstudy',  Icon: FlaskConical       },
+  { label: 'Analytics',                 href: '#analytics',  id: 'analytics',  Icon: BarChart3          },
+  { label: 'Goals',                     href: '#goals',      id: 'goals',      Icon: Target             },
+  { label: 'Feedback',                  href: '#feedback',   id: 'feedback',   Icon: MessageSquareQuote },
 ];
 
 /** Bottom pinned items — always visible at sidebar bottom */
