@@ -138,7 +138,7 @@ useEffect(() => {
               const isActive = activeSection === item.id;   // Check if this item is currently active
 
               return (
-
+                <a
                   key={item.id}
                   href={`#${item.id}`}                      // Keep href for accessibility
                   className={`nav-item ${isActive ? 'nav-item--active' : ''}`}

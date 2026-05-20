@@ -130,3 +130,15 @@
     padding: 0 var(--s3);                        /* 12px on very small screens */
   }
 }
+/* ── Section placeholder — shown for unbuilt sections ─────── */
+.section-placeholder {
+  display:         flex;
+  align-items:     center;
+  justify-content: center;
+  min-height:      60vh;
+  font-family:     var(--font-mono);
+  font-size:       0.78rem;
+  letter-spacing:  0.12em;
+  text-transform:  uppercase;
+  color:           var(--text-muted);
+}
