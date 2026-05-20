@@ -30,20 +30,24 @@ import {
 } from 'lucide-react';
 
 
-/** Navigation items — ordered by portfolio story flow */
+/** Main navigation items — ordered by portfolio story flow */
 const NAV_ITEMS = [
-  { label: 'Overview',   href: '#overview',   id: 'overview',   Icon: LayoutDashboard      },
-  { label: 'Experience', href: '#experience', id: 'experience', Icon: BriefcaseBusiness    },
-  { label: 'Projects',   href: '#projects',   id: 'projects',   Icon: Rocket               },
-  { label: 'Skills',     href: '#skills',     id: 'skills',     Icon: Zap                  },
-  { label: 'Education',  href: '#education',  id: 'education',  Icon: GraduationCap        },
-  { label: 'Courses',    href: '#courses',    id: 'courses',    Icon: BookOpen             },
-  { label: 'Self Study', href: '#selfstudy',  id: 'selfstudy',  Icon: FlaskConical         },
-  { label: 'Analytics',  href: '#analytics',  id: 'analytics',  Icon: BarChart3            },
-  { label: 'Goals',      href: '#goals',      id: 'goals',      Icon: Target               },
-  { label: 'Feedback',   href: '#feedback',   id: 'feedback',   Icon: MessageSquareQuote   },
-  { label: 'About',      href: '#about',      id: 'about',      Icon: UserRound            },
-  { label: 'Contact',    href: '#contact',    id: 'contact',    Icon: Send                 },
+  { label: 'Overview',   href: '#overview',   id: 'overview',   Icon: LayoutDashboard    },
+  { label: 'Experience', href: '#experience', id: 'experience', Icon: BriefcaseBusiness  },
+  { label: 'Projects',   href: '#projects',   id: 'projects',   Icon: Rocket             },
+  { label: 'Skills',     href: '#skills',     id: 'skills',     Icon: Zap                },
+  { label: 'Education',  href: '#education',  id: 'education',  Icon: GraduationCap      },
+  { label: 'Courses',    href: '#courses',    id: 'courses',    Icon: BookOpen           },
+  { label: 'Self Study', href: '#selfstudy',  id: 'selfstudy',  Icon: FlaskConical       },
+  { label: 'Analytics',  href: '#analytics',  id: 'analytics',  Icon: BarChart3          },
+  { label: 'Goals',      href: '#goals',      id: 'goals',      Icon: Target             },
+  { label: 'Feedback',   href: '#feedback',   id: 'feedback',   Icon: MessageSquareQuote },
+];
+
+/** Bottom pinned items — always visible at sidebar bottom */
+const BOTTOM_NAV_ITEMS = [
+  { label: 'About',   href: '#about',   id: 'about',   Icon: UserRound },
+  { label: 'Contact', href: '#contact', id: 'contact', Icon: Send      },
 ];
 
 /**
@@ -95,58 +99,53 @@ useEffect(() => {
           SIDEBAR — Fixed frosted glass panel
       ══════════════════════════════════════════════ */}
       <aside
-        className={`sidebar ${sidebarOpen ? 'sidebar--open' : ''}`}
-        aria-label="Sidebar navigation"
-      >
-        {/* Decorative water-droplet texture (visual only) */}
-        <div className="sidebar__texture" aria-hidden="true" />
-
-        {/* ── Logo ── */}
-            <a
-              href="#overview"
-              className="sidebar__logo"
-              onClick={(e) => {
-                  e.preventDefault();                              // Prevent default anchor behavior
-                  closeOnMobile();                                 // Close mobile sidebar
-                  window.location.href = window.location.origin;  // Navigate to root URL — works locally and on cloud
-                }}
-              aria-label="Go to dashboard overview"
-            >
-
-              {/* CHANGE THIS ↓ — show avatar image if available, fallback to "HA" text */}
-              <div className="sidebar__logo-mark" aria-hidden="true">
-                {avatar
-                  ? <img src={avatar} alt={fullName} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 'inherit' }} />
-                  : 'HA'
-                }
-              </div>
-              <span className="sidebar__logo-text">
-                HA<em>.</em>Dev
-              </span>
-            </a>
-
-{/*          */}{/* ── Section label above nav ── */}
-{/*         <span className="sidebar__nav-label" aria-hidden="true">Menu</span> */}
-
-        {/* ── Navigation links ── */}
-        <nav
-          className="sidebar__nav"
-          role="navigation"
-          aria-label="Portfolio sections"
+          className={`sidebar ${sidebarOpen ? 'sidebar--open' : ''}`}
+          aria-label="Sidebar navigation"
         >
-          {NAV_ITEMS.map(item => {
-              const isActive = activeSection === item.id;   // Check if this item is currently active
+          {/* Decorative water-droplet texture */}
+          <div className="sidebar__texture" aria-hidden="true" />
+
+          {/* ── Logo ── */}
+            <a
+            href="#overview"
+            className="sidebar__logo"
+            onClick={(e) => {
+              e.preventDefault();
+              closeOnMobile();
+              onSectionChange('overview');
+            }}
+            aria-label="Go to dashboard overview"
+          >
+            <div className="sidebar__logo-mark" aria-hidden="true">
+              {avatar
+                ? <img src={avatar} alt={fullName} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 'inherit' }} />
+                : 'HA'
+              }
+            </div>
+            <span className="sidebar__logo-text">
+              HA<em>.</em>Dev
+            </span>
+          </a>
+
+          {/* ── Main navigation ── */}
+          <nav
+            className="sidebar__nav"
+            role="navigation"
+            aria-label="Portfolio sections"
+          >
+            {NAV_ITEMS.map(item => {
+              const isActive = activeSection === item.id;
 
               return (
-                <a
+                  <a
                   key={item.id}
-                  href={`#${item.id}`}                      // Keep href for accessibility
+                  href={`#${item.id}`}
                   className={`nav-item ${isActive ? 'nav-item--active' : ''}`}
                   aria-current={isActive ? 'page' : undefined}
                   onClick={(e) => {
-                    e.preventDefault();                     // Prevent default scroll behavior
-                    onSectionChange(item.id);               // Update active section via parent state
-                    closeOnMobile();                        // Close sidebar on mobile after click
+                    e.preventDefault();
+                    onSectionChange(item.id);
+                    closeOnMobile();
                   }}
                 >
                   <span className="nav-item__icon" aria-hidden="true">
@@ -156,40 +155,73 @@ useEffect(() => {
                 </a>
               );
             })}
-        </nav>
+          </nav>
 
-        {/* ── User card at bottom of sidebar ── */}
-        <div className="sidebar__user">
-          <div
-            className="sidebar__user-card"
-            role="complementary"
-            aria-label="Signed-in user"
-          >
-            {/* Avatar — shows image or initials fallback */}
-            <div className="sidebar__avatar">
-              {avatar
-                ? <img src={avatar} alt={`${fullName} avatar`} />
-                : <span>{initials}</span>
-              }
-            </div>
+          {/* ── Bottom pinned section — About + Contact + User card ── */}
+          <div className="sidebar__bottom">
+            <nav
+              className="sidebar__bottom-nav"
+              role="navigation"
+              aria-label="About and contact"
+            >
+              {BOTTOM_NAV_ITEMS.map(item => {
+                const isActive = activeSection === item.id;
 
-            {/* Name and role text */}
-            <div className="sidebar__user-info">
-              <div className="sidebar__user-name">{fullName}</div>
-              <div className="sidebar__user-role">
-                {available ? 'Open to Hire ✦' : title}
+                return (
+                    <a
+                    key={item.id}
+                    href={`#${item.id}`}
+                    className={`nav-item ${isActive ? 'nav-item--active' : ''}`}
+                    aria-current={isActive ? 'page' : undefined}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      onSectionChange(item.id);
+                      closeOnMobile();
+                    }}
+                  >
+                    <span className="nav-item__icon" aria-hidden="true">
+                      <item.Icon size={18} strokeWidth={1.5} />
+                    </span>
+                    <span className="nav-item__label">{item.label}</span>
+                  </a>
+                );
+              })}
+            </nav>
+            {/* Divider above bottom items */}
+            <div className="sidebar__bottom-divider" aria-hidden="true" />
+
+            {/* About + Contact pinned links */}
+
+
+            {/* User card */}
+            <div className="sidebar__user">
+              <div
+                className="sidebar__user-card"
+                role="complementary"
+                aria-label="Signed-in user"
+              >
+                <div className="sidebar__avatar">
+                  {avatar
+                    ? <img src={avatar} alt={`${fullName} avatar`} />
+                    : <span>{initials}</span>
+                  }
+                </div>
+                <div className="sidebar__user-info">
+                  <div className="sidebar__user-name">{fullName}</div>
+                  <div className="sidebar__user-role">
+                    {available ? 'Open to Hire ✦' : title}
+                  </div>
+                </div>
+                <div
+                  className="sidebar__online-dot"
+                  title="Active"
+                  aria-label="Status: active"
+                />
               </div>
             </div>
 
-            {/* Pulsing green dot — online indicator */}
-            <div
-              className="sidebar__online-dot"
-              title="Active"
-              aria-label="Status: active"
-            />
           </div>
-        </div>
-      </aside>
+        </aside>
 
       {/* ══════════════════════════════════════════════
           MAIN CONTENT — Topbar + scrollable sections
