@@ -974,3 +974,31 @@
     gap: 4px;                                    /* Tightest possible gap */
   }
 }
+/* ── Sidebar bottom — pinned to bottom of sidebar ─────────── */
+.sidebar__bottom {
+  margin-top:     auto;                         /* Push to bottom of flex column     */
+  display:        flex;
+  flex-direction: column;
+  gap:            var(--s2);
+}
+
+/* Divider line above bottom section */
+.sidebar__bottom-divider {
+  height:     1px;
+  background: rgba(255,255,255,0.08);
+  margin:     var(--s2) 0;
+}
+
+/* Bottom nav — same style as main nav */
+.sidebar__bottom-nav {
+  display:        flex;
+  flex-direction: column;
+  gap:            4px;
+}
+
+/* Remove old margin-top from sidebar__user since bottom handles it */
+.sidebar__bottom .sidebar__user {
+  margin-top:  0;
+  padding-top: var(--s2);
+  border-top:  none;                            /* Divider above handles separation  */
+}
