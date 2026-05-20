@@ -38,7 +38,6 @@ import { useRef, useEffect, useState, useMemo } from 'react'; // Import standard
 import { motion }                                from 'framer-motion';  // Import motion from framer-motion for smooth bento grid entrance animations
 import { formatExperience, getInitials }         from '../../utils/formatters';  // Import pure utility functions for data formatting and string initials
 import { CHART_COLORS }                          from '../../utils/constants';   // Import global color design tokens for standard chart palette styling
-import { useLanguages } from '../../hooks/useLanguages'; // Lazy-load languages on section mount
 
 /* ── Reusable chart components ────────────────────────────────── */
 import DonutChart  from '../charts/DonutChart';  // Import DonutChart component to display goals and skills distribution metrics
@@ -53,10 +52,19 @@ import ParticleBackground from '../ui/ParticleBackground'; // Import stylized pa
 /* ════════════════════════════════════════════════════════════════
    CONSTANTS
 ════════════════════════════════════════════════════════════════ */
-/* ── Languages — fetched separately via dedicated hook ── */
-const { languages } = useLanguages(); // Fetch from /portfolio/languages independently
+/* ── Languages state — fetched directly on mount ── */
+const [languages, setLanguages] = useState([]);  // Languages array from API
 
-
+useEffect(() => {
+  let cancelled = false;                          // Prevent stale state on unmount
+  import('../../services/languagesService')       // Dynamic import to avoid circular deps
+    .then(mod => mod.default.getLanguages())      // Call the API
+    .then(data => {
+      if (!cancelled) setLanguages(data?.languages || []); // Update state safely
+    })
+    .catch(() => {});                             // Silently fail — languages are optional
+  return () => { cancelled = true; };            // Cleanup on unmount
+}, []);                                           // Run once on mount
 /* ── SVG Social Icons map ─────────────────────────────────────── */
 const SOCIAL_ICONS = {
   github: (
