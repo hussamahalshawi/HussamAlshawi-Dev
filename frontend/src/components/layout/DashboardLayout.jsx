@@ -14,16 +14,36 @@ import { useTheme }      from '../../context/ThemeContext';  // Dark/light mode 
 import { getInitials }   from '../../utils/formatters';      // Formats name → "HA"
 import '../../styles/layout/DashboardLayout.css';            // Component layout styles
 import ParticleBackground from '../ui/ParticleBackground';
+import {
+  LayoutDashboard,  // Overview
+  BriefcaseBusiness, // Experience
+  Rocket,           // Projects
+  Zap,              // Skills
+  GraduationCap,    // Education
+  BookOpen,         // Courses
+  FlaskConical,     // Self Study
+  BarChart3,        // Analytics
+  Target,           // Goals
+  MessageSquareQuote, // Feedback
+  UserRound,        // About
+  Send,             // Contact
+} from 'lucide-react';
 
-/** Navigation items — id must match each <section id="..."> */
+
+/** Navigation items — ordered by portfolio story flow */
 const NAV_ITEMS = [
-  { label: 'Overview',  href: '#overview',   icon: '⊞', id: 'overview'   },
-  { label: 'Analytics',  href: '#analytics',  icon: '↗', id: 'analytics'  },
-  { label: 'Skills',     href: '#skills',     icon: '◎', id: 'skills'     },
-  { label: 'Projects',   href: '#projects',   icon: '⊡', id: 'projects'   },
-  { label: 'Experience', href: '#experience', icon: '⊛', id: 'experience' },
-  { label: 'Goals',      href: '#goals',      icon: '◈', id: 'goals'      },
-  { label: 'Contact',    href: '#contact',    icon: '✉', id: 'contact'    },
+  { label: 'Overview',   href: '#overview',   id: 'overview',   Icon: LayoutDashboard      },
+  { label: 'Experience', href: '#experience', id: 'experience', Icon: BriefcaseBusiness    },
+  { label: 'Projects',   href: '#projects',   id: 'projects',   Icon: Rocket               },
+  { label: 'Skills',     href: '#skills',     id: 'skills',     Icon: Zap                  },
+  { label: 'Education',  href: '#education',  id: 'education',  Icon: GraduationCap        },
+  { label: 'Courses',    href: '#courses',    id: 'courses',    Icon: BookOpen             },
+  { label: 'Self Study', href: '#selfstudy',  id: 'selfstudy',  Icon: FlaskConical         },
+  { label: 'Analytics',  href: '#analytics',  id: 'analytics',  Icon: BarChart3            },
+  { label: 'Goals',      href: '#goals',      id: 'goals',      Icon: Target               },
+  { label: 'Feedback',   href: '#feedback',   id: 'feedback',   Icon: MessageSquareQuote   },
+  { label: 'About',      href: '#about',      id: 'about',      Icon: UserRound            },
+  { label: 'Contact',    href: '#contact',    id: 'contact',    Icon: Send                 },
 ];
 
 /**
@@ -124,7 +144,12 @@ useEffect(() => {
                 onClick={closeOnMobile}
                 aria-current={isActive ? 'page' : undefined}
               >
-                <span className="nav-item__icon" aria-hidden="true">{item.icon}</span>
+                <span className="nav-item__icon" aria-hidden="true">
+                      <item.Icon
+                        size={18}
+                        strokeWidth={1.5}
+                      />
+                    </span>
                 <span className="nav-item__label">{item.label}</span>
               </a>
             );
