@@ -42,16 +42,20 @@ import AnimatedSection from '../components/ui/AnimatedSection';
 // ── Shared section layout styles ──────────────────────────────────
 import '../styles/layout/Sections.css';                                  // Section padding + container
 
-/* ── Section IDs — must match each <section id="..."> element ───── */
-/* Used by IntersectionObserver to highlight the active nav link      */
+/** Section IDs — must match NAV_ITEMS order */
 const SECTION_IDS = [
-  'overview',    // Dashboard overview
-  'analytics',   // Analytics charts
-  'skills',      // Skills visualization
-  'projects',    // Projects grid
-  'experience',  // Career timeline
-  'goals',       // Goals roadmap
-  'contact',     // Contact form
+  'overview',
+  'experience',
+  'projects',
+  'skills',
+  'education',
+  'courses',
+  'selfstudy',
+  'analytics',
+  'goals',
+  'feedback',
+  'about',
+  'contact',
 ];
 
 /* ── Offline banner component — shown when all APIs fail ─────────── */
@@ -120,31 +124,97 @@ export default function Home() {
 
   /* ── Render dashboard ───────────────────────────────────────── */
   return (
-    <DashboardLayout
-      activeSection={activeSection}
-      profile={data.profile}
-    >
-      {error && (
-        <OfflineBanner message={error} />
-      )}
+    <DashboardLayout activeSection={activeSection} profile={data.profile}>
 
-      {/* SECTION 1 — Overview: uses Phase 1 data (always ready) */}
-    <AnimatedSection id="overview" className="section">
-      <OverviewSection profile={data.profile} analytics={data.analytics} />
-    </AnimatedSection>
+  {error && <OfflineBanner message={error} />}
 
-    {/* SECTION 2 — Analytics: uses Phase 1 data (always ready) */}
-    <AnimatedSection id="analytics" className="section section--alt">
-      <AnalyticsSection analytics={data.analytics} />
-    </AnimatedSection>
+  {/* SECTION 1 — Overview */}
+  <AnimatedSection id="overview" className="section">
+    <OverviewSection profile={data.profile} analytics={data.analytics} />
+  </AnimatedSection>
 
-    {/* SECTION 3 — Skills: uses Phase 2 data (loads in background) */}
-    {/* data.skills will be null initially then update when Phase 2 finishes */}
-    <AnimatedSection id="skills" className="section">
-      <SkillsSection skills={data.skills} summary={data.skillsSummary} />
-    </AnimatedSection>
+  {/* SECTION 2 — Experience & Achievements */}
+  <AnimatedSection id="experience" className="section section--alt">
+    {/* <ExperienceSection /> */}
+    <div style={{ padding: '4rem 2rem', textAlign: 'center', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
+      Experience Section — Coming Soon
+    </div>
+  </AnimatedSection>
 
-      {/* Rest of sections... */}
-    </DashboardLayout>
+  {/* SECTION 3 — Projects */}
+  <AnimatedSection id="projects" className="section">
+    {/* <ProjectsSection /> */}
+    <div style={{ padding: '4rem 2rem', textAlign: 'center', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
+      Projects Section — Coming Soon
+    </div>
+  </AnimatedSection>
+
+  {/* SECTION 4 — Skills */}
+  <AnimatedSection id="skills" className="section section--alt">
+    <SkillsSection skills={data.skills} summary={data.skillsSummary} />
+  </AnimatedSection>
+
+  {/* SECTION 5 — Education + Courses */}
+  <AnimatedSection id="education" className="section">
+    {/* <EducationSection /> */}
+    <div style={{ padding: '4rem 2rem', textAlign: 'center', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
+      Education Section — Coming Soon
+    </div>
+  </AnimatedSection>
+
+  {/* SECTION 6 — Courses */}
+  <AnimatedSection id="courses" className="section section--alt">
+    {/* <CoursesSection /> */}
+    <div style={{ padding: '4rem 2rem', textAlign: 'center', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
+      Courses Section — Coming Soon
+    </div>
+  </AnimatedSection>
+
+  {/* SECTION 7 — Self Study */}
+  <AnimatedSection id="selfstudy" className="section">
+    {/* <SelfStudySection /> */}
+    <div style={{ padding: '4rem 2rem', textAlign: 'center', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
+      Self Study Section — Coming Soon
+    </div>
+  </AnimatedSection>
+
+  {/* SECTION 8 — Analytics */}
+  <AnimatedSection id="analytics" className="section section--alt">
+    <AnalyticsSection analytics={data.analytics} />
+  </AnimatedSection>
+
+  {/* SECTION 9 — Goals */}
+  <AnimatedSection id="goals" className="section">
+    {/* <GoalsSection /> */}
+    <div style={{ padding: '4rem 2rem', textAlign: 'center', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
+      Goals Section — Coming Soon
+    </div>
+  </AnimatedSection>
+
+  {/* SECTION 10 — Feedback / Testimonials */}
+  <AnimatedSection id="feedback" className="section section--alt">
+    {/* <FeedbackSection /> */}
+    <div style={{ padding: '4rem 2rem', textAlign: 'center', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
+      Feedback Section — Coming Soon
+    </div>
+  </AnimatedSection>
+
+  {/* SECTION 11 — About */}
+  <AnimatedSection id="about" className="section">
+    {/* <AboutSection /> */}
+    <div style={{ padding: '4rem 2rem', textAlign: 'center', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
+      About Section — Coming Soon
+    </div>
+  </AnimatedSection>
+
+  {/* SECTION 12 — Contact */}
+  <AnimatedSection id="contact" className="section section--alt">
+    {/* <ContactSection /> */}
+    <div style={{ padding: '4rem 2rem', textAlign: 'center', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
+      Contact Section — Coming Soon
+    </div>
+  </AnimatedSection>
+
+</DashboardLayout>
   );
 }
