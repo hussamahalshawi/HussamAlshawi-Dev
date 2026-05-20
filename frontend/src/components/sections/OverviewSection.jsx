@@ -280,146 +280,161 @@ export default function OverviewSection({ profile, analytics }) {
       <div className="ov-bento-row ov-bento-row--3col">
 
         {/* ── Col 1: Profile Card ─────────────────────────── */}
+        {/* Particle background layer — very subtle */}
         <motion.div
-          className="ov-panel ov-panel--profile ov-bento-profile"
-          variants={CARD_VARIANTS}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, amount: 0.1 }}
-          transition={{ ...CARD_TRANSITION, delay: 0.0 }}
-          whileHover={{ y: -3, transition: { duration: 0.2 } }}
-        >
-          {/* Particle background layer — very subtle */}
-          <div style={{ position: 'absolute', inset: 0, opacity: 0.06, pointerEvents: 'none' }}>
-            <ParticleBackground />
-          </div>
-
-          {/* Decorative water drops */}
-          <div className="ov-drops" aria-hidden="true">
-            <div className="ov-drop ov-drop--a" />
-            <div className="ov-drop ov-drop--b" />
-          </div>
-
-          {/* Avatar */}
-          <div className="ov-profile__avatar-wrap">
-            <div className="ov-profile__avatar" aria-label={`${fullName} photo`}>
-              {avatar
-                ? <img src={avatar} alt={fullName} />  // Render image graphic node whenever valid profile graphics resource strings are resolved
-                : <span>{getInitials(fullName)}</span>  // Fall back smoothly into rendering structural user text initials on empty graphic states
-              }
+              className="ov-panel ov-panel--profile ov-bento-profile"
+              variants={CARD_VARIANTS}
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, amount: 0.1 }}
+              transition={{ ...CARD_TRANSITION, delay: 0.0 }}
+              whileHover={{ y: -3, transition: { duration: 0.2 } }}
+            >
+            <div style={{ position: 'absolute', inset: 0, opacity: 0.06, pointerEvents: 'none' }}>
+              <ParticleBackground />
             </div>
-            <div className="ov-profile__online" title="Active" aria-label="Status: active" />
-          </div>
 
-          {/* Name */}
-          <div className="ov-profile__name">{fullName}</div>
+            {/* Decorative water drops */}
+            <div className="ov-drops" aria-hidden="true">
+              <div className="ov-drop ov-drop--a" />
+              <div className="ov-drop ov-drop--b" />
+            </div>
 
-          {/* Title */}
-          <div className="ov-profile__title">{title}</div>
+            {/* ── ROW 1: Avatar + Name + Title side-by-side ── */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--s4)', marginBottom: 'var(--s4)' }}>
 
-          {/* Social links — luxury square buttons */}
-          <div className="ov-profile__social--luxury" role="list" aria-label="Social links">
-            {SOCIAL_PLATFORMS_CONFIG.map(platform => {
-              /* Build URL from social object — handles nested or flat format */
-              const val = social[platform.key] || social[platform.key.toLowerCase()];
-              const url = !val ? null
-                : typeof val === 'string' ? val
-                : val.url || val.link || val.href || null;
+              {/* Avatar circle */}
+              <div className="ov-profile__avatar" style={{ width: '80px', height: '80px', flexShrink: 0 }} aria-label={`${fullName} photo`}>
+                {avatar
+                  ? <img src={avatar} alt={fullName} />
+                  : <span>{getInitials(fullName)}</span>
+                }
+              </div>
 
-              const icon = SOCIAL_ICONS[platform.key];                    // Isolate active target vector svg graphic matching current platform configurations key
-              if (!url || !icon) return null;                             // Stop component rendering chains early whenever link verification queries evaluate false
-
-              return (
-                <a
-                  key={platform.key}
-                  href={url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="ov-social-link--luxury"
-                  role="listitem"
-                  aria-label={`${platform.label} profile`}
-                  style={{ '--social-color': platform.color }}            // Pass brand color hex details straight to custom inline css runtime properties
+              {/* Name + Title + Available pill stacked */}
+              <div style={{ minWidth: 0, flex: 1 }}>
+                <div className="ov-profile__name" style={{ textAlign: 'left', fontSize: '1.25rem', marginBottom: 'var(--s1)' }}>
+                  {fullName}
+                </div>
+                <div className="ov-profile__title" style={{ textAlign: 'left', marginBottom: 'var(--s2)' }}>
+                  {title}
+                </div>
+                {/* Availability pill */}
+                <div
+                  className={`availability-pill ${available ? 'availability-pill--open' : ''}`}
+                  role="status"
+                  aria-label={available ? 'Available for hire' : 'Currently employed'}
+                  style={{ fontSize: '0.58rem' }}
                 >
-                  <span className="ov-social-link__icon--luxury" aria-hidden="true">
-                    {icon}
-                  </span>
-                </a>
-              );
-            })}
-          </div>
-
-          {/* Bio */}
-          {bio && <p className="ov-profile__bio">{bio}</p>}
-
-          {/* Quick Stats — 4 metric cards */}
-          <div className="ov-profile__stats" role="list" aria-label="Quick stats">
-
-            {/* Experience years */}
-            <div className="ov-stat" role="listitem"
-              style={{ background: 'rgba(79,195,247,0.07)', borderColor: 'rgba(79,195,247,0.22)', color: '#4FC3F7' }}>
-              <span className="ov-stat__tag">Exp</span>
-              <div className="ov-stat__num">
-                {profile?.experience_years ? `${profile.experience_years}+` : '—'}
+                  <span className="availability-pill__dot" aria-hidden="true" />
+                  {available ? 'Available for Hire' : 'Currently Employed'}
+                </div>
               </div>
-              <span className="ov-stat__label">Years</span>
             </div>
 
-            {/* Overall score */}
-            <div className="ov-stat" role="listitem"
-              style={{ background: 'rgba(78,204,163,0.07)', borderColor: 'rgba(78,204,163,0.22)', color: '#4ECCA3' }}>
-              <span className="ov-stat__tag">Score</span>
-              <div className="ov-stat__num">
-                {profile?.overall_score ? `${Math.round(profile.overall_score)}%` : '—'}
-              </div>
-              <span className="ov-stat__label">Overall</span>
-            </div>
-
-            {/* Experience count */}
-            <div className="ov-stat" role="listitem"
-              style={{ background: 'rgba(155,127,234,0.07)', borderColor: 'rgba(155,127,234,0.22)', color: '#9B7FEA' }}>
-              <span className="ov-stat__tag">Work</span>
-              <div className="ov-stat__num">{counts?.experience || '0'}</div>
-              <span className="ov-stat__label">Roles</span>
-            </div>
-
-            {/* Projects count */}
-            <div className="ov-stat" role="listitem"
-              style={{ background: 'rgba(245,166,35,0.07)', borderColor: 'rgba(245,166,35,0.22)', color: '#F5A623' }}>
-              <span className="ov-stat__tag">Built</span>
-              <div className="ov-stat__num">{counts?.projects || '0'}</div>
-              <span className="ov-stat__label">Projects</span>
-            </div>
-
-          </div>
-
-          {/* Languages strip inside profile */}
-          {languages.length > 0 && (
-            <div className="ov-bento-lang-strip" role="list" aria-label="Languages">
-              {languages.slice(0, 4).map((lang, i) => {
-                const levelKey  = (lang.level || '').toLowerCase();       // Cast target language proficiency level text safely into lower-case formatting matrix
-                const langColor = LANG_LEVEL_COLORS[levelKey]
-                  || CHART_COLORS[i % CHART_COLORS.length];               // Fall back smoothly to primary color layout wheel arrays if custom keys fail to map
-
+            {/* ── ROW 2: Social links ── */}
+            <div className="ov-profile__social--luxury" role="list" aria-label="Social links" style={{ marginBottom: 'var(--s4)', paddingBottom: 'var(--s4)', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
+              {SOCIAL_PLATFORMS_CONFIG.map(platform => {
+                const val = social[platform.key] || social[platform.key.toLowerCase()];
+                const url = !val ? null
+                  : typeof val === 'string' ? val
+                  : val.url || val.link || val.href || null;
+                const icon = SOCIAL_ICONS[platform.key];
+                if (!url || !icon) return null;
                 return (
-                  <div
-                    key={lang.language || i}
-                    className="ov-bento-lang-chip"
+                    <a
+                    key={platform.key}
+                    href={url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="ov-social-link--luxury"
                     role="listitem"
-                    style={{ '--lang-color': langColor }}                 // Pass determined structural colors down using explicit customized inline elements properties
+                    aria-label={`${platform.label} profile`}
+                    style={{ '--social-color': platform.color }}
                   >
-                    <span className="ov-bento-lang-chip__flag" aria-hidden="true">
-                      {lang.flag || '🌐'}
+                    <span className="ov-social-link__icon--luxury" aria-hidden="true">
+                      {icon}
                     </span>
-                    <span className="ov-bento-lang-chip__name">{lang.language}</span>
-                    <span className="ov-bento-lang-chip__level" style={{ color: langColor }}>
-                      {lang.level || 'N/A'}
-                    </span>
-                  </div>
+                  </a>
                 );
               })}
             </div>
-          )}
-        </motion.div>
+
+            {/* ── ROW 3: Bio ── */}
+            {bio && (
+              <p className="ov-profile__bio" style={{ textAlign: 'left', flex: 'unset', marginBottom: 'var(--s4)' }}>
+                {bio}
+              </p>
+            )}
+
+            {/* ── ROW 4: Languages ── */}
+            {languages.length > 0 && (
+              <div style={{ marginBottom: 'var(--s4)', paddingBottom: 'var(--s4)', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
+                <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.56rem', letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 'var(--s2)' }}>
+                  Languages
+                </div>
+                <div className="ov-bento-lang-strip" style={{ marginTop: 0, paddingTop: 0, borderTop: 'none' }} role="list" aria-label="Languages">
+                  {languages.slice(0, 4).map((lang, i) => {
+                    const levelKey  = (lang.level || '').toLowerCase();
+                    const langColor = LANG_LEVEL_COLORS[levelKey] || CHART_COLORS[i % CHART_COLORS.length];
+                    return (
+                      <div key={lang.language || i} className="ov-bento-lang-chip" role="listitem" style={{ '--lang-color': langColor }}>
+                        <span className="ov-bento-lang-chip__flag" aria-hidden="true">{lang.flag || '🌐'}</span>
+                        <span className="ov-bento-lang-chip__name">{lang.language}</span>
+                        <span className="ov-bento-lang-chip__level" style={{ color: langColor }}>{lang.level || 'N/A'}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* ── ROW 5: Analytics stats 2×2 grid ── */}
+            <div>
+              <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.56rem', letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 'var(--s2)' }}>
+                Analytics
+              </div>
+              <div className="ov-profile__stats" role="list" aria-label="Quick stats">
+
+                {/* Experience years */}
+                <div className="ov-stat" role="listitem"
+                  style={{ background: 'rgba(79,195,247,0.07)', borderColor: 'rgba(79,195,247,0.22)', color: '#4FC3F7' }}>
+                  <span className="ov-stat__tag">Exp</span>
+                  <div className="ov-stat__num">
+                    {profile?.experience_years ? `${profile.experience_years}+` : '—'}
+                  </div>
+                  <span className="ov-stat__label">Years</span>
+                </div>
+
+                {/* Overall score */}
+                <div className="ov-stat" role="listitem"
+                  style={{ background: 'rgba(78,204,163,0.07)', borderColor: 'rgba(78,204,163,0.22)', color: '#4ECCA3' }}>
+                  <span className="ov-stat__tag">Score</span>
+                  <div className="ov-stat__num">
+                    {profile?.overall_score ? `${Math.round(profile.overall_score)}%` : '—'}
+                  </div>
+                  <span className="ov-stat__label">Overall</span>
+                </div>
+
+                {/* Experience roles */}
+                <div className="ov-stat" role="listitem"
+                  style={{ background: 'rgba(155,127,234,0.07)', borderColor: 'rgba(155,127,234,0.22)', color: '#9B7FEA' }}>
+                  <span className="ov-stat__tag">Work</span>
+                  <div className="ov-stat__num">{counts?.experience || '0'}</div>
+                  <span className="ov-stat__label">Roles</span>
+                </div>
+
+                {/* Projects count */}
+                <div className="ov-stat" role="listitem"
+                  style={{ background: 'rgba(245,166,35,0.07)', borderColor: 'rgba(245,166,35,0.22)', color: '#F5A623' }}>
+                  <span className="ov-stat__tag">Built</span>
+                  <div className="ov-stat__num">{counts?.projects || '0'}</div>
+                  <span className="ov-stat__label">Projects</span>
+                </div>
+
+              </div>
+            </div>
+            </motion.div>
 
         {/* ── Col 2: Goals Status Donut ───────────────────── */}
         <motion.div
