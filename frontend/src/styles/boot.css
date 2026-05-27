@@ -14,7 +14,7 @@ html,
 body {
   margin:     0;                                /* Remove default browser margin */
   padding:    0;                                /* Remove default browser padding */
-  background: #cfe0f5;                          /* Devoryn sky-blue — matches light theme */
+  background: #b8c8dc;                          /* Deep Midnight base */
   min-height: 100vh;                            /* Always fill the full viewport height */
 }
 
@@ -32,9 +32,9 @@ body {
 
   /* Devoryn sky-blue radial gradient background */
   background:
-    radial-gradient(ellipse 1200px 800px at 20% -5%,  rgba(120,180,255,0.55) 0%, transparent 60%),
-    radial-gradient(ellipse 800px  600px at 85% 110%, rgba(100,160,255,0.45) 0%, transparent 55%),
-    linear-gradient(160deg, #cfe0f5 0%, #d8eafc 40%, #c8d9f0 100%);
+    radial-gradient(ellipse 1200px 800px at 20% -5%,  rgba(50,100,180,0.60) 0%, transparent 60%),
+    radial-gradient(ellipse 800px  600px at 85% 110%, rgba(30,80,170,0.50) 0%, transparent 55%),
+    linear-gradient(160deg, #b8c8dc 0%, #c2d4e6 40%, #a8bdd0 100%);
 
   /* CSS transition for fade-out — triggered by adding .hidden class via JS */
   transition: opacity 0.5s ease, visibility 0.5s ease;
