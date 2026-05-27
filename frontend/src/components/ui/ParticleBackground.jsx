@@ -22,15 +22,15 @@ const THEMES = {
     centerDot:   'rgba(255,255,255,0.75)',           // White hot center
   },
   light: {
-    bg:          'rgba(207,224,245,0.22)',           // Trail fade — sky blue
-    scanColor:   'rgba(79,145,247,0.025)',           // Blue scan line
-    mouseGlow:   ['rgba(79,145,247,0.08)', 'rgba(120,180,255,0.04)'],
-    cornerColor: 'rgba(79,145,247,0.30)',            // Blue brackets
+    bg:          'rgba(184,200,220,0.88)',           // Deep Midnight — solid trail fade
+    scanColor:   'rgba(30,80,170,0.030)',            // Deep blue scan line
+    mouseGlow:   ['rgba(50,100,180,0.10)', 'rgba(30,80,170,0.05)'],
+    cornerColor: 'rgba(50,100,180,0.35)',            // Deep blue brackets
     nodeColors: [
-      'rgba(26,143,199,',                            // Deep cyan
-      'rgba(58,111,216,',                            // Deep blue
-      'rgba(124,91,212,',                            // Deep violet
-      'rgba(26,158,110,',                            // Deep green
+      'rgba(20,80,190,',                             // Deep navy
+      'rgba(40,70,200,',                             // Deep blue
+      'rgba(100,60,210,',                            // Deep violet
+      'rgba(15,130,150,',                            // Deep teal
     ],
     centerDot:   'rgba(255,255,255,0.90)',           // Bright white center
   },
