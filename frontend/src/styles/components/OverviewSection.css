@@ -95,40 +95,39 @@
    All .ov-panel elements inherit this base
 ══════════════════════════════════════════════════════ */
 .ov-panel {
-  position:      relative;                         /* Stacking context for children              */
-  overflow:      hidden;                           /* Clip decorative elements                   */
-  border-radius: var(--r-xl);                      /* Rounded corners                            */
-  padding:       var(--s6);                        /* Inner spacing                              */
+  position:      relative;                      /* Stacking context for decorations   */
+  overflow:      hidden;                        /* Clip pseudo-elements to radius     */
+  border-radius: var(--r-xl);                   /* Rounded corners                    */
+  padding:       var(--s6);                     /* Inner breathing room               */
   transition:    border-color 0.30s ease,
-                 background   0.35s ease,
+                 background   0.20s ease,
                  box-shadow   0.30s ease,
-                 transform    0.25s ease;          /* Smooth all property changes                */
+                 transform    0.25s ease;       /* Smooth all transitions             */
 
-  background:              rgba(10,15,32,0.30);    /* Lighter dark — more transparent            */
-  backdrop-filter:         blur(20px) saturate(1.5) brightness(0.92); /* Less heavy blur        */
-  -webkit-backdrop-filter: blur(20px) saturate(1.5) brightness(0.92);
-  border:                  1px solid rgba(255,255,255,0.07); /* Subtle border                   */
-  box-shadow:              0 4px 24px rgba(0,0,0,0.25),      /* Lighter shadow                  */
-                           0 0 0 1px rgba(255,255,255,0.03),
-                           inset 0 1px 0 rgba(255,255,255,0.06);
+  /* Matches nav-item glass recipe exactly */
+  background:              rgba(10,15,35,0.65); /* Firefox solid fallback             */
+  backdrop-filter:         blur(12px) saturate(1.4); /* Same blur as sidebar nav     */
+  -webkit-backdrop-filter: blur(12px) saturate(1.4); /* Safari support               */
+  border:                  1px solid rgba(255,255,255,0.07); /* Subtle border         */
+  box-shadow:              0 4px 24px rgba(0,0,0,0.25);      /* Soft depth shadow     */
 }
 /* Chrome/Safari: lighter with blur */
 @supports (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px)) {
   .ov-panel {
-    background:              rgba(10,15,32,0.30); /* Lighter — blur handles depth      */
-    backdrop-filter:         blur(20px) saturate(1.5) brightness(0.92);
-    -webkit-backdrop-filter: blur(20px) saturate(1.5) brightness(0.96);
+    /* Chrome/Safari: lighter with blur — matches nav-item exactly */
+    background:              rgba(10,15,35,0.45); /* Same as nav-item                 */
+    backdrop-filter:         blur(12px) saturate(1.4); /* Matching blur strength      */
+    -webkit-backdrop-filter: blur(12px) saturate(1.4); /* Safari matching             */
   }
 }
 
 /* Hover: white glass brighten effect */
 .ov-panel:hover {
-  border-color: rgba(255,255,255,0.14);            /* Slightly brighter border                   */
-  background:   rgba(79,195,247,0.05);             /* Subtle cyan tint on hover                  */
-  box-shadow:   0 8px 32px rgba(0,0,0,0.30),       /* Lighter shadow                             */
-                0 0 0 1px rgba(79,195,247,0.08),   /* Cyan ring                                  */
-                inset 0 1px 0 rgba(255,255,255,0.10);
-  transform:    translateY(-2px);                  /* Lift effect                                */
+  /* Matches nav-item hover recipe */
+  background:   rgba(79,195,247,0.12);          /* Cyan tint — same as nav hover      */
+  border-color: rgba(79,195,247,0.30);          /* Cyan border on hover               */
+  box-shadow:   0 4px 20px rgba(79,195,247,0.10); /* Cyan glow shadow                 */
+  transform:    translateY(-2px);               /* Lift effect                        */
 }
 
 /* Top gloss line — Devoryn signature detail */
@@ -301,11 +300,27 @@
 }
 /* ── Col 1: Profile card — spans both rows but aligned to content ── */
 .ov-panel--profile {
-  grid-column: 1;
-  grid-row:    1 / 3;                           /* Spans both rows visually          */
-  align-self:  start;                         /* Stretches to fill both rows       */
-  display:     flex;                            /* Flex column layout inside         */
-  flex-direction: column;                       /* Stack children vertically         */
+  grid-column:    1;                            /* First column in main grid          */
+  grid-row:       1 / 3;                        /* Spans both rows visually           */
+  align-self:     start;                        /* Align to content top               */
+  display:        flex;                         /* Flex column layout inside          */
+  flex-direction: column;                       /* Stack children vertically          */
+
+  /* Firefox fallback — solid */
+  background:              rgba(10,15,35,0.65); /* Same as nav-item Firefox fallback  */
+  backdrop-filter:         blur(12px) saturate(1.4); /* Same blur as nav-item        */
+  -webkit-backdrop-filter: blur(12px) saturate(1.4); /* Safari support               */
+  border:                  1px solid rgba(255,255,255,0.07); /* Same border as nav-item */
+  box-shadow:              none;                /* No extra shadow — clean like nav   */
+}
+
+/* Chrome/Safari: lighter opacity with blur — exact nav-item recipe */
+@supports (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px)) {
+  .ov-panel--profile {
+    background:              rgba(10,15,35,0.45); /* Same as nav-item Chrome value    */
+    backdrop-filter:         blur(12px) saturate(1.4); /* Identical blur             */
+    -webkit-backdrop-filter: blur(12px) saturate(1.4); /* Safari identical           */
+  }
 }
 /* Full name — centered, larger bolder display font */
 .ov-profile__name {
@@ -981,18 +996,20 @@
 
 /* Main panel — same transparency as dark mode .ov-panel */
 [data-theme="light"] .ov-panel {
-  background:              rgba(120,160,210,0.08); /* Very low opacity — transparent in all browsers */
-  border:                  1px solid rgba(79,143,199,0.15);
-  backdrop-filter:         blur(20px) saturate(1.6);
-  -webkit-backdrop-filter: blur(20px) saturate(1.6);
+  /* Light mode: matches light nav-item glass style */
+  background:              rgba(120,160,210,0.08); /* Same as light nav-item          */
+  backdrop-filter:         blur(12px) saturate(1.4); /* Same blur as dark mode        */
+  -webkit-backdrop-filter: blur(12px) saturate(1.4); /* Safari support               */
+  border:                  1px solid rgba(79,143,199,0.15); /* Blue border            */
   box-shadow:              none;
 }
 
 [data-theme="light"] .ov-panel:hover {
-  background:   rgba(26,143,199,0.10);
-  border-color: rgba(26,143,199,0.30);
-  box-shadow:   0 4px 16px rgba(26,143,199,0.08);
-  transform:    translateY(-2px);
+  /* Matches light nav-item hover */
+  background:   rgba(26,143,199,0.14);          /* Cyan-blue tint on hover            */
+  border-color: rgba(26,143,199,0.35);          /* Cyan border                        */
+  box-shadow:   0 4px 16px rgba(26,143,199,0.10); /* Soft blue glow                   */
+  transform:    translateY(-2px);               /* Lift effect                        */
 }
 
 /* Panel title */
@@ -1048,7 +1065,14 @@
   backdrop-filter:         blur(12px) saturate(1.4);
   -webkit-backdrop-filter: blur(12px) saturate(1.4);
 }
-
+[data-theme="light"] .ov-panel--profile {
+  /* Same as light mode nav-item recipe */
+  background:              rgba(120,160,210,0.08); /* Same as light nav-item          */
+  backdrop-filter:         blur(12px) saturate(1.4); /* Same blur                    */
+  -webkit-backdrop-filter: blur(12px) saturate(1.4); /* Safari support               */
+  border:                  1px solid rgba(79,143,199,0.15); /* Same blue border       */
+  box-shadow:              none;
+}
 /* Donut track ring */
 [data-theme="light"] .ov-donut-track {
   stroke: rgba(26,143,199,0.14);                   /* Blue-tinted track              */
