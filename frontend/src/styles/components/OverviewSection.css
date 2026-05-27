@@ -104,18 +104,18 @@
                  box-shadow   0.30s ease,
                  transform    0.25s ease;       /* Smooth all transitions             */
 
-  /* Nav-item glass recipe — works in all browsers */
-  background:              rgba(10,15,35,0.45) !important; /* Force over any override */
-  backdrop-filter:         blur(12px) saturate(1.4) !important; /* Nav-item blur      */
-  -webkit-backdrop-filter: blur(12px) saturate(1.4) !important; /* Safari support     */
-  border:                  1px solid rgba(255,255,255,0.07); /* Same as nav-item      */
-  box-shadow:              0 4px 24px rgba(0,0,0,0.25);      /* Soft depth shadow     */
+  /* Option B — opacity 0.55 / blur 8px */
+  background:              rgba(10,15,35,0.55) !important; /* Semi-transparent dark   */
+  backdrop-filter:         blur(8px) !important;           /* Subtle blur             */
+  -webkit-backdrop-filter: blur(8px) !important;           /* Safari support          */
+  border:                  1px solid rgba(255,255,255,0.09); /* Slightly visible border */
+  box-shadow:              0 4px 24px rgba(0,0,0,0.25);    /* Soft depth shadow       */
 }
 
 
 /* Hover: white glass brighten effect */
 .ov-panel:hover {
-  background:   rgba(79,195,247,0.12) !important; /* Cyan tint — same as nav hover   */
+  background:   rgba(79,195,247,0.12) !important; /* Cyan tint on hover               */
   border-color: rgba(79,195,247,0.30);            /* Cyan border on hover             */
   box-shadow:   0 4px 20px rgba(79,195,247,0.10); /* Cyan glow shadow                 */
   transform:    translateY(-2px);                 /* Lift effect                      */
@@ -987,18 +987,18 @@
 
 /* Main panel — same transparency as dark mode .ov-panel */
 [data-theme="light"] .ov-panel {
-  /* Light mode nav-item recipe */
-  background:              rgba(120,160,210,0.08) !important; /* Same as light nav    */
-  backdrop-filter:         blur(12px) saturate(1.4) !important; /* Same blur          */
-  -webkit-backdrop-filter: blur(12px) saturate(1.4) !important; /* Safari             */
-  border:                  1px solid rgba(79,143,199,0.15);    /* Blue border          */
+  /* Light mode: same B recipe — low opacity dark tint + blur */
+  background:              rgba(14,20,50,0.08) !important; /* Very light dark tint     */
+  backdrop-filter:         blur(8px) !important;           /* Same blur as dark mode   */
+  -webkit-backdrop-filter: blur(8px) !important;           /* Safari support           */
+  border:                  1px solid rgba(79,143,199,0.15); /* Soft blue border        */
   box-shadow:              none;
 }
 
 [data-theme="light"] .ov-panel:hover {
-  background:   rgba(26,143,199,0.14) !important; /* Cyan-blue tint on hover          */
-  border-color: rgba(26,143,199,0.35);            /* Cyan border                      */
-  box-shadow:   0 4px 16px rgba(26,143,199,0.10); /* Soft blue glow                   */
+  background:   rgba(26,143,199,0.10) !important; /* Cyan-blue tint on hover          */
+  border-color: rgba(26,143,199,0.30);            /* Cyan border                      */
+  box-shadow:   0 4px 16px rgba(26,143,199,0.08); /* Soft blue glow                   */
   transform:    translateY(-2px);
 }
 
