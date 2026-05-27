@@ -117,13 +117,13 @@
 ══════════════════════════════════════════════════════════════ */
 [data-theme="light"] {
 
-  /* === Scene Backgrounds — light sky blue palette === */
-  --bg-scene:      #cfe0f5;                     /* Outermost sky blue */
-  --bg-base:       #d6e8f9;                     /* Base layer */
-  --bg-primary:    #daeaf9;                     /* Main content */
-  --bg-secondary:  #e2eef9;                     /* Secondary panels */
-  --bg-tertiary:   #eaf3fc;                     /* Tertiary panels */
-  --bg-quaternary: #f0f7fd;                     /* Highlight panels */
+  /* === Scene Backgrounds — Deep Midnight blue palette === */
+  --bg-scene:      #a8bdd0;                     /* Deepest layer — darkest */
+  --bg-base:       #b0c4d8;                     /* Base layer */
+  --bg-primary:    #b8ccde;                     /* Main content bg */
+  --bg-secondary:  #c2d4e6;                     /* Secondary panels */
+  --bg-tertiary:   #ccdaec;                     /* Tertiary panels */
+  --bg-quaternary: #d6e4f2;                     /* Highlight panels */
 
   /* === Glass Surfaces — white-tinted for light mode === */
   --glass-faint:   rgba(255,255,255,0.35);      /* Light glass faint */
@@ -178,12 +178,13 @@
   --shadow-card: 0 4px 24px rgba(79,100,145,0.14),
                  0 1px 0 rgba(255,255,255,0.80) inset;
 
-  /* === Body background blobs — sky blue === */
-  --body-bg-blob1: rgba(120,180,255,0.55);      /* Top-left bright blob */
-  --body-bg-blob2: rgba(100,160,255,0.45);      /* Bottom-right blob */
-  --body-bg-blob3: rgba(180,215,255,0.30);      /* Center soft blob */
-  --body-bg-blob4: rgba(79,145,247,0.15);       /* Top-right faint blob */
-  --body-bg-base:  #cfe0f5;                     /* Sky blue base */
+/* === Body background blobs — Deep Midnight === */
+  --body-bg-blob1: rgba(50,100,180,0.60);       /* Strong blue top-left */
+  --body-bg-blob2: rgba(30,80,170,0.50);        /* Deep blue bottom-right */
+  --body-bg-blob3: rgba(100,145,210,0.32);      /* Mid blue center */
+  --body-bg-blob4: rgba(60,120,230,0.20);       /* Accent blob top-right */
+  --body-bg-base:  #b8c8dc;                     /* Matches canvas bg */
+
 
   /* === Sidebar / Topbar specific === */
   --sidebar-bg:     rgba(255,255,255,0.60);     /* White frosted sidebar */
