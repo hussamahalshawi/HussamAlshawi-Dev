@@ -39,31 +39,29 @@
    standalone use without the full profile variant
 ══════════════════════════════════════════════════════ */
 .ov-bento-card {
-  position:      relative;                      /* Stacking context                   */
-  overflow:      hidden;                        /* Clip decorations                   */
-  border-radius: var(--r-xl);                   /* Rounded corners matching ov-panel  */
+  position:      relative;                      /* Stacking context for children      */
+  overflow:      hidden;                        /* Clip decorations to border-radius  */
+  border-radius: var(--r-xl);                   /* Rounded corners                    */
   padding:       var(--s6);                     /* Inner spacing                      */
   transition:    border-color 0.30s ease,
-                 background   0.35s ease,
+                 background   0.20s ease,
                  box-shadow   0.30s ease,
                  transform    0.25s ease;       /* Smooth all property transitions    */
 
-  /* Glassmorphism — same recipe as .ov-panel */
-  background:              rgba(10,15,32,0.30); /* Lighter transparent dark surface   */
-  backdrop-filter:         blur(20px) saturate(1.5) brightness(0.92);
-  -webkit-backdrop-filter: blur(20px) saturate(1.5) brightness(0.92);
-  border:                  1px solid rgba(255,255,255,0.07);
-  box-shadow:              0 4px 24px rgba(0,0,0,0.25),
-                           0 0 0 1px rgba(255,255,255,0.03),
-                           inset 0 1px 0 rgba(255,255,255,0.06);
+  /* Nav-item glass recipe — force in all browsers */
+  background:              rgba(10,15,35,0.45) !important; /* Same as nav-item        */
+  backdrop-filter:         blur(12px) saturate(1.4) !important; /* Nav-item blur      */
+  -webkit-backdrop-filter: blur(12px) saturate(1.4) !important; /* Safari support     */
+  border:                  1px solid rgba(255,255,255,0.07); /* Subtle border         */
+  box-shadow:              0 4px 24px rgba(0,0,0,0.25);      /* Soft depth shadow     */
 }
 
-/* Chrome/Safari: use actual blur */
 @supports (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px)) {
   .ov-bento-card {
-    background:              rgba(10,15,32,0.30);
-    backdrop-filter:         blur(20px) saturate(1.5) brightness(0.92);
-    -webkit-backdrop-filter: blur(20px) saturate(1.5) brightness(0.96);
+    /* Chrome/Safari: lighter with blur — matches nav-item exactly */
+    background:              rgba(10,15,35,0.45); /* Same as nav-item                 */
+    backdrop-filter:         blur(12px) saturate(1.4); /* Matching blur              */
+    -webkit-backdrop-filter: blur(12px) saturate(1.4); /* Safari matching            */
   }
 }
 
@@ -99,12 +97,11 @@
 
 /* Hover: lift + subtle cyan tint */
 .ov-bento-card:hover {
-  border-color: rgba(255,255,255,0.14);
-  background:   rgba(79,195,247,0.05);
-  box-shadow:   0 8px 32px rgba(0,0,0,0.30),
-                0 0 0 1px rgba(79,195,247,0.08),
-                inset 0 1px 0 rgba(255,255,255,0.10);
-  transform:    translateY(-2px);
+  /* Matches nav-item hover recipe */
+  background:   rgba(79,195,247,0.12);          /* Cyan tint — same as nav hover      */
+  border-color: rgba(79,195,247,0.30);          /* Cyan border on hover               */
+  box-shadow:   0 4px 20px rgba(79,195,247,0.10); /* Cyan glow shadow                 */
+  transform:    translateY(-2px);               /* Lift effect                        */
 }
 
 /* ══════════════════════════════════════════════════════
@@ -483,17 +480,20 @@
    patterns for all new bento-specific classes
 ══════════════════════════════════════════════════════ */
 [data-theme="light"] .ov-bento-card {
-  background:              rgba(120,160,210,0.08);
-  border:                  1px solid rgba(79,143,199,0.15);
-  backdrop-filter:         blur(20px) saturate(1.6);
-  -webkit-backdrop-filter: blur(20px) saturate(1.6);
+  /* Light mode: matches light nav-item glass style */
+  background:              rgba(120,160,210,0.08); /* Same as light nav-item          */
+  backdrop-filter:         blur(12px) saturate(1.4); /* Same blur as dark mode        */
+  -webkit-backdrop-filter: blur(12px) saturate(1.4); /* Safari support               */
+  border:                  1px solid rgba(79,143,199,0.15); /* Blue border            */
   box-shadow:              none;
 }
 
 [data-theme="light"] .ov-bento-card:hover {
-  background:   rgba(26,143,199,0.10);
-  border-color: rgba(26,143,199,0.30);
-  box-shadow:   0 4px 16px rgba(26,143,199,0.08);
+  /* Matches light nav-item hover */
+  background:   rgba(26,143,199,0.14);          /* Cyan-blue tint on hover            */
+  border-color: rgba(26,143,199,0.35);          /* Cyan border                        */
+  box-shadow:   0 4px 16px rgba(26,143,199,0.10); /* Soft blue glow                   */
+  transform:    translateY(-2px);               /* Lift effect                        */
 }
 
 [data-theme="light"] .ov-bento-lang-chip {
