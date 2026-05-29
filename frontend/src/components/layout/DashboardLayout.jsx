@@ -1,36 +1,34 @@
 /**
  * DashboardLayout.jsx
  * ─────────────────────────────────────────────────────────
- * Devoryn-style dashboard shell:
- * - Fixed frosted-glass sidebar with nav items + user card
- * - Sticky glass topbar with greeting, theme toggle, notification bell, user pill
- * - Scrollable main content area
- * - Fully theme-aware: reads from ThemeContext for dark/light
+ * Redesigned dashboard shell matching reference UI:
+ * - Soft glass sidebar with pill nav items + ambient blobs
+ * - Clean topbar: page title + search bar + toggle + bell + user
+ * - iOS-style dark/light toggle switch
+ * - Responsive hamburger for mobile
  * ─────────────────────────────────────────────────────────
  */
-import { useState , useEffect }      from 'react';
-import { useProfile }    from '../../hooks/useProfile';      // Profile data for avatar/name
-import { useTheme }      from '../../context/ThemeContext';  // Dark/light mode context
-import { getInitials }   from '../../utils/formatters';      // Formats name → "HA"
-import '../../styles/layout/DashboardLayout.css';            // Component layout styles
-import ParticleBackground from '../ui/ParticleBackground';
+import { useState, useEffect }   from 'react';
+import { useTheme }              from '../../context/ThemeContext';  // Dark/light mode context
+import { getInitials }           from '../../utils/formatters';      // Name → "HA"
+import '../../styles/layout/DashboardLayout.css';                    // Layout styles
+import ParticleBackground        from '../ui/ParticleBackground';    // Canvas particle bg
+
 import {
-  LayoutDashboard,  // Overview
-  BriefcaseBusiness, // Experience
-  Rocket,           // Projects
-  Zap,              // Skills
-  GraduationCap,    // Education
-  BookOpen,         // Courses
-  FlaskConical,     // Self Study
-  BarChart3,        // Analytics
-  Target,           // Goals
-  MessageSquareQuote, // Feedback
-  UserRound,        // About
-  Send,             // Contact
-} from 'lucide-react';
+  LayoutDashboard,
+  BriefcaseBusiness,
+  Rocket,
+  Zap,
+  GraduationCap,
+  FlaskConical,
+  BarChart3,
+  Target,
+  MessageSquareQuote,
+  UserRound,
+  Send,
+} from 'lucide-react';                                               // Icon library                                               // Icon library
 
-
-/** Main navigation items — ordered by portfolio story flow */
+/* ── Main navigation items ─────────────────────────────────── */
 const NAV_ITEMS = [
   { label: 'Overview',                  href: '#overview',   id: 'overview',   Icon: LayoutDashboard    },
   { label: 'Experience & Achievements', href: '#experience', id: 'experience', Icon: BriefcaseBusiness  },
@@ -43,100 +41,151 @@ const NAV_ITEMS = [
   { label: 'Feedback',                  href: '#feedback',   id: 'feedback',   Icon: MessageSquareQuote },
 ];
 
-/** Bottom pinned items — always visible at sidebar bottom */
+/* ── Bottom pinned nav items ───────────────────────────────── */
 const BOTTOM_NAV_ITEMS = [
   { label: 'About',   href: '#about',   id: 'about',   Icon: UserRound },
   { label: 'Contact', href: '#contact', id: 'contact', Icon: Send      },
 ];
 
+/* ── Section label → page title map ───────────────────────── */
+const PAGE_TITLES = {
+  overview:   'Overview',
+  experience: 'Experience',
+  projects:   'Projects',
+  skills:     'Skills',
+  education:  'Education',
+  selfstudy:  'Self Study',
+  analytics:  'Analytics',
+  goals:      'Goals',
+  feedback:   'Feedback',
+  about:      'About',
+  contact:    'Contact',
+};
+
 /**
+ * DashboardLayout — main shell wrapping all portfolio sections.
  * @param {object}          props
  * @param {React.ReactNode} props.children       - Page sections
- * @param {string}          props.activeSection  - Currently visible section ID
- * @param {object|null}     props.profile        - Profile data from API
+ * @param {string}          props.activeSection  - Currently active section ID
+ * @param {Function}        props.onSectionChange- Callback when nav item clicked
+ * @param {object|null}     props.profile        - Profile API data
  */
 export default function DashboardLayout({ children, activeSection = '', onSectionChange, profile }) {
-  const [sidebarOpen, setSidebarOpen] = useState(false);  // Mobile sidebar open state
 
-  /* ── Theme context ────────────────────────────────────────────── */
-  const { isDark, toggleTheme } = useTheme();             // Read theme state + toggle fn
+  const [sidebarOpen, setSidebarOpen] = useState(false);  // Mobile sidebar state
 
-  /* ── Safe display values with fallbacks ──────────────────────── */
+  /* ── Theme ─────────────────────────────────────────────── */
+  const { isDark, toggleTheme } = useTheme();                  // Theme state + toggle fn
+
+  /* ── Profile data with fallbacks ────────────────────────── */
   const fullName  = profile?.full_name      || 'Hussam Alshawi';
-  const firstName = fullName.split(' ')[0];               // Extract first name for greeting
-  const initials  = getInitials(fullName);                // "HA" format for avatars
+  const initials  = getInitials(fullName);                     // "HA"
   const title     = profile?.title          || 'Full Stack Developer';
-  const avatar    = profile?.primary_avatar || null;      // Cloudinary URL or null
-  /* ── Dynamic favicon — runs after render, updates tab icon from API avatar ── */
-/* ── Dynamic favicon — directly set Cloudinary URL with size param ── */
-useEffect(() => {
-  if (!avatar) return;                                      // Skip if no avatar from API
+  const avatar    = profile?.primary_avatar || null;
+  const available = profile?.is_available_for_hire || false;  // Hire status badge
 
-  const favicon = document.getElementById('dynamic-favicon'); // Find favicon link tag
-  if (!favicon) return;                                     // Skip if not found in DOM
+  /* ── Dynamic favicon from API avatar ───────────────────── */
+  useEffect(() => {
+    if (!avatar) return;                                        // Skip if no avatar
+    const favicon = document.getElementById('dynamic-favicon'); // Get favicon element
+    if (!favicon) return;                                       // Skip if not found
+    const sized = avatar.includes('cloudinary.com')
+      ? avatar.replace('/upload/', '/upload/w_192,h_192,c_fill,r_max/')
+      : avatar;
+    favicon.href = sized;                                       // Apply resized avatar
+    favicon.type = 'image/jpeg';
+  }, [avatar]);
 
-  /* Append Cloudinary transform params to force 64px square output */
-  /* This avoids CORS canvas issues entirely — browser loads directly */
-  const sized = avatar.includes('cloudinary.com')
-    ? avatar.replace('/upload/', '/upload/w_192,h_192,c_fill,r_max,b_rgb:4a90d9/')  // Cloudinary transform URL
-    : avatar;                                               // Non-Cloudinary: use as-is
+  /* ── Page title from active section ────────────────────── */
+  const pageTitle = PAGE_TITLES[activeSection] || 'Dashboard';
 
-  favicon.href = sized;                                     // Set resized avatar as favicon
-  favicon.type = 'image/jpeg';                              // Update MIME type
-}, [avatar]);                                               // Re-run when avatar changes
-
-
-  const available = profile?.is_available_for_hire || false; // Hire status
-  /** Close sidebar when nav link is clicked on mobile */
+  /* ── Close sidebar on mobile nav click ─────────────────── */
   const closeOnMobile = () => setSidebarOpen(false);
 
   return (
     <div className="dashboard-root">
-        {/* Global particle network — sits behind everything */}
-        <ParticleBackground opacity={0.7} />
+
+      {/* Global particle canvas — sits behind all layers */}
+      <ParticleBackground opacity={0.65} />
+
       {/* ══════════════════════════════════════════════
-          SIDEBAR — Fixed frosted glass panel
+          SIDEBAR
       ══════════════════════════════════════════════ */}
       <aside
-          className={`sidebar ${sidebarOpen ? 'sidebar--open' : ''}`}
-          aria-label="Sidebar navigation"
+        className={`sidebar ${sidebarOpen ? 'sidebar--open' : ''}`}
+        aria-label="Sidebar navigation"
+        id="sidebar"
+      >
+        {/* Ambient blob decorations */}
+        <div className="sidebar__texture" aria-hidden="true" />
+
+        {/* ── Logo / brand ── */}
+        <a
+          href="#overview"
+          className="sidebar__logo"
+          onClick={(e) => {
+            e.preventDefault();                                 // Prevent default href
+            closeOnMobile();                                    // Close on mobile
+            onSectionChange('overview');                        // Navigate to overview
+          }}
+          aria-label="Go to dashboard overview"
         >
-          {/* Decorative water-droplet texture */}
-          <div className="sidebar__texture" aria-hidden="true" />
+          {/* Avatar circle */}
+          <div className="sidebar__logo-mark" aria-hidden="true">
+            {avatar
+              ? <img src={avatar} alt={fullName} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }} />
+              : initials
+            }
+          </div>
 
-          {/* ── Logo ── */}
-            <a
-            href="#overview"
-            className="sidebar__logo"
-            onClick={(e) => {
-              e.preventDefault();
-              closeOnMobile();
-              onSectionChange('overview');
-            }}
-            aria-label="Go to dashboard overview"
-          >
-            <div className="sidebar__logo-mark" aria-hidden="true">
-              {avatar
-                ? <img src={avatar} alt={fullName} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 'inherit' }} />
-                : 'HA'
-              }
-            </div>
-            <span className="sidebar__logo-text">
-              HA<em>.</em>Dev
-            </span>
-          </a>
+          {/* Brand name */}
+          <span className="sidebar__logo-text">
+            HA<em>.Dev</em>
+          </span>
+        </a>
 
-          {/* ── Main navigation ── */}
-          <nav
-            className="sidebar__nav"
-            role="navigation"
-            aria-label="Portfolio sections"
-          >
-            {NAV_ITEMS.map(item => {
+        {/* ── Main navigation ── */}
+        <nav
+          className="sidebar__nav"
+          role="navigation"
+          aria-label="Portfolio sections"
+        >
+          {NAV_ITEMS.map(item => {
+            const isActive = activeSection === item.id;        // Check if this item is active
+            return (
+              <a
+                key={item.id}
+                href={`#${item.id}`}
+                className={`nav-item ${isActive ? 'nav-item--active' : ''}`}
+                aria-current={isActive ? 'page' : undefined}
+                onClick={(e) => {
+                  e.preventDefault();                           // Prevent page jump
+                  onSectionChange(item.id);                    // Update active section
+                  closeOnMobile();                             // Close sidebar on mobile
+                }}
+              >
+                {/* Lucide icon */}
+                <span className="nav-item__icon" aria-hidden="true">
+                  <item.Icon size={17} strokeWidth={1.6} />
+                </span>
+                {/* Label text */}
+                <span className="nav-item__label">{item.label}</span>
+              </a>
+            );
+          })}
+        </nav>
+
+        {/* ── Bottom pinned: About + Contact + User card ── */}
+        <div className="sidebar__bottom">
+          {/* Divider line */}
+          <div className="sidebar__bottom-divider" aria-hidden="true" />
+
+          {/* Bottom nav links */}
+          <nav className="sidebar__bottom-nav" role="navigation" aria-label="About and contact">
+            {BOTTOM_NAV_ITEMS.map(item => {
               const isActive = activeSection === item.id;
-
               return (
-                  <a
+                <a
                   key={item.id}
                   href={`#${item.id}`}
                   className={`nav-item ${isActive ? 'nav-item--active' : ''}`}
@@ -148,7 +197,7 @@ useEffect(() => {
                   }}
                 >
                   <span className="nav-item__icon" aria-hidden="true">
-                    <item.Icon size={18} strokeWidth={1.5} />
+                    <item.Icon size={17} strokeWidth={1.6} />
                   </span>
                   <span className="nav-item__label">{item.label}</span>
                 </a>
@@ -156,107 +205,73 @@ useEffect(() => {
             })}
           </nav>
 
-          {/* ── Bottom pinned section — About + Contact + User card ── */}
-          <div className="sidebar__bottom">
-            <nav
-              className="sidebar__bottom-nav"
-              role="navigation"
-              aria-label="About and contact"
-            >
-              {BOTTOM_NAV_ITEMS.map(item => {
-                const isActive = activeSection === item.id;
+          {/* Divider before user card */}
+          <div className="sidebar__bottom-divider" aria-hidden="true" />
 
-                return (
-                    <a
-                    key={item.id}
-                    href={`#${item.id}`}
-                    className={`nav-item ${isActive ? 'nav-item--active' : ''}`}
-                    aria-current={isActive ? 'page' : undefined}
-                    onClick={(e) => {
-                      e.preventDefault();
-                      onSectionChange(item.id);
-                      closeOnMobile();
-                    }}
-                  >
-                    <span className="nav-item__icon" aria-hidden="true">
-                      <item.Icon size={18} strokeWidth={1.5} />
-                    </span>
-                    <span className="nav-item__label">{item.label}</span>
-                  </a>
-                );
-              })}
-            </nav>
-            {/* Divider above bottom items */}
-            <div className="sidebar__bottom-divider" aria-hidden="true" />
-
-            {/* About + Contact pinned links */}
-
-
-            {/* User card */}
-            <div className="sidebar__user">
-              <div
-                className="sidebar__user-card"
-                role="complementary"
-                aria-label="Signed-in user"
-              >
-                <div className="sidebar__avatar">
-                  {avatar
-                    ? <img src={avatar} alt={`${fullName} avatar`} />
-                    : <span>{initials}</span>
-                  }
-                </div>
-                <div className="sidebar__user-info">
-                  <div className="sidebar__user-name">{fullName}</div>
-                  <div className="sidebar__user-role">
-                    {available ? 'Open to Hire ✦' : title}
-                  </div>
-                </div>
-                <div
-                  className="sidebar__online-dot"
-                  title="Active"
-                  aria-label="Status: active"
-                />
+          {/* User card */}
+          <div className="sidebar__user">
+            <div className="sidebar__user-card" role="complementary" aria-label="User info">
+              {/* Avatar */}
+              <div className="sidebar__avatar">
+                {avatar
+                  ? <img src={avatar} alt={`${fullName} avatar`} />
+                  : <span>{initials}</span>
+                }
               </div>
-            </div>
 
+              {/* Name + role */}
+              <div className="sidebar__user-info">
+                <div className="sidebar__user-name">{fullName}</div>
+                <div className="sidebar__user-role">
+                  {available ? 'Open to Hire ✦' : title}
+                </div>
+              </div>
+
+              {/* Online indicator dot */}
+              <div
+                className="sidebar__online-dot"
+                title="Active"
+                aria-label="Status: active"
+              />
+            </div>
           </div>
-        </aside>
+        </div>
+      </aside>
 
       {/* ══════════════════════════════════════════════
-          MAIN CONTENT — Topbar + scrollable sections
+          MAIN CONTENT
       ══════════════════════════════════════════════ */}
       <div className="dashboard-main">
 
-        {/* ── Sticky Topbar ── */}
+        {/* ── Topbar ── */}
         <header className="topbar" role="banner">
 
-         {/* Left side: personal greeting — name and title pulled from profile API */}
-            <div className="topbar__greeting" aria-live="polite">
+          {/* Left: full name + job title */}
+          <div className="topbar__greeting" aria-live="polite">
+            {/* Full name from profile API */}
+            <div className="topbar__greeting-hi">
+              {fullName} 👋
+            </div>
+            {/* Job title from profile API */}
+            <div className="topbar__greeting-sub">
+              {title || 'Welcome to your Portfolio'}
+            </div>
+          </div>
 
-              {/* Hi + first name from profile.full_name, split to get first word */}
-              <div className="topbar__greeting-hi">
-                {fullName}  👋
-              </div>
+          {/* Right: availability pill + theme toggle + user pill + hamburger */}
+          <div className="topbar__actions">
 
-              {/* Job title from profile.title — falls back to static string if API fails */}
-              <div className="topbar__greeting-sub">
-                {title || 'Welcome to your Portfolio'}
-              </div>
-
+            {/* Availability status pill */}
+            <div
+              className={`availability-pill ${available ? 'availability-pill--open' : ''}`}
+              role="status"
+              aria-label={available ? 'Available for hire' : 'Currently employed'}
+            >
+              <span className="availability-pill__dot" aria-hidden="true" />
+              {available ? 'Available for Hire' : 'Currently Employed'}
             </div>
 
-          {/* Right side: action buttons */}
-          <div className="topbar__actions">
-                {/* Availability status pill */}
-        <div
-          className={`availability-pill ${available ? 'availability-pill--open' : ''}`}
-          role="status"
-          aria-label={available ? 'Available for hire' : 'Currently employed'}
-        >
-          <span className="availability-pill__dot" aria-hidden="true" />
-          {available ? 'Available for Hire' : 'Currently Employed'}
-        </div>
-            {/* ── Theme Toggle — dark/light switch ── */}
+            {/* ── Dark / Light theme toggle buttons ── */}
             <div
               className="topbar__theme-toggle"
               role="group"
@@ -265,17 +280,16 @@ useEffect(() => {
               {/* Dark mode button */}
               <button
                 className={`theme-btn ${isDark ? 'theme-btn--active' : ''}`}
-                onClick={() => !isDark && toggleTheme()}   // Only toggle if not already dark
+                onClick={() => !isDark && toggleTheme()}        // Toggle only if not already dark
                 aria-pressed={isDark}
                 title="Dark mode"
               >
                 🌙
               </button>
-
               {/* Light mode button */}
               <button
                 className={`theme-btn ${!isDark ? 'theme-btn--active' : ''}`}
-                onClick={() => isDark && toggleTheme()}    // Only toggle if not already light
+                onClick={() => isDark && toggleTheme()}         // Toggle only if not already light
                 aria-pressed={!isDark}
                 title="Light mode"
               >
@@ -283,26 +297,7 @@ useEffect(() => {
               </button>
             </div>
 
-{/*              */}{/* Notification bell with cyan dot */}
-{/*             <button */}
-{/*               className="topbar__icon-btn" */}
-{/*               aria-label="Notifications" */}
-{/*               title="Notifications" */}
-{/*             > */}
-{/*               🔔 */}
-{/*               <span className="topbar__notif-dot" aria-hidden="true" /> */}
-{/*             </button> */}
-
-{/*              */}{/* Settings button */}
-{/*             <button */}
-{/*               className="topbar__icon-btn" */}
-{/*               aria-label="Settings" */}
-{/*               title="Settings" */}
-{/*             > */}
-{/*               ⚙ */}
-{/*             </button> */}
-
-            {/* User pill — shows avatar + full name */}
+            {/* ── User pill: avatar + full name + chevron ── */}
             <div
               className="topbar__user"
               role="button"
@@ -310,17 +305,20 @@ useEffect(() => {
               aria-label="User menu"
               aria-haspopup="true"
             >
+              {/* Avatar circle */}
               <div className="topbar__user-avatar">
                 {avatar
                   ? <img src={avatar} alt="Profile" />
                   : <span>{initials}</span>
                 }
               </div>
+              {/* Full name */}
               <span className="topbar__user-name">{fullName}</span>
+              {/* Dropdown chevron */}
               <span className="topbar__user-chevron" aria-hidden="true">▾</span>
             </div>
 
-            {/* Mobile hamburger — CSS shows only on small screens */}
+            {/* ── Mobile hamburger ── */}
             <button
               className="topbar__icon-btn topbar__hamburger"
               onClick={() => setSidebarOpen(prev => !prev)}
@@ -333,7 +331,7 @@ useEffect(() => {
           </div>
         </header>
 
-        {/* ── Page sections (children from Home.jsx) ── */}
+        {/* ── Page sections ── */}
         <main
           className="page-content"
           id="main-content"
@@ -344,7 +342,7 @@ useEffect(() => {
         </main>
       </div>
 
-      {/* Mobile overlay — tapping it closes the sidebar */}
+      {/* Mobile overlay — click to close sidebar */}
       {sidebarOpen && (
         <div
           className="sidebar-overlay"
