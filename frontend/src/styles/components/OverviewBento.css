@@ -48,12 +48,12 @@
                  box-shadow   0.30s ease,
                  transform    0.25s ease;       /* Smooth all transitions             */
 
-  /* Option B — opacity 0.55 / blur 8px */
-  background:              rgba(10,15,35,0.55) !important; /* Semi-transparent dark   */
-  backdrop-filter:         blur(8px) !important;           /* Subtle blur             */
-  -webkit-backdrop-filter: blur(8px) !important;           /* Safari support          */
-  border:                  1px solid rgba(255,255,255,0.09); /* Slightly visible border */
-  box-shadow:              0 4px 24px rgba(0,0,0,0.25);    /* Soft depth shadow       */
+  /* Frosted glass — matches ov-panel */
+  background:              rgba(13, 18, 48, 0.35);
+  backdrop-filter:         blur(24px) saturate(1.2);
+  -webkit-backdrop-filter: blur(24px) saturate(1.2);
+  border:                  1px solid rgba(79,195,247,0.10);
+  box-shadow:              0 4px 32px rgba(0,0,0,0.20);
 }
 
 
@@ -87,11 +87,11 @@
 /* All direct children above texture */
 .ov-bento-card > * { position: relative; z-index: 1; }
 
-/* Hover: lift + subtle cyan tint */
+/* Hover: subtle cyan brighten — matches ov-panel */
 .ov-bento-card:hover {
-  background:   rgba(79,195,247,0.12) !important; /* Cyan tint on hover               */
-  border-color: rgba(79,195,247,0.30);            /* Cyan border on hover             */
-  box-shadow:   0 4px 20px rgba(79,195,247,0.10); /* Cyan glow shadow                 */
+  background:   rgba(79,195,247,0.04) !important; /* More transparent on hover     */
+  border-color: rgba(79,195,247,0.16);            /* Brighter cyan border          */
+  box-shadow:   0 4px 24px rgba(79,195,247,0.06); /* Soft cyan glow                */
   transform:    translateY(-2px);                 /* Lift effect                      */
 }
 
@@ -180,11 +180,12 @@
 
 /* Track — fills remaining space */
 .ov-bento-progress-track {
-  flex:          1;                             /* Expand to fill row                 */
-  height:        4px;
-  background:    rgba(255,255,255,0.07);
+  position:      relative;
+  width:         100%;
+  height:        5px;                           /* Slightly taller track              */
+  background:    rgba(79,195,247,0.06);
   border-radius: var(--r-full);
-  overflow:      hidden;
+  overflow:      hidden;                        /* Clip fill to track shape           */
 }
 
 /* Animated fill bar */
@@ -213,7 +214,7 @@
   gap:        var(--s2);                        /* 8px between chips                  */
   margin-top: var(--s4);                        /* Space above language strip         */
   padding-top:var(--s4);                        /* Visual separator from stats        */
-  border-top: 1px solid rgba(255,255,255,0.08); /* Faint separator line               */
+  border-top: 1px solid rgba(79,195,247,0.07); /* Cyan-tinted separator              */
 }
 
 /* Individual language chip */
@@ -223,15 +224,15 @@
   gap:           var(--s1);                     /* 4px between flag, name, level      */
   padding:       0.24rem 0.60rem;
   border-radius: var(--r-full);
-  background:    rgba(255,255,255,0.06);        /* Subtle glass surface               */
-  border:        1px solid rgba(255,255,255,0.10);
+  background:    rgba(79,195,247,0.04);        /* Cyan-tinted glass                  */
+  border:        1px solid rgba(79,195,247,0.12);
   transition:    all var(--t-fast);
 }
 
 /* Hover: cyan tint matching theme */
 .ov-bento-lang-chip:hover {
-  background:   rgba(79,195,247,0.10);
-  border-color: rgba(79,195,247,0.30);
+  background:   rgba(79,195,247,0.08);
+  border-color: rgba(79,195,247,0.25);
 }
 
 /* Flag emoji */
@@ -269,7 +270,7 @@
   flex-direction: column;
   gap:            var(--s2);                    /* 8px between mini stat rows         */
   padding-top:    var(--s3);                    /* Space above mini stats             */
-  border-top:     1px solid rgba(255,255,255,0.07); /* Faint separator               */
+  border-top:     1px solid rgba(79,195,247,0.06); /* Cyan-tinted separator           */
 }
 
 /* Single mini stat row */
@@ -364,8 +365,8 @@
   display:               grid;
   grid-template-columns: 1fr 1fr;               /* 2 columns                          */
   gap:                   1px;                   /* 1px creates visual dividers        */
-  background:            rgba(255,255,255,0.06); /* Gap/divider color                 */
-  border:                1px solid rgba(255,255,255,0.06);
+  background:            rgba(79,195,247,0.06); /* Cyan-tinted divider                */
+  border:                1px solid rgba(79,195,247,0.08);
   border-radius:         var(--r-lg);
   overflow:              hidden;
   margin-top:            var(--s3);
@@ -373,7 +374,7 @@
 
 /* Individual support metric cell */
 .ov-bento-support-item {
-  background:      rgba(14,20,40,0.70);         /* Slightly darker than card          */
+  background:      rgba(13,18,48,0.35);         /* Matches card glass                */
   padding:         var(--s3) var(--s4);         /* Inner cell padding                 */
   display:         flex;
   flex-direction:  column;
@@ -384,7 +385,7 @@
 }
 
 .ov-bento-support-item:hover {
-  background: rgba(20,28,55,0.90);              /* Darken on hover                    */
+  background: rgba(79,195,247,0.06);            /* Cyan tint on hover                */
 }
 
 /* Colored number in support cell */
@@ -435,7 +436,7 @@
 .ov-bento-metric-track {
   flex:          1;
   height:        4px;
-  background:    rgba(255,255,255,0.07);
+  background:    rgba(79,195,247,0.06);
   border-radius: var(--r-full);
   overflow:      hidden;
 }
@@ -471,48 +472,49 @@
    patterns for all new bento-specific classes
 ══════════════════════════════════════════════════════ */
 [data-theme="light"] .ov-bento-card {
-  /* Light mode: same B recipe */
-  background:              rgba(14,20,50,0.08) !important; /* Very light dark tint     */
-  backdrop-filter:         blur(8px) !important;           /* Same blur as dark mode   */
-  -webkit-backdrop-filter: blur(8px) !important;           /* Safari support           */
-  border:                  1px solid rgba(79,143,199,0.15); /* Soft blue border        */
-  box-shadow:              none;
+  background:              rgba(255,255,255,0.38);
+  backdrop-filter:         blur(24px) saturate(1.6);
+  -webkit-backdrop-filter: blur(24px) saturate(1.6);
+  border:                  1px solid rgba(79,143,199,0.18);
+  box-shadow:              0 4px 32px rgba(100,130,180,0.08);
 }
 
 [data-theme="light"] .ov-bento-card:hover {
-  background:   rgba(26,143,199,0.10) !important; /* Cyan-blue tint on hover          */
-  border-color: rgba(26,143,199,0.35);            /* Cyan border                      */
-  box-shadow:   0 4px 16px rgba(26,143,199,0.10); /* Soft blue glow                   */
+  background:   rgba(79,143,199,0.06);
+  border-color: rgba(79,143,199,0.25);
+  box-shadow:   0 4px 20px rgba(79,143,199,0.08);
   transform:    translateY(-2px);
 }
 
 [data-theme="light"] .ov-bento-lang-chip {
-  background:   rgba(207,224,245,0.35);
-  border-color: rgba(79,143,199,0.12);
+  background:   rgba(79,143,199,0.06);
+  border-color: rgba(79,143,199,0.14);
 }
 
 [data-theme="light"] .ov-bento-lang-chip:hover {
-  background:   rgba(26,143,199,0.12);
-  border-color: rgba(26,143,199,0.30);
+  background:   rgba(79,143,199,0.12);
+  border-color: rgba(79,143,199,0.28);
 }
 
 [data-theme="light"] .ov-bento-lang-chip__name { color: #1e2d42; }
 
-[data-theme="light"] .ov-bento-mini-stat__label { color: #3d5a80; }
+[data-theme="light"] .ov-bento-mini-stat__label { color: #5a7499; }
 
 [data-theme="light"] .ov-bento-big-stat__label { color: #6b8aaa; }
 
+[data-theme="light"] .ov-bento-metric-label { color: #5a7499; }
+
 [data-theme="light"] .ov-bento-support-item {
-  background: rgba(120,160,210,0.08);
+  background: rgba(255,255,255,0.35);
 }
 
 [data-theme="light"] .ov-bento-support-item:hover {
-  background: rgba(26,143,199,0.12);
+  background: rgba(79,143,199,0.08);
 }
 
 [data-theme="light"] .ov-bento-support-grid {
   background:   rgba(79,143,199,0.08);
-  border-color: rgba(79,143,199,0.10);
+  border-color: rgba(79,143,199,0.12);
 }
 
 [data-theme="light"] .ov-bento-support-item__label,
@@ -521,7 +523,7 @@
 
 [data-theme="light"] .ov-bento-progress-track,
 [data-theme="light"] .ov-bento-metric-track {
-  background: rgba(26,143,199,0.10);
+  background: rgba(79,143,199,0.10);
 }
 
 [data-theme="light"] .ov-bento-support-item__num,
@@ -531,7 +533,11 @@
 }
 
 [data-theme="light"] .ov-bento-lang-strip {
-  border-top-color: rgba(79,143,199,0.12);
+  border-top-color: rgba(79,143,199,0.14);
+}
+
+[data-theme="light"] .ov-bento-mini-stats {
+  border-top-color: rgba(79,143,199,0.10);
 }
 
 /* ══════════════════════════════════════════════════════
