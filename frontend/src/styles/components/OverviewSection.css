@@ -104,20 +104,19 @@
                  box-shadow   0.30s ease,
                  transform    0.25s ease;       /* Smooth all transitions             */
 
-  /* Option B — opacity 0.55 / blur 8px */
-  background:              rgba(10,15,35,0.55) !important; /* Semi-transparent dark   */
-  backdrop-filter:         blur(8px) !important;           /* Subtle blur             */
-  -webkit-backdrop-filter: blur(8px) !important;           /* Safari support          */
-  border:                  1px solid rgba(255,255,255,0.09); /* Slightly visible border */
-  box-shadow:              0 4px 24px rgba(0,0,0,0.25);    /* Soft depth shadow       */
-}
+  /* Frosted glass — lets background blobs show through */
+  background:              rgba(13, 18, 48, 0.35);
+  backdrop-filter:         blur(24px) saturate(1.2);
+  -webkit-backdrop-filter: blur(24px) saturate(1.2);
+  border:                  1px solid rgba(79,195,247,0.10);
+  box-shadow:              0 4px 32px rgba(0,0,0,0.20);
 
 
-/* Hover: white glass brighten effect */
+/* Hover: subtle cyan brighten */
 .ov-panel:hover {
-  background:   rgba(79,195,247,0.12) !important; /* Cyan tint on hover               */
-  border-color: rgba(79,195,247,0.30);            /* Cyan border on hover             */
-  box-shadow:   0 4px 20px rgba(79,195,247,0.10); /* Cyan glow shadow                 */
+  background:   rgba(79,195,247,0.04) !important; /* More transparent on hover     */
+  border-color: rgba(79,195,247,0.16);            /* Brighter cyan border          */
+  box-shadow:   0 4px 24px rgba(79,195,247,0.06); /* Soft cyan glow                */
   transform:    translateY(-2px);                 /* Lift effect                      */
 }
 
@@ -151,9 +150,6 @@
 
 /* All direct children sit above texture pseudo-elements */
 .ov-panel > * { position: relative; z-index: 1; }
-
-/* Hover: slightly brighter border */
-.ov-panel:hover { border-color: rgba(255, 255, 255, 0.14); }
 
 /* ── Panel header row ──────────────────────────────── */
 .ov-panel__header {
@@ -241,33 +237,65 @@
    Avatar + Name + Title + Bio + Social + CTAs
 ══════════════════════════════════════════════════════ */
 
-/* Avatar wrapper — contains avatar + online dot */
-.ov-profile__avatar-wrap {
-  position:        relative;
-  width:           150px;
-  height:          150px;
-  margin:          0 auto var(--s4);            /* Centered horizontally            */
+/* Particle background layer — absolutely positioned */
+.ov-profile__particles {
+  position: absolute;
+  inset: 0;
+  opacity: 0.06;
+  pointer-events: none;
 }
 
-/* Avatar circle — gradient fallback when no image */
+/* Avatar row — side-by-side layout */
+.ov-profile__header {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--s4);
+  margin-bottom: var(--s4);
+}
+
+/* Right column — name, title, pill, social */
+.ov-profile__info {
+  min-width: 0;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--s2);
+  padding-top: 4px;
+}
+
+/* Section label — Languages, Analytics */
+.ov-profile__section-label {
+  font-family: var(--font-mono);
+  font-size: 0.56rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: var(--s2);
+}
+
+/* Languages section wrapper */
+.ov-profile__lang-section {
+  margin-bottom: var(--s4);
+  padding-bottom: var(--s4);
+  border-bottom: 1px solid rgba(79,195,247,0.07);
+}
+
+/* Avatar card — gradient fallback, matches sidebar logo aesthetic */
 .ov-profile__avatar {
-  width:           150px;
-  height:          150px;
-  border-radius:   20%;
-  background:      linear-gradient(135deg, var(--cyan), var(--violet));
+  width:           180px;
+  height:          210px;
+  flex-shrink:     0;
+  border-radius:   16px;
+  background:      linear-gradient(135deg, var(--cyan), var(--blue));
   display:         flex;
   align-items:     center;
   justify-content: center;
   font-family:     var(--font-display);
-  font-size:       2rem;
+  font-size:       0.85rem;
   font-weight:     800;
   color:           #fff;
   overflow:        hidden;
-  /* Triple glow ring effect — Devoryn style */
-  box-shadow:
-    0 0 0 2px rgba(79,195,247,0.30),            /* Inner cyan ring                  */
-    0 0 0 5px rgba(79,195,247,0.12),            /* Middle fade ring                 */
-    0 0 20px rgba(79,195,247,0.18);             /* Outer ambient glow               */
+  box-shadow:      0 3px 14px rgba(79,195,247,0.35);
 }
 
 .ov-profile__avatar img {
@@ -297,57 +325,45 @@
   display:        flex;                         /* Flex column layout inside          */
   flex-direction: column;                       /* Stack children vertically          */
 
-  /* Firefox fallback — solid */
-  background:              rgba(10,15,35,0.65); /* Same as nav-item Firefox fallback  */
-  backdrop-filter:         blur(12px) saturate(1.4); /* Same blur as nav-item        */
-  -webkit-backdrop-filter: blur(12px) saturate(1.4); /* Safari support               */
-  border:                  1px solid rgba(255,255,255,0.07); /* Same border as nav-item */
-  box-shadow:              none;                /* No extra shadow — clean like nav   */
+  background:              rgba(13,18,48,0.35);
+  backdrop-filter:         blur(24px) saturate(1.2);
+  -webkit-backdrop-filter: blur(24px) saturate(1.2);
+  border:                  1px solid rgba(79,195,247,0.10);
+  box-shadow:              0 4px 32px rgba(0,0,0,0.20);
 }
-
-/* Chrome/Safari: lighter opacity with blur — exact nav-item recipe */
-@supports (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px)) {
-  .ov-panel--profile {
-    background:              rgba(10,15,35,0.45); /* Same as nav-item Chrome value    */
-    backdrop-filter:         blur(12px) saturate(1.4); /* Identical blur             */
-    -webkit-backdrop-filter: blur(12px) saturate(1.4); /* Safari identical           */
-  }
-}
-/* Full name — centered, larger bolder display font */
+/* Full name — matches sidebar logo text style */
 .ov-profile__name {
-  font-family:    'DM Sans', sans-serif;
-  font-size:      1.7rem;              /* Increased from 1.15rem — more presence  */
-  font-weight:    800;                  /* Maximum weight                          */
-  color:          var(--text-white);
-  letter-spacing: -0.03em;             /* Tight tracking suits large display size */
-  text-align:     center;
-  margin-bottom:  var(--s1);
-  line-height:    1.15;
+  font-family:    var(--font-display);
+  font-size:      1.15rem;
+  font-weight:    800;
+  color:          #ffffff;
+  letter-spacing: -0.01em;
+  text-align:     left;
+  line-height:    1.2;
   transition:     color 0.35s ease;
 }
 
-/* Job title — cyan mono, uppercase */
+/* Job title — matches sidebar nav inactive text */
 .ov-profile__title {
   font-family:    var(--font-mono);
   font-size:      0.65rem;
   font-weight:    500;
-  color:          var(--cyan);
+  color:          rgba(255,255,255,0.60);
   letter-spacing: 0.10em;
   text-transform: uppercase;
-  text-align:     center;
-  margin-bottom:  var(--s4);
+  text-align:     left;
   transition:     color 0.35s ease;
 }
 
-/* Bio takes available space — pushes social to bottom */
+/* Bio text — matches sidebar secondary text */
 .ov-profile__bio {
   font-size:     0.82rem;
-  color:         var(--text-secondary);
+  color:         rgba(255,255,255,0.55);
   line-height:   1.75;
-  text-align:    center;
+  text-align:    left;
+  flex:          unset;
   margin-bottom: var(--s4);
-  flex:          1;                             /* Expands to fill remaining space   */
-  overflow-y:    auto;                          /* Scroll if very long               */
+  overflow-y:    auto;
   padding-right: var(--s1);
   transition:    color 0.35s ease;
 }
@@ -368,29 +384,29 @@
   gap:             var(--s2);
   margin-bottom:   var(--s5);
 }
-/* Container for the icons */
+/* Container for the social icons — matches left alignment */
 .ov-profile__social--luxury {
   display:         flex;
-  flex-wrap:       wrap;          /* Wrap icons to next line if overflow */
-  gap:             10px;          /* Consistent gap between icon buttons */
-  padding:         var(--s4) 0;   /* Vertical breathing room             */
-  justify-content: center;        /* Center icons within profile card    */
-  align-items:     center;        /* Vertically align all icon buttons   */
-  width:           100%;          /* Full width for centering to work    */
+  flex-wrap:       wrap;
+  gap:             8px;
+  margin-top:      var(--s1);
+  justify-content: flex-start;
+  align-items:     center;
+  width:           100%;
 }
 
-/* The Luxury Square Button */
+/* The square social button — matches sidebar logo aesthetic */
 .ov-social-link--luxury {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 42px;  /* Square size */
+  width: 42px;
   height: 42px;
-  background: rgba(255, 255, 255, 0.05); /* Glass effect */
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 12px; /* Smooth rounded corners */
+  background: rgba(79,195,247,0.04);
+  border: 1px solid rgba(79,195,247,0.12);
+  border-radius: 12px;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  color: #94a3b8; /* Muted icon color by default */
+  color: #94a3b8;
   position: relative;
   overflow: hidden;
 }
@@ -402,14 +418,14 @@
   transition: transform 0.3s ease;
 }
 
-/* Hover Effects */
+/* Hover Effects — matches sidebar active nav glow */
 .ov-social-link--luxury:hover {
   transform: translateY(-3px);
-  background: rgba(255, 255, 255, 0.1);
-  border-color: var(--social-color); /* Light up border with platform color */
-  color: var(--social-color);        /* Light up icon with platform color */
+  background: rgba(79,195,247,0.10);
+  border-color: var(--social-color);
+  color: var(--social-color);
   box-shadow: 0 10px 20px -5px rgba(0, 0, 0, 0.3),
-              0 0 15px var(--social-color); /* Luxury Glow */
+              0 0 15px var(--social-color);
 }
 
 .ov-social-link--luxury:hover .ov-social-link__icon--luxury svg {
@@ -507,7 +523,7 @@
 /* Background track ring — full circle */
 .ov-donut-track {
   fill:         none;
-  stroke:       rgba(255,255,255,0.07);         /* Very subtle track                */
+  stroke:       rgba(79,195,247,0.08);         /* Subtle cyan track                */
   stroke-width: 10;
 }
 
@@ -633,7 +649,7 @@
 .ov-proj-row__track {
   flex:          1;
   height:        4px;
-  background:    rgba(255,255,255,0.07);
+  background:    rgba(79,195,247,0.06);
   border-radius: var(--r-full);
   overflow:      hidden;
 }
@@ -740,7 +756,7 @@
 .ov-skill-row__track {
   flex:          1;
   height:        3px;
-  background:    rgba(255,255,255,0.07);
+  background:    rgba(79,195,247,0.06);
   border-radius: var(--r-full);
   overflow:      visible;                       /* Allow glow dot to overflow       */
 }
@@ -799,8 +815,8 @@
   display:               grid;
   grid-template-columns: repeat(auto-fill, minmax(88px, 1fr)); /* Responsive columns */
   gap:                   1px;                   /* 1px creates visual dividers       */
-  background:            rgba(255,255,255,0.06); /* Gap/divider color                */
-  border:                1px solid rgba(255,255,255,0.06);
+  background:            rgba(79,195,247,0.06); /* Gap/divider color                */
+  border:                1px solid rgba(79,195,247,0.08);
   border-radius:         var(--r-lg);
   overflow:              hidden;
   margin-top:            var(--s3);
@@ -808,9 +824,9 @@
 
 /* Individual model count cell */
 .ov-record-item {
-  background:      rgba(14, 20, 40, 0.78);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  background:      rgba(13, 18, 48, 0.40);
+  backdrop-filter: blur(16px) saturate(1.2);
+  -webkit-backdrop-filter: blur(16px) saturate(1.2);
   padding:         1.2rem 1rem;
   display:         flex;
   flex-direction:  column;
@@ -821,7 +837,7 @@
 }
 
 /* Hover: slightly lighter background */
-.ov-record-item:hover { background: rgba(20, 28, 55, 0.92); }
+.ov-record-item:hover { background: rgba(79,195,247,0.06); }
 
 /* Bottom-right glow blob — color from CSS custom prop --rec-color */
 .ov-record-item::after {
@@ -879,8 +895,10 @@
 
 /* Individual language card */
 .ov-lang-card {
-  background:    var(--glass-light);
-  border:        1px solid var(--border-subtle);
+  background:    rgba(13,18,48,0.30);
+  border:        1px solid rgba(79,195,247,0.08);
+  backdrop-filter: blur(16px) saturate(1.2);
+  -webkit-backdrop-filter: blur(16px) saturate(1.2);
   border-radius: var(--r-lg);
   padding:       var(--s4) var(--s3);
   display:       flex;
@@ -897,9 +915,9 @@
 /* Hover: lift + glowing colored border */
 .ov-lang-card:hover {
   border-color: var(--lang-color, var(--cyan));
-  background:   var(--glass-medium);
+  background:   rgba(79,195,247,0.06);
   transform:    translateY(-3px);
-  box-shadow:   0 8px 24px rgba(0,0,0,0.25), 0 0 16px var(--lang-color, var(--cyan-dim));
+  box-shadow:   0 8px 24px rgba(0,0,0,0.20), 0 0 16px var(--lang-color, var(--cyan-dim));
 }
 
 /* Bottom glow blob on hover */
@@ -985,20 +1003,19 @@
    Same glassmorphism logic, sky-blue palette instead
 ══════════════════════════════════════════════════════ */
 
-/* Main panel — same transparency as dark mode .ov-panel */
+/* Main panel — soft light glass */
 [data-theme="light"] .ov-panel {
-  /* Light mode: same B recipe — low opacity dark tint + blur */
-  background:              rgba(14,20,50,0.08) !important; /* Very light dark tint     */
-  backdrop-filter:         blur(8px) !important;           /* Same blur as dark mode   */
-  -webkit-backdrop-filter: blur(8px) !important;           /* Safari support           */
-  border:                  1px solid rgba(79,143,199,0.15); /* Soft blue border        */
-  box-shadow:              none;
+  background:              rgba(255,255,255,0.38);
+  backdrop-filter:         blur(24px) saturate(1.6);
+  -webkit-backdrop-filter: blur(24px) saturate(1.6);
+  border:                  1px solid rgba(79,143,199,0.18);
+  box-shadow:              0 4px 32px rgba(100,130,180,0.08);
 }
 
 [data-theme="light"] .ov-panel:hover {
-  background:   rgba(26,143,199,0.10) !important; /* Cyan-blue tint on hover          */
-  border-color: rgba(26,143,199,0.30);            /* Cyan border                      */
-  box-shadow:   0 4px 16px rgba(26,143,199,0.08); /* Soft blue glow                   */
+  background:   rgba(79,143,199,0.06);
+  border-color: rgba(79,143,199,0.25);
+  box-shadow:   0 4px 20px rgba(79,143,199,0.08);
   transform:    translateY(-2px);
 }
 
@@ -1013,6 +1030,15 @@
 
 /* Profile bio */
 [data-theme="light"] .ov-profile__bio   { color: #3d5a80; }
+
+/* Profile title */
+[data-theme="light"] .ov-profile__title { color: rgba(30,45,80,0.65); }
+
+/* Section label */
+[data-theme="light"] .ov-profile__section-label { color: #5a7499; }
+
+/* Stat label */
+[data-theme="light"] .ov-stat__label { color: #5a7499; }
 
 /* Legend label */
 [data-theme="light"] .ov-legend-label   { color: #3d5a80; }
@@ -1036,12 +1062,16 @@
 /* Records grid — faint blue dividers */
 [data-theme="light"] .ov-records-grid {
   background:   rgba(79,143,199,0.08);            /* Slightly visible blue dividers    */
-  border-color: rgba(79,143,199,0.10);            /* Matching border                   */
+  border-color: rgba(79,143,199,0.12);            /* Matching border                   */
 }
 
 /* Record cell — nearly transparent */
 [data-theme="light"] .ov-record-item {
-  background: rgba(120,160,210,0.08);            /* Same as nav items                 */
+  background: rgba(255,255,255,0.35);
+}
+
+[data-theme="light"] .ov-record-item:hover {
+  background: rgba(79,143,199,0.08);
 }
 
 [data-theme="light"] .ov-record-item:hover {
@@ -1050,18 +1080,36 @@
 
 /* Language card */
 [data-theme="light"] .ov-lang-card {
-  background:              rgba(207,224,245,0.35); /* Same as nav items                */
-  border:                  1px solid rgba(79,143,199,0.12); /* Same border             */
-  backdrop-filter:         blur(12px) saturate(1.4);
-  -webkit-backdrop-filter: blur(12px) saturate(1.4);
+  background:              rgba(255,255,255,0.35);
+  border:                  1px solid rgba(79,143,199,0.12);
+  backdrop-filter:         blur(16px) saturate(1.6);
+  -webkit-backdrop-filter: blur(16px) saturate(1.6);
 }
 [data-theme="light"] .ov-panel--profile {
-  /* Same as light mode nav-item recipe */
-  background:              rgba(120,160,210,0.08); /* Same as light nav-item          */
-  backdrop-filter:         blur(12px) saturate(1.4); /* Same blur                    */
-  -webkit-backdrop-filter: blur(12px) saturate(1.4); /* Safari support               */
-  border:                  1px solid rgba(79,143,199,0.15); /* Same blue border       */
-  box-shadow:              none;
+  background:              rgba(255,255,255,0.38);
+  backdrop-filter:         blur(24px) saturate(1.6);
+  -webkit-backdrop-filter: blur(24px) saturate(1.6);
+  border:                  1px solid rgba(79,143,199,0.18);
+  box-shadow:              0 4px 32px rgba(100,130,180,0.08);
+}
+
+[data-theme="light"] .ov-social-link--luxury {
+  background: rgba(79,143,199,0.06);
+  border-color: rgba(79,143,199,0.14);
+}
+
+[data-theme="light"] .ov-social-link--luxury:hover {
+  background: rgba(79,143,199,0.12);
+}
+
+[data-theme="light"] .ov-stat {
+  background: rgba(255,255,255,0.35);
+  border-color: rgba(79,143,199,0.12);
+}
+
+[data-theme="light"] .ov-stat:hover {
+  border-color: rgba(79,143,199,0.25);
+  box-shadow: 0 0 18px rgba(79,143,199,0.08);
 }
 /* Donut track ring */
 [data-theme="light"] .ov-donut-track {
@@ -1071,7 +1119,11 @@
 /* Progress bar tracks */
 [data-theme="light"] .ov-proj-row__track,
 [data-theme="light"] .ov-skill-row__track {
-  background: rgba(26,143,199,0.10);               /* Blue-tinted track              */
+  background: rgba(79,143,199,0.10);
+}
+
+[data-theme="light"] .ov-donut-track {
+  stroke: rgba(79,143,199,0.10);
 }
 
 /* Colored numbers — darken for readability on light bg */
@@ -1160,21 +1212,23 @@
   margin-bottom:         var(--s4);
 }
 
-/* Individual stat card */
+/* Individual stat card — matches sidebar glass aesthetic */
 .ov-stat {
   position:       relative;
   overflow:       hidden;
-  border-radius:  var(--r-md);
+  border-radius:  var(--r-lg);
   padding:        var(--s3) var(--s2);
   display:        flex;
   flex-direction: column;
   align-items:    center;
   gap:            4px;
-  border:         1px solid;             /* Color set via inline style       */
+  background:     rgba(13,18,48,0.30);
+  border:         1px solid rgba(79,195,247,0.08);
+  color:          var(--stat-color, var(--cyan));
   transition:     all var(--t-base);
 }
 
-/* Colored accent line at top of each card */
+/* Accent line at top — uses the stat's color */
 .ov-stat::before {
   content:    '';
   position:   absolute;
@@ -1182,12 +1236,15 @@
   left:       0;
   right:      0;
   height:     2px;
-  background: linear-gradient(90deg, currentColor, transparent);
-  opacity:    0.8;
+  background: linear-gradient(90deg, var(--stat-color, var(--cyan)), transparent);
+  opacity:    0.9;
+  box-shadow: 0 0 8px var(--stat-color, var(--cyan));
 }
 
 .ov-stat:hover {
-  transform:  translateY(-2px);          /* Subtle lift on hover             */
+  transform:  translateY(-3px);
+  box-shadow: 0 0 18px rgba(79,195,247,0.08);
+  border-color: rgba(79,195,247,0.18);
 }
 
 /* Small label above number */

@@ -300,7 +300,7 @@ export default function OverviewSection({ profile, analytics, languages = [] }) 
               transition={{ ...CARD_TRANSITION, delay: 0.0 }}
               whileHover={{ y: -3, transition: { duration: 0.2 } }}
             >
-            <div style={{ position: 'absolute', inset: 0, opacity: 0.06, pointerEvents: 'none' }}>
+            <div className="ov-profile__particles">
               <ParticleBackground />
             </div>
 
@@ -311,12 +311,11 @@ export default function OverviewSection({ profile, analytics, languages = [] }) 
             </div>
 
             {/* ── ROW 1: Avatar + Name + Title + Social side-by-side ── */}
-                <div style={{ display: 'flex', alignItems: 'flex-start', gap: 'var(--s4)', marginBottom: 'var(--s4)' }}>
+                <div className="ov-profile__header">
 
                   {/* Avatar — larger */}
                   <div
                     className="ov-profile__avatar"
-                    style={{ width: '180px', height: '210px', flexShrink: 0, borderRadius: '16px' }}
                     aria-label={`${fullName} photo`}
                   >
                     {avatar
@@ -326,28 +325,15 @@ export default function OverviewSection({ profile, analytics, languages = [] }) 
                   </div>
 
                   {/* Right column — name, title, pill, social */}
-                  <div style={{
-                    minWidth: 0,
-                    flex: 1,
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: 'var(--s2)',
-                    paddingTop: '4px',
-                  }}>
+                  <div className="ov-profile__info">
 
                     {/* Name */}
-                    <div
-                      className="ov-profile__name"
-                      style={{ textAlign: 'left', fontSize: '1.15rem' }}
-                    >
+                    <div className="ov-profile__name">
                       {fullName}
                     </div>
 
                     {/* Title — wraps naturally */}
-                    <div
-                      className="ov-profile__title"
-                      style={{ textAlign: 'left' }}
-                    >
+                    <div className="ov-profile__title">
                       {title}
                     </div>
 
@@ -356,7 +342,6 @@ export default function OverviewSection({ profile, analytics, languages = [] }) 
                       className={`availability-pill ${available ? 'availability-pill--open' : ''}`}
                       role="status"
                       aria-label={available ? 'Available for hire' : 'Currently employed'}
-                      style={{ fontSize: '0.58rem', alignSelf: 'flex-start' }}
                     >
                       <span className="availability-pill__dot" aria-hidden="true" />
                       {available ? 'Available for Hire' : 'Currently Employed'}
@@ -367,7 +352,6 @@ export default function OverviewSection({ profile, analytics, languages = [] }) 
                       className="ov-profile__social--luxury"
                       role="list"
                       aria-label="Social links"
-                      style={{ flexWrap: 'wrap', gap: '8px', marginTop: 'var(--s1)' , justifyContent: 'flex-start' }}
                     >
                       {SOCIAL_PLATFORMS_CONFIG.map(platform => {
                         const val = social[platform.key] || social[platform.key.toLowerCase()];
@@ -428,15 +412,15 @@ export default function OverviewSection({ profile, analytics, languages = [] }) 
 
             {/* ── ROW 3: Bio ── */}
             {bio && (
-              <p className="ov-profile__bio" style={{ textAlign: 'left', flex: 'unset', marginBottom: 'var(--s4)' }}>
+              <p className="ov-profile__bio">
                 {bio}
               </p>
             )}
 
 {/*             ── ROW 4: Languages ── */}
             {languages.length > 0 && (
-              <div style={{ marginBottom: 'var(--s4)', paddingBottom: 'var(--s4)', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
-                <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.56rem', letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 'var(--s2)' }}>
+              <div className="ov-profile__lang-section">
+                <div className="ov-profile__section-label">
                   Languages
                 </div>
                 <div className="ov-bento-lang-strip" style={{ marginTop: 0, paddingTop: 0, borderTop: 'none' }} role="list" aria-label="Languages">
@@ -456,15 +440,15 @@ export default function OverviewSection({ profile, analytics, languages = [] }) 
             )}
 
             {/* ── ROW 5: Analytics stats 2×2 grid ── */}
-            <div>
-              <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.56rem', letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 'var(--s2)' }}>
-                Analytics
-              </div>
+              <div>
+                <div className="ov-profile__section-label">
+                  Analytics
+                </div>
               <div className="ov-profile__stats" role="list" aria-label="Quick stats">
 
                 {/* Experience years */}
                 <div className="ov-stat" role="listitem"
-                  style={{ background: 'rgba(79,195,247,0.07)', borderColor: 'rgba(79,195,247,0.22)', color: '#4FC3F7' }}>
+                  style={{ '--stat-color': '#4FC3F7' }}>
                   <span className="ov-stat__tag">Exp</span>
                   <div className="ov-stat__num">
                     {profile?.experience_years ? `${profile.experience_years}+` : '—'}
@@ -474,7 +458,7 @@ export default function OverviewSection({ profile, analytics, languages = [] }) 
 
                 {/* Overall score */}
                 <div className="ov-stat" role="listitem"
-                  style={{ background: 'rgba(78,204,163,0.07)', borderColor: 'rgba(78,204,163,0.22)', color: '#4ECCA3' }}>
+                  style={{ '--stat-color': '#4ECCA3' }}>
                   <span className="ov-stat__tag">Score</span>
                   <div className="ov-stat__num">
                     {profile?.overall_score ? `${Math.round(profile.overall_score)}%` : '—'}
@@ -484,7 +468,7 @@ export default function OverviewSection({ profile, analytics, languages = [] }) 
 
                 {/* Experience roles */}
                 <div className="ov-stat" role="listitem"
-                  style={{ background: 'rgba(155,127,234,0.07)', borderColor: 'rgba(155,127,234,0.22)', color: '#9B7FEA' }}>
+                  style={{ '--stat-color': '#9B7FEA' }}>
                   <span className="ov-stat__tag">Work</span>
                   <div className="ov-stat__num">{counts?.experience || '0'}</div>
                   <span className="ov-stat__label">Roles</span>
@@ -492,7 +476,7 @@ export default function OverviewSection({ profile, analytics, languages = [] }) 
 
                 {/* Projects count */}
                 <div className="ov-stat" role="listitem"
-                  style={{ background: 'rgba(245,166,35,0.07)', borderColor: 'rgba(245,166,35,0.22)', color: '#F5A623' }}>
+                  style={{ '--stat-color': '#F5A623' }}>
                   <span className="ov-stat__tag">Built</span>
                   <div className="ov-stat__num">{counts?.projects || '0'}</div>
                   <span className="ov-stat__label">Projects</span>
