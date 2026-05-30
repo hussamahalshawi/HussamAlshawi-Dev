@@ -311,27 +311,26 @@ export default function OverviewSection({ profile, analytics, languages = [] }) 
           Green dot + clock + photo + name + pills + banner
       ══════════════════════════════════════════════════════ */}
       <motion.div
-        className="glass-profile-card"                                             /* Glassmorphism hero card with green glow */
-        initial={{ opacity: 0, y: 30 }}                                            /* Start invisible and shifted down */
-        animate={{ opacity: 1, y: 0 }}                                             /* Fade in + slide up to natural position */
-        transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}                   /* Smooth cubic-bezier entrance curve */
-        whileHover={{ scale: 1.02 }}                                                /* Subtle scale-up on hover for interactivity */
+        className="glass-profile-card"
+        initial={{ opacity: 0, y: 30 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+        whileHover={{ scale: 1.02 }}
       >
         {/* ── Top bar: availability dot + status (left) | live clock (right) ── */}
         <div className="glass-profile-card__top-bar">
           <div className="glass-profile-card__status">
-            <span className="glass-profile-card__dot" aria-hidden="true" />         {/* Green pulsing availability indicator dot */}
+            <span className="glass-profile-card__dot" aria-hidden="true" />
             <span className="glass-profile-card__status-text">
-              {available ? 'Available for work' : 'Currently engaged'}              {/* Dynamic status label based on profile flag */}
+              {available ? 'Available for work' : 'Currently engaged'}
             </span>
           </div>
-          <span className="glass-profile-card__clock" aria-live="polite">           {/* Live clock with polite screen reader updates */}
+          <span className="glass-profile-card__clock" aria-live="polite">
             {currentTime}
           </span>
         </div>
 
-        {/* ── Profile photo — rounded square, centered ────── */}
-        {/* Profile photo — renders avatar image or initials fallback */}
+        {/* ── Profile photo — renders avatar image or initials fallback ── */}
         <div className="glass-profile-card__photo" aria-label={`${fullName} photo`}>
           {avatar
             ? <img src={avatar} alt={fullName} />
@@ -339,40 +338,36 @@ export default function OverviewSection({ profile, analytics, languages = [] }) 
           }
         </div>
 
-        {/* ── Name — bold, large, centered ────────────────── */}
+        {/* ── Name — bold, large, centered ── */}
         <div className="glass-profile-card__name">
           {fullName}
         </div>
 
-        {/* ── Title — muted, small, centered ──────────────── */}
+        {/* ── Title — muted, small, centered ── */}
         <div className="glass-profile-card__title">
           {title}
         </div>
 
-        {/* ── Action pills: Hire Me + Copy Email ─────────── */}
+        {/* ── Action pills: Hire Me + Copy Email ── */}
         <div className="glass-profile-card__actions">
-          {/* "Hire Me" pill — mailto link that opens default email client */}
           <a
-            href={`mailto:${email || 'hussam@example.com'}`}                        /* Mailto link with profile email or safe fallback */
-            className="glass-profile-card__pill"                                     /* Glassmorphism pill button styling */
-            aria-label={`Hire ${fullName}`}                                          /* Accessible label for screen readers */
+            href={`mailto:${email || 'hussam@example.com'}`}
+            className="glass-profile-card__pill"
+            aria-label={`Hire ${fullName}`}
           >
             Hire Me
           </a>
-
-          {/* "Copy Email" pill — copies email to clipboard on click */}
           <button
-            onClick={handleCopyEmail}                                                /* Trigger clipboard copy on click */
-            className={`glass-profile-card__pill ${copied ? 'glass-profile-card__pill--copied' : ''}`} /* Toggle copied feedback class */
-            aria-label={copied ? 'Email copied' : 'Copy email address'}              /* Dynamic accessible label for current state */
+            onClick={handleCopyEmail}
+            className={`glass-profile-card__pill ${copied ? 'glass-profile-card__pill--copied' : ''}`}
+            aria-label={copied ? 'Email copied' : 'Copy email address'}
           >
-            {copied ? 'Copied!' : 'Copy Email'}                                     /* Show feedback text or default label */
+            {copied ? 'Copied!' : 'Copy Email'}
           </button>
         </div>
 
-        {/* ── Bottom banner — bright green + lightning icon ──── */}
+        {/* ── Bottom banner — bright green + lightning icon ── */}
         <div className="glass-profile-card__banner">
-          {/* Lightning / zap SVG icon — white on green gradient */}
           <svg
             className="glass-profile-card__banner-icon"
             viewBox="0 0 24 24"
@@ -381,12 +376,12 @@ export default function OverviewSection({ profile, analytics, languages = [] }) 
             strokeWidth="2"
             strokeLinecap="round"
             strokeLinejoin="round"
-            aria-hidden="true"                                                      /* Decorative icon — hidden from screen readers */
+            aria-hidden="true"
           >
-            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />            /* Lightning bolt polygon path */
+            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
           </svg>
           <span className="glass-profile-card__banner-text">
-            Your creativity knows no bounds                                           /* Motivational creativity status message */
+            Your creativity knows no bounds
           </span>
         </div>
       </motion.div>
