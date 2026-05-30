@@ -522,6 +522,7 @@ After the redesign to match the sidebar, all cards now use the **same opacity** 
 - Remote: `origin` (HTTPS — no credential helper configured)
 - Git LFS: not used
 - Only commit when explicitly requested by user
+- NEVER commit or push automatically — after each edit, provide commit message(s) in a markdown code block for the user to copy
 
 ---
 
@@ -532,6 +533,7 @@ After the redesign to match the sidebar, all cards now use the **same opacity** 
 - The user prefers concise answers and minimal output
 - **Before applying edits**: run `git diff` or the tool's diff review to show changes before committing
 - **After each feature/task**: run "generate conventional commit messages for all changes" to create structured commit messages
+- **After every edit**: provide each changed file's commit message in a markdown code block for easy copying — never commit or push automatically
 - Always check `index.css` for design tokens before hardcoding values
 - Keep existing class names intact; only modify CSS values and JSX content
 
