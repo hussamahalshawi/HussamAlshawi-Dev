@@ -48,12 +48,12 @@
   box-shadow:   2px 0 20px rgba(0,0,0,0.4);
 }
 
-/* Light mode sidebar — matches reference screenshot */
+/* Light mode sidebar — matches card opacity */
 [data-theme="light"] .sidebar {
-  background:              rgba(255,255,255,0.55);
-  backdrop-filter:         blur(32px) saturate(1.8);
-  -webkit-backdrop-filter: blur(32px) saturate(1.8);
-  border-right:            1px solid rgba(180,200,230,0.30);
+  background:              rgba(255,255,255,0.75);
+  backdrop-filter:         blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border-right:            1px solid rgba(255,255,255,0.6);
   box-shadow:              4px 0 32px rgba(100,130,180,0.10);
 }
 
@@ -408,10 +408,10 @@
 
 /* Light mode topbar — same glass as sidebar */
 [data-theme="light"] .topbar {
-  background:              rgba(255,255,255,0.55);
-  backdrop-filter:         blur(32px) saturate(1.8);
-  -webkit-backdrop-filter: blur(32px) saturate(1.8);
-  border-bottom:           1px solid rgba(180,200,230,0.30);
+  background:              rgba(255,255,255,0.75);
+  backdrop-filter:         blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border-bottom:           1px solid rgba(255,255,255,0.6);
   box-shadow:              0 2px 20px rgba(100,130,180,0.10);
 }
 
@@ -479,8 +479,8 @@
 }
 
 [data-theme="light"] .topbar__theme-toggle {
-  background:   rgba(255,255,255,0.55);
-  border:       1px solid rgba(160,185,220,0.30);
+  background:   rgba(255,255,255,0.75);
+  border:       1px solid rgba(255,255,255,0.6);
 }
 
 /* Individual theme button */
@@ -538,8 +538,8 @@
 }
 
 [data-theme="light"] .topbar__user {
-  background:   rgba(255,255,255,0.60);
-  border-color: rgba(160,185,220,0.30);
+  background:   rgba(255,255,255,0.75);
+  border-color: rgba(255,255,255,0.6);
 }
 
 .topbar__user:hover {
@@ -609,8 +609,8 @@
 }
 
 [data-theme="light"] .availability-pill {
-  background:   rgba(255,255,255,0.55);
-  border-color: rgba(160,185,220,0.30);
+  background:   rgba(255,255,255,0.75);
+  border-color: rgba(255,255,255,0.6);
   color:        rgba(30,45,80,0.65);
 }
 

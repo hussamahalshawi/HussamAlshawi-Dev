@@ -117,13 +117,13 @@
 ══════════════════════════════════════════════════════════════ */
 [data-theme="light"] {
 
-  /* === Scene Backgrounds — Deep Midnight blue palette === */
-  --bg-scene:      #a8bdd0;                     /* Deepest layer — darkest */
-  --bg-base:       #b0c4d8;                     /* Base layer */
-  --bg-primary:    #b8ccde;                     /* Main content bg */
-  --bg-secondary:  #c2d4e6;                     /* Secondary panels */
-  --bg-tertiary:   #ccdaec;                     /* Tertiary panels */
-  --bg-quaternary: #d6e4f2;                     /* Highlight panels */
+  /* === Scene Backgrounds — warm light gray-blue === */
+  --bg-scene:      #c8d4e0;                     /* Deepest layer */
+  --bg-base:       #ccd8e4;                     /* Base layer */
+  --bg-primary:    #d0dce8;                     /* Main content bg */
+  --bg-secondary:  #d6e0ea;                     /* Secondary panels */
+  --bg-tertiary:   #dce6f0;                     /* Tertiary panels */
+  --bg-quaternary: #e2ecf4;                     /* Highlight panels */
 
   /* === Glass Surfaces — white-tinted for light mode === */
   --glass-faint:   rgba(255,255,255,0.35);      /* Light glass faint */
@@ -178,23 +178,23 @@
   --shadow-card: 0 4px 24px rgba(79,100,145,0.14),
                  0 1px 0 rgba(255,255,255,0.80) inset;
 
-/* === Body background blobs — Deep Midnight === */
-  --body-bg-blob1: rgba(50,100,180,0.60);       /* Strong blue top-left */
-  --body-bg-blob2: rgba(30,80,170,0.50);        /* Deep blue bottom-right */
-  --body-bg-blob3: rgba(100,145,210,0.32);      /* Mid blue center */
-  --body-bg-blob4: rgba(60,120,230,0.20);       /* Accent blob top-right */
-  --body-bg-base:  #b8c8dc;                     /* Matches canvas bg */
+/* === Body background blobs — subtle like dark mode === */
+  --body-bg-blob1: rgba(50,120,200,0.10);       /* Subtle blue top-left */
+  --body-bg-blob2: rgba(40,90,180,0.08);        /* Subtle blue bottom-right */
+  --body-bg-blob3: rgba(80,120,200,0.05);       /* Faint mid-blue center */
+  --body-bg-blob4: rgba(60,110,210,0.03);       /* Very faint top-right */
+  --body-bg-base:  #d0dbe6;                     /* Warm light gray-blue */
 
 
   /* === Sidebar / Topbar specific === */
-  --sidebar-bg:     rgba(255,255,255,0.60);     /* White frosted sidebar */
-  --topbar-bg:      rgba(255,255,255,0.55);     /* White frosted topbar */
+  --sidebar-bg:     rgba(255,255,255,0.75);     /* White frosted sidebar */
+  --topbar-bg:      rgba(255,255,255,0.75);     /* White frosted topbar */
   --sidebar-border: rgba(255,255,255,0.75);     /* Light sidebar border */
   --sidebar-shadow: 2px 0 24px rgba(79,100,145,0.10); /* Soft shadow */
 
   /* === Card specific === */
-  --card-bg:       rgba(255,255,255,0.45);      /* White glass card */
-  --card-bg-hover: rgba(255,255,255,0.65);      /* Hover card */
+  --card-bg:       rgba(255,255,255,0.75);      /* White glass card */
+  --card-bg-hover: rgba(255,255,255,0.75);      /* Hover card */
 
   /* === Nav item active state === */
   --nav-active-bg:     rgba(79,145,247,0.14);   /* Active nav bg */
