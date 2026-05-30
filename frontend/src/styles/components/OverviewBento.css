@@ -88,12 +88,13 @@
 /* All direct children above texture */
 .ov-bento-card > * { position: relative; z-index: 1; }
 
-/* Hover: subtle cyan brighten */
+/* Hover: match glass-profile-card — scale + intensify glow, no transparency */
 .ov-bento-card:hover {
-  background:   rgba(79,195,247,0.06) !important; /* Cyan tint on hover              */
-  border-color: rgba(79,195,247,0.22);            /* Brighter cyan border          */
-  box-shadow:   0 8px 24px rgba(79,195,247,0.08); /* Soft cyan glow                */
-  transform:    translateY(-2px);                 /* Lift effect                      */
+  background:   rgba(13, 17, 38, 0.85) !important;
+  border-color: rgba(255, 255, 255, 0.15);
+  transform:    scale(1.02);
+  box-shadow:   0 8px 32px rgba(0, 0, 0, 0.4),
+                0 24px 72px rgba(255, 255, 255, 0.06);
 }
 
 /* ══════════════════════════════════════════════════════
@@ -366,8 +367,8 @@
   display:               grid;
   grid-template-columns: 1fr 1fr;               /* 2 columns                          */
   gap:                   1px;                   /* 1px creates visual dividers        */
-  background:            rgba(79,195,247,0.08); /* Cyan-tinted divider                */
-  border:                1px solid rgba(79,195,247,0.10);
+  background:            rgba(255,255,255,0.06); /* Subtle divider                */
+  border:                1px solid rgba(255,255,255,0.08);
   border-radius:         var(--r-lg);
   overflow:              hidden;
   margin-top:            var(--s3);
@@ -384,11 +385,15 @@
   gap:             var(--s1);
   align-items:     center;                      /* Center content                     */
   text-align:      center;
-  transition:      background 0.15s ease;
+  transition:      background 0.15s ease,
+                   border-color 0.30s ease,
+                   transform 0.25s ease;
 }
 
 .ov-bento-support-item:hover {
-  background: rgba(79,195,247,0.08);            /* Cyan tint on hover                */
+  background:   rgba(13,17,38,0.85);
+  transform:    scale(1.02);
+  box-shadow:   0 8px 32px rgba(0,0,0,0.4);
 }
 
 /* Colored number in support cell */
@@ -483,10 +488,10 @@
 }
 
 [data-theme="light"] .ov-bento-card:hover {
-  background:   rgba(79,143,199,0.08);
-  border-color: rgba(79,143,199,0.30);
-  box-shadow:   0 4px 16px rgba(79,143,199,0.10);
-  transform:    translateY(-2px);
+  background:   rgba(255,255,255,0.55) !important;
+  border-color: rgba(255,255,255,0.8);
+  transform:    scale(1.02);
+  box-shadow:   0 8px 32px rgba(0,0,0,0.12);
 }
 
 [data-theme="light"] .ov-bento-lang-chip {
@@ -514,12 +519,14 @@
 }
 
 [data-theme="light"] .ov-bento-support-item:hover {
-  background: rgba(79,143,199,0.10);
+  background: rgba(255,255,255,0.55);
+  transform:  scale(1.02);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.12);
 }
 
 [data-theme="light"] .ov-bento-support-grid {
-  background:   rgba(79,143,199,0.10);
-  border-color: rgba(79,143,199,0.14);
+  background:   rgba(0,0,0,0.04);
+  border-color: rgba(255,255,255,0.6);
 }
 
 [data-theme="light"] .ov-bento-support-item__label,
