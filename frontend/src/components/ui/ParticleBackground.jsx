@@ -22,7 +22,7 @@ const THEMES = {
     centerDot:   'rgba(255,255,255,0.75)',           // White hot center
   },
   light: {
-    bg:          'rgba(184,200,220,0.18)',           // Transparent trail — matches dark mode feel
+    bg:          'rgba(255,255,255,1)',              // Solid white background
     scanColor:   'rgba(30,80,170,0.035)',            // Deep blue scan line
     mouseGlow:   ['rgba(50,100,180,0.07)', 'rgba(30,80,170,0.03)'],
     cornerColor: 'rgba(50,100,180,0.35)',            // Deep blue brackets
