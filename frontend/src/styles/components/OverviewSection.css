@@ -111,7 +111,7 @@
   border:                  1px solid rgba(79,195,247,0.12);
   box-shadow:              0 4px 24px rgba(0,0,0,0.35),
                            inset 0 1px 0 rgba(79,195,247,0.06);
-
+}
 
 /* Hover: subtle cyan brighten */
 .ov-panel:hover {
