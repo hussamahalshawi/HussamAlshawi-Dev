@@ -104,12 +104,12 @@
                  box-shadow   0.30s ease,
                  transform    0.25s ease;       /* Smooth all transitions             */
 
-  /* Solid dark glass — matches sidebar */
-  background:              rgba(13, 17, 38, 0.82);
-  backdrop-filter:         blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  /* Premium frosted glass — upgraded to match hero card */
+  background:              rgba(13, 17, 38, 0.85);
+  backdrop-filter:         blur(24px);
+  -webkit-backdrop-filter: blur(24px);
   border:                  1px solid rgba(79,195,247,0.12);
-  box-shadow:              0 4px 24px rgba(0,0,0,0.35),
+  box-shadow:              0 8px 32px rgba(0,0,0,0.4),
                            inset 0 1px 0 rgba(79,195,247,0.06);
 }
 
@@ -117,7 +117,7 @@
 .ov-panel:hover {
   background:   rgba(79,195,247,0.06) !important; /* Cyan tint on hover              */
   border-color: rgba(79,195,247,0.22);            /* Brighter cyan border          */
-  box-shadow:   0 4px 20px rgba(79,195,247,0.08); /* Soft cyan glow                */
+  box-shadow:   0 8px 24px rgba(79,195,247,0.08); /* Soft cyan glow                */
   transform:    translateY(-2px);                 /* Lift effect                      */
 }
 
@@ -326,13 +326,26 @@
   display:        flex;                         /* Flex column layout inside          */
   flex-direction: column;                       /* Stack children vertically          */
 
-  background:              rgba(13,17,38,0.82);
-  backdrop-filter:         blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border:                  1px solid rgba(79,195,247,0.12);
-  box-shadow:              0 4px 24px rgba(0,0,0,0.35),
-                           inset 0 1px 0 rgba(79,195,247,0.06);
+  /* Match glass-profile-card glass quality */
+  background:              rgba(13, 17, 38, 0.90);
+  backdrop-filter:         blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border:                  1px solid rgba(255, 255, 255, 0.08);
+  box-shadow:              0 8px 32px rgba(0, 0, 0, 0.4),
+                           0 20px 60px rgba(100, 255, 0, 0.35),
+                           inset 0 1px 0 rgba(255, 255, 255, 0.06);
 }
+
+/* Hover — match glass-profile-card hover: scale + intensify glow, no transparency */
+.ov-panel--profile:hover {
+  background:   rgba(13, 17, 38, 0.90) !important;
+  border-color: rgba(255, 255, 255, 0.15);
+  transform:    scale(1.02);
+  box-shadow:   0 8px 32px rgba(0, 0, 0, 0.4),
+                0 24px 72px rgba(100, 255, 0, 0.45),
+                inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
 /* Full name — matches sidebar logo text style */
 .ov-profile__name {
   font-family:    var(--font-display);
@@ -826,9 +839,9 @@
 
 /* Individual model count cell */
 .ov-record-item {
-  background:      rgba(13, 17, 38, 0.82);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  background:      rgba(13, 17, 38, 0.85);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
   padding:         1.2rem 1rem;
   display:         flex;
   flex-direction:  column;
@@ -897,10 +910,10 @@
 
 /* Individual language card */
 .ov-lang-card {
-  background:    rgba(13,17,38,0.82);
+  background:    rgba(13,17,38,0.85);
   border:        1px solid rgba(79,195,247,0.12);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
   border-radius: var(--r-lg);
   padding:       var(--s4) var(--s3);
   display:       flex;
@@ -1070,6 +1083,8 @@
 /* Record cell — nearly transparent */
 [data-theme="light"] .ov-record-item {
   background: rgba(255,255,255,0.55);
+  backdrop-filter: blur(32px) saturate(1.8);
+  -webkit-backdrop-filter: blur(32px) saturate(1.8);
 }
 
 [data-theme="light"] .ov-record-item:hover {
@@ -1088,11 +1103,19 @@
   -webkit-backdrop-filter: blur(32px) saturate(1.8);
 }
 [data-theme="light"] .ov-panel--profile {
-  background:              rgba(255,255,255,0.55);
-  backdrop-filter:         blur(32px) saturate(1.8);
-  -webkit-backdrop-filter: blur(32px) saturate(1.8);
-  border:                  1px solid rgba(79,143,199,0.20);
-  box-shadow:              0 4px 24px rgba(100,130,180,0.10);
+  background:              rgba(255,255,255,0.75);
+  backdrop-filter:         blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border:                  1px solid rgba(255,255,255,0.6);
+  box-shadow:              0 8px 32px rgba(0,0,0,0.08);
+}
+
+/* Light mode hover — match glass-profile-card: no transparency */
+[data-theme="light"] .ov-panel--profile:hover {
+  background:   rgba(255,255,255,0.75) !important;
+  border-color: rgba(255,255,255,0.8);
+  transform:    scale(1.02);
+  box-shadow:   0 8px 32px rgba(0,0,0,0.12);
 }
 
 [data-theme="light"] .ov-social-link--luxury {
@@ -1106,6 +1129,8 @@
 
 [data-theme="light"] .ov-stat {
   background: rgba(255,255,255,0.55);
+  backdrop-filter: blur(32px) saturate(1.8);
+  -webkit-backdrop-filter: blur(32px) saturate(1.8);
   border-color: rgba(79,143,199,0.18);
 }
 
@@ -1224,7 +1249,9 @@
   flex-direction: column;
   align-items:    center;
   gap:            4px;
-  background:     rgba(13,17,38,0.82);
+  background:     rgba(13,17,38,0.85);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
   border:         1px solid rgba(79,195,247,0.12);
   color:          var(--stat-color, var(--cyan));
   transition:     all var(--t-base);

@@ -48,12 +48,12 @@
                  box-shadow   0.30s ease,
                  transform    0.25s ease;       /* Smooth all transitions             */
 
-  /* Solid dark glass — matches sidebar */
-  background:              rgba(13, 17, 38, 0.82);
-  backdrop-filter:         blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  /* Premium frosted glass — matches hero card quality */
+  background:              rgba(13, 17, 38, 0.85);
+  backdrop-filter:         blur(24px);
+  -webkit-backdrop-filter: blur(24px);
   border:                  1px solid rgba(79,195,247,0.12);
-  box-shadow:              0 4px 24px rgba(0,0,0,0.35),
+  box-shadow:              0 8px 32px rgba(0,0,0,0.4),
                            inset 0 1px 0 rgba(79,195,247,0.06);
 }
 
@@ -92,7 +92,7 @@
 .ov-bento-card:hover {
   background:   rgba(79,195,247,0.06) !important; /* Cyan tint on hover              */
   border-color: rgba(79,195,247,0.22);            /* Brighter cyan border          */
-  box-shadow:   0 4px 20px rgba(79,195,247,0.08); /* Soft cyan glow                */
+  box-shadow:   0 8px 24px rgba(79,195,247,0.08); /* Soft cyan glow                */
   transform:    translateY(-2px);                 /* Lift effect                      */
 }
 
@@ -375,7 +375,9 @@
 
 /* Individual support metric cell */
 .ov-bento-support-item {
-  background:      rgba(13,17,38,0.82);         /* Matches sidebar glass              */
+  background:      rgba(13,17,38,0.85);         /* Matches sidebar glass              */
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
   padding:         var(--s3) var(--s4);         /* Inner cell padding                 */
   display:         flex;
   flex-direction:  column;
@@ -507,6 +509,8 @@
 
 [data-theme="light"] .ov-bento-support-item {
   background: rgba(255,255,255,0.55);
+  backdrop-filter: blur(32px) saturate(1.8);
+  -webkit-backdrop-filter: blur(32px) saturate(1.8);
 }
 
 [data-theme="light"] .ov-bento-support-item:hover {
