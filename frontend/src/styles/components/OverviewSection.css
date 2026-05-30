@@ -105,7 +105,7 @@
                  transform    0.25s ease;       /* Smooth all transitions             */
 
   /* Premium frosted glass — upgraded to match hero card */
-  background:              rgba(13, 17, 38, 0.85);
+  background:              rgba(13, 17, 38, 0.90);
   backdrop-filter:         blur(24px);
   -webkit-backdrop-filter: blur(24px);
   border:                  1px solid rgba(255,255,255,0.08);
@@ -115,7 +115,7 @@
 
 /* Hover: match glass-profile-card — scale + intensify glow, no transparency change */
 .ov-panel:hover {
-  background:   rgba(13, 17, 38, 0.85) !important;
+  background:   rgba(13, 17, 38, 0.90) !important;
   border-color: rgba(255, 255, 255, 0.15);
   transform:    scale(1.02);
   box-shadow:   0 8px 32px rgba(0, 0, 0, 0.4),
@@ -839,7 +839,7 @@
 
 /* Individual model count cell */
 .ov-record-item {
-  background:      rgba(13, 17, 38, 0.85);
+  background:      rgba(13, 17, 38, 0.90);
   backdrop-filter: blur(24px);
   -webkit-backdrop-filter: blur(24px);
   padding:         1.2rem 1rem;
@@ -855,7 +855,7 @@
 
 /* Hover: scale + intensify glow, no transparency */
 .ov-record-item:hover {
-  background:   rgba(13, 17, 38, 0.85);
+  background:   rgba(13, 17, 38, 0.90);
   border-color: rgba(255, 255, 255, 0.15);
   transform:    scale(1.02);
 }
@@ -916,7 +916,7 @@
 
 /* Individual language card */
 .ov-lang-card {
-  background:    rgba(13,17,38,0.85);
+  background:    rgba(13,17,38,0.90);
   border:        1px solid rgba(255,255,255,0.08);
   backdrop-filter: blur(24px);
   -webkit-backdrop-filter: blur(24px);
@@ -937,7 +937,7 @@
 /* Hover: scale + intensify, no transparency */
 .ov-lang-card:hover {
   border-color: var(--lang-color, var(--cyan));
-  background:   rgba(13,17,38,0.85);
+  background:   rgba(13,17,38,0.90);
   transform:    scale(1.02);
   box-shadow:   0 8px 32px rgba(0,0,0,0.4), 0 0 16px var(--lang-color, var(--cyan-dim));
 }
@@ -1266,7 +1266,7 @@
   flex-direction: column;
   align-items:    center;
   gap:            4px;
-  background:     rgba(13,17,38,0.85);
+  background:     rgba(13,17,38,0.90);
   backdrop-filter: blur(24px);
   -webkit-backdrop-filter: blur(24px);
   border:         1px solid rgba(255,255,255,0.08);
@@ -1288,7 +1288,7 @@
 }
 
 .ov-stat:hover {
-  background:   rgba(13,17,38,0.85);
+  background:   rgba(13,17,38,0.90);
   transform:    scale(1.02);
   border-color: rgba(255, 255, 255, 0.15);
   box-shadow:   0 8px 32px rgba(0,0,0,0.4),

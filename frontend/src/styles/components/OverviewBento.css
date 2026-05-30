@@ -49,7 +49,7 @@
                  transform    0.25s ease;       /* Smooth all transitions             */
 
   /* Premium frosted glass — matches hero card quality */
-  background:              rgba(13, 17, 38, 0.85);
+  background:              rgba(13, 17, 38, 0.90);
   backdrop-filter:         blur(24px);
   -webkit-backdrop-filter: blur(24px);
   border:                  1px solid rgba(255,255,255,0.08);
@@ -90,7 +90,7 @@
 
 /* Hover: match glass-profile-card — scale + intensify glow, no transparency */
 .ov-bento-card:hover {
-  background:   rgba(13, 17, 38, 0.85) !important;
+  background:   rgba(13, 17, 38, 0.90) !important;
   border-color: rgba(255, 255, 255, 0.15);
   transform:    scale(1.02);
   box-shadow:   0 8px 32px rgba(0, 0, 0, 0.4),
@@ -376,7 +376,7 @@
 
 /* Individual support metric cell */
 .ov-bento-support-item {
-  background:      rgba(13,17,38,0.85);         /* Matches sidebar glass              */
+  background:      rgba(13,17,38,0.90);         /* Matches sidebar glass              */
   backdrop-filter: blur(24px);
   -webkit-backdrop-filter: blur(24px);
   padding:         var(--s3) var(--s4);         /* Inner cell padding                 */
@@ -391,7 +391,7 @@
 }
 
 .ov-bento-support-item:hover {
-  background:   rgba(13,17,38,0.85);
+  background:   rgba(13,17,38,0.90);
   transform:    scale(1.02);
   box-shadow:   0 8px 32px rgba(0,0,0,0.4);
 }
