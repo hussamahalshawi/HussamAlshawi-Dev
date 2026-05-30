@@ -104,19 +104,20 @@
                  box-shadow   0.30s ease,
                  transform    0.25s ease;       /* Smooth all transitions             */
 
-  /* Frosted glass — lets background blobs show through */
-  background:              rgba(13, 18, 48, 0.35);
-  backdrop-filter:         blur(24px) saturate(1.2);
-  -webkit-backdrop-filter: blur(24px) saturate(1.2);
-  border:                  1px solid rgba(79,195,247,0.10);
-  box-shadow:              0 4px 32px rgba(0,0,0,0.20);
+  /* Solid dark glass — matches sidebar */
+  background:              rgba(13, 17, 38, 0.82);
+  backdrop-filter:         blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border:                  1px solid rgba(79,195,247,0.12);
+  box-shadow:              0 4px 24px rgba(0,0,0,0.35),
+                           inset 0 1px 0 rgba(79,195,247,0.06);
 
 
 /* Hover: subtle cyan brighten */
 .ov-panel:hover {
-  background:   rgba(79,195,247,0.04) !important; /* More transparent on hover     */
-  border-color: rgba(79,195,247,0.16);            /* Brighter cyan border          */
-  box-shadow:   0 4px 24px rgba(79,195,247,0.06); /* Soft cyan glow                */
+  background:   rgba(79,195,247,0.06) !important; /* Cyan tint on hover              */
+  border-color: rgba(79,195,247,0.22);            /* Brighter cyan border          */
+  box-shadow:   0 4px 20px rgba(79,195,247,0.08); /* Soft cyan glow                */
   transform:    translateY(-2px);                 /* Lift effect                      */
 }
 
@@ -277,7 +278,7 @@
 .ov-profile__lang-section {
   margin-bottom: var(--s4);
   padding-bottom: var(--s4);
-  border-bottom: 1px solid rgba(79,195,247,0.07);
+  border-bottom: 1px solid rgba(79,195,247,0.10);
 }
 
 /* Avatar card — gradient fallback, matches sidebar logo aesthetic */
@@ -325,11 +326,12 @@
   display:        flex;                         /* Flex column layout inside          */
   flex-direction: column;                       /* Stack children vertically          */
 
-  background:              rgba(13,18,48,0.35);
-  backdrop-filter:         blur(24px) saturate(1.2);
-  -webkit-backdrop-filter: blur(24px) saturate(1.2);
-  border:                  1px solid rgba(79,195,247,0.10);
-  box-shadow:              0 4px 32px rgba(0,0,0,0.20);
+  background:              rgba(13,17,38,0.82);
+  backdrop-filter:         blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border:                  1px solid rgba(79,195,247,0.12);
+  box-shadow:              0 4px 24px rgba(0,0,0,0.35),
+                           inset 0 1px 0 rgba(79,195,247,0.06);
 }
 /* Full name — matches sidebar logo text style */
 .ov-profile__name {
@@ -523,7 +525,7 @@
 /* Background track ring — full circle */
 .ov-donut-track {
   fill:         none;
-  stroke:       rgba(79,195,247,0.08);         /* Subtle cyan track                */
+  stroke:       rgba(79,195,247,0.10);         /* Subtle cyan track                */
   stroke-width: 10;
 }
 
@@ -649,7 +651,7 @@
 .ov-proj-row__track {
   flex:          1;
   height:        4px;
-  background:    rgba(79,195,247,0.06);
+  background:    rgba(79,195,247,0.08);
   border-radius: var(--r-full);
   overflow:      hidden;
 }
@@ -756,7 +758,7 @@
 .ov-skill-row__track {
   flex:          1;
   height:        3px;
-  background:    rgba(79,195,247,0.06);
+  background:    rgba(79,195,247,0.08);
   border-radius: var(--r-full);
   overflow:      visible;                       /* Allow glow dot to overflow       */
 }
@@ -815,8 +817,8 @@
   display:               grid;
   grid-template-columns: repeat(auto-fill, minmax(88px, 1fr)); /* Responsive columns */
   gap:                   1px;                   /* 1px creates visual dividers       */
-  background:            rgba(79,195,247,0.06); /* Gap/divider color                */
-  border:                1px solid rgba(79,195,247,0.08);
+  background:            rgba(79,195,247,0.08); /* Gap/divider color                */
+  border:                1px solid rgba(79,195,247,0.10);
   border-radius:         var(--r-lg);
   overflow:              hidden;
   margin-top:            var(--s3);
@@ -824,9 +826,9 @@
 
 /* Individual model count cell */
 .ov-record-item {
-  background:      rgba(13, 18, 48, 0.40);
-  backdrop-filter: blur(16px) saturate(1.2);
-  -webkit-backdrop-filter: blur(16px) saturate(1.2);
+  background:      rgba(13, 17, 38, 0.82);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
   padding:         1.2rem 1rem;
   display:         flex;
   flex-direction:  column;
@@ -837,7 +839,7 @@
 }
 
 /* Hover: slightly lighter background */
-.ov-record-item:hover { background: rgba(79,195,247,0.06); }
+.ov-record-item:hover { background: rgba(79,195,247,0.08); }
 
 /* Bottom-right glow blob — color from CSS custom prop --rec-color */
 .ov-record-item::after {
@@ -895,10 +897,10 @@
 
 /* Individual language card */
 .ov-lang-card {
-  background:    rgba(13,18,48,0.30);
-  border:        1px solid rgba(79,195,247,0.08);
-  backdrop-filter: blur(16px) saturate(1.2);
-  -webkit-backdrop-filter: blur(16px) saturate(1.2);
+  background:    rgba(13,17,38,0.82);
+  border:        1px solid rgba(79,195,247,0.12);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
   border-radius: var(--r-lg);
   padding:       var(--s4) var(--s3);
   display:       flex;
@@ -915,9 +917,9 @@
 /* Hover: lift + glowing colored border */
 .ov-lang-card:hover {
   border-color: var(--lang-color, var(--cyan));
-  background:   rgba(79,195,247,0.06);
+  background:   rgba(79,195,247,0.08);
   transform:    translateY(-3px);
-  box-shadow:   0 8px 24px rgba(0,0,0,0.20), 0 0 16px var(--lang-color, var(--cyan-dim));
+  box-shadow:   0 8px 24px rgba(0,0,0,0.25), 0 0 16px var(--lang-color, var(--cyan-dim));
 }
 
 /* Bottom glow blob on hover */
@@ -1005,17 +1007,17 @@
 
 /* Main panel — soft light glass */
 [data-theme="light"] .ov-panel {
-  background:              rgba(255,255,255,0.38);
-  backdrop-filter:         blur(24px) saturate(1.6);
-  -webkit-backdrop-filter: blur(24px) saturate(1.6);
-  border:                  1px solid rgba(79,143,199,0.18);
-  box-shadow:              0 4px 32px rgba(100,130,180,0.08);
+  background:              rgba(255,255,255,0.55);
+  backdrop-filter:         blur(32px) saturate(1.8);
+  -webkit-backdrop-filter: blur(32px) saturate(1.8);
+  border:                  1px solid rgba(79,143,199,0.20);
+  box-shadow:              0 4px 24px rgba(100,130,180,0.10);
 }
 
 [data-theme="light"] .ov-panel:hover {
-  background:   rgba(79,143,199,0.06);
-  border-color: rgba(79,143,199,0.25);
-  box-shadow:   0 4px 20px rgba(79,143,199,0.08);
+  background:   rgba(79,143,199,0.08);
+  border-color: rgba(79,143,199,0.30);
+  box-shadow:   0 4px 16px rgba(79,143,199,0.10);
   transform:    translateY(-2px);
 }
 
@@ -1061,17 +1063,17 @@
 
 /* Records grid — faint blue dividers */
 [data-theme="light"] .ov-records-grid {
-  background:   rgba(79,143,199,0.08);            /* Slightly visible blue dividers    */
-  border-color: rgba(79,143,199,0.12);            /* Matching border                   */
+  background:   rgba(79,143,199,0.10);
+  border-color: rgba(79,143,199,0.14);
 }
 
 /* Record cell — nearly transparent */
 [data-theme="light"] .ov-record-item {
-  background: rgba(255,255,255,0.35);
+  background: rgba(255,255,255,0.55);
 }
 
 [data-theme="light"] .ov-record-item:hover {
-  background: rgba(79,143,199,0.08);
+  background: rgba(79,143,199,0.10);
 }
 
 [data-theme="light"] .ov-record-item:hover {
@@ -1080,17 +1082,17 @@
 
 /* Language card */
 [data-theme="light"] .ov-lang-card {
-  background:              rgba(255,255,255,0.35);
-  border:                  1px solid rgba(79,143,199,0.12);
-  backdrop-filter:         blur(16px) saturate(1.6);
-  -webkit-backdrop-filter: blur(16px) saturate(1.6);
+  background:              rgba(255,255,255,0.55);
+  border:                  1px solid rgba(79,143,199,0.18);
+  backdrop-filter:         blur(32px) saturate(1.8);
+  -webkit-backdrop-filter: blur(32px) saturate(1.8);
 }
 [data-theme="light"] .ov-panel--profile {
-  background:              rgba(255,255,255,0.38);
-  backdrop-filter:         blur(24px) saturate(1.6);
-  -webkit-backdrop-filter: blur(24px) saturate(1.6);
-  border:                  1px solid rgba(79,143,199,0.18);
-  box-shadow:              0 4px 32px rgba(100,130,180,0.08);
+  background:              rgba(255,255,255,0.55);
+  backdrop-filter:         blur(32px) saturate(1.8);
+  -webkit-backdrop-filter: blur(32px) saturate(1.8);
+  border:                  1px solid rgba(79,143,199,0.20);
+  box-shadow:              0 4px 24px rgba(100,130,180,0.10);
 }
 
 [data-theme="light"] .ov-social-link--luxury {
@@ -1103,13 +1105,13 @@
 }
 
 [data-theme="light"] .ov-stat {
-  background: rgba(255,255,255,0.35);
-  border-color: rgba(79,143,199,0.12);
+  background: rgba(255,255,255,0.55);
+  border-color: rgba(79,143,199,0.18);
 }
 
 [data-theme="light"] .ov-stat:hover {
-  border-color: rgba(79,143,199,0.25);
-  box-shadow: 0 0 18px rgba(79,143,199,0.08);
+  border-color: rgba(79,143,199,0.30);
+  box-shadow: 0 0 16px rgba(79,143,199,0.10);
 }
 /* Donut track ring */
 [data-theme="light"] .ov-donut-track {
@@ -1119,11 +1121,11 @@
 /* Progress bar tracks */
 [data-theme="light"] .ov-proj-row__track,
 [data-theme="light"] .ov-skill-row__track {
-  background: rgba(79,143,199,0.10);
+  background: rgba(79,143,199,0.12);
 }
 
 [data-theme="light"] .ov-donut-track {
-  stroke: rgba(79,143,199,0.10);
+  stroke: rgba(79,143,199,0.12);
 }
 
 /* Colored numbers — darken for readability on light bg */
@@ -1222,8 +1224,8 @@
   flex-direction: column;
   align-items:    center;
   gap:            4px;
-  background:     rgba(13,18,48,0.30);
-  border:         1px solid rgba(79,195,247,0.08);
+  background:     rgba(13,17,38,0.82);
+  border:         1px solid rgba(79,195,247,0.12);
   color:          var(--stat-color, var(--cyan));
   transition:     all var(--t-base);
 }
@@ -1243,8 +1245,8 @@
 
 .ov-stat:hover {
   transform:  translateY(-3px);
-  box-shadow: 0 0 18px rgba(79,195,247,0.08);
-  border-color: rgba(79,195,247,0.18);
+  box-shadow: 0 0 16px rgba(79,195,247,0.12);
+  border-color: rgba(79,195,247,0.25);
 }
 
 /* Small label above number */
@@ -1284,4 +1286,304 @@
 .ov-stat__divider { display: none; }
 .ov-stat__icon    { display: none; }
 .ov-stat__text    { display: none; }
+
+/* ══════════════════════════════════════════════════════
+   GLASS PROFILE CARD — featured hero card
+   Standalone glassmorphism profile card with
+   availability dot, live clock, photo, name, title,
+   action pills, and creative banner.
+   Add <div className="glass-profile-card"> to use.
+══════════════════════════════════════════════════════ */
+
+/* ── Outer glass container ────────────────────────── */
+.glass-profile-card {
+  position:             relative;                      /* Stacking context for pseudo-elements */
+  overflow:             hidden;                        /* Clip decorations to border-radius    */
+  border-radius:        var(--r-xl);                   /* 20px rounded corners                 */
+  padding:              var(--s6);                     /* 24px inner padding                   */
+  max-width:            480px;                         /* Keeps card compact and centered      */
+  width:                100%;                          /* Responsive width within parent        */
+  margin:               0 auto var(--s8);              /* Centered with bottom spacing         */
+
+  /* Dark glass — 90% opaque, 24px blur */
+  background:              rgba(13, 17, 38, 0.90);    /* Near-solid dark navy glass            */
+  backdrop-filter:         blur(24px);                 /* Strong frosted blur                   */
+  -webkit-backdrop-filter: blur(24px);                 /* Safari prefix                        */
+  border:                  1px solid rgba(255, 255, 255, 0.08); /* Very subtle white border */
+  box-shadow:              0 8px 32px rgba(0, 0, 0, 0.4),      /* Deep ambient shadow    */
+                           0 20px 60px rgba(100, 255, 0, 0.35); /* Green glow — brand     */
+
+  transition:              transform 0.3s ease,        /* Smooth hover transition              */
+                             box-shadow 0.3s ease;
+}
+
+/* Hover: gentle scale + intensify glow */
+.glass-profile-card:hover {
+  transform:  scale(1.02);                            /* Subtle zoom on hover                 */
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4),
+              0 24px 72px rgba(100, 255, 0, 0.45);    /* Brighter green glow on hover         */
+}
+
+/* Top gloss line — matching other panels */
+.glass-profile-card::before {
+  content:    '';                                      /* Required pseudo-element              */
+  position:   absolute;                                /* Position at top edge                 */
+  top:        0;
+  left:       8%;
+  right:      8%;
+  height:     1px;                                     /* Hairline highlight                   */
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.18), transparent);
+  pointer-events: none;                                /* Allow clicks to pass through         */
+  z-index:    2;                                       /* Above background, below content      */
+}
+
+/* Water-droplet micro-texture — matching other panels */
+.glass-profile-card::after {
+  content:    '';                                      /* Required pseudo-element              */
+  position:   absolute;                                /* Cover entire card                    */
+  inset:      0;
+  background-image:
+    radial-gradient(circle at 18% 28%, rgba(255,255,255,0.030) 1.5px, transparent 1.5px),
+    radial-gradient(circle at 72% 14%, rgba(255,255,255,0.022) 1px,   transparent 1px),
+    radial-gradient(circle at 84% 62%, rgba(255,255,255,0.028) 2px,   transparent 2px),
+    radial-gradient(circle at 34% 78%, rgba(255,255,255,0.018) 1.5px, transparent 1.5px);
+  pointer-events: none;                                /* Allow clicks to pass through         */
+  border-radius:  inherit;                             /* Match parent radius                  */
+  z-index:    0;                                       /* Below all content                    */
+}
+
+/* All direct children sit above pseudo-elements */
+.glass-profile-card > * { position: relative; z-index: 1; }
+
+/* ── Top bar: availability (left) + clock (right) ─── */
+.glass-profile-card__top-bar {
+  display:          flex;                              /* Side-by-side layout                  */
+  align-items:      center;                            /* Vertically centered                  */
+  justify-content:  space-between;                     /* Status left, clock right             */
+  margin-bottom:    var(--s5);                         /* Space below top bar                  */
+}
+
+/* Status container — dot + text side by side */
+.glass-profile-card__status {
+  display:          flex;                              /* Horizontal row                       */
+  align-items:      center;                            /* Center dot with text                 */
+  gap:              var(--s2);                         /* 8px gap between dot and label        */
+}
+
+/* Green pulsing dot */
+.glass-profile-card__dot {
+  width:            10px;                              /* Slightly larger for visibility       */
+  height:           10px;
+  border-radius:    50%;                               /* Perfect circle                       */
+  background:       #4ECCA3;                           /* Bright green                         */
+  box-shadow:       0 0 12px rgba(78, 204, 163, 0.6); /* Green glow around dot                */
+  animation:        pulseDot 2s ease infinite;          /* Pulsing animation from index.css     */
+  flex-shrink:      0;                                 /* Prevent shrinking in flex            */
+}
+
+/* "Available for work" text */
+.glass-profile-card__status-text {
+  font-family:      var(--font-mono);                  /* Mono font for UI labels              */
+  font-size:        0.65rem;                           /* Small but readable                   */
+  font-weight:      500;
+  letter-spacing:   0.08em;
+  text-transform:   uppercase;
+  color:            #4ECCA3;                           /* Match dot green                      */
+}
+
+/* Live clock — right side */
+.glass-profile-card__clock {
+  font-family:      var(--font-mono);                  /* Mono for clock digits                */
+  font-size:        0.72rem;                           /* Slightly larger for readability      */
+  font-weight:      500;
+  color:            var(--text-secondary);              /* Muted secondary text                 */
+  letter-spacing:   0.04em;
+}
+
+/* ── Profile photo — rounded square, centered ─────── */
+.glass-profile-card__photo {
+  width:            120px;                             /* Fixed width                          */
+  height:           140px;                             /* Fixed height — portrait shape        */
+  border-radius:    16px;                              /* Rounded square, not circle           */
+  margin:           0 auto var(--s4);                   /* Centered with bottom spacing         */
+  display:          flex;                              /* Center initials inside               */
+  align-items:      center;
+  justify-content:  center;
+  background:       linear-gradient(135deg, var(--cyan), var(--blue)); /* Gradient fallback */
+  overflow:         hidden;                            /* Clip image to border-radius          */
+  box-shadow:       0 4px 20px rgba(79, 195, 247, 0.3); /* Soft cyan shadow around photo     */
+  font-family:      var(--font-display);               /* Initials font                       */
+  font-size:        1.8rem;                            /* Large initials when no image        */
+  font-weight:      800;
+  color:            #ffffff;                           /* White initials on gradient bg       */
+}
+
+/* Image inside photo container */
+.glass-profile-card__photo img {
+  width:            100%;                              /* Fill container width                 */
+  height:           100%;
+  object-fit:       cover;                             /* Cover area without distortion        */
+}
+
+/* ── Name — bold, large, centered ──────────────────── */
+.glass-profile-card__name {
+  font-family:      var(--font-display);               /* Display font for headings            */
+  font-size:        1.4rem;                            /* Larger than normal                   */
+  font-weight:      800;                               /* Extra bold                           */
+  color:            var(--text-white);                  /* Pure white in dark mode              */
+  text-align:       center;                            /* Centered below photo                 */
+  letter-spacing:   -0.02em;
+  line-height:      1.2;
+  margin-bottom:    var(--s1);                         /* Small gap before title               */
+}
+
+/* ── Title — muted, small, centered ────────────────── */
+.glass-profile-card__title {
+  font-family:      var(--font-mono);                  /* Mono for professional title          */
+  font-size:        0.70rem;                           /* Small but readable                   */
+  font-weight:      500;
+  color:            var(--text-secondary);              /* Muted secondary color                */
+  text-align:       center;                            /* Centered below name                  */
+  letter-spacing:   0.10em;
+  text-transform:   uppercase;
+  margin-bottom:    var(--s5);                         /* Space before action buttons          */
+}
+
+/* ── Action pills row ──────────────────────────────── */
+.glass-profile-card__actions {
+  display:          flex;                              /* Side-by-side pills                   */
+  align-items:      center;
+  justify-content:  center;                            /* Centered in card                     */
+  gap:              var(--s3);                         /* 12px gap between pills               */
+  margin-bottom:    var(--s5);                         /* Space below pills                    */
+}
+
+/* Individual pill button — glassmorphism style */
+.glass-profile-card__pill {
+  display:          inline-flex;                       /* Inline with content                  */
+  align-items:      center;
+  gap:              var(--s2);                         /* Gap between icon and text            */
+  padding:          0.60rem var(--s5);                  /* Comfortable hit area                  */
+  border-radius:    var(--r-full);                     /* Fully rounded pill                   */
+  font-family:      var(--font-mono);                   /* Mono font for labels                 */
+  font-size:        0.65rem;
+  font-weight:      600;
+  letter-spacing:   0.06em;
+  text-transform:   uppercase;
+  cursor:           pointer;                           /* Indicate interactivity                */
+  border:           1px solid rgba(255, 255, 255, 0.12); /* Subtle border on glass            */
+  background:       rgba(255, 255, 255, 0.06);         /* Very faint white overlay              */
+  color:            var(--text-primary);                /* Light text                           */
+  text-decoration:  none;                              /* Remove underline from <a> elements    */
+  transition:       all 0.25s ease;                    /* Smooth state changes                  */
+  user-select:      none;                              /* Prevent text selection                */
+  white-space:      nowrap;                            /* Keep pill text on one line            */
+}
+
+/* Pill hover: brighter + lift */
+.glass-profile-card__pill:hover {
+  background:       rgba(79, 195, 247, 0.12);          /* Cyan tint on hover                   */
+  border-color:     rgba(79, 195, 247, 0.35);          /* Brighter cyan border                 */
+  transform:        translateY(-2px);                  /* Lift effect                          */
+  box-shadow:       0 6px 20px rgba(79, 195, 247, 0.15); /* Soft glow behind pill            */
+}
+
+/* Pill active/press state */
+.glass-profile-card__pill:active {
+  transform:        translateY(0);                     /* Press down                           */
+  transition-duration: 0.1s;
+}
+
+/* "Copied!" feedback state for copy pill */
+.glass-profile-card__pill--copied {
+  background:       rgba(78, 204, 163, 0.15);          /* Green tint for success feedback      */
+  border-color:     #4ECCA3;                           /* Solid green border                   */
+  color:            #4ECCA3;                           /* Green text                           */
+}
+
+/* ── Bottom banner — bright green + lightning ──────── */
+.glass-profile-card__banner {
+  display:          flex;                              /* Icon + text horizontal               */
+  align-items:      center;
+  justify-content:  center;                            /* Centered content                     */
+  gap:              var(--s3);                         /* Space between icon and text          */
+  padding:          var(--s3) var(--s4);                /* Comfortable padding                  */
+  margin:           0 calc(-1 * var(--s6));             /* Stretch full-width within card pad   */
+  margin-bottom:    calc(-1 * var(--s6));               /* Extend to bottom edge of card        */
+  background:       linear-gradient(135deg, #2ECC71, #27AE60); /* Bright green gradient      */
+  border-radius:    0 0 var(--r-xl) var(--r-xl);        /* Rounded only at bottom corners       */
+}
+
+/* Lightning / zap icon in banner */
+.glass-profile-card__banner-icon {
+  width:            20px;                              /* Icon size                            */
+  height:           20px;
+  color:            #ffffff;                           /* White icon on green                  */
+  flex-shrink:      0;                                 /* Prevent icon from shrinking          */
+}
+
+/* Banner text — white on green */
+.glass-profile-card__banner-text {
+  font-family:      var(--font-display);               /* Display font                         */
+  font-size:        0.85rem;                           /* Readable but not too large           */
+  font-weight:      700;
+  color:            #ffffff;                           /* White text on green background       */
+  letter-spacing:   -0.01em;
+}
+
+/* ══════════════════════════════════════════════════════
+   LIGHT MODE OVERRIDES — glass-profile-card
+══════════════════════════════════════════════════════ */
+
+/* Lighter glass — 75% white, softer shadow */
+[data-theme="light"] .glass-profile-card {
+  background:              rgba(255, 255, 255, 0.75);  /* Bright white glass                   */
+  backdrop-filter:         blur(24px);                 /* Same strong blur                     */
+  -webkit-backdrop-filter: blur(24px);
+  border:                  1px solid rgba(255, 255, 255, 0.6); /* More visible white border    */
+  box-shadow:              0 8px 32px rgba(0, 0, 0, 0.08);   /* Soft ambient shadow only     */
+
+  /* No green glow in light mode — would look garish */
+}
+
+/* Light mode: name darkens */
+[data-theme="light"] .glass-profile-card__name {
+  color: #1a2332;                                    /* Dark navy text for light bg          */
+}
+
+/* Light mode: title darkens */
+[data-theme="light"] .glass-profile-card__title {
+  color: #5a7499;                                    /* Muted blue-gray for light bg         */
+}
+
+/* Light mode: clock darkens */
+[data-theme="light"] .glass-profile-card__clock {
+  color: #6b8aaa;                                    /* Muted blue-gray for light bg         */
+}
+
+/* Light mode: status text kept green for brand consistency */
+[data-theme="light"] .glass-profile-card__status-text {
+  color: #1a9e6e;                                    /* Darker green for contrast on light    */
+}
+
+/* Light mode: pill buttons — darker glass, darker text */
+[data-theme="light"] .glass-profile-card__pill {
+  background:       rgba(0, 0, 0, 0.04);             /* Very faint dark overlay               */
+  border-color:     rgba(0, 0, 0, 0.10);              /* Subtle dark border                    */
+  color:            #1a2332;                          /* Dark navy text                        */
+}
+
+/* Light mode: pill hover — more visible cyan tint */
+[data-theme="light"] .glass-profile-card__pill:hover {
+  background:       rgba(26, 143, 199, 0.10);         /* Cyan tint lighter than dark mode      */
+  border-color:     rgba(26, 143, 199, 0.30);          /* Blue-tinted border                    */
+  box-shadow:       0 6px 20px rgba(26, 143, 199, 0.10);
+}
+
+/* Light mode: copied state — green tint visible */
+[data-theme="light"] .glass-profile-card__pill--copied {
+  background:       rgba(26, 158, 110, 0.10);          /* Subtle green for feedback             */
+  border-color:     #1a9e6e;                           /* Darker green border                   */
+  color:            #1a9e6e;                           /* Darker green text                     */
+}
 

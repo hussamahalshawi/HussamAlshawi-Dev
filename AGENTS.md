@@ -153,25 +153,25 @@ Key measurements:
 ## 5. Current Dark Glass Formula (Cards & Panels)
 
 ```css
-background:              rgba(13, 18, 48, 0.35);    /* 35% opaque frosted glass */
-backdrop-filter:         blur(24px) saturate(1.2);
--webkit-backdrop-filter: blur(24px) saturate(1.2);
-border:                  1px solid rgba(79,195,247,0.10);
-box-shadow:              0 4px 32px rgba(0,0,0,0.20);
+background:              rgba(13, 17, 38, 0.82);    /* 82% opaque — matches sidebar */
+backdrop-filter:         blur(20px);
+-webkit-backdrop-filter: blur(20px);
+border:                  1px solid rgba(79,195,247,0.12);
+box-shadow:              0 4px 24px rgba(0,0,0,0.35),
+                         inset 0 1px 0 rgba(79,195,247,0.06);
 ```
 
-- **Hover**: `background: rgba(79,195,247,0.04)`, `border-color: rgba(79,195,247,0.16)`, lift `-2px`
-- **Sidebar/Topbar**: more opaque (`--sidebar-bg: 0.82`, `--topbar-bg: 0.75`)
+- **Hover**: `background: rgba(79,195,247,0.06) !important`, `border-color: rgba(79,195,247,0.22)`, lift `-2px`
+- **All elements use same formula**: panels, bento cards, stat cards, language cards, record items, support items
+- **Light mode**: `rgba(255,255,255,0.55)` with `blur(32px) saturate(1.8)` and blue borders `rgba(79,143,199,0.20)` — matches sidebar/topbar
 - **How to apply**: Use class `.ov-panel` or `.ov-bento-card`
-- **Light mode**: `rgba(255,255,255,0.38)` with `blur(24px) saturate(1.6)` and blue borders `rgba(79,143,199,0.18)`
-- **Color convention**: Dark mode → `rgba(79,195,247, ...)`, Light mode → `rgba(79,143,199, ...)`
 
 ### Standard → Glass-opacity mapping
 | Context | Dark opacity | Light opacity |
 |---------|-------------|---------------|
-| Panels/cards (ov-panel, ov-bento-card) | 35% | 38% |
-| Support items, record items | 35% | 35% |
-| Stats (ov-stat), lang cards | 30% | 35% |
+| Panels/cards (ov-panel, ov-bento-card) | 82% | 55% white |
+| Support items, record items | 82% | 55% white |
+| Stats (ov-stat), lang cards | 82% | 55% white |
 | Sidebar | 82% | 55% white |
 | Topbar | 75% | 55% white |
 
@@ -461,8 +461,8 @@ npm run dev:clean    # Dev with force + clear screen
 | Aspect | Dark Mode | Light Mode |
 |--------|-----------|------------|
 | Body | `#0b0f1e` with cyan+blue+violet gradient blobs | `#b8c8dc` with deep blue gradient blobs |
-| Panels | `rgba(13,18,48,0.35)` blur(24px) saturate(1.2) | `rgba(255,255,255,0.38)` blur(24px) saturate(1.6) |
-| Hover | `rgba(79,195,247,0.04)` bg + `0.16` border | `rgba(79,143,199,0.06)` bg + `0.25` border |
+| Panels | `rgba(13,17,38,0.82)` blur(20px) | `rgba(255,255,255,0.55)` blur(32px) saturate(1.8) |
+| Hover | `rgba(79,195,247,0.06)` bg + `0.22` border | `rgba(79,143,199,0.08)` bg + `0.30` border |
 | Sidebar | `rgba(13,17,38,0.82)` + cyan right border | `rgba(255,255,255,0.55)` + blue border |
 | Topbar | `rgba(13,17,38,0.75)` + cyan bottom border | `rgba(255,255,255,0.55)` + blue border |
 | Text | White → muted gray | Dark navy → muted blue |
@@ -481,9 +481,23 @@ The target aesthetic is a **premium frosted glass** where the background gradien
 - **Saturation boost** (1.2): enhances colors passing through the glass
 - **Hover: even more transparent** + brighter border + faint glow + 2px lift
 
+
+
+After the redesign to match the sidebar, all cards now use the **same opacity** as the sidebar (82% dark / 55% light) for visual consistency. The frosted effect comes from the `blur(20px)` / `blur(32px)` with an `inset` top highlight line.
+
 ---
 
-## 18. Section Build Status
+## 18. Recent Changes (this session)
+- All panel glass unified to match sidebar: `rgba(13,17,38,0.82)` + `blur(20px)` + `inset 0 1px 0 rgba(79,195,247,0.06)`
+- All sub-elements (stats, records, lang cards, support items, bento cards) use the same 82% opacity glass
+- Light mode unified to 55% white glass with `blur(32px) saturate(1.8)` — matches sidebar/topbar
+- Hover states: `rgba(79,195,247,0.06)` bg + `0.22` border + lift -2px
+- Fixed `page-content` padding: replaced undefined `--s7` with `--s5`
+- Updated AGENTS.md (this file) with detailed project reference
+
+---
+
+## 19. Section Build Status
 
 | Section | Status | File |
 |---------|--------|------|
