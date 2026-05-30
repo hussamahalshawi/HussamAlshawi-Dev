@@ -277,115 +277,12 @@ export default function OverviewSection({ profile, analytics, languages = [] }) 
   /* ── Total skills count ──────────────────────────────────── */
   const totalSkills = counts.skills || 1;                                 // Isolate universal skills totals assigning numerical integer unit fallback to block zero divisions
 
-  /* ── Glass profile card state ──────────────────────────── */
-  const [currentTime, setCurrentTime] = useState(new Date().toLocaleTimeString()); // Initialize live clock with current formatted time string
-  const [copied, setCopied] = useState(false);                                    // Track "Copy Email" button feedback state for UI toggle
-
-  /* ── Live clock effect — updates every 1 second ─────────── */
-  useEffect(() => {
-    const interval = setInterval(() => {                                          // Fire callback on 1000ms interval tick
-      setCurrentTime(new Date().toLocaleTimeString());                             // Update clock state to current local time
-    }, 1000);                                                                      // 1-second interval for live display
-    return () => clearInterval(interval);                                         // Cleanup interval on component unmount to prevent memory leaks
-  }, []);                                                                          // Empty dependency array — run effect only once on mount
-
-  /* ── Copy email to clipboard handler ────────────────────── */
-  const handleCopyEmail = async () => {                                            // Async function that copies email to system clipboard
-    try {
-      await navigator.clipboard.writeText(email || 'hussam@example.com');          // Write email address string to clipboard API
-      setCopied(true);                                                             // Toggle button to "Copied!" visual feedback state
-      setTimeout(() => setCopied(false), 2000);                                     // Revert button back to default state after 2 seconds
-    } catch {
-      /* Clipboard API may silently fail in insecure contexts or older browsers — ignore */
-    }
-  };
-
   return (
     <section
       id="overview"
       className="overview-section"
       aria-label="Dashboard Overview"
     >
-      {/* ══════════════════════════════════════════════════════
-          GLASS PROFILE CARD — featured hero card
-          Green dot + clock + photo + name + pills + banner
-      ══════════════════════════════════════════════════════ */}
-      <motion.div
-        className="glass-profile-card"
-        initial={{ opacity: 0, y: 30 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-        whileHover={{ scale: 1.02 }}
-      >
-        {/* ── Top bar: availability dot + status (left) | live clock (right) ── */}
-        <div className="glass-profile-card__top-bar">
-          <div className="glass-profile-card__status">
-            <span className="glass-profile-card__dot" aria-hidden="true" />
-            <span className="glass-profile-card__status-text">
-              {available ? 'Available for work' : 'Currently engaged'}
-            </span>
-          </div>
-          <span className="glass-profile-card__clock" aria-live="polite">
-            {currentTime}
-          </span>
-        </div>
-
-        {/* ── Profile photo — renders avatar image or initials fallback ── */}
-        <div className="glass-profile-card__photo" aria-label={`${fullName} photo`}>
-          {avatar
-            ? <img src={avatar} alt={fullName} />
-            : <span>{getInitials(fullName)}</span>
-          }
-        </div>
-
-        {/* ── Name — bold, large, centered ── */}
-        <div className="glass-profile-card__name">
-          {fullName}
-        </div>
-
-        {/* ── Title — muted, small, centered ── */}
-        <div className="glass-profile-card__title">
-          {title}
-        </div>
-
-        {/* ── Action pills: Hire Me + Copy Email ── */}
-        <div className="glass-profile-card__actions">
-          <a
-            href={`mailto:${email || 'hussam@example.com'}`}
-            className="glass-profile-card__pill"
-            aria-label={`Hire ${fullName}`}
-          >
-            Hire Me
-          </a>
-          <button
-            onClick={handleCopyEmail}
-            className={`glass-profile-card__pill ${copied ? 'glass-profile-card__pill--copied' : ''}`}
-            aria-label={copied ? 'Email copied' : 'Copy email address'}
-          >
-            {copied ? 'Copied!' : 'Copy Email'}
-          </button>
-        </div>
-
-        {/* ── Bottom banner — bright green + lightning icon ── */}
-        <div className="glass-profile-card__banner">
-          <svg
-            className="glass-profile-card__banner-icon"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            aria-hidden="true"
-          >
-            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
-          </svg>
-          <span className="glass-profile-card__banner-text">
-            Your creativity knows no bounds
-          </span>
-        </div>
-      </motion.div>
-
       {/* ══════════════════════════════════════════════════════
           ROW 1 — Profile + Goals Donut + Skills Donut
           3 columns: Profile tall | Goals Donut | Skills Donut
