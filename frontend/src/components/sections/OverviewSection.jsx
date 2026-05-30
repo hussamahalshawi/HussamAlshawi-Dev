@@ -195,6 +195,7 @@ export default function OverviewSection({ profile, analytics, languages = [] }) 
     || null;                                                              // Apply final completely null state assignment value if no graphics are discovered
   const available = profile?.is_available_for_hire || false;             // Gather recruitment boolean variable token flag indicating freelancer marketplace availability
   const social    = profile?.social                || {};                 // Harvest social media accounts configuration payload object or load empty generic map
+  const email     = profile?.email                 || '';                 // Extract email address for contact action buttons
 
   /* ── Analytics data extraction ───────────────────────────── */
   const counts     = analytics?.counts              || {};                // Extract master metric entity counts payload to render numerical overview indicators
@@ -276,12 +277,119 @@ export default function OverviewSection({ profile, analytics, languages = [] }) 
   /* ── Total skills count ──────────────────────────────────── */
   const totalSkills = counts.skills || 1;                                 // Isolate universal skills totals assigning numerical integer unit fallback to block zero divisions
 
+  /* ── Glass profile card state ──────────────────────────── */
+  const [currentTime, setCurrentTime] = useState(new Date().toLocaleTimeString()); // Initialize live clock with current formatted time string
+  const [copied, setCopied] = useState(false);                                    // Track "Copy Email" button feedback state for UI toggle
+
+  /* ── Live clock effect — updates every 1 second ─────────── */
+  useEffect(() => {
+    const interval = setInterval(() => {                                          // Fire callback on 1000ms interval tick
+      setCurrentTime(new Date().toLocaleTimeString());                             // Update clock state to current local time
+    }, 1000);                                                                      // 1-second interval for live display
+    return () => clearInterval(interval);                                         // Cleanup interval on component unmount to prevent memory leaks
+  }, []);                                                                          // Empty dependency array — run effect only once on mount
+
+  /* ── Copy email to clipboard handler ────────────────────── */
+  const handleCopyEmail = async () => {                                            // Async function that copies email to system clipboard
+    try {
+      await navigator.clipboard.writeText(email || 'hussam@example.com');          // Write email address string to clipboard API
+      setCopied(true);                                                             // Toggle button to "Copied!" visual feedback state
+      setTimeout(() => setCopied(false), 2000);                                     // Revert button back to default state after 2 seconds
+    } catch {
+      /* Clipboard API may silently fail in insecure contexts or older browsers — ignore */
+    }
+  };
+
   return (
     <section
       id="overview"
       className="overview-section"
       aria-label="Dashboard Overview"
     >
+      {/* ══════════════════════════════════════════════════════
+          GLASS PROFILE CARD — featured hero card
+          Green dot + clock + photo + name + pills + banner
+      ══════════════════════════════════════════════════════ */}
+      <motion.div
+        className="glass-profile-card"                                             /* Glassmorphism hero card with green glow */
+        initial={{ opacity: 0, y: 30 }}                                            /* Start invisible and shifted down */
+        animate={{ opacity: 1, y: 0 }}                                             /* Fade in + slide up to natural position */
+        transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}                   /* Smooth cubic-bezier entrance curve */
+        whileHover={{ scale: 1.02 }}                                                /* Subtle scale-up on hover for interactivity */
+      >
+        {/* ── Top bar: availability dot + status (left) | live clock (right) ── */}
+        <div className="glass-profile-card__top-bar">
+          <div className="glass-profile-card__status">
+            <span className="glass-profile-card__dot" aria-hidden="true" />         {/* Green pulsing availability indicator dot */}
+            <span className="glass-profile-card__status-text">
+              {available ? 'Available for work' : 'Currently engaged'}              {/* Dynamic status label based on profile flag */}
+            </span>
+          </div>
+          <span className="glass-profile-card__clock" aria-live="polite">           {/* Live clock with polite screen reader updates */}
+            {currentTime}
+          </span>
+        </div>
+
+        {/* ── Profile photo — rounded square, centered ────── */}
+        {/* Profile photo — renders avatar image or initials fallback */}
+        <div className="glass-profile-card__photo" aria-label={`${fullName} photo`}>
+          {avatar
+            ? <img src={avatar} alt={fullName} />
+            : <span>{getInitials(fullName)}</span>
+          }
+        </div>
+
+        {/* ── Name — bold, large, centered ────────────────── */}
+        <div className="glass-profile-card__name">
+          {fullName}
+        </div>
+
+        {/* ── Title — muted, small, centered ──────────────── */}
+        <div className="glass-profile-card__title">
+          {title}
+        </div>
+
+        {/* ── Action pills: Hire Me + Copy Email ─────────── */}
+        <div className="glass-profile-card__actions">
+          {/* "Hire Me" pill — mailto link that opens default email client */}
+          <a
+            href={`mailto:${email || 'hussam@example.com'}`}                        /* Mailto link with profile email or safe fallback */
+            className="glass-profile-card__pill"                                     /* Glassmorphism pill button styling */
+            aria-label={`Hire ${fullName}`}                                          /* Accessible label for screen readers */
+          >
+            Hire Me
+          </a>
+
+          {/* "Copy Email" pill — copies email to clipboard on click */}
+          <button
+            onClick={handleCopyEmail}                                                /* Trigger clipboard copy on click */
+            className={`glass-profile-card__pill ${copied ? 'glass-profile-card__pill--copied' : ''}`} /* Toggle copied feedback class */
+            aria-label={copied ? 'Email copied' : 'Copy email address'}              /* Dynamic accessible label for current state */
+          >
+            {copied ? 'Copied!' : 'Copy Email'}                                     /* Show feedback text or default label */
+          </button>
+        </div>
+
+        {/* ── Bottom banner — bright green + lightning icon ──── */}
+        <div className="glass-profile-card__banner">
+          {/* Lightning / zap SVG icon — white on green gradient */}
+          <svg
+            className="glass-profile-card__banner-icon"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden="true"                                                      /* Decorative icon — hidden from screen readers */
+          >
+            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />            /* Lightning bolt polygon path */
+          </svg>
+          <span className="glass-profile-card__banner-text">
+            Your creativity knows no bounds                                           /* Motivational creativity status message */
+          </span>
+        </div>
+      </motion.div>
 
       {/* ══════════════════════════════════════════════════════
           ROW 1 — Profile + Goals Donut + Skills Donut
