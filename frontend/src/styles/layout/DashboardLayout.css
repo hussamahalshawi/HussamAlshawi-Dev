@@ -448,6 +448,8 @@
   font-size:      0.68rem;
   letter-spacing: 0.04em;
   white-space:    nowrap;
+  overflow:       hidden;
+  text-overflow:  ellipsis;
   transition:     color 0.35s ease;
 }
 
