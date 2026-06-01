@@ -285,7 +285,7 @@
 
 /* Avatar card — fluid size, gradient fallback, matches sidebar logo aesthetic */
 .ov-profile__avatar {
-  width:           clamp(90px, 28%, 180px);
+  width:           clamp(120px, 35%, 200px);
   height:          auto;
   aspect-ratio:    6/7;
   flex:            0 0 auto;
