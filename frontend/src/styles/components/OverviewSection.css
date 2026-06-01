@@ -283,11 +283,13 @@
   border-bottom: 1px solid rgba(79,195,247,0.22);
 }
 
-/* Avatar card — gradient fallback, matches sidebar logo aesthetic */
+/* Avatar card — fluid size, gradient fallback, matches sidebar logo aesthetic */
 .ov-profile__avatar {
-  width:           180px;
-  height:          210px;
-  flex-shrink:     0;
+  width:           clamp(90px, 28%, 180px);
+  height:          auto;
+  aspect-ratio:    6/7;
+  flex:            0 0 auto;
+  position:        relative;
   border-radius:   16px;
   background:      linear-gradient(135deg, var(--cyan), var(--blue));
   display:         flex;
@@ -1252,13 +1254,8 @@
    PROFILE HEADER RESPONSIVE
    Uses flex-wrap: wrap to naturally stack when narrow
 ══════════════════════════════════════════════════════ */
-/* Tablet ≤1100px */
+/* Tablet ≤1100px — smaller social icons */
 @media (max-width: 1100px) {
-  .ov-profile__avatar {
-    width:  125px;
-    height: 155px;
-  }
-
   .ov-social-link--luxury {
     width:  36px;
     height: 36px;
@@ -1270,8 +1267,8 @@
   }
 }
 
-/* Tablet portrait ≤860px — center everything */
-@media (max-width: 860px) {
+/* Tablet ≤1024px — column layout for all tablet sizes */
+@media (max-width: 1024px) {
   .ov-profile__header {
     flex-direction: column;
     align-items:    center;
@@ -1279,8 +1276,6 @@
   }
 
   .ov-profile__avatar {
-    width:  150px;
-    height: 180px;
     margin-bottom: var(--s1);
   }
 
@@ -1307,11 +1302,6 @@
 
 /* Mobile ≤599px — compact */
 @media (max-width: 599px) {
-  .ov-profile__avatar {
-    width:  110px;
-    height: 135px;
-  }
-
   .ov-profile__header {
     gap: var(--s3);
   }

@@ -642,7 +642,7 @@
 }
 
 /* Hamburger — mobile only */
-.topbar__hamburger { display: none; }
+.topbar__hamburger { display: none; color: var(--text-white); }
 
 /* ── Old theme-btn style — keep for fallback ─────── */
 .theme-btn {
