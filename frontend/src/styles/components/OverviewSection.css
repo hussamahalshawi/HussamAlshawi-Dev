@@ -280,7 +280,7 @@
 .ov-profile__lang-section {
   margin-bottom: var(--s4);
   padding-bottom: var(--s4);
-  border-bottom: 1px solid rgba(79,195,247,0.10);
+  border-bottom: 1px solid rgba(79,195,247,0.22);
 }
 
 /* Avatar card — gradient fallback, matches sidebar logo aesthetic */
@@ -831,8 +831,8 @@
   display:               grid;
   grid-template-columns: repeat(auto-fill, minmax(88px, 1fr)); /* Responsive columns */
   gap:                   1px;                   /* 1px creates visual dividers       */
-  background:            rgba(255,255,255,0.06); /* Gap/divider color                */
-  border:                1px solid rgba(255,255,255,0.08);
+  background:            rgba(255,255,255,0.12); /* Gap/divider color                */
+  border:                1px solid rgba(255,255,255,0.14);
   border-radius:         var(--r-lg);
   overflow:              hidden;
   margin-top:            var(--s3);
@@ -1375,8 +1375,8 @@
   right:      0;
   height:     2px;
   background: linear-gradient(90deg, var(--stat-color, var(--cyan)), transparent);
-  opacity:    0.9;
-  box-shadow: 0 0 8px var(--stat-color, var(--cyan));
+  opacity:    1;
+  box-shadow: 0 0 12px var(--stat-color, var(--cyan));
 }
 
 .ov-stat:hover {
