@@ -152,10 +152,11 @@ const RECORD_ITEMS = [
 
 /* ── Language level → color ───────────────────────────────────── */
 const LANG_LEVEL_COLORS = {
-  native:       '#4FC3F7',  // Define brilliant cyan for mother tongue or native standard linguistic level
-  fluent:       '#4ECCA3',  // Define deep emerald green for professional fluent communication level
-  intermediate: '#F5A623',  // Define warning amber orange for functional conversational intermediate standard
-  beginner:     '#9B7FEA',  // Define light purple violet token for basic entry beginner level
+  native:       '#4FC3F7',
+  fluent:       '#4ECCA3',
+  advanced:     '#9B7FEA',
+  intermediate: '#F5A623',
+  beginner:     '#4FC3F7',
 };
 
 /* ── Framer Motion variants for staggered entrance ───────────── */
@@ -425,13 +426,13 @@ export default function OverviewSection({ profile, analytics, languages = [] }) 
                 </div>
                 <div className="ov-bento-lang-strip" style={{ marginTop: 0, paddingTop: 0, borderTop: 'none' }} role="list" aria-label="Languages">
                   {languages.slice(0, 4).map((lang, i) => {
-                    const levelKey  = (lang.level || '').toLowerCase();
+                    const levelKey  = (lang.proficiency || '').toLowerCase();
                     const langColor = LANG_LEVEL_COLORS[levelKey] || CHART_COLORS[i % CHART_COLORS.length];
                     return (
-                      <div key={lang.language || i} className="ov-bento-lang-chip" role="listitem" style={{ '--lang-color': langColor }}>
-                        <span className="ov-bento-lang-chip__flag" aria-hidden="true">{lang.flag || '🌐'}</span>
-                        <span className="ov-bento-lang-chip__name">{lang.language}</span>
-                        <span className="ov-bento-lang-chip__level" style={{ color: langColor }}>{lang.level || 'N/A'}</span>
+                      <div key={lang.language_name || i} className="ov-bento-lang-chip" role="listitem" style={{ '--lang-color': langColor }}>
+                        <span className="ov-bento-lang-chip__flag" aria-hidden="true">{lang.icon || '🌐'}</span>
+                        <span className="ov-bento-lang-chip__name">{lang.language_name}</span>
+                        <span className="ov-bento-lang-chip__level" style={{ color: langColor }}>{lang.proficiency || 'N/A'}</span>
                       </div>
                     );
                   })}
