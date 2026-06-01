@@ -1247,6 +1247,77 @@
   .ov-skill-list { max-height: none; }
 }
 
+/* ══════════════════════════════════════════════════════
+   PROFILE HEADER RESPONSIVE
+   Ensures avatar + info row works at all screen sizes
+══════════════════════════════════════════════════════ */
+@media (max-width: 1024px) {
+  .ov-profile__avatar {
+    width:  140px;
+    height: 170px;
+  }
+}
+
+@media (max-width: 768px) {
+  .ov-profile__header {
+    flex-direction: column;
+    align-items:    center;
+    text-align:     center;
+  }
+
+  .ov-profile__avatar {
+    width:  130px;
+    height: 160px;
+  }
+
+  .ov-profile__info {
+    align-items:    center;
+    text-align:     center;
+    padding-top:    0;
+  }
+
+  .ov-profile__name,
+  .ov-profile__title { text-align: center; }
+
+  .ov-profile__social--luxury {
+    justify-content: center;
+  }
+
+  .ov-social-link--luxury {
+    width:  38px;
+    height: 38px;
+  }
+}
+
+@media (max-width: 599px) {
+  .ov-profile__avatar {
+    width:  110px;
+    height: 140px;
+  }
+
+  .ov-profile__header {
+    gap: var(--s3);
+  }
+
+  .ov-profile__name {
+    font-size: 1rem;
+  }
+
+  .ov-profile__title {
+    font-size: 0.58rem;
+  }
+
+  .ov-social-link--luxury {
+    width:  34px;
+    height: 34px;
+  }
+
+  .ov-social-link__icon--luxury svg {
+    width:  16px;
+    height: 16px;
+  }
+}
+
 /* ── Profile Stats — 4 cards horizontal ───────────── */
 .ov-profile__stats {
   display:               grid;
