@@ -247,9 +247,10 @@
   pointer-events: none;
 }
 
-/* Avatar row — side-by-side layout */
+/* Avatar row — side-by-side layout, wraps when not enough space */
 .ov-profile__header {
   display: flex;
+  flex-wrap: wrap;
   align-items: flex-start;
   gap: var(--s4);
   margin-bottom: var(--s4);
@@ -257,7 +258,7 @@
 
 /* Right column — name, title, pill, social */
 .ov-profile__info {
-  min-width: 0;
+  min-width: 220px;
   flex: 1;
   display: flex;
   flex-direction: column;
@@ -1249,16 +1250,28 @@
 
 /* ══════════════════════════════════════════════════════
    PROFILE HEADER RESPONSIVE
-   Ensures avatar + info row works at all screen sizes
+   Uses flex-wrap: wrap to naturally stack when narrow
 ══════════════════════════════════════════════════════ */
-@media (max-width: 1024px) {
+/* Tablet ≤1100px */
+@media (max-width: 1100px) {
   .ov-profile__avatar {
-    width:  140px;
-    height: 170px;
+    width:  125px;
+    height: 155px;
+  }
+
+  .ov-social-link--luxury {
+    width:  36px;
+    height: 36px;
+  }
+
+  .ov-profile__info {
+    min-width: 180px;
+    gap: var(--s1);
   }
 }
 
-@media (max-width: 768px) {
+/* Tablet portrait ≤860px — center everything */
+@media (max-width: 860px) {
   .ov-profile__header {
     flex-direction: column;
     align-items:    center;
@@ -1266,14 +1279,17 @@
   }
 
   .ov-profile__avatar {
-    width:  130px;
-    height: 160px;
+    width:  150px;
+    height: 180px;
+    margin-bottom: var(--s1);
   }
 
   .ov-profile__info {
     align-items:    center;
     text-align:     center;
     padding-top:    0;
+    gap:            var(--s2);
+    min-width:      0;
   }
 
   .ov-profile__name,
@@ -1284,15 +1300,16 @@
   }
 
   .ov-social-link--luxury {
-    width:  38px;
-    height: 38px;
+    width:  40px;
+    height: 40px;
   }
 }
 
+/* Mobile ≤599px — compact */
 @media (max-width: 599px) {
   .ov-profile__avatar {
     width:  110px;
-    height: 140px;
+    height: 135px;
   }
 
   .ov-profile__header {
@@ -1307,14 +1324,18 @@
     font-size: 0.58rem;
   }
 
+  .ov-profile__info {
+    gap: 6px;
+  }
+
   .ov-social-link--luxury {
     width:  34px;
     height: 34px;
   }
 
   .ov-social-link__icon--luxury svg {
-    width:  16px;
-    height: 16px;
+    width:  15px;
+    height: 15px;
   }
 }
 
