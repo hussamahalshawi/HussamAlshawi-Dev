@@ -258,9 +258,8 @@ export default function DashboardLayout({ children, activeSection = '', onSectio
             </div>
           </div>
 
-          {/* Right: availability pill + theme toggle + user pill + hamburger */}
+          {/* Right: actions + hamburger */}
           <div className="topbar__actions">
-
             {/* Availability status pill */}
             <div
               className={`availability-pill ${available ? 'availability-pill--open' : ''}`}
@@ -277,19 +276,17 @@ export default function DashboardLayout({ children, activeSection = '', onSectio
               role="group"
               aria-label="Theme switcher"
             >
-              {/* Dark mode button */}
               <button
                 className={`theme-btn ${isDark ? 'theme-btn--active' : ''}`}
-                onClick={() => !isDark && toggleTheme()}        // Toggle only if not already dark
+                onClick={() => !isDark && toggleTheme()}
                 aria-pressed={isDark}
                 title="Dark mode"
               >
                 🌙
               </button>
-              {/* Light mode button */}
               <button
                 className={`theme-btn ${!isDark ? 'theme-btn--active' : ''}`}
-                onClick={() => isDark && toggleTheme()}         // Toggle only if not already light
+                onClick={() => isDark && toggleTheme()}
                 aria-pressed={!isDark}
                 title="Light mode"
               >
@@ -305,30 +302,27 @@ export default function DashboardLayout({ children, activeSection = '', onSectio
               aria-label="User menu"
               aria-haspopup="true"
             >
-              {/* Avatar circle */}
               <div className="topbar__user-avatar">
                 {avatar
                   ? <img src={avatar} alt="Profile" />
                   : <span>{initials}</span>
                 }
               </div>
-              {/* Full name */}
               <span className="topbar__user-name">{fullName}</span>
-              {/* Dropdown chevron */}
               <span className="topbar__user-chevron" aria-hidden="true">▾</span>
             </div>
-
-            {/* ── Mobile hamburger ── */}
-            <button
-              className="topbar__icon-btn topbar__hamburger"
-              onClick={() => setSidebarOpen(prev => !prev)}
-              aria-label={sidebarOpen ? 'Close menu' : 'Open menu'}
-              aria-expanded={sidebarOpen}
-              aria-controls="sidebar"
-            >
-              {sidebarOpen ? '✕' : '☰'}
-            </button>
           </div>
+
+          {/* ── Mobile hamburger — outside actions for independent positioning ── */}
+          <button
+            className="topbar__icon-btn topbar__hamburger"
+            onClick={() => setSidebarOpen(prev => !prev)}
+            aria-label={sidebarOpen ? 'Close menu' : 'Open menu'}
+            aria-expanded={sidebarOpen}
+            aria-controls="sidebar"
+          >
+            {sidebarOpen ? '✕' : '☰'}
+          </button>
         </header>
 
         {/* ── Page sections ── */}

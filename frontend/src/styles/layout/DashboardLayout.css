@@ -389,9 +389,9 @@
   position:        sticky;
   top:             0;
   z-index:         100;
-  display:         flex;
+  display:         grid;
+  grid-template-columns: 1fr auto;
   align-items:     center;
-  justify-content: space-between;
   padding:         0 var(--s6);
   gap:             var(--s4);
   overflow:        hidden;
@@ -642,7 +642,11 @@
 }
 
 /* Hamburger — mobile only */
-.topbar__hamburger { display: none; color: var(--text-white); }
+.topbar__hamburger {
+  display: none;
+  color: var(--text-white);
+  flex-shrink: 0;
+}
 
 /* ── Old theme-btn style — keep for fallback ─────── */
 .theme-btn {
@@ -711,9 +715,10 @@
 }
 
 @media (max-width: 768px) {
-  .topbar          { padding: 0 var(--s4); height: 60px; gap: var(--s1); }
+  .topbar          { grid-template-columns: 1fr auto auto; padding: 0 var(--s4); height: 60px; gap: var(--s1); }
   .topbar__greeting-hi { font-size: 0.95rem; }
-  .topbar__hamburger { display: flex; align-items: center; justify-content: center; }
+  .topbar__hamburger { display: flex; align-items: center; justify-content: center; grid-column: 3; }
+  .topbar__actions   { grid-column: 2; }
   .topbar__icon-btn { width: 34px; height: 34px; font-size: 0.95rem; }
 
   .sidebar {
@@ -727,11 +732,44 @@
   .page-content     { padding: var(--s4); height: calc(100vh - 60px); }
 }
 
+/* Compact wrap — topbar splits into two rows */
+@media (max-width: 700px) {
+  .topbar {
+    grid-template-columns: 1fr auto;
+    grid-template-rows:    auto auto;
+    gap: var(--s2);
+    height: auto;
+    min-height: 60px;
+    padding: var(--s2) var(--s4);
+  }
+  .topbar__greeting {
+    grid-column: 1;
+    grid-row: 1;
+    text-align: center;
+    align-items: center;
+  }
+  .topbar__hamburger {
+    grid-column: 2;
+    grid-row: 1;
+  }
+  .topbar__actions {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    justify-content: center;
+  }
+  .page-content {
+    height: calc(100vh - 84px);
+    padding: var(--s3);
+  }
+}
+
 @media (max-width: 599px) {
-  .topbar           { padding: 0 var(--s3); height: 56px; }
+  .topbar           { display: flex; padding: 0 var(--s3); height: 56px; min-height: unset; gap: var(--s1); }
+  .topbar__greeting { flex: 1; text-align: unset; align-items: unset; }
+  .topbar__hamburger { grid-column: unset; order: 3; }
+  .topbar__actions  { grid-column: unset; order: 2; justify-content: flex-end; gap: var(--s1); }
   .topbar__greeting-hi { font-size: 0.85rem; }
   .page-content     { padding: var(--s3); height: calc(100vh - 56px); }
-  .topbar__actions  { gap: var(--s1); }
   .topbar__icon-btn { width: 32px; height: 32px; font-size: 0.90rem; }
   .topbar__toggle-track { width: 44px; height: 24px; }
   .topbar__toggle-thumb { width: 18px; height: 18px; }
