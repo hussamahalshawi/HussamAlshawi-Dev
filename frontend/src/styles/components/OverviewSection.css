@@ -1145,6 +1145,13 @@
   background: rgba(79,143,199,0.12);
 }
 
+/* GitHub (first link) hover: black in light mode, white in dark mode via inline style */
+[data-theme="light"] .ov-social-link--luxury:first-child:hover {
+  color: #000;
+  border-color: #000;
+  box-shadow: 0 10px 20px -5px rgba(0,0,0,0.3), 0 0 15px rgba(0,0,0,0.2);
+}
+
 [data-theme="light"] .ov-stat {
   background: rgba(255,255,255,0.75);
   backdrop-filter: blur(24px);

@@ -110,7 +110,7 @@ const SOCIAL_ICONS = {
 
 /* ── Social platform colors for luxury hover effect ──────────── */
 const SOCIAL_PLATFORMS_CONFIG = [
-  { key: 'github',    label: 'GitHub',    color: '#ffffff' }, // Set color token to white for GitHub brand design
+  { key: 'github',    label: 'GitHub',    color: '#ffffff' }, // Dark mode hover = white; light mode override in CSS
   { key: 'linkedin',  label: 'LinkedIn',  color: '#0A66C2' }, // Set color token to blue for LinkedIn brand identity
   { key: 'twitter',   label: 'X',         color: '#ffffff' }, // Set color token to white for modern X platform branding
   { key: 'instagram', label: 'Instagram', color: '#E1306C' }, // Set color token to gradient pink for Instagram identity
