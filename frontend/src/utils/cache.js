@@ -13,6 +13,7 @@ export const CACHE_KEYS = {
   skills:        'ha_cache_skills',
   projects:      'ha_cache_projects',
   skillsSummary: 'ha_cache_skills_summary',
+  languages:     'ha_cache_languages',
 };
 
 /* ═══════════════════════════════════════════════════════

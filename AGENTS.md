@@ -521,8 +521,7 @@ After the redesign to match the sidebar, all cards now use the **same opacity** 
 - Commit convention: `type: description` (e.g., `feat: add skills section`, `fix: page-content padding`, `refactor: frosted glass panels`)
 - Remote: `origin` (HTTPS — no credential helper configured)
 - Git LFS: not used
-- Only commit when explicitly requested by user
-- NEVER commit or push automatically — after each edit, provide commit message(s) in a markdown code block for the user to copy
+- NEVER commit or push automatically — after each edit session/task, **automatically** output commit message(s) in a markdown code block for the user to copy — do NOT wait for them to ask
 
 ---
 
@@ -532,8 +531,7 @@ After the redesign to match the sidebar, all cards now use the **same opacity** 
 - "الصورة" (reference image) — the user keeps referring to a design image, but no image file exists in the project. The target is a premium glassmorphism aesthetic
 - The user prefers concise answers and minimal output
 - **Before applying edits**: run `git diff` or the tool's diff review to show changes before committing
-- **After each feature/task**: run "generate conventional commit messages for all changes" to create structured commit messages
-- **After every edit**: provide each changed file's commit message in a markdown code block for easy copying — never commit or push automatically
+- **After each feature/task**: generate conventional commit messages for all changes and output them in a markdown code block — **automatically**, never wait to be asked
 - Always check `index.css` for design tokens before hardcoding values
 - Keep existing class names intact; only modify CSS values and JSX content
 

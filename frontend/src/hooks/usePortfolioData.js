@@ -62,6 +62,12 @@ const API_TASKS = [
     fetch: () => skillsService.getSkillsSummary(),
     phase: 2,
   },
+  {
+    key:   'languages',
+    label: 'Languages',
+    fetch: () => languagesService.getLanguages(),
+    phase: 2,
+  },
 ];
 
 export function usePortfolioData() {

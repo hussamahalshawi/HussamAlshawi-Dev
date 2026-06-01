@@ -418,7 +418,7 @@ export default function OverviewSection({ profile, analytics, languages = [] }) 
             )}
 
 {/*             ── ROW 4: Languages ── */}
-            {languages.length > 0 && (
+            {languages?.length > 0 && (
               <div className="ov-profile__lang-section">
                 <div className="ov-profile__section-label">
                   Languages
