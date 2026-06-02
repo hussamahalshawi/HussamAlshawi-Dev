@@ -25,13 +25,13 @@
  * ─────────────────────────────────────────────────────────
  */
 
-import { useRef, useEffect, useState, useCallback } from 'react'; // Hooks for animation + hash routing
-import { useLocation }                                from 'react-router-dom';
+import { useRef, useEffect, useState, useCallback } from 'react';
 import { CHART_COLORS, SKILL_BANDS, ANIMATION }       from '../../utils/constants'; // Global tokens
 import { SkeletonKPI }                               from '../ui/SkeletonLoader'; // Loading skeleton
 import Badge                                          from '../ui/Badge';         // Badge component
 import SankeyChart                                    from '../charts/SankeyChart';
 import RadarSkillsChart                               from '../charts/RadarSkillsChart';
+import MultiRadarChart                                from '../charts/MultiRadarChart';
 import TimelineAreaChart                              from '../charts/TimelineAreaChart';
 import GoalsBulletChart                               from '../charts/GoalsBulletChart';
 import SourceTreemapChart                             from '../charts/SourceTreemapChart';
@@ -39,6 +39,7 @@ import CareerTab                                      from './tabs/CareerTab';
 import SkillsTab                                      from './tabs/SkillsTab';
 import LearningTab                                    from './tabs/LearningTab';
 import GoalsTab                                       from './tabs/GoalsTab';
+import chartsService                                  from '../../services/chartsService';
 import '../../styles/components/AnalyticsSection.css';
 
 /* ── Analytics tab configuration ────────────────────────────── */
@@ -76,9 +77,18 @@ const KPI_CONFIG = [
  */
 export default function AnalyticsSection({ analytics, portfolio, portfolioLoading, portfolioError }) {
 
-  /* ── Hash-based tab routing ─────────────────────────────────── */
-  const location = useLocation();
+  /* ── Domain coverage data ──────────────────────────────────── */
+  const [domainCoverage, setDomainCoverage] = useState(null);
 
+  useEffect(() => {
+    let cancelled = false;
+    chartsService.skills.domainCoverage()
+      .then(res => { if (!cancelled) setDomainCoverage(res.data); })
+      .catch(() => { if (!cancelled) setDomainCoverage(null); });
+    return () => { cancelled = true; };
+  }, []);
+
+  /* ── Hash-based tab routing ─────────────────────────────────── */
   const getTabFromHash = useCallback(() => {
     const hash = window.location.hash.replace('#analytics/', '').replace('#analytics', '');
     const valid = ANALYTICS_TABS.find(t => t.id === hash);
@@ -332,7 +342,12 @@ export default function AnalyticsSection({ analytics, portfolio, portfolioLoadin
                   />
                 </div>
 
-                {/* ROW 2: Radar + Treemap (2-col) */}
+                  {/* ROW 2: Domain Coverage — Multi-series Radar */}
+                  <div className="analytics-glass-panel portfolio-chart-panel">
+                    <MultiRadarChart data={domainCoverage} />
+                  </div>
+
+                  {/* ROW 3: Radar + Treemap (2-col) */}
                 <div className="portfolio-row-2col">
                   <div className="analytics-glass-panel portfolio-chart-panel">
                     <div className="analytics-panel__header">
@@ -358,7 +373,7 @@ export default function AnalyticsSection({ analytics, portfolio, portfolioLoadin
                   </div>
                 </div>
 
-                {/* ROW 3: Learning Timeline — Stacked Area */}
+                {/* ROW 4: Learning Timeline — Stacked Area */}
                 <div className="analytics-glass-panel portfolio-chart-panel">
                   <div className="analytics-panel__header">
                     <p className="skill-group__title" style={{ margin: 0 }}>
@@ -371,7 +386,7 @@ export default function AnalyticsSection({ analytics, portfolio, portfolioLoadin
                   <TimelineAreaChart timeline={portfolio.learning_timeline} />
                 </div>
 
-                {/* ROW 4: Goals — Bullet Chart */}
+                {/* ROW 5: Goals — Bullet Chart */}
                 <div className="analytics-glass-panel portfolio-chart-panel">
                   <div className="analytics-panel__header">
                     <p className="skill-group__title" style={{ margin: 0 }}>

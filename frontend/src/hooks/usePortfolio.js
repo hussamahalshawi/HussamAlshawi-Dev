@@ -21,8 +21,14 @@ export function usePortfolio() {
 
   const checkForUpdates = useCallback(async () => {
     try {
-      console.log('[Portfolio] Fetching /charts/portfolio/summary...');
-      const freshData = await analyticsService.getPortfolioSummary();
+      console.log('[Portfolio] Fetching split endpoints...');
+      const [skills, goals, timeline, sources] = await Promise.all([
+        analyticsService.getPortfolioSkills(),
+        analyticsService.getPortfolioGoals(),
+        analyticsService.getPortfolioTimeline(),
+        analyticsService.getPortfolioSources(),
+      ]);
+      const freshData = { ...skills, ...goals, ...timeline, ...sources };
       console.log('[Portfolio] ✓ Received data:', freshData ? 'ok' : 'empty');
       const stale = isCacheStale(CACHE_KEYS.portfolio, freshData);
       if (stale) {

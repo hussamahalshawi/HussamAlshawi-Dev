@@ -1,0 +1,220 @@
+/* ═══════════════════════════════════════════════════════════════
+   MultiRadarChart.css — Multi-series domain coverage radar
+   Dark glass panel with per-source lines
+   ═══════════════════════════════════════════════════════════════ */
+
+.multi-radar {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+  background: rgba(13, 17, 38, 0.82);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(79, 195, 247, 0.12);
+  border-radius: var(--r-lg);
+  padding: var(--s5) var(--s5) var(--s4);
+  position: relative;
+  overflow: hidden;
+}
+
+.multi-radar__header {
+  display: flex;
+  align-items: center;
+  gap: var(--s2);
+  width: 100%;
+  margin-bottom: var(--s2);
+}
+
+.multi-radar__icon {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+}
+
+.multi-radar__title {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: var(--text-secondary);
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.multi-radar-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 200px;
+  background: rgba(13, 17, 38, 0.82);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(79, 195, 247, 0.12);
+  border-radius: var(--r-lg);
+  color: var(--text-muted);
+  font-size: 0.78rem;
+  font-family: var(--font-mono);
+}
+
+/* ── Legend ── */
+.multi-radar__legend {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--s2) var(--s4);
+  width: 100%;
+  margin-top: var(--s2);
+  padding-top: var(--s3);
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.multi-radar__legend-item {
+  display: flex;
+  align-items: center;
+  gap: var(--s1);
+}
+
+.multi-radar__legend-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.multi-radar__legend-label {
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  color: var(--text-secondary);
+  letter-spacing: 0.04em;
+}
+
+/* ── Tooltip ── */
+.multi-radar-tooltip {
+  background: rgba(10, 15, 32, 0.95);
+  border: 1px solid rgba(79, 195, 247, 0.3);
+  border-radius: var(--r-sm);
+  padding: var(--s2) var(--s3);
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  pointer-events: none;
+}
+
+/* ── Recharts overrides ── */
+.recharts-wrapper .recharts-polar-grid-angle line {
+  stroke: rgba(255, 255, 255, 0.06) !important;
+}
+
+.recharts-wrapper .recharts-polar-grid-concentric-polygon {
+  stroke: rgba(255, 255, 255, 0.06) !important;
+}
+
+.recharts-wrapper .recharts-polar-angle-axis-tick text {
+  fill: rgba(232, 238, 248, 0.55) !important;
+}
+
+/* ── Tooltip overrides ── */
+.mr-tooltip {
+  background: rgba(10, 15, 32, 0.95);
+  border: 1px solid rgba(79, 195, 247, 0.3);
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-family: 'DM Sans', sans-serif;
+  pointer-events: none;
+}
+
+.mr-tooltip__cat {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #e8eef8;
+  margin-bottom: 6px;
+  padding-bottom: 5px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.mr-tooltip__row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 0;
+}
+
+.mr-tooltip__dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.mr-tooltip__name {
+  font-size: 0.65rem;
+  color: #8ba3c4;
+  flex: 1;
+}
+
+.mr-tooltip__val {
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: #e8eef8;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+/* ── Light mode ── */
+[data-theme="light"] .multi-radar {
+  background: rgba(255, 255, 255, 0.55);
+  backdrop-filter: blur(32px) saturate(1.8);
+  -webkit-backdrop-filter: blur(32px) saturate(1.8);
+  border-color: rgba(79, 143, 199, 0.2);
+}
+
+[data-theme="light"] .multi-radar__title {
+  color: #3d5a80;
+}
+
+[data-theme="light"] .multi-radar__icon {
+  stroke: #3d5a80;
+}
+
+[data-theme="light"] .multi-radar-empty {
+  background: rgba(255, 255, 255, 0.55);
+  border-color: rgba(79, 143, 199, 0.2);
+  color: #6b8aaa;
+}
+
+[data-theme="light"] .multi-radar__legend {
+  border-top-color: rgba(79, 100, 145, 0.14);
+}
+
+[data-theme="light"] .multi-radar__legend-label {
+  color: #3d5a80;
+}
+
+[data-theme="light"] .mr-tooltip {
+  background: rgba(255, 255, 255, 0.97);
+  border-color: rgba(26, 143, 199, 0.3);
+}
+
+[data-theme="light"] .mr-tooltip__cat {
+  color: #1e2d42;
+  border-bottom-color: rgba(79, 100, 145, 0.14);
+}
+
+[data-theme="light"] .mr-tooltip__name {
+  color: #3d5a80;
+}
+
+[data-theme="light"] .mr-tooltip__val {
+  color: #1e2d42;
+}
+
+[data-theme="light"] .recharts-wrapper .recharts-polar-angle-axis-tick text {
+  fill: #3d5a80 !important;
+}
+
+[data-theme="light"] .recharts-wrapper .recharts-polar-grid-angle line {
+  stroke: rgba(79, 100, 145, 0.1) !important;
+}
+
+[data-theme="light"] .recharts-wrapper .recharts-polar-grid-concentric-polygon {
+  stroke: rgba(79, 100, 145, 0.1) !important;
+}

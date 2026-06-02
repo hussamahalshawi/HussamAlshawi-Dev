@@ -5,6 +5,7 @@
  */
 
 import axios from 'axios';                              // HTTP client library
+import { REQUEST_TIMEOUT } from '../utils/constants';   // 8s timeout from design tokens
 
 // ── BASE URL ──────────────────────────────────────────────────────
 const BASE_URL = import.meta.env.VITE_API_URL           // Read from .env
@@ -14,7 +15,7 @@ const BASE_URL = import.meta.env.VITE_API_URL           // Read from .env
 // Used for Profile + Analytics only
 const apiClient = axios.create({
   baseURL: BASE_URL,                                    // All requests relative to this
-  timeout: 0,                                        // 8s — fail fast for critical data
+  timeout: REQUEST_TIMEOUT,                             // 8s — fail fast for critical data
   headers: { 'Content-Type': 'application/json' },     // Default JSON header
 });
 

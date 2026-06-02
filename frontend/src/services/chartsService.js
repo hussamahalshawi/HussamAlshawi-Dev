@@ -57,6 +57,13 @@ const skills = {
    */
   sources: () =>
     apiClientBackground.get(ENDPOINTS.CHARTS_SKILLS_SOURCES),
+
+  /**
+   * Domain coverage — multi-series radar with per-source scores.
+   * @returns {Promise<{labels, series}>}
+   */
+  domainCoverage: () =>
+    apiClientBackground.get(ENDPOINTS.CHARTS_SKILLS_DOMAIN_COVERAGE),
 };
 
 
@@ -232,26 +239,28 @@ const composite = {
    * Load all skills chart data in parallel.
    * Returns a settled object — partial failure won't break the whole section.
    *
-   * @returns {Promise<{radar, distribution, topBars, heatmap, sources}>}
+   * @returns {Promise<{radar, distribution, topBars, heatmap, sources, domainCoverage}>}
    */
   allSkillsCharts: async () => {
-    const [radar, distribution, topBars, heatmap, sources] = await Promise.allSettled([
+    const [radar, distribution, topBars, heatmap, sources, domainCoverage] = await Promise.allSettled([
       skills.radar(),
       skills.distribution(),
       skills.topBars(),
       skills.heatmap(),
       skills.sources(),
+      skills.domainCoverage(),
     ]);
 
     // Extract value or null for each settled result
     const extract = (r) => (r.status === 'fulfilled' ? r.value : null);
 
     return {
-      radar        : extract(radar),
-      distribution : extract(distribution),
-      topBars      : extract(topBars),
-      heatmap      : extract(heatmap),
-      sources      : extract(sources),
+      radar          : extract(radar),
+      distribution   : extract(distribution),
+      topBars        : extract(topBars),
+      heatmap        : extract(heatmap),
+      sources        : extract(sources),
+      domainCoverage : extract(domainCoverage),
     };
   },
 

@@ -99,6 +99,10 @@ export const ENDPOINTS = {
   // Response: { categories, bands, matrix, band_ranges }
 
   CHARTS_SKILLS_SOURCES:      '/charts/skills/sources',
+  // GET → Multi-series radar: per-source scores per category
+  // Response: { labels, series: [{ name, color, values, dash, width }] }
+
+  CHARTS_SKILLS_DOMAIN_COVERAGE: '/charts/skills/domain-coverage',
   // GET → Stacked bar: skill frequency per source model
   // Response: { sources, counts, colors, top_skills }
 
@@ -283,7 +287,7 @@ export const LOADER_MESSAGES = [
    Maximum time in ms before an API request is cancelled.
    Applied globally in services/api.js Axios instance.
 ══════════════════════════════════════════════════════════ */
-export const REQUEST_TIMEOUT = 8000; // 8 seconds — reasonable for slow connections
+export const REQUEST_TIMEOUT = 30000; // 30 seconds — heavy aggregates need more time
 
 /* ══════════════════════════════════════════════════════════
    11. SECTION IDS

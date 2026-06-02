@@ -40,7 +40,8 @@ const DEFAULT_SECTION = 'overview';
 /* ── Read active section from URL hash ──────────────────────── */
 function getSectionFromHash() {
   const hash = window.location.hash.replace('#', '');
-  return SECTION_IDS.includes(hash) ? hash : DEFAULT_SECTION;
+  const sectionId = hash.split('/')[0]; // Handle sub-hashes like #analytics/skills
+  return SECTION_IDS.includes(sectionId) ? sectionId : DEFAULT_SECTION;
 }
 
 /* ── Offline banner ─────────────────────────────────────────── */

@@ -9,12 +9,12 @@
  *     3. Phase 2 background fetch
  *
  *   After load (polling):
- *     Every 30s → fetch all APIs silently
+ *     Every 20s → fetch all APIs silently
  *     If hash changed → bust cache → update UI automatically
  * ─────────────────────────────────────────────────────────
  */
 
-import { useState, useEffect, useCallback, useRef } from 'react'; // Added useRef
+import { useState, useEffect, useCallback, useRef } from 'react';
 import profileService                        from '../services/profileService';
 import analyticsService                      from '../services/analyticsService';
 import skillsService                         from '../services/skillsService';
@@ -28,7 +28,7 @@ import {
 } from '../utils/cache';
 
 /* ── Polling interval — how often to check for changes ──────────── */
-const POLL_INTERVAL_MS = 20_000; // 30 seconds — adjust as needed
+const POLL_INTERVAL_MS = 20_000; // 20 seconds — adjust as needed
 
 /** API task definitions */
 const API_TASKS = [
@@ -41,8 +41,15 @@ const API_TASKS = [
   {
     key:   'analytics',
     label: 'Analytics',
-    fetch: () => analyticsService.getAnalytics(),
-    phase: 1,
+    fetch: async () => {
+      const [counts, skills, progress] = await Promise.all([
+        analyticsService.getAnalyticsCounts(),
+        analyticsService.getAnalyticsSkills(),
+        analyticsService.getAnalyticsProgress(),
+      ]);
+      return { ...counts, ...skills, ...progress };
+    },
+    phase: 2,
   },
   {
     key:   'skills',
@@ -135,8 +142,8 @@ export function usePortfolioData() {
 
     console.log('[Poll] 🔍 Checking for data changes...');
 
-    /* Check all APIs silently — no loader, no progress dots */
-    await Promise.all(
+    /* Check all APIs silently — one timeout won't block future polls */
+    await Promise.allSettled(
       API_TASKS.map(task => processSingleTask(task, false))      // Silent for all
     );
 
