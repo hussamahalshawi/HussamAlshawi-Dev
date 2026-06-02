@@ -14,6 +14,7 @@ export const CACHE_KEYS = {
   projects:      'ha_cache_projects',
   skillsSummary: 'ha_cache_skills_summary',
   languages:     'ha_cache_languages',
+  portfolio:     'ha_cache_portfolio',
 };
 
 /* ═══════════════════════════════════════════════════════
