@@ -1,0 +1,61 @@
+import { useState, useEffect, useCallback, useRef } from 'react';
+import analyticsService from '../services/analyticsService';
+import {
+  CACHE_KEYS,
+  saveToCache,
+  loadFromCacheAny,
+  isCacheStale,
+} from '../utils/cache';
+
+const POLL_INTERVAL_MS = 20_000;
+
+export function usePortfolio() {
+  const [portfolioData, setPortfolioData] = useState(() =>
+    loadFromCacheAny(CACHE_KEYS.portfolio)
+  );
+  const [loading, setLoading] = useState(() =>
+    localStorage.getItem(CACHE_KEYS.portfolio) === null
+  );
+  const [error, setError] = useState(null);
+  const pollTimerRef = useRef(null);
+
+  const checkForUpdates = useCallback(async () => {
+    try {
+      const freshData = await analyticsService.getPortfolioSummary();
+      const stale = isCacheStale(CACHE_KEYS.portfolio, freshData);
+      if (stale) {
+        saveToCache(CACHE_KEYS.portfolio, freshData);
+        setPortfolioData(freshData);
+      }
+    } catch (err) {
+      const hasCache = localStorage.getItem(CACHE_KEYS.portfolio) !== null;
+      if (!hasCache) {
+        setError(err.message);
+        setPortfolioData(null);
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    const hasCache = localStorage.getItem(CACHE_KEYS.portfolio) !== null;
+
+    if (!hasCache) {
+      setLoading(true);
+      setError(null);
+    }
+
+    checkForUpdates().then(() => {
+      if (!hasCache) setLoading(false);
+    });
+
+    pollTimerRef.current = setInterval(() => {
+      checkForUpdates();
+    }, POLL_INTERVAL_MS);
+
+    return () => {
+      if (pollTimerRef.current) clearInterval(pollTimerRef.current);
+    };
+  }, [checkForUpdates]);
+
+  return { portfolioData, loading, error };
+}
