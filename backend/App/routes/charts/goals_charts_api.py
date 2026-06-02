@@ -16,6 +16,7 @@ Author: HussamAlshawi-Dev
 
 import logging                                                     # Error tracking
 from flask import Blueprint, jsonify                               # Core Flask utilities
+from App import cache                                              # Cache decorator
 from App.models.profile import Profile                             # Profile model
 from App.models.goal    import Goal                                # Career goals model
 from App.models.skills  import ProfileSkill                        # Skill scores for gap analysis
@@ -35,6 +36,7 @@ goals_charts_bp = Blueprint('goals_charts', __name__)
 # Gauge chart: overall portfolio completion across all goals
 # ─────────────────────────────────────────────────────────────────────────────
 @goals_charts_bp.route('/charts/goals/gauge', methods=['GET'])
+@cache.cached(timeout=300)
 def goals_gauge():
     """
     Returns aggregate goal progress metrics for a Gauge chart.
@@ -58,7 +60,7 @@ def goals_gauge():
         if not profile:
             return jsonify({'error': 'Profile not found'}), 404
 
-        goals = list(Goal.objects(profile=profile))
+        goals = list(Goal.objects(profile=profile).only('target_score', 'current_score', 'status'))
 
         if not goals:
             return jsonify({
@@ -110,6 +112,7 @@ def goals_gauge():
 # Donut: goals split by current status with visual tokens
 # ─────────────────────────────────────────────────────────────────────────────
 @goals_charts_bp.route('/charts/goals/status-donut', methods=['GET'])
+@cache.cached(timeout=300)
 def goals_status_donut():
     """
     Returns goal counts per status value for a Donut chart.
@@ -141,7 +144,7 @@ def goals_status_donut():
 
         status_counts = {s: 0 for s in STATUS_META}               # Pre-seed all statuses
 
-        for goal in Goal.objects(profile=profile):
+        for goal in Goal.objects(profile=profile).only('status'):
             status = goal.status or 'Planned'
             if status in status_counts:
                 status_counts[status] += 1
@@ -179,6 +182,7 @@ def goals_status_donut():
 # Donut: goals split by priority level
 # ─────────────────────────────────────────────────────────────────────────────
 @goals_charts_bp.route('/charts/goals/priority-donut', methods=['GET'])
+@cache.cached(timeout=300)
 def goals_priority_donut():
     """
     Returns goal counts per priority level for a Donut chart.
@@ -208,7 +212,7 @@ def goals_priority_donut():
 
         priority_counts = {p: 0 for p in PRIORITY_META}           # Pre-seed all priorities
 
-        for goal in Goal.objects(profile=profile):
+        for goal in Goal.objects(profile=profile).only('priority'):
             pri = goal.priority or 'Medium'
             if pri in priority_counts:
                 priority_counts[pri] += 1
@@ -245,6 +249,7 @@ def goals_priority_donut():
 # Grouped bar: goals per target year with avg progress
 # ─────────────────────────────────────────────────────────────────────────────
 @goals_charts_bp.route('/charts/goals/year-progress', methods=['GET'])
+@cache.cached(timeout=300)
 def goals_year_progress():
     """
     Returns goal count and average progress percentage per target year.
@@ -274,7 +279,9 @@ def goals_year_progress():
 
         year_map = {}                                              # {year_str: {goals: [], pcts: []}}
 
-        for goal in Goal.objects(profile=profile):
+        for goal in Goal.objects(profile=profile).only(
+            'target_year', 'target_score', 'current_score', 'status', 'priority', 'goal_name',
+        ):
             year   = str(goal.target_year) if goal.target_year else 'Unknown'
             target = goal.target_score  or 100
             current= goal.current_score or 0
@@ -321,6 +328,7 @@ def goals_year_progress():
 # Radar/Bar: skill gap analysis — current vs required per goal
 # ─────────────────────────────────────────────────────────────────────────────
 @goals_charts_bp.route('/charts/goals/skill-gap', methods=['GET'])
+@cache.cached(timeout=300)
 def goals_skill_gap():
     """
     Returns per-goal skill gap analysis: current skill scores vs required skills.
@@ -360,7 +368,10 @@ def goals_skill_gap():
         # Build token map once — reused for all goals
         token_map = build_token_map(profile)
 
-        goals = Goal.objects(profile=profile).order_by('target_year', '-priority')
+        goals = Goal.objects(profile=profile).order_by('target_year', '-priority').only(
+            'goal_name', 'status', 'priority', 'target_year',
+            'target_score', 'current_score', 'required_skills',
+        )
         result = []
 
         for goal in goals:
@@ -430,6 +441,7 @@ def goals_skill_gap():
 # Goals plotted by target year for a roadmap bubble/gantt chart
 # ─────────────────────────────────────────────────────────────────────────────
 @goals_charts_bp.route('/charts/goals/roadmap-timeline', methods=['GET'])
+@cache.cached(timeout=300)
 def roadmap_timeline():
     """
     Returns all goals formatted for a roadmap timeline / bubble chart.
@@ -483,7 +495,10 @@ def roadmap_timeline():
             'Low'     : 1,
         }
 
-        goals  = list(Goal.objects(profile=profile).order_by('target_year', '-priority'))
+        goals  = list(Goal.objects(profile=profile).order_by('target_year', '-priority').only(
+            'goal_name', 'sub_title', 'target_year', 'priority', 'status',
+            'current_score', 'target_score', 'required_skills',
+        ))
         result = []
 
         for goal in goals:
@@ -527,6 +542,7 @@ def roadmap_timeline():
 # Moved from dashboard_api.py — belongs here as goals analytics route
 # ─────────────────────────────────────────────────────────────────────────────
 @goals_charts_bp.route('/goals-dashboard', methods=['GET'])
+@cache.cached(timeout=300)
 def get_goals_dashboard():
     """
     Returns all Goal documents for a given profile with progress metrics.
@@ -564,7 +580,10 @@ def get_goals_dashboard():
     try:
         profile = Profile.objects.get(id=profile_id)                   # Validate profile exists
 
-        goals = Goal.objects(profile=profile).order_by('target_year', '-priority')  # Ordered goals
+        goals = Goal.objects(profile=profile).order_by('target_year', '-priority').only(
+            'goal_name', 'sub_title', 'status', 'priority',
+            'target_year', 'target_score', 'current_score',
+        )
 
         goals_data = []
         for g in goals:

@@ -17,6 +17,7 @@ Author: HussamAlshawi-Dev
 import logging                                                     # Error tracking
 from collections import defaultdict                                # Grouped accumulation
 from flask import Blueprint, jsonify, request                      # Core Flask utilities
+from App import cache                                              # Cache decorator
 from App.models.profile    import Profile                          # Profile model
 from App.models.course     import Course                           # Certifications model
 from App.models.self_study import SelfStudy                        # Self-learning model
@@ -41,6 +42,7 @@ def _get_profile():
 # Area chart: courses and certifications completed per year/month
 # ─────────────────────────────────────────────────────────────────────────────
 @learning_charts_bp.route('/charts/learning/courses-by-year', methods=['GET'])
+@cache.cached(timeout=300)
 def courses_by_year():
     """
     Returns course completion counts per year and per month.
@@ -67,7 +69,7 @@ def courses_by_year():
         granularity = request.args.get('granularity', 'year')     # year or month
         period_map  = defaultdict(list)                            # {period: [course_names]}
 
-        for course in Course.objects(profile=profile).order_by('end_date'):
+        for course in Course.objects(profile=profile).order_by('end_date').only('end_date', 'course_name'):
             if not course.end_date:
                 continue
 
@@ -109,6 +111,7 @@ def courses_by_year():
 # Horizontal bar: top course providers ranked by course count
 # ─────────────────────────────────────────────────────────────────────────────
 @learning_charts_bp.route('/charts/learning/providers', methods=['GET'])
+@cache.cached(timeout=300)
 def top_providers():
     """
     Returns the most-used learning platforms/providers sorted by course count.
@@ -135,7 +138,7 @@ def top_providers():
         limit       = min(max(int(request.args.get('limit', 10)), 1), 20)
         provider_map = defaultdict(list)                           # {provider: [course_names]}
 
-        for course in Course.objects(profile=profile):
+        for course in Course.objects(profile=profile).only('organization', 'course_name'):
             org = (course.organization or 'Unknown').strip()
             provider_map[org].append(course.course_name or 'Untitled')
 
@@ -170,6 +173,7 @@ def top_providers():
 # Word cloud data: skills frequency across all learning records
 # ─────────────────────────────────────────────────────────────────────────────
 @learning_charts_bp.route('/charts/learning/skills-word-cloud', methods=['GET'])
+@cache.cached(timeout=300)
 def skills_word_cloud():
     """
     Returns skill name + frequency across Courses, Self-Study, and Education.
@@ -201,21 +205,21 @@ def skills_word_cloud():
 
         # Courses source
         if source in ('all', 'courses'):
-            for course in Course.objects(profile=profile):
+            for course in Course.objects(profile=profile).only('acquired_skills'):
                 for raw in (course.acquired_skills or []):
                     skill = (raw or '').strip().title()
                     if skill: word_map[skill]['Courses'] += 1
 
         # Self-Study source
         if source in ('all', 'self_study'):
-            for item in SelfStudy.objects(profile=profile):
+            for item in SelfStudy.objects(profile=profile).only('skills_learned'):
                 for raw in (item.skills_learned or []):
                     skill = (raw or '').strip().title()
                     if skill: word_map[skill]['Self Study'] += 1
 
         # Education source
         if source in ('all', 'education'):
-            for edu in Education.objects(profile=profile):
+            for edu in Education.objects(profile=profile).only('skills_learned'):
                 for raw in (edu.skills_learned or []):
                     skill = (raw or '').strip().title()
                     if skill: word_map[skill]['Education'] += 1
@@ -260,6 +264,7 @@ def skills_word_cloud():
 # Donut: self-study activities split by learning type
 # ─────────────────────────────────────────────────────────────────────────────
 @learning_charts_bp.route('/charts/learning/self-study-types', methods=['GET'])
+@cache.cached(timeout=300)
 def self_study_types():
     """
     Returns the count of self-study activities per learning_type.
@@ -291,7 +296,7 @@ def self_study_types():
 
         type_map = defaultdict(list)                               # {type: [titles]}
 
-        for item in SelfStudy.objects(profile=profile):
+        for item in SelfStudy.objects(profile=profile).only('learning_type', 'title'):
             ltype = item.learning_type or 'Other'
             type_map[ltype].append(item.title or 'Untitled')
 
@@ -329,6 +334,7 @@ def self_study_types():
 # Vertical bar: self-study count per learning track (Category)
 # ─────────────────────────────────────────────────────────────────────────────
 @learning_charts_bp.route('/charts/learning/self-study-tracks', methods=['GET'])
+@cache.cached(timeout=300)
 def self_study_tracks():
     """
     Returns self-study activity count per Category track.
@@ -350,7 +356,7 @@ def self_study_tracks():
 
         track_map = defaultdict(list)                              # {track_name: [items]}
 
-        for item in SelfStudy.objects(profile=profile).select_related():
+        for item in SelfStudy.objects(profile=profile).select_related().only('track', 'title', 'learning_type'):
             # Resolve category/track name safely
             track = 'Uncategorized'
             if item.track:
@@ -392,6 +398,7 @@ def self_study_tracks():
 # Grouped bar: learning activities vs projects output per category
 # ─────────────────────────────────────────────────────────────────────────────
 @learning_charts_bp.route('/charts/learning/learning-vs-output', methods=['GET'])
+@cache.cached(timeout=300)
 def learning_vs_output():
     """
     Compares learning inputs (Courses + Self-Study) against project outputs
@@ -422,7 +429,7 @@ def learning_vs_output():
         # Accumulate learning counts per category (from Courses)
         learning_map = defaultdict(int)                            # {cat: learning_count}
 
-        for course in Course.objects(profile=profile).select_related():
+        for course in Course.objects(profile=profile).select_related().only('category', 'organization', 'end_date', 'acquired_skills'):
             cat = 'Uncategorized'
             if course.category:
                 try:
@@ -431,7 +438,7 @@ def learning_vs_output():
                     pass
             learning_map[cat] += 1
 
-        for item in SelfStudy.objects(profile=profile).select_related():
+        for item in SelfStudy.objects(profile=profile).select_related().only('track'):
             cat = 'Uncategorized'
             if item.track:
                 try:
@@ -443,7 +450,7 @@ def learning_vs_output():
         # Accumulate project counts per category
         project_map = defaultdict(int)                             # {cat: project_count}
 
-        for proj in Project.objects(profile=profile).select_related():
+        for proj in Project.objects(profile=profile).select_related().only('category', 'project_name', 'project_type'):
             cat = 'Uncategorized'
             if proj.category:
                 try:
@@ -488,6 +495,7 @@ def learning_vs_output():
 # Moved from education_courses_api.py — belongs here as analytics/charts route
 # ─────────────────────────────────────────────────────────────────────────────
 @learning_charts_bp.route('/portfolio/courses/stats', methods=['GET'])
+@cache.cached(timeout=300)
 def get_courses_stats():
     """
     Returns aggregated statistics about courses for use in charts.
@@ -519,7 +527,7 @@ def get_courses_stats():
         if not profile:
             return jsonify({'error': 'Profile not found'}), 404        # Guard: no profile configured
 
-        courses = list(Course.objects(profile=profile))                # Fetch all course documents
+        courses = list(Course.objects(profile=profile).select_related())  # Fetch all course documents
 
         by_category = {}                                               # Accumulate count per category
         providers   = set()                                            # Unique provider names

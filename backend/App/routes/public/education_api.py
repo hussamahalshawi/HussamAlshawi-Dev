@@ -12,6 +12,7 @@ Author: HussamAlshawi-Dev
 
 import logging                                                        # Error tracking
 from flask import Blueprint, jsonify                                  # Core Flask utilities
+from App import cache                                                 # Cache decorator
 from App.models.education import Education                            # Academic records model
 from App.routes.helpers.route_helpers import get_profile, fmt_date   # Shared helpers — no duplication
 
@@ -24,6 +25,7 @@ education_public_bp = Blueprint('education_public', __name__)         # Blueprin
 # ROUTE  GET /api/portfolio/education
 # ─────────────────────────────────────────────────────────────────────────────
 @education_public_bp.route('/portfolio/education', methods=['GET'])
+@cache.cached(timeout=300)
 def get_education():
     """
     Returns all academic records sorted by start_date descending.
@@ -62,7 +64,11 @@ def get_education():
         if not profile:
             return jsonify({'error': 'Profile not found'}), 404        # Guard: no profile configured
 
-        records = Education.objects(profile=profile).order_by('-start_date')  # Newest first
+        records = Education.objects(profile=profile).order_by('-start_date').only(
+    'institution', 'degree', 'major', 'grade', 'description',
+    'start_date', 'end_date', 'skills_learned',
+    'certificate_image', 'education_photos', 'education_video',
+)
 
         result = []
         for edu in records:

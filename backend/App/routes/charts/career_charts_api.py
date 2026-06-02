@@ -17,6 +17,7 @@ Author: HussamAlshawi-Dev
 import logging                                                     # Error tracking
 from datetime import datetime, timezone                            # Date utilities
 from flask import Blueprint, jsonify, request                      # Core Flask utilities
+from App import cache                                              # Cache decorator
 from App.models.profile     import Profile                         # Profile model
 from App.models.experience  import Experience                      # Work history model
 from App.models.education   import Education                       # Academic records model
@@ -61,6 +62,7 @@ def _months(start, end=None):
 # Unified Gantt timeline: Education + Experience merged and sorted
 # ─────────────────────────────────────────────────────────────────────────────
 @career_charts_bp.route('/charts/career/gantt', methods=['GET'])
+@cache.cached(timeout=300)
 def career_gantt():
     """
     Returns a merged, sorted timeline of Education and Experience entries.
@@ -97,7 +99,9 @@ def career_gantt():
         items = []
 
         # ── Education entries ───────────────────────────────────────────────
-        for edu in Education.objects(profile=profile).order_by('start_date'):
+        for edu in Education.objects(profile=profile).order_by('start_date').only(
+            'degree', 'major', 'institution', 'start_date', 'end_date',
+        ):
             items.append({
                 'id'             : str(edu.id),
                 'type'           : 'education',                    # Type marker for chart
@@ -114,7 +118,10 @@ def career_gantt():
             })
 
         # ── Experience entries ──────────────────────────────────────────────
-        for exp in Experience.objects(profile=profile).order_by('start_date'):
+        for exp in Experience.objects(profile=profile).order_by('start_date').only(
+            'job_title', 'company_name', 'employment_type', 'location',
+            'start_date', 'end_date', 'is_current',
+        ):
             items.append({
                 'id'             : str(exp.id),
                 'type'           : 'experience',                   # Type marker for chart
@@ -159,6 +166,7 @@ def career_gantt():
 # Donut: distribution of employment types and durations
 # ─────────────────────────────────────────────────────────────────────────────
 @career_charts_bp.route('/charts/career/employment-mix', methods=['GET'])
+@cache.cached(timeout=300)
 def employment_mix():
     """
     Returns employment type breakdown by count and total months.
@@ -189,7 +197,7 @@ def employment_mix():
 
         # Accumulate count + months per employment type
         type_map = {}
-        for exp in Experience.objects(profile=profile):
+        for exp in Experience.objects(profile=profile).only('employment_type', 'start_date', 'end_date'):
             etype  = exp.employment_type or 'Unknown'
             months = _months(exp.start_date, exp.end_date)
 
@@ -233,6 +241,7 @@ def employment_mix():
 # Treemap: project count per category (area = count)
 # ─────────────────────────────────────────────────────────────────────────────
 @career_charts_bp.route('/charts/career/projects-treemap', methods=['GET'])
+@cache.cached(timeout=300)
 def projects_treemap():
     """
     Returns project count grouped by category and type.
@@ -267,7 +276,9 @@ def projects_treemap():
         cat_map  = {}                                              # {category: {count, projects}}
         type_map = {}                                              # {type: count}
 
-        for proj in Project.objects(profile=profile):
+        for proj in Project.objects(profile=profile).select_related().only(
+            'category', 'project_type', 'project_name',
+        ):
             # Resolve category name safely
             cat = 'Uncategorized'
             if proj.category:
@@ -343,6 +354,7 @@ def projects_treemap():
 # Calendar heatmap: project activity density by month/year
 # ─────────────────────────────────────────────────────────────────────────────
 @career_charts_bp.route('/charts/career/projects-heatmap', methods=['GET'])
+@cache.cached(timeout=300)
 def projects_heatmap():
     """
     Returns monthly project activity data (start + last_updated) for a calendar heatmap.
@@ -367,7 +379,7 @@ def projects_heatmap():
 
         month_map = {}                                             # {"YYYY-MM": count}
 
-        for proj in Project.objects(profile=profile):
+        for proj in Project.objects(profile=profile).only('start_date', 'last_updated'):
             # Count both start_date and last_updated as activity signals
             for dt in [proj.start_date, proj.last_updated]:
                 if not dt:
@@ -430,6 +442,7 @@ def projects_heatmap():
 # Horizontal bar: tech stack frequency across all experience + projects
 # ─────────────────────────────────────────────────────────────────────────────
 @career_charts_bp.route('/charts/career/stack-frequency', methods=['GET'])
+@cache.cached(timeout=300)
 def stack_frequency():
     """
     Aggregates tech stack frequency across Experience (skills_acquired)
@@ -460,7 +473,7 @@ def stack_frequency():
         tech_map = {}                                              # {tech: {experience, projects}}
 
         # Count from Experience records
-        for exp in Experience.objects(profile=profile):
+        for exp in Experience.objects(profile=profile).only('skills_acquired'):
             for raw in (exp.skills_acquired or []):
                 tech = (raw or '').strip().title()
                 if not tech: continue
@@ -468,7 +481,7 @@ def stack_frequency():
                 tech_map[tech]['experience'] += 1
 
         # Count from Project records
-        for proj in Project.objects(profile=profile):
+        for proj in Project.objects(profile=profile).only('skills_used'):
             for raw in (proj.skills_used or []):
                 tech = (raw or '').strip().title()
                 if not tech: continue
@@ -507,6 +520,7 @@ def stack_frequency():
 # Timeline: achievements clustered by year with skill tags
 # ─────────────────────────────────────────────────────────────────────────────
 @career_charts_bp.route('/charts/career/achievements-timeline', methods=['GET'])
+@cache.cached(timeout=300)
 def achievements_timeline():
     """
     Returns achievements grouped by year for a vertical timeline chart.
@@ -539,7 +553,10 @@ def achievements_timeline():
 
         year_map = {}                                              # {year: [achievements]}
 
-        for ach in Achievement.objects(profile=profile).order_by('-date_obtained'):
+        for ach in Achievement.objects(profile=profile).order_by('-date_obtained').only(
+            'title', 'issuing_organization', 'date_obtained',
+            'skills_demonstrated', 'certificate_image',
+        ):
             year = ach.date_obtained.year if ach.date_obtained else 0
 
             if year not in year_map:

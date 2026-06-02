@@ -13,6 +13,7 @@ Author: HussamAlshawi-Dev
 
 import logging                                                        # Error tracking
 from flask import Blueprint, jsonify, request                         # Core Flask utilities
+from App import cache                                                 # Cache decorator
 from App.models.course import Course                                  # Certifications model
 from App.routes.helpers.route_helpers import get_profile, fmt_date   # Shared helpers — no duplication
 
@@ -25,6 +26,7 @@ courses_public_bp = Blueprint('courses_public', __name__)             # Blueprin
 # ROUTE  GET /api/portfolio/courses
 # ─────────────────────────────────────────────────────────────────────────────
 @courses_public_bp.route('/portfolio/courses', methods=['GET'])
+@cache.cached(timeout=300)
 def get_courses():
     """
     Returns all certification and course records.
@@ -68,7 +70,11 @@ def get_courses():
         if not profile:
             return jsonify({'error': 'Profile not found'}), 404        # Guard: no profile configured
 
-        courses_qs  = Course.objects(profile=profile).order_by('-end_date')  # Newest first
+        courses_qs  = Course.objects(profile=profile).order_by('-end_date').select_related().only(
+    'course_name', 'organization', 'category', 'project_summary', 'credential_url',
+    'start_date', 'end_date', 'acquired_skills',
+    'certificate_image', 'course_images', 'course_video',
+)
         cat_filter  = request.args.get('category', '').strip()         # Optional category filter
         limit       = request.args.get('limit', type=int)              # Optional result limit
 

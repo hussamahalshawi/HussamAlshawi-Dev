@@ -1,4 +1,5 @@
 from flask import Blueprint, jsonify, request  # Core Flask utilities
+from App import cache  # Cache decorator
 from App.models.feedback import Feedback  # Feedback model
 from App.models.profile import Profile  # Profile model — to link ownership
 
@@ -67,6 +68,7 @@ def submit_feedback():
 
 
 @feedback_bp.route('/feedback/featured', methods=['GET'])
+@cache.cached(timeout=300)
 def get_featured_feedback():
     """
     Public endpoint — returns only featured testimonials for the portfolio frontend.
@@ -84,7 +86,9 @@ def get_featured_feedback():
     entries = Feedback.objects(
         profile=profile,
         is_featured=True  # Only return curated testimonials
-    ).order_by('-submitted_at')  # Newest featured entries first
+    ).order_by('-submitted_at').only(
+        'sender_name', 'company_name', 'job_title', 'message', 'submitted_at',
+    )
 
     data = [
         {

@@ -12,6 +12,7 @@ Author: HussamAlshawi-Dev
 
 import logging                                                        # Error tracking
 from flask import Blueprint, jsonify, request                         # Core Flask utilities
+from App import cache                                                 # Cache decorator
 from App.models.self_study import SelfStudy                           # Self-learning model
 from App.routes.helpers.route_helpers import get_profile, fmt_date   # Shared helpers — no duplication
 
@@ -24,6 +25,7 @@ self_study_public_bp = Blueprint('self_study_public', __name__)       # Blueprin
 # ROUTE  GET /api/portfolio/self-study
 # ─────────────────────────────────────────────────────────────────────────────
 @self_study_public_bp.route('/portfolio/self-study', methods=['GET'])
+@cache.cached(timeout=300)
 def get_self_study():
     """
     Returns all independent learning activities (books, articles, workshops).
@@ -62,7 +64,11 @@ def get_self_study():
         if not profile:
             return jsonify({'error': 'Profile not found'}), 404        # Guard: no profile configured
 
-        records     = SelfStudy.objects(profile=profile).order_by('-created_at')  # Newest first
+        records     = SelfStudy.objects(profile=profile).order_by('-created_at').select_related().only(
+    'title', 'platform_name', 'learning_type', 'track',
+    'summary', 'source_url', 'cover_image',
+    'start_date', 'end_date', 'skills_learned',
+)
         type_filter = request.args.get('type', '').strip()             # Optional type filter
 
         result   = []                                                  # Items to return

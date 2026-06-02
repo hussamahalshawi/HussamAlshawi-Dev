@@ -12,6 +12,7 @@ Author: HussamAlshawi-Dev
 
 import logging                                                        # Error tracking
 from flask import Blueprint, jsonify                                  # Core Flask utilities
+from App import cache                                                 # Cache decorator
 from App.models.achievement import Achievement                        # Awards model
 from App.routes.helpers.route_helpers import get_profile, fmt_date   # Shared helpers — no duplication
 
@@ -24,6 +25,7 @@ achievements_public_bp = Blueprint('achievements_public', __name__)   # Blueprin
 # ROUTE  GET /api/portfolio/achievements
 # ─────────────────────────────────────────────────────────────────────────────
 @achievements_public_bp.route('/portfolio/achievements', methods=['GET'])
+@cache.cached(timeout=300)
 def get_achievements():
     """
     Returns all awards and professional recognitions.
@@ -59,7 +61,11 @@ def get_achievements():
         if not profile:
             return jsonify({'error': 'Profile not found'}), 404        # Guard: no profile configured
 
-        records = Achievement.objects(profile=profile).order_by('-date_obtained')  # Newest first
+        records = Achievement.objects(profile=profile).order_by('-date_obtained').only(
+    'title', 'issuing_organization', 'description', 'evidence_url',
+    'date_obtained', 'skills_demonstrated',
+    'certificate_image', 'evidence_photos', 'evidence_video',
+)
 
         result = []
         for ach in records:

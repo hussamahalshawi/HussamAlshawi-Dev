@@ -25,188 +25,238 @@ from App import cache                            # Import shared cache instance
 analytics_public_bp = Blueprint('analytics_public', __name__)
 
 
+# ── Helpers ────────────────────────────────────────────────────────────────
+def _get_profile_or_404():
+    profile = Profile.objects.first()
+    if not profile:
+        return None
+    return profile
+
+
+def _build_counts_and_summary(profile, profile_skills, courses, self_studies,
+                                educations, experiences, projects, achievements, goals):
+    profile_summary = {
+        'full_name'       : profile.full_name or '',
+        'title'           : profile.title     or '',
+        'experience_years': round(float(profile.experience_years or 0), 1),
+        'overall_score'   : round(float(profile.overall_score    or 0), 1),
+        'is_available'    : bool(profile.is_available_for_hire),
+        'primary_avatar'  : profile.primary_avatar or '',
+    }
+    counts = {
+        'skills'      : len(profile_skills),
+        'projects'    : len(projects),
+        'courses'     : len(courses),
+        'experience'  : len(experiences),
+        'education'   : len(educations),
+        'achievements': len(achievements),
+        'self_study'  : len(self_studies),
+        'goals'       : len(goals),
+    }
+    return profile_summary, counts
+
+
+def _build_skills_data(profile_skills):
+    cat_map = {}
+    for ps in profile_skills:
+        if not ps.skill:
+            continue
+        cat = ''
+        if ps.skill.skill_type:
+            try:
+                cat = ps.skill.skill_type.name or 'Other'
+            except Exception:
+                cat = 'Other'
+        else:
+            cat = 'Other'
+        cat_map.setdefault(cat, []).append(int(ps.score or 0))
+
+    skills_radar = sorted(
+        [
+            {'category': cat, 'avg_score': round(sum(scores) / len(scores), 1), 'count': len(scores)}
+            for cat, scores in cat_map.items()
+        ],
+        key=lambda x: -x['avg_score']
+    )
+
+    all_scores = [int(ps.score or 0) for ps in profile_skills if ps.skill]
+    skills_distribution = {
+        'expert'      : sum(1 for s in all_scores if s >= 80),
+        'advanced'    : sum(1 for s in all_scores if 60 <= s < 80),
+        'intermediate': sum(1 for s in all_scores if 40 <= s < 60),
+        'beginner'    : sum(1 for s in all_scores if s < 40),
+    }
+
+    sorted_skills = sorted(
+        [(ps, int(ps.score or 0)) for ps in profile_skills if ps.skill],
+        key=lambda x: -x[1]
+    )[:10]
+
+    top_skills = []
+    for ps, score in sorted_skills:
+        meta = ps.skill.get_display_meta()
+        top_skills.append({
+            'skill_name': ps.skill.skill_name or '',
+            'score'     : score,
+            'icon'      : meta.get('icon', 'fas fa-code'),
+            'color'     : meta.get('color', '#64748b'),
+        })
+
+    return skills_radar, skills_distribution, top_skills
+
+
+def _build_progress_data(goals, courses, self_studies, projects):
+    status_count = {}
+    pri_count    = {}
+    year_pcts    = {}
+
+    for goal in goals:
+        st  = goal.status   or 'Planned'
+        pri = goal.priority or 'Medium'
+        yr  = str(goal.target_year) if goal.target_year else 'Unknown'
+        tgt = goal.target_score  or 100
+        cur = goal.current_score or 0
+        pct = min(round((cur / tgt) * 100), 100)
+        status_count[st]   = status_count.get(st, 0) + 1
+        pri_count[pri]     = pri_count.get(pri, 0)   + 1
+        year_pcts.setdefault(yr, []).append(pct)
+
+    goals_by_status   = [{'status': k, 'count': v} for k, v in status_count.items()]
+    goals_by_priority = [{'priority': k, 'count': v} for k, v in pri_count.items()]
+    goals_by_year     = [
+        {'year': yr, 'avg_progress': round(sum(vals) / len(vals), 1)}
+        for yr, vals in sorted(year_pcts.items())
+    ]
+
+    course_years = {}
+    for c in courses:
+        if c.end_date:
+            yr = str(c.end_date.year)
+            course_years[yr] = course_years.get(yr, 0) + 1
+    courses_by_year = [{'year': yr, 'count': cnt} for yr, cnt in sorted(course_years.items())]
+
+    type_count = {}
+    for item in self_studies:
+        t = item.learning_type or 'Other'
+        type_count[t] = type_count.get(t, 0) + 1
+    learning_by_type = sorted(
+        [{'type': t, 'count': c} for t, c in type_count.items()],
+        key=lambda x: -x[1]
+    )
+
+    proj_type_count = {}
+    for p in projects:
+        t = p.project_type or 'Other'
+        proj_type_count[t] = proj_type_count.get(t, 0) + 1
+    projects_by_type = sorted(
+        [{'type': t, 'count': c} for t, c in proj_type_count.items()],
+        key=lambda x: -x[1]
+    )
+
+    return {
+        'goals_by_status'  : goals_by_status,
+        'goals_by_priority': goals_by_priority,
+        'goals_by_year'    : goals_by_year,
+        'courses_by_year'  : courses_by_year,
+        'learning_by_type' : learning_by_type,
+        'projects_by_type' : projects_by_type,
+    }
+
+
+def _fetch_all_data(profile):
+    return (
+        list(ProfileSkill.objects(profile=profile).select_related().only('skill', 'score')),
+        list(Goal.objects(profile=profile).only('status', 'priority', 'target_year', 'target_score', 'current_score')),
+        list(Course.objects(profile=profile).only('end_date', 'course_name')),
+        list(SelfStudy.objects(profile=profile).only('learning_type', 'title')),
+        list(Education.objects(profile=profile).only('degree', 'major', 'institution', 'start_date', 'end_date')),
+        list(Experience.objects(profile=profile).only('job_title', 'company_name', 'start_date', 'end_date', 'is_current')),
+        list(Project.objects(profile=profile).only('project_type', 'project_name')),
+        list(Achievement.objects(profile=profile).only('title', 'date_obtained')),
+    )
+
+
 # ─────────────────────────────────────────────────────────────────────────────
-# ROUTE  GET /api/portfolio/analytics
-# Mega aggregate payload — a single call that feeds ALL frontend charts
+# ROUTE  GET /api/portfolio/analytics/counts
+# Lightweight: profile summary + model counts only
+# ─────────────────────────────────────────────────────────────────────────────
+@analytics_public_bp.route('/portfolio/analytics/counts', methods=['GET'])
+@cache.cached(timeout=300, key_prefix='public_analytics_counts')
+def get_analytics_counts():
+    try:
+        profile = _get_profile_or_404()
+        if not profile:
+            return jsonify({'error': 'Profile not found'}), 404
+        profile_skills, goals, courses, self_studies, educations, experiences, projects, achievements = _fetch_all_data(profile)
+        profile_summary, counts = _build_counts_and_summary(
+            profile, profile_skills, courses, self_studies, educations, experiences, projects, achievements, goals
+        )
+        return jsonify({'profile_summary': profile_summary, 'counts': counts}), 200
+    except Exception as e:
+        logging.error(f'[ANALYTICS] /portfolio/analytics/counts failed: {str(e)}')
+        return jsonify({'error': str(e)}), 500
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# ROUTE  GET /api/portfolio/analytics/skills-data
+# Skills radar, distribution, top skills
+# ─────────────────────────────────────────────────────────────────────────────
+@analytics_public_bp.route('/portfolio/analytics/skills-data', methods=['GET'])
+@cache.cached(timeout=300, key_prefix='public_analytics_skills')
+def get_analytics_skills():
+    try:
+        profile = _get_profile_or_404()
+        if not profile:
+            return jsonify({'error': 'Profile not found'}), 404
+        profile_skills = list(ProfileSkill.objects(profile=profile).select_related().only('skill', 'score'))
+        skills_radar, skills_distribution, top_skills = _build_skills_data(profile_skills)
+        return jsonify({
+            'skills_radar'       : skills_radar,
+            'skills_distribution': skills_distribution,
+            'top_skills'         : top_skills,
+        }), 200
+    except Exception as e:
+        logging.error(f'[ANALYTICS] /portfolio/analytics/skills-data failed: {str(e)}')
+        return jsonify({'error': str(e)}), 500
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# ROUTE  GET /api/portfolio/analytics/progress
+# Goals, courses, learning, projects progress data
+# ─────────────────────────────────────────────────────────────────────────────
+@analytics_public_bp.route('/portfolio/analytics/progress', methods=['GET'])
+@cache.cached(timeout=300, key_prefix='public_analytics_progress')
+def get_analytics_progress():
+    try:
+        profile = _get_profile_or_404()
+        if not profile:
+            return jsonify({'error': 'Profile not found'}), 404
+        _, goals, courses, self_studies, _, _, projects, _ = _fetch_all_data(profile)
+        progress_data = _build_progress_data(goals, courses, self_studies, projects)
+        return jsonify(progress_data), 200
+    except Exception as e:
+        logging.error(f'[ANALYTICS] /portfolio/analytics/progress failed: {str(e)}')
+        return jsonify({'error': str(e)}), 500
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# ROUTE  GET /api/portfolio/analytics  (composite — backward compatible)
+# Mega aggregate: calls all sub-helpers and merges
 # ─────────────────────────────────────────────────────────────────────────────
 @analytics_public_bp.route('/portfolio/analytics', methods=['GET'])
-@cache.cached(timeout=300, key_prefix='public_analytics')  # Cache 5 min in RAM
+@cache.cached(timeout=300, key_prefix='public_analytics')
 def get_portfolio_analytics():
-    """
-    Returns a comprehensive analytics snapshot for the entire portfolio.
-    Designed as a single "big load" call that powers all homepage and
-    stats-page charts without multiple round trips.
-
-    Used by:
-        - Homepage stats section (count cards)
-        - Skills radar chart
-        - Skills distribution donut
-        - Courses by year bar chart
-        - Tech stack frequency bar chart
-        - Learning time chart
-        - Goals progress grouped bar
-
-    Response shape:
-    {
-        "profile_summary"     : { "experience_years": 5.2, "overall_score": 78.4, ... },
-        "counts"              : { "skills": 24, "projects": 12, ... },
-        "skills_radar"        : [ { "category": "Backend", "avg_score": 85 }, ... ],
-        "skills_distribution" : { "expert": 4, "advanced": 7, "intermediate": 8, "beginner": 5 },
-        "top_skills"          : [ { "skill_name": "Python", "score": 92, "icon": "...", "color": "..." }, ... ],
-        "goals_by_status"     : [ { "status": "In Progress", "count": 3 }, ... ],
-        "goals_by_year"       : [ { "year": "2025", "avg_progress": 65 }, ... ],
-        "courses_by_year"     : [ { "year": "2022", "count": 6 }, ... ],
-        "learning_by_type"    : [ { "type": "Book", "count": 7 }, ... ],
-        "projects_by_type"    : [ { "type": "Web App", "count": 8 }, ... ]
-    }
-    """
     try:
-        profile = Profile.objects.first()
-
+        profile = _get_profile_or_404()
         if not profile:
             return jsonify({'error': 'Profile not found'}), 404
 
-        # ── Fetch all data in parallel (one query per model) ───────────────
-        profile_skills = list(ProfileSkill.objects(profile=profile).select_related())
-        goals          = list(Goal.objects(profile=profile))
-        courses        = list(Course.objects(profile=profile))
-        self_studies   = list(SelfStudy.objects(profile=profile))
-        projects       = list(Project.objects(profile=profile))
-        achievements   = list(Achievement.objects(profile=profile))
-        experiences    = list(Experience.objects(profile=profile))
-        educations     = list(Education.objects(profile=profile))
-
-        # ── Profile summary ────────────────────────────────────────────────
-        profile_summary = {
-            'full_name'       : profile.full_name or '',
-            'title'           : profile.title     or '',
-            'experience_years': round(float(profile.experience_years or 0), 1),
-            'overall_score'   : round(float(profile.overall_score    or 0), 1),
-            'is_available'    : bool(profile.is_available_for_hire),
-            'primary_avatar'  : profile.primary_avatar or '',
-        }
-
-        # ── Model counts ───────────────────────────────────────────────────
-        counts = {
-            'skills'      : len(profile_skills),
-            'projects'    : len(projects),
-            'courses'     : len(courses),
-            'experience'  : len(experiences),
-            'education'   : len(educations),
-            'achievements': len(achievements),
-            'self_study'  : len(self_studies),
-            'goals'       : len(goals),
-        }
-
-        # ── Skills radar — average score per category ──────────────────────
-        cat_map = {}
-        for ps in profile_skills:
-            if not ps.skill:
-                continue
-            cat = ''
-            if ps.skill.skill_type:
-                try:
-                    cat = ps.skill.skill_type.name or 'Other'
-                except Exception:
-                    cat = 'Other'
-            else:
-                cat = 'Other'
-            cat_map.setdefault(cat, []).append(int(ps.score or 0))
-
-        skills_radar = sorted(
-            [
-                {
-                    'category' : cat,
-                    'avg_score': round(sum(scores) / len(scores), 1),
-                    'count'    : len(scores),
-                }
-                for cat, scores in cat_map.items()
-            ],
-            key=lambda x: -x['avg_score']
+        profile_skills, goals, courses, self_studies, educations, experiences, projects, achievements = _fetch_all_data(profile)
+        profile_summary, counts = _build_counts_and_summary(
+            profile, profile_skills, courses, self_studies, educations, experiences, projects, achievements, goals
         )
-
-        # ── Skills distribution bands ──────────────────────────────────────
-        all_scores = [int(ps.score or 0) for ps in profile_skills if ps.skill]
-        skills_distribution = {
-            'expert'      : sum(1 for s in all_scores if s >= 80),
-            'advanced'    : sum(1 for s in all_scores if 60 <= s < 80),
-            'intermediate': sum(1 for s in all_scores if 40 <= s < 60),
-            'beginner'    : sum(1 for s in all_scores if s < 40),
-        }
-
-        # ── Top 10 skills ──────────────────────────────────────────────────
-        sorted_skills = sorted(
-            [(ps, int(ps.score or 0)) for ps in profile_skills if ps.skill],
-            key=lambda x: -x[1]
-        )[:10]
-
-        top_skills = []
-        for ps, score in sorted_skills:
-            meta = ps.skill.get_display_meta()
-            top_skills.append({
-                'skill_name': ps.skill.skill_name or '',
-                'score'     : score,
-                'icon'      : meta.get('icon',  'fas fa-code'),
-                'color'     : meta.get('color', '#64748b'),
-            })
-
-        # ── Goals by status ────────────────────────────────────────────────
-        status_count = {}
-        pri_count    = {}
-        year_pcts    = {}
-
-        for goal in goals:
-            st  = goal.status   or 'Planned'
-            pri = goal.priority or 'Medium'
-            yr  = str(goal.target_year) if goal.target_year else 'Unknown'
-            tgt = goal.target_score  or 100
-            cur = goal.current_score or 0
-            pct = min(round((cur / tgt) * 100), 100)
-
-            status_count[st]   = status_count.get(st, 0) + 1
-            pri_count[pri]     = pri_count.get(pri, 0)   + 1
-            year_pcts.setdefault(yr, []).append(pct)
-
-        goals_by_status = [{'status': k, 'count': v} for k, v in status_count.items()]
-        goals_by_priority = [{'priority': k, 'count': v} for k, v in pri_count.items()]
-        goals_by_year = [
-            {'year': yr, 'avg_progress': round(sum(vals) / len(vals), 1)}
-            for yr, vals in sorted(year_pcts.items())
-        ]
-
-        # ── Courses by completion year ─────────────────────────────────────
-        course_years = {}
-        for c in courses:
-            if c.end_date:
-                yr = str(c.end_date.year)
-                course_years[yr] = course_years.get(yr, 0) + 1
-
-        courses_by_year = [
-            {'year': yr, 'count': cnt}
-            for yr, cnt in sorted(course_years.items())
-        ]
-
-        # ── Self-study / learning by type ──────────────────────────────────
-        type_count = {}
-        for item in self_studies:
-            t = item.learning_type or 'Other'
-            type_count[t] = type_count.get(t, 0) + 1
-
-        learning_by_type = [
-            {'type': t, 'count': c}
-            for t, c in sorted(type_count.items(), key=lambda x: -x[1])
-        ]
-
-        # ── Projects by type ───────────────────────────────────────────────
-        proj_type_count = {}
-        for p in projects:
-            t = p.project_type or 'Other'
-            proj_type_count[t] = proj_type_count.get(t, 0) + 1
-
-        projects_by_type = [
-            {'type': t, 'count': c}
-            for t, c in sorted(proj_type_count.items(), key=lambda x: -x[1])
-        ]
+        skills_radar, skills_distribution, top_skills = _build_skills_data(profile_skills)
+        progress_data = _build_progress_data(goals, courses, self_studies, projects)
 
         return jsonify({
             'profile_summary'     : profile_summary,
@@ -214,12 +264,7 @@ def get_portfolio_analytics():
             'skills_radar'        : skills_radar,
             'skills_distribution' : skills_distribution,
             'top_skills'          : top_skills,
-            'goals_by_status'     : goals_by_status,
-            'goals_by_priority'   : goals_by_priority,
-            'goals_by_year'       : goals_by_year,
-            'courses_by_year'     : courses_by_year,
-            'learning_by_type'    : learning_by_type,
-            'projects_by_type'    : projects_by_type,
+            **progress_data,
         }), 200
 
     except Exception as e:
@@ -270,7 +315,7 @@ def get_tech_stack():
         tech_map = {}                                         # { normalized_name: { count, sources } }
 
         for model_class, field_name, source_label in source_config:
-            for record in model_class.objects(profile=profile):
+            for record in model_class.objects(profile=profile).only(field_name):
                 skills = getattr(record, field_name, []) or []
                 for raw_skill in skills:
                     if not raw_skill:
@@ -348,7 +393,7 @@ def get_career_timeline():
         timeline = []
 
         # ── Education events ───────────────────────────────────────────────
-        for edu in Education.objects(profile=profile).order_by('start_date'):
+        for edu in Education.objects(profile=profile).order_by('start_date').only('degree', 'major', 'institution', 'start_date', 'end_date'):
             timeline.append({
                 'type'      : 'education',
                 'label'     : f"{edu.degree or ''} in {edu.major or ''}".strip(),
@@ -360,7 +405,7 @@ def get_career_timeline():
             })
 
         # ── Experience events ──────────────────────────────────────────────
-        for exp in Experience.objects(profile=profile).order_by('start_date'):
+        for exp in Experience.objects(profile=profile).order_by('start_date').only('job_title', 'company_name', 'start_date', 'end_date', 'is_current'):
             timeline.append({
                 'type'      : 'experience',
                 'label'     : exp.job_title    or '',

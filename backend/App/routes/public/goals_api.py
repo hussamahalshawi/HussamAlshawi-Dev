@@ -17,6 +17,7 @@ Author: HussamAlshawi-Dev
 
 import logging                                                        # Error tracking
 from flask import Blueprint, jsonify                                  # Core Flask utilities
+from App import cache                                                 # Cache decorator
 from App.models.goal    import Goal                                   # Career goal model
 from App.routes.helpers.route_helpers import (                        # Shared helpers — no duplication
     get_profile,
@@ -51,6 +52,7 @@ PRIORITY_COLORS = {                                                    # Visual 
 # Full career roadmap with required skills and match data
 # ─────────────────────────────────────────────────────────────────────────────
 @goals_public_bp.route('/portfolio/goals', methods=['GET'])
+@cache.cached(timeout=300)
 def get_public_goals():
     """
     Returns all career roadmap goals with per-skill match data and
@@ -92,7 +94,10 @@ def get_public_goals():
 
         token_map = build_token_map(profile)                           # Build token score map via shared helper
 
-        goals = Goal.objects(profile=profile).order_by('target_year', '-priority')  # Fetch all goals ordered
+        goals = Goal.objects(profile=profile).order_by('target_year', '-priority').only(
+    'goal_name', 'sub_title', 'status', 'priority',
+    'target_year', 'target_score', 'current_score', 'required_skills',
+)
 
         result = []
         for goal in goals:
@@ -142,6 +147,7 @@ def get_public_goals():
 # Aggregated statistics for roadmap analytics charts
 # ─────────────────────────────────────────────────────────────────────────────
 @goals_public_bp.route('/portfolio/goals/stats', methods=['GET'])
+@cache.cached(timeout=300)
 def get_goals_stats():
     """
     Returns compact statistics about the career roadmap.
@@ -174,7 +180,9 @@ def get_goals_stats():
         if not profile:
             return jsonify({'error': 'Profile not found'}), 404        # Guard: no profile configured
 
-        goals = list(Goal.objects(profile=profile))                    # Fetch all goal documents
+        goals = list(Goal.objects(profile=profile).only(
+            'status', 'priority', 'target_year', 'target_score', 'current_score',
+        ))
 
         by_status   = {}                                               # Accumulate count per status
         by_priority = {}                                               # Accumulate count per priority

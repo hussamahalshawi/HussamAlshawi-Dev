@@ -15,6 +15,7 @@ Author: HussamAlshawi-Dev
 
 import logging                                                     # Error tracking
 from flask import Blueprint, jsonify, request                      # Core Flask utilities
+from App import cache                                              # Cache decorator
 from App.models.profile     import Profile                         # Profile model
 from App.models.skills      import ProfileSkill, Skill, SkillType  # Skill models
 from App.models.course      import Course                          # For skill source tracking
@@ -35,6 +36,7 @@ skills_charts_bp = Blueprint('skills_charts', __name__)
 # Radar chart: average score per skill category
 # ─────────────────────────────────────────────────────────────────────────────
 @skills_charts_bp.route('/charts/skills/radar', methods=['GET'])
+@cache.cached(timeout=300)
 def skills_radar():
     """
     Returns average skill score per SkillType category.
@@ -56,8 +58,7 @@ def skills_radar():
         if not profile:
             return jsonify({'error': 'Profile not found'}), 404
 
-        # Fetch all ProfileSkill docs with related references in one query
-        raw = ProfileSkill.objects(profile=profile).select_related()
+        raw = ProfileSkill.objects(profile=profile).select_related().only('skill', 'score')
 
         # Build category → scores map
         cat_map = {}
@@ -106,6 +107,7 @@ def skills_radar():
 # Donut chart: skills spread across score bands
 # ─────────────────────────────────────────────────────────────────────────────
 @skills_charts_bp.route('/charts/skills/distribution', methods=['GET'])
+@cache.cached(timeout=300)
 def skills_distribution():
     """
     Returns the count of skills in each proficiency band.
@@ -135,7 +137,7 @@ def skills_distribution():
 
         scores = [
             int(ps.score or 0)
-            for ps in ProfileSkill.objects(profile=profile)
+            for ps in ProfileSkill.objects(profile=profile).only('score', 'skill')
             if ps.skill
         ]
 
@@ -180,6 +182,7 @@ def skills_distribution():
 # Query param: limit (default 12)
 # ─────────────────────────────────────────────────────────────────────────────
 @skills_charts_bp.route('/charts/skills/top-bars', methods=['GET'])
+@cache.cached(timeout=300)
 def skills_top_bars():
     """
     Returns the top N skills sorted by proficiency score descending.
@@ -208,7 +211,7 @@ def skills_top_bars():
         # Clamp limit between 1 and 30
         limit = min(max(int(request.args.get('limit', 12)), 1), 30)
 
-        raw     = ProfileSkill.objects(profile=profile).select_related()
+        raw     = ProfileSkill.objects(profile=profile).select_related().only('skill', 'score')
         skills  = [p for p in (build_skill_payload(ps) for ps in raw) if p]
         skills.sort(key=lambda x: -x['score'])                     # Highest score first
         top     = skills[:limit]
@@ -231,6 +234,7 @@ def skills_top_bars():
 # Skills heatmap grid: category (row) × score band (column)
 # ─────────────────────────────────────────────────────────────────────────────
 @skills_charts_bp.route('/charts/skills/heatmap', methods=['GET'])
+@cache.cached(timeout=300)
 def skills_heatmap():
     """
     Returns a 2D grid of skill counts: rows = categories, columns = score bands.
@@ -252,7 +256,7 @@ def skills_heatmap():
         if not profile:
             return jsonify({'error': 'Profile not found'}), 404
 
-        raw    = ProfileSkill.objects(profile=profile).select_related()
+        raw    = ProfileSkill.objects(profile=profile).select_related().only('skill', 'score')
         skills = [p for p in (build_skill_payload(ps) for ps in raw) if p]
 
         # Score band definitions
@@ -308,6 +312,7 @@ def skills_heatmap():
 # Stacked bar: how many skills came from each source model
 # ─────────────────────────────────────────────────────────────────────────────
 @skills_charts_bp.route('/charts/skills/sources', methods=['GET'])
+@cache.cached(timeout=300)
 def skills_sources():
     """
     Returns the frequency of each skill across all source records,
@@ -350,7 +355,7 @@ def skills_sources():
             source_totals[label] = 0
             colors[label]        = color
 
-            for record in model_class.objects(profile=profile):
+            for record in model_class.objects(profile=profile).only(field_name):
                 raw_skills = getattr(record, field_name, []) or []
                 for raw in raw_skills:
                     normalized = (raw or '').strip().title()       # Normalize to Title Case
@@ -390,4 +395,143 @@ def skills_sources():
 
     except Exception as e:
         logging.error(f'[CHARTS] /charts/skills/sources failed: {str(e)}')
+        return jsonify({'error': str(e)}), 500
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# ROUTE 6 — GET /api/charts/skills/domain-coverage
+# Multi-series radar: per-source scores across all skill categories
+# ─────────────────────────────────────────────────────────────────────────────
+@skills_charts_bp.route('/charts/skills/domain-coverage', methods=['GET'])
+@cache.cached(timeout=300)
+def skills_domain_coverage():
+    """
+    Returns per-source, per-category skill scores for the multi-series radar.
+    Each source model (Experience, Projects, Courses, etc.) gets a 0-100 score
+    per category. 'Combined' is the weighted average using signal weights.
+
+    Response shape:
+    {
+        "labels": ["Backend", "Frontend", "DevOps", ...],
+        "series": [
+            { "name": "Combined",    "color": "#4FC3F7", "values": [...], "dash": "solid" },
+            { "name": "Experience",  "color": "#1D9E75", "values": [...], "dash": "dash"  },
+            ...
+        ]
+    }
+    """
+    try:
+        profile = get_profile()
+        if not profile:
+            return jsonify({'error': 'Profile not found'}), 404
+
+        # Step 1: Build skill_name → category lookup from all Skill docs
+        all_skills = Skill.objects().select_related()
+        skill_to_cat = {}
+        for skill in all_skills:
+            if skill.skill_name and skill.skill_type:
+                try:
+                    skill_to_cat[skill.skill_name.strip().lower()] = skill.skill_type.name
+                except Exception:
+                    pass
+
+        # Step 2: Source configuration — model, field, label, color
+        SOURCE_CONFIG = [
+            (Experience,  'skills_acquired',    'Experience',   '#1D9E75'),
+            (Project,     'skills_used',         'Projects',     '#378ADD'),
+            (Course,      'acquired_skills',     'Courses',      '#BA7517'),
+            (SelfStudy,   'skills_learned',      'Self Study',   '#7F77DD'),
+            (Education,   'skills_learned',      'Education',    '#D85A30'),
+            (Achievement, 'skills_demonstrated', 'Achievements', '#D4537E'),
+        ]
+
+        # Signal weights for Combined calculation
+        WEIGHTS = {
+            'Experience':   25,
+            'Projects':     20,
+            'Courses':      15,
+            'Achievements': 12,
+            'Self Study':   10,
+            'Education':     8,
+        }
+        TOTAL_WEIGHT = sum(WEIGHTS.values())  # 90
+
+        # Step 3: Count occurrences per (source_label, category)
+        source_cat_counts = {}  # {source_label: {category: count}}
+        all_categories = set()
+
+        for model_class, field_name, label, color in SOURCE_CONFIG:
+            cat_counts = {}
+            for record in model_class.objects(profile=profile):
+                raw_skills = getattr(record, field_name, []) or []
+                for raw in raw_skills:
+                    normalized = (raw or '').strip().lower()
+                    if not normalized:
+                        continue
+                    cat = skill_to_cat.get(normalized, 'Other')
+                    cat_counts[cat] = cat_counts.get(cat, 0) + 1
+                    all_categories.add(cat)
+            source_cat_counts[label] = cat_counts
+
+        # Step 4: Sort categories alphabetically
+        sorted_categories = sorted(all_categories) if all_categories else ['Other']
+        if not all_categories:
+            sorted_categories = ['Other']
+
+        # Step 5: Normalize counts to 0-100 per source
+        def normalize_counts(counts_dict):
+            """Convert raw counts to 0-100 scale."""
+            cats = counts_dict
+            if not cats:
+                return {cat: 0 for cat in sorted_categories}
+            max_val = max(cats.values())
+            if max_val == 0:
+                return {cat: 0 for cat in sorted_categories}
+            return {cat: round((cats.get(cat, 0) / max_val) * 100) for cat in sorted_categories}
+
+        normalized_scores = {}
+        for label, _ in SOURCE_CONFIG:
+            normalized_scores[label] = normalize_counts(source_cat_counts.get(label, {}))
+
+        # Step 6: Compute Combined — weighted average of all sources
+        combined_scores = {}
+        for cat in sorted_categories:
+            weighted_sum = 0
+            for label, _ in SOURCE_CONFIG:
+                score = normalized_scores[label].get(cat, 0)
+                weighted_sum += score * WEIGHTS.get(label, 1)
+            combined_scores[cat] = round(weighted_sum / TOTAL_WEIGHT)
+
+        # Step 7: Build response series
+        SERIES_DEF = [
+            ('Combined',    '#4FC3F7', 'solid', 3),
+            ('Experience',  '#1D9E75', 'dash',  1.5),
+            ('Projects',    '#378ADD', 'dash',  1.5),
+            ('Courses',     '#BA7517', 'dot',   1.5),
+            ('Achievements','#D4537E', 'dot',   1.5),
+            ('Self Study',  '#7F77DD', 'dash',  1.5),
+            ('Education',   '#D85A30', 'dot',   1.5),
+        ]
+
+        series = []
+        for name, color, dash, width in SERIES_DEF:
+            if name == 'Combined':
+                values = [combined_scores.get(cat, 0) for cat in sorted_categories]
+            else:
+                values = [normalized_scores[name].get(cat, 0) for cat in sorted_categories]
+            series.append({
+                'name': name,
+                'color': color,
+                'values': values,
+                'dash': dash,
+                'width': width,
+            })
+
+        return jsonify({
+            'labels': sorted_categories,
+            'series': series,
+        }), 200
+
+    except Exception as e:
+        logging.error(f'[CHARTS] /charts/skills/domain-coverage failed: {str(e)}', exc_info=True)
         return jsonify({'error': str(e)}), 500

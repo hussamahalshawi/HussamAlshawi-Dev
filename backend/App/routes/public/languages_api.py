@@ -13,6 +13,7 @@ Author: HussamAlshawi-Dev
 
 import logging                                                        # Error tracking
 from flask import Blueprint, jsonify                                  # Core Flask utilities
+from App import cache                                                 # Cache decorator
 from App.models.language import Language                              # Language proficiency model
 from App.routes.helpers.route_helpers import get_profile             # Shared helper — no duplication
 
@@ -37,6 +38,7 @@ PROFICIENCY_META = {                                                   # Maps pr
 # Language proficiency list with visual tokens for the public portfolio
 # ─────────────────────────────────────────────────────────────────────────────
 @languages_public_bp.route('/portfolio/languages', methods=['GET'])
+@cache.cached(timeout=300)
 def get_public_languages():
     """
     Returns all language proficiency records with visual metadata.
@@ -67,7 +69,9 @@ def get_public_languages():
         if not profile:
             return jsonify({'error': 'Profile not found'}), 404        # Guard: no profile configured
 
-        records = Language.objects(profile=profile).order_by('language_name')  # Alphabetical order
+        records = Language.objects(profile=profile).order_by('language_name').only(
+    'language_name', 'proficiency',
+)
 
         result = []
         for lang in records:
