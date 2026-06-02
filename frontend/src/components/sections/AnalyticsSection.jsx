@@ -25,16 +25,20 @@
  * ─────────────────────────────────────────────────────────
  */
 
-import { useRef, useEffect, useState } from 'react';            // Hooks for animation
-import { CHART_COLORS, SKILL_BANDS, ANIMATION } from '../../utils/constants'; // Global tokens
-import { SkeletonKPI }            from '../ui/SkeletonLoader'; // Loading skeleton
-import Badge                       from '../ui/Badge';         // Badge component
-import SankeyChart                 from '../charts/SankeyChart';
-import RadarSkillsChart            from '../charts/RadarSkillsChart';
-import TimelineAreaChart           from '../charts/TimelineAreaChart';
-import GoalsBulletChart            from '../charts/GoalsBulletChart';
-import SourceTreemapChart          from '../charts/SourceTreemapChart';
-import CareerTab                   from './tabs/CareerTab';
+import { useRef, useEffect, useState, useCallback } from 'react'; // Hooks for animation + hash routing
+import { useLocation }                                from 'react-router-dom';
+import { CHART_COLORS, SKILL_BANDS, ANIMATION }       from '../../utils/constants'; // Global tokens
+import { SkeletonKPI }                               from '../ui/SkeletonLoader'; // Loading skeleton
+import Badge                                          from '../ui/Badge';         // Badge component
+import SankeyChart                                    from '../charts/SankeyChart';
+import RadarSkillsChart                               from '../charts/RadarSkillsChart';
+import TimelineAreaChart                              from '../charts/TimelineAreaChart';
+import GoalsBulletChart                               from '../charts/GoalsBulletChart';
+import SourceTreemapChart                             from '../charts/SourceTreemapChart';
+import CareerTab                                      from './tabs/CareerTab';
+import SkillsTab                                      from './tabs/SkillsTab';
+import LearningTab                                    from './tabs/LearningTab';
+import GoalsTab                                       from './tabs/GoalsTab';
 import '../../styles/components/AnalyticsSection.css';
 
 /* ── Analytics tab configuration ────────────────────────────── */
@@ -72,8 +76,28 @@ const KPI_CONFIG = [
  */
 export default function AnalyticsSection({ analytics, portfolio, portfolioLoading, portfolioError }) {
 
-  /* ── Active tab — defaults to Overview ──────────────────────── */
-  const [activeTab, setActiveTab] = useState('overview');
+  /* ── Hash-based tab routing ─────────────────────────────────── */
+  const location = useLocation();
+
+  const getTabFromHash = useCallback(() => {
+    const hash = window.location.hash.replace('#analytics/', '').replace('#analytics', '');
+    const valid = ANALYTICS_TABS.find(t => t.id === hash);
+    return valid ? hash : 'overview';
+  }, []);
+
+  const [activeTab, setActiveTab] = useState(getTabFromHash);
+
+  const handleTabChange = useCallback((tabId) => {
+    setActiveTab(tabId);
+    const hash = tabId === 'overview' ? '#analytics' : `#analytics/${tabId}`;
+    window.history.replaceState(null, '', hash);
+  }, []);
+
+  useEffect(() => {
+    const onHashChange = () => setActiveTab(getTabFromHash());
+    window.addEventListener('hashchange', onHashChange);
+    return () => window.removeEventListener('hashchange', onHashChange);
+  }, [getTabFromHash]);
 
   /* ── Loading skeleton — mirrors the real layout ─────────────── */
   if (!analytics) {
@@ -127,7 +151,7 @@ export default function AnalyticsSection({ analytics, portfolio, portfolioLoadin
             <button
               key={tab.id}
               className={`analytics-tab ${activeTab === tab.id ? 'analytics-tab--active' : ''}`}
-              onClick={() => setActiveTab(tab.id)}
+              onClick={() => handleTabChange(tab.id)}
               role="tab"
               aria-selected={activeTab === tab.id}
               aria-controls={`analytics-panel-${tab.id}`}
@@ -370,6 +394,27 @@ export default function AnalyticsSection({ analytics, portfolio, portfolioLoadin
         ══════════════════════════════════════════════ */}
         {activeTab === 'career' && (
           <CareerTab />
+        )}
+
+        {/* ══════════════════════════════════════════════
+            TAB: Skills Deep Dive
+        ══════════════════════════════════════════════ */}
+        {activeTab === 'skills' && (
+          <SkillsTab />
+        )}
+
+        {/* ══════════════════════════════════════════════
+            TAB: Learning
+        ══════════════════════════════════════════════ */}
+        {activeTab === 'learning' && (
+          <LearningTab />
+        )}
+
+        {/* ══════════════════════════════════════════════
+            TAB: Goals
+        ══════════════════════════════════════════════ */}
+        {activeTab === 'goals' && (
+          <GoalsTab />
         )}
 
       </div>

@@ -1,82 +1,63 @@
-/**
- * useCharts.js
- * ─────────────────────────────────────────────────────────
- * Lazy-loading hook for chart data grouped by section.
- * Each chart group fires only when its section enters the viewport.
- * Uses Promise.allSettled so one failing chart never blocks others.
- *
- * Usage:
- *   const { data, loading, error, sectionRef } = useCharts('skills');
- *   // groups: 'skills' | 'career' | 'learning' | 'goals'
- * ─────────────────────────────────────────────────────────
- */
+import { useState, useEffect, useRef } from 'react';
+import chartsService from '../services/chartsService';
+import { useIntersectionLoader } from '../services/useIntersectionLoader';
+import { CACHE_KEYS, saveToCache, loadFromCacheAny, isCacheStale } from '../utils/cache';
 
-import { useState, useEffect, useRef } from 'react';              // React primitives
-import chartsService                   from '../services/chartsService'; // Charts API calls
-import { useIntersectionLoader }       from '../services/useIntersectionLoader';   // Shared observer hook
-
-/* ── Chart group → composite loader map ─────────────────────────── */
-/* Maps group name to the correct composite loader in chartsService  */
 const CHART_LOADERS = {
-  skills  : () => chartsService.composite.allSkillsCharts(),   // radar, distribution, topBars, heatmap, sources
-  career  : () => chartsService.composite.allCareerCharts(),   // gantt, employmentMix, treemap, heatmap, stack, achievements
-  learning: () => chartsService.composite.allLearningCharts(), // coursesByYear, providers, wordCloud, types, tracks, vsOutput
-  goals   : () => chartsService.composite.allGoalsCharts(),    // gauge, statusDonut, priorityDonut, yearProgress, skillGap, roadmap
+  skills  : () => chartsService.composite.allSkillsCharts(),
+  career  : () => chartsService.composite.allCareerCharts(),
+  learning: () => chartsService.composite.allLearningCharts(),
+  goals   : () => chartsService.composite.allGoalsCharts(),
 };
 
-/**
- * useCharts — lazy loads a group of charts when the section enters the viewport.
- *
- * @param {'skills'|'career'|'learning'|'goals'} group - Chart group to load
- * @param {React.RefObject} [externalRef]               - Optional external ref
- *
- * @returns {{
- *   data:       object|null,  - All chart data for the group (null until loaded)
- *   loading:    boolean,      - True while fetching
- *   error:      string|null,  - Error message if all charts failed
- *   sectionRef: React.RefObject
- * }}
- */
-export function useCharts(group, externalRef = null) {
+const CHART_CACHE_KEYS = {
+  skills  : CACHE_KEYS.skillsCharts,
+  career  : CACHE_KEYS.careerCharts,
+  learning: CACHE_KEYS.learningCharts,
+  goals   : CACHE_KEYS.goalsCharts,
+};
 
-  /* ── Validate group ── */
+export function useCharts(group, externalRef = null) {
   if (!CHART_LOADERS[group]) {
     console.warn(`[useCharts] Unknown group: "${group}". Use: skills | career | learning | goals`);
   }
 
-  /* ── Ref management ── */
-  const internalRef = useRef(null);                            // Fallback ref
-  const sectionRef  = externalRef || internalRef;              // Prefer external
+  const internalRef = useRef(null);
+  const sectionRef  = externalRef || internalRef;
+  const triggered   = useIntersectionLoader(sectionRef, 0.05);
+  const cacheKey    = CHART_CACHE_KEYS[group];
 
-  /* ── Intersection trigger ── */
-  const triggered = useIntersectionLoader(sectionRef, 0.05);  // Lower threshold for chart sections
+  const [data,    setData]    = useState(() => loadFromCacheAny(cacheKey));
+  const [loading, setLoading] = useState(() => localStorage.getItem(cacheKey) === null);
+  const [error,   setError]   = useState(null);
 
-  /* ── Data state ── */
-  const [data,    setData]    = useState(null);                // All chart data for the group
-  const [loading, setLoading] = useState(false);              // True while fetching
-  const [error,   setError]   = useState(null);               // Error if all charts failed
+  const hasFetchedRef = useRef(false);
 
-  /* ── Fetch chart group when triggered ── */
   useEffect(() => {
-    if (!triggered) return;                                    // Wait until visible
+    if (!triggered || hasFetchedRef.current) return;
+    hasFetchedRef.current = true;
 
-    const loader = CHART_LOADERS[group];                       // Get the correct loader
-    if (!loader) return;                                       // Guard: unknown group
+    const loader = CHART_LOADERS[group];
+    if (!loader) return;
 
     let cancelled = false;
 
     async function fetchCharts() {
-      setLoading(true);                                        // Show loading state
-      setError(null);                                          // Clear previous errors
+      if (localStorage.getItem(cacheKey) === null) {
+        setLoading(true);
+      }
+      setError(null);
 
       try {
-        /* Call the composite loader — returns partial data even on partial failure */
         const result = await loader();
 
         if (!cancelled) {
-          setData(result);                                     // Update chart data object
+          const stale = isCacheStale(cacheKey, result);
+          if (stale) {
+            saveToCache(cacheKey, result);
+            setData(result);
+          }
 
-          /* Check if every chart in the group failed (all null) */
           const allNull = Object.values(result).every(v => v === null);
           if (allNull) setError(`Failed to load ${group} charts.`);
         }
@@ -85,17 +66,16 @@ export function useCharts(group, externalRef = null) {
           setError(err.message || `Failed to load ${group} charts.`);
         }
       } finally {
-        if (!cancelled) setLoading(false);                     // Always hide loader
+        if (!cancelled) setLoading(false);
       }
     }
 
-    fetchCharts();                                             // Execute
+    fetchCharts();
 
-    return () => { cancelled = true; };                        // Cleanup
-
-  }, [triggered, group]);                                      // Re-run if group changes
+    return () => { cancelled = true; };
+  }, [triggered, group, cacheKey]);
 
   return { data, loading, error, sectionRef };
 }
 
-export default useCharts;                                      // Default export
+export default useCharts;

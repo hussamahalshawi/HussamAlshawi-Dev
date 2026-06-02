@@ -1,0 +1,23 @@
+.gauge-chart {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--s2);
+}
+
+.gauge-chart__svg {
+  display: block;
+}
+
+.gauge-chart__label {
+  font-family: var(--font-mono);
+  font-size: 0.64rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.10em;
+  text-align: center;
+}
+
+[data-theme="light"] .gauge-chart__label {
+  color: #6b8aaa;
+}

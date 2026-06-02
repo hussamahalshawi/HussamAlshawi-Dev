@@ -15,6 +15,12 @@ export const CACHE_KEYS = {
   skillsSummary: 'ha_cache_skills_summary',
   languages:     'ha_cache_languages',
   portfolio:     'ha_cache_portfolio',
+
+  // Chart groups (composite responses from useCharts)
+  careerCharts:  'ha_cache_charts_career',
+  skillsCharts:  'ha_cache_charts_skills',
+  learningCharts:'ha_cache_charts_learning',
+  goalsCharts:   'ha_cache_charts_goals',
 };
 
 /* ═══════════════════════════════════════════════════════

@@ -893,7 +893,24 @@
   border-color: rgba(79, 143, 199, 0.15);
 }
 
+/* ── 3-col row for goals tab ── */
+.analytics-tab-row-3col {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: var(--s6);
+}
+
+.analytics-tab-row-3col .career-chart-panel {
+  height: 340px;
+}
+
 /* ── Responsive ── */
+@media (max-width: 1024px) {
+  .analytics-tab-row-3col {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
 @media (max-width: 860px) {
   .analytics-tab {
     font-size: 0.72rem;
@@ -901,6 +918,10 @@
   }
 
   .analytics-tab-row-2col {
+    grid-template-columns: 1fr;
+  }
+
+  .analytics-tab-row-3col {
     grid-template-columns: 1fr;
   }
 

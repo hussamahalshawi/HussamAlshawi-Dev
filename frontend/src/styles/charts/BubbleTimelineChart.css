@@ -1,0 +1,51 @@
+.bubble-timeline {
+  position: relative;
+  width: 100%;
+}
+
+.bubble-timeline--empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 120px;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
+}
+
+.bubble-timeline__scroll {
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255,255,255,0.08) transparent;
+}
+
+.bubble-timeline__scroll::-webkit-scrollbar {
+  height: 4px;
+}
+
+.bubble-timeline__scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.bubble-timeline__scroll::-webkit-scrollbar-thumb {
+  background: rgba(255,255,255,0.10);
+  border-radius: 4px;
+}
+
+.bubble-timeline__bubble {
+  cursor: default;
+}
+
+.bubble-timeline__bubble:hover circle:first-of-type {
+  fill-opacity: 0.25;
+}
+
+.bubble-timeline__bubble--pulse {
+  animation: bubble-pulse 2s ease-in-out infinite;
+}
+
+@keyframes bubble-pulse {
+  0%, 100% { fill-opacity: 0.15; stroke-opacity: 0.6; }
+  50% { fill-opacity: 0.25; stroke-opacity: 1; }
+}
