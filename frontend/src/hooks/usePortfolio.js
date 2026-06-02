@@ -21,16 +21,19 @@ export function usePortfolio() {
 
   const checkForUpdates = useCallback(async () => {
     try {
+      console.log('[Portfolio] Fetching /charts/portfolio/summary...');
       const freshData = await analyticsService.getPortfolioSummary();
+      console.log('[Portfolio] ✓ Received data:', freshData ? 'ok' : 'empty');
       const stale = isCacheStale(CACHE_KEYS.portfolio, freshData);
       if (stale) {
         saveToCache(CACHE_KEYS.portfolio, freshData);
         setPortfolioData(freshData);
       }
     } catch (err) {
+      console.warn('[Portfolio] ✗ API failed:', err.message || err);
       const hasCache = localStorage.getItem(CACHE_KEYS.portfolio) !== null;
       if (!hasCache) {
-        setError(err.message);
+        setError(err.message || 'Unknown error');
         setPortfolioData(null);
       }
     }

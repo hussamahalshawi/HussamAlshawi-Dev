@@ -1,0 +1,98 @@
+.cal-heatmap {
+  position: relative;
+  width: 100%;
+}
+
+.cal-heatmap--empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 120px;
+  color: var(--text-muted);
+  font-size: 0.82rem;
+  font-family: var(--font-mono);
+}
+
+.cal-heatmap__grid {
+  display: grid;
+  gap: 4px;
+  margin-bottom: var(--s4);
+}
+
+.cal-heatmap__cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 6px;
+  border-radius: var(--r-md);
+  border: 1px solid transparent;
+  cursor: default;
+  transition: background 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
+  min-height: 72px;
+}
+
+.cal-heatmap__cell:hover {
+  border-color: rgba(79,195,247,0.35) !important;
+  transform: scale(1.04);
+}
+
+.cal-heatmap__month {
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.cal-heatmap__year {
+  font-size: 0.60rem;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  margin-top: 1px;
+}
+
+.cal-heatmap__count {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text-white);
+  font-family: var(--font-display);
+  margin-top: 4px;
+}
+
+.cal-heatmap__legend {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: var(--s2) 0;
+}
+
+.cal-heatmap__legend-label {
+  font-size: 0.60rem;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin: 0 var(--s1);
+}
+
+.cal-heatmap__legend-swatch {
+  width: 14px;
+  height: 14px;
+  border-radius: var(--r-xs);
+  flex-shrink: 0;
+}
+
+[data-theme="light"] .cal-heatmap__month {
+  color: #3d5a80;
+}
+
+[data-theme="light"] .cal-heatmap__count {
+  color: #1a2332;
+}
+
+[data-theme="light"] .cal-heatmap__cell:hover {
+  border-color: rgba(26,143,199,0.5) !important;
+}

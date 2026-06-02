@@ -13,7 +13,7 @@
 
 import { useState, useEffect, useRef } from 'react';              // React primitives
 import chartsService                   from '../services/chartsService'; // Charts API calls
-import { useIntersectionLoader }       from './useIntersectionLoader';   // Shared observer hook
+import { useIntersectionLoader }       from '../services/useIntersectionLoader';   // Shared observer hook
 
 /* ── Chart group → composite loader map ─────────────────────────── */
 /* Maps group name to the correct composite loader in chartsService  */
