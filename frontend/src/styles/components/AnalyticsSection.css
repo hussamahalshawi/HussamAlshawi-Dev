@@ -720,6 +720,63 @@
   flex-shrink: 0;
 }
 
+/* ── Sankey Panel ────────────────────────────────────────────── */
+.portfolio-sankey-panel {
+  height: 520px;
+  padding: var(--s5);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.portfolio-sankey-sub {
+  font-family: var(--font-mono);
+  font-size: 0.70rem;
+  color: var(--text-muted);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  margin-left: auto;
+}
+
+.portfolio-sankey-wrapper {
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+}
+
+.portfolio-sankey-empty {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  font-family: var(--font-mono);
+}
+
+/* Light mode */
+[data-theme="light"] .portfolio-sankey-panel {
+  background: rgba(255, 255, 255, 0.55);
+  backdrop-filter: blur(32px) saturate(1.8);
+  -webkit-backdrop-filter: blur(32px) saturate(1.8);
+  border-color: rgba(79, 143, 199, 0.15);
+}
+
+/* Responsive */
+@media (max-width: 860px) {
+  .portfolio-sankey-panel {
+    height: 400px;
+    padding: var(--s4);
+  }
+}
+
+@media (max-width: 480px) {
+  .portfolio-sankey-panel {
+    height: 340px;
+    padding: var(--s3);
+  }
+}
+
 /* ── Light mode overrides ── */
 [data-theme="light"] .portfolio-cat-card {
   background: rgba(255, 255, 255, 0.55);
