@@ -29,8 +29,12 @@ import { useRef, useEffect }      from 'react';            // Hooks for animatio
 import { CHART_COLORS, SKILL_BANDS, ANIMATION } from '../../utils/constants'; // Global tokens
 import { SkeletonKPI }            from '../ui/SkeletonLoader'; // Loading skeleton
 import Badge                       from '../ui/Badge';         // Badge component
-import SankeyChart                 from '../charts/SankeyChart'; // Sankey diagram
-import '../../styles/components/AnalyticsSection.css';        // Section styles
+import SankeyChart                 from '../charts/SankeyChart';
+import RadarSkillsChart            from '../charts/RadarSkillsChart';
+import TimelineAreaChart           from '../charts/TimelineAreaChart';
+import GoalsBulletChart            from '../charts/GoalsBulletChart';
+import SourceTreemapChart          from '../charts/SourceTreemapChart';
+import '../../styles/components/AnalyticsSection.css';
 
 /* ── KPI card configuration ──────────────────────────────────── */
 /* Each entry maps to a count key in the analytics.counts object */
@@ -261,146 +265,56 @@ export default function AnalyticsSection({ analytics, portfolio, portfolioLoadin
               />
             </div>
 
-            {/* ROW 2: Skills by Category */}
-            <div className="analytics-glass-panel">
-              <div className="analytics-panel__header">
-                <p className="skill-group__title" style={{ margin: 0 }}>
-                  Skills by Category
-                </p>
+            {/* ROW 2: Radar + Treemap (2-col) */}
+            <div className="portfolio-row-2col">
+              <div className="analytics-glass-panel portfolio-chart-panel">
+                <div className="analytics-panel__header">
+                  <p className="skill-group__title" style={{ margin: 0 }}>
+                    Skills Radar
+                  </p>
+                  <span className="portfolio-chart-sub">
+                    {portfolio.skills_by_type?.length || 0} categories
+                  </span>
+                </div>
+                <RadarSkillsChart skillsByType={portfolio.skills_by_type} />
               </div>
-              <div className="portfolio-radar-grid">
-                {portfolio.skills_by_type?.map(cat => (
-                  <div key={cat.type} className="portfolio-cat-card">
-                    <div className="portfolio-cat__header">
-                      <span className="portfolio-cat__name">{cat.type}</span>
-                      <span className="portfolio-cat__avg">{cat.avg_score}</span>
-                      <span className="portfolio-cat__count">{cat.count} skills</span>
-                    </div>
-                    <div className="portfolio-cat__skills">
-                      {cat.skills.slice(0, 6).map(s => (
-                        <div key={s.skill_name} className="portfolio-skill-row">
-                          <span className="portfolio-skill__name">{s.skill_name}</span>
-                          <div className="portfolio-skill__track">
-                            <div
-                              className="portfolio-skill__fill"
-                              style={{ width: `${s.score}%`, background: s.color }}
-                            />
-                          </div>
-                          <span className="portfolio-skill__score">{s.score}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                ))}
+              <div className="analytics-glass-panel portfolio-chart-panel">
+                <div className="analytics-panel__header">
+                  <p className="skill-group__title" style={{ margin: 0 }}>
+                    Source Weight
+                  </p>
+                  <span className="portfolio-chart-sub">
+                    Skills by learning source
+                  </span>
+                </div>
+                <SourceTreemapChart sourceContribution={portfolio.learning_overview?.source_contribution} />
               </div>
             </div>
 
-            {/* ROW 2: Source Contribution */}
-            <div className="analytics-glass-panel">
-              <div className="analytics-panel__header">
-                <p className="skill-group__title" style={{ margin: 0 }}>
-                  Learning Source Contribution
-                </p>
-              </div>
-              <div className="portfolio-source-grid">
-                {portfolio.learning_overview?.source_contribution?.map(src => (
-                  <div key={src.source} className="portfolio-source-card">
-                    <div className="portfolio-source__label">
-                      {src.source.replace('_', ' ')}
-                    </div>
-                    <div className="portfolio-source__num">{src.unique_skills}</div>
-                    <div className="portfolio-source__sub">unique skills</div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* ROW 3: Learning Timeline */}
-            <div className="analytics-glass-panel">
+            {/* ROW 3: Learning Timeline — Stacked Area */}
+            <div className="analytics-glass-panel portfolio-chart-panel">
               <div className="analytics-panel__header">
                 <p className="skill-group__title" style={{ margin: 0 }}>
                   Learning Timeline
                 </p>
+                <span className="portfolio-chart-sub">
+                  Skills acquired per year by source
+                </span>
               </div>
-              <div className="portfolio-timeline">
-                {portfolio.learning_timeline?.slice().reverse().map(year => (
-                  <div key={year.year} className="portfolio-year-row">
-                    <div className="portfolio-year__label">{year.year}</div>
-                    <div className="portfolio-year__bars">
-                      <div className="portfolio-year__stat"
-                        title={`${year.courses.length} courses`}>
-                        <span>C</span> {year.courses.length}
-                      </div>
-                      <div className="portfolio-year__stat"
-                        title={`${year.self_studies.length} self studies`}>
-                        <span>S</span> {year.self_studies.length}
-                      </div>
-                      <div className="portfolio-year__stat"
-                        title={`${year.educations.length} education`}>
-                        <span>E</span> {year.educations.length}
-                      </div>
-                      <div className="portfolio-year__stat portfolio-year__stat--skills"
-                        title={`${year.new_skills_count} new skills`}>
-                        +{year.new_skills_count} skills
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
+              <TimelineAreaChart timeline={portfolio.learning_timeline} />
             </div>
 
-            {/* ROW 4: Goals Progress */}
-            <div className="analytics-glass-panel">
+            {/* ROW 4: Goals — Bullet Chart */}
+            <div className="analytics-glass-panel portfolio-chart-panel">
               <div className="analytics-panel__header">
                 <p className="skill-group__title" style={{ margin: 0 }}>
                   Goals Progress
                 </p>
+                <span className="portfolio-chart-sub">
+                  Current vs Target
+                </span>
               </div>
-              <div className="portfolio-goals">
-                {portfolio.goals?.map(g => (
-                  <div key={g.goal_name} className="portfolio-goal-card">
-                    <div className="portfolio-goal__header">
-                      <span className="portfolio-goal__name">{g.goal_name}</span>
-                      <span
-                        className={`portfolio-goal__status portfolio-goal__status--${g.status?.toLowerCase().replace(/\s+/g, '-')}`}
-                      >
-                        {g.status}
-                      </span>
-                    </div>
-                    <div className="portfolio-goal__progress">
-                      <div className="portfolio-goal__track">
-                        <div
-                          className="portfolio-goal__fill"
-                          style={{ width: `${g.progress_pct}%` }}
-                        />
-                      </div>
-                      <span className="portfolio-goal__pct">{g.progress_pct}%</span>
-                    </div>
-                    {g.skills_needed?.length > 0 && (
-                      <div className="portfolio-goal__gaps">
-                        {g.skills_needed.slice(0, 4).map(s => (
-                          <div key={s.name} className="portfolio-gap-row">
-                            <span>{s.name}</span>
-                            <div className="portfolio-gap__track">
-                              <div
-                                className="portfolio-gap__fill"
-                                style={{ width: `${(s.current / Math.max(s.target, 1)) * 100}%` }}
-                              />
-                              <div
-                                className="portfolio-gap__target"
-                                style={{ left: `${(s.target / 100) * 100}%` }}
-                              />
-                            </div>
-                            <span className="portfolio-gap__diff">
-                              {s.gap > 0 ? `-${s.gap}` : '✓'}
-                            </span>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
+              <GoalsBulletChart goals={portfolio.goals} />
             </div>
 
           </div>
