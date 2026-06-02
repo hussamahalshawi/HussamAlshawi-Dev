@@ -17,6 +17,10 @@ const analyticsService = {
   getCareerTimeline: () =>
     apiClient.get('/portfolio/analytics/timeline'),
 
+  /** Portfolio comprehensive summary */
+  getPortfolioSummary: () =>
+    apiClient.get('/charts/portfolio/summary'),
+
 };
 
 export default analyticsService;
