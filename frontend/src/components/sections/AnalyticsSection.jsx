@@ -29,6 +29,7 @@ import { useRef, useEffect }      from 'react';            // Hooks for animatio
 import { CHART_COLORS, SKILL_BANDS, ANIMATION } from '../../utils/constants'; // Global tokens
 import { SkeletonKPI }            from '../ui/SkeletonLoader'; // Loading skeleton
 import Badge                       from '../ui/Badge';         // Badge component
+import SankeyChart                 from '../charts/SankeyChart'; // Sankey diagram
 import '../../styles/components/AnalyticsSection.css';        // Section styles
 
 /* ── KPI card configuration ──────────────────────────────────── */
@@ -244,7 +245,23 @@ export default function AnalyticsSection({ analytics, portfolio, portfolioLoadin
         {portfolio && !portfolioLoading && (
           <div className="portfolio-dashboard">
 
-            {/* ROW 1: Skills by Category */}
+            {/* ROW 1: Sankey — Learning → Skills → Goals */}
+            <div className="analytics-glass-panel portfolio-sankey-panel">
+              <div className="analytics-panel__header">
+                <p className="skill-group__title" style={{ margin: 0 }}>
+                  Learning Flow
+                </p>
+                <span className="portfolio-sankey-sub">
+                  Sources → Skills → Goals
+                </span>
+              </div>
+              <SankeyChart
+                skillsWithSources={portfolio.skills_with_sources}
+                goals={portfolio.goals}
+              />
+            </div>
+
+            {/* ROW 2: Skills by Category */}
             <div className="analytics-glass-panel">
               <div className="analytics-panel__header">
                 <p className="skill-group__title" style={{ margin: 0 }}>
