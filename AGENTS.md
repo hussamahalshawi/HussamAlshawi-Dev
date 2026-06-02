@@ -537,4 +537,193 @@ After the redesign to match the sidebar, all cards now use the **same opacity** 
 
 ---
 
-*Last updated: May 30, 2026 — Initial comprehensive reference*
+## 21. Backend Models (MongoEngine ODM)
+
+All models use **MongoEngine** (`mongoengine`) — not SQLAlchemy. Located in `backend/App/models/` and `backend/auth/models/`.
+
+### Profile (`backend/App/models/profile.py`)
+| Field | Type |
+|-------|------|
+| `full_name`, `title`, `bio` | StringField |
+| `email` | EmailField (unique) |
+| `phone`, `address` | StringField |
+| `is_available_for_hire`, `remote_preference` | BooleanField |
+| `primary_avatar` | StringField (Cloudinary URL) |
+| `github_url`, `linkedin_url`, `facebook_url`, `instagram_url`, `medium_url` | URLField |
+| `profile_gallery` | ListField(StringField) |
+| `experience_years`, `overall_score` | FloatField |
+| `last_updated` | DateTimeField |
+
+### Education (`backend/App/models/education.py`)
+`profile` (→Profile), `institution`, `degree`, `major`, `grade`, `description`, `start_date`, `end_date`, `certificate_image`, `education_photos`[], `education_video`, `skills_learned`[]
+
+### Achievement (`backend/App/models/achievement.py`)
+`profile` (→Profile), `title`, `issuing_organization`, `certificate_image`, `evidence_photos`[], `evidence_video`, `evidence_url`, `date_obtained`, `description`, `skills_demonstrated`[]
+
+### Course (`backend/App/models/course.py`)
+`profile` (→Profile), `course_name`, `organization`, `category` (→Category), `project_summary`, `credential_url`, `certificate_image`, `course_images`[], `course_video`, `start_date`, `end_date`, `acquired_skills`[]
+
+### Experience (`backend/App/models/experience.py`)
+`profile` (→Profile), `job_title`, `company_name`, `employment_type` (Full-time/Part-time/Freelance/Contract), `location`, `company_url`, `description`, `start_date`, `end_date`, `is_current`, `certificate_image`, `experience_images`[], `experience_video`, `skills_acquired`[]
+
+### SelfStudy (`backend/App/models/self_study.py`)
+`profile` (→Profile), `title`, `platform_name`, `learning_type` (Book/Course/Article/Workshop/Other), `track` (→Category), `summary`, `source_url`, `cover_image`, `start_date`, `end_date`, `skills_learned`[]
+
+### Project (`backend/App/models/project.py`)
+`profile` (→Profile), `project_name` (unique), `project_type` (Web App/Mobile App/Desktop/CLI Tool/API/Library), `github_url`, `live_url`, `description`, `my_role`, `category` (→Category), `project_images`[], `project_video`, `start_date`, `end_date`, `skills_used`[]
+
+### Goal (`backend/App/models/goal.py`)
+`profile` (→Profile), `goal_name` (unique), `sub_title`, `status` (Planned/In Progress/Achieved/Paused), `priority` (Low/Medium/High/Critical), `target_year` (IntField), `target_score`, `current_score`, `required_skills`[]
+
+### Language (`backend/App/models/language.py`)
+`profile` (→Profile), `language_name`, `proficiency` (Native/Fluent/Advanced/Intermediate/Beginner)
+
+### Feedback (`backend/App/models/feedback.py`)
+`profile` (→Profile), `sender_name`, `sender_email`, `company_name`, `job_title`, `message`, `is_read`, `is_featured`, `submitted_at`
+
+### MediaVault (`backend/App/models/my_media.py`)
+`vault_name` (unique), `description`, `media_links`[] (URLField), `content_type` (Images/Videos/Mixed)
+
+### Category (`backend/App/models/category.py`)
+`name` (unique), `description`
+
+### SkillType (`backend/App/models/skills.py`)
+`name` (unique), `keywords`[] (EmbeddedDocument → Keyword: `name`, `icon`, `color`)
+
+### Skill (`backend/App/models/skills.py`)
+`skill_name` (unique), `skill_type` (→SkillType), `skill_icon`
+
+### ProfileSkill (`backend/App/models/skills.py`)
+`profile` (→Profile), `skill` (→Skill), `score` (0-100 IntField)
+
+### AdminUser (`backend/auth/models/admin_user.py`)
+`username` (unique), `email` (unique), `password_hash`, `is_active`, `is_super_admin`, `failed_attempts` (StringField), `last_login`, `last_failed`
+
+### Relationship Map
+- **All profile-scoped models** → `ReferenceField('Profile')`: Education, Achievement, Course, Experience, SelfStudy, Project, Goal, Language, Feedback, ProfileSkill
+- **Category-linked models**: Course.category, SelfStudy.track, Project.category → `ReferenceField(Category)`
+- **Skill hierarchy**: Skill.skill_type → SkillType; ProfileSkill.skill → Skill; SkillType.keywords[] → Keyword (EmbeddedDocument)
+
+---
+
+## 22. Backend Signals (`backend/App/utils/signals.py`)
+
+Async pipeline on a **background daemon thread** (not blocking the API).
+
+### Components
+| Component | Purpose |
+|-----------|---------|
+| `_pipeline_queue` | FIFO `queue.Queue()` for pipeline sync jobs |
+| `_pending_profiles` | `set()` deduplication — prevents queueing same profile twice |
+| `COOLDOWN_SECONDS = 2` | Waits 2 seconds between jobs to merge rapid saves |
+| `_worker_started` | Guard — ensures only one worker thread |
+
+### 3 Signal Handlers
+| Handler | Signal | Action |
+|---------|--------|--------|
+| `master_pre_save_signal` | `pre_save` | Auto-assigns active Profile to new docs (if `document.profile is None`) |
+| `master_sync_signal` | `post_save` | Clears public cache + enqueues pipeline job |
+| `master_delete_signal` | `post_delete` | Clears public cache + enqueues pipeline job |
+
+### Monitored Models (7)
+`Project`, `Course`, `Experience`, `Education`, `SelfStudy`, `Achievement`, `Goal`
+
+### Pipeline Steps (executed by worker thread in order)
+1. **`SkillService.recalculate_profile_scores(profile)`** — rebuilds all ProfileSkill scores from 6 source models
+2. **`RoadmapService.sync_all_goals(profile)`** — syncs goal progress scores
+3. **`ProfileService.calculate_metrics(profile_id)`** — refreshes `experience_years` and `overall_score`
+
+### Registration
+In `backend/App/__init__.py` step 10 of `create_app()`, `register_signals(app)` is called with `app.app_context()`. The 3 handlers are connected to all 7 monitored models via `pre_save/post_save/post_delete`.
+
+**⚠️ Important**: `SkillService._get_or_create_skill()` temporarily **disconnects** the `post_save` signal from `Skill` model when creating a new Skill doc to prevent recursive pipeline triggers. Reconnected in `finally` block.
+
+---
+
+## 23. Backend Services
+
+### ProfileService (`backend/App/services/profile_service.py`)
+| Method | Purpose |
+|--------|---------|
+| `calculate_metrics(profile_id)` | Calculates `experience_years` (weighted: Experience×1.0, Project×0.4, Education×0.2, SelfStudy×0.3, Course×0.3) and `overall_score` (60% ProfileSkill avg + 40% Goal progress avg) |
+
+### SkillService (`backend/App/services/skill_service.py` — 533 lines)
+| Method | Purpose |
+|--------|---------|
+| `recalculate_profile_scores(profile)` | Main method. Builds score map from 6 source models with weights (Experience=25, Project=20, Course=15, Achievement=12, SelfStudy=10, Education=8). Upserts ProfileSkill, removes stale entries, re-categorizes Skills |
+| `deduplicate_skills()` | Merges duplicate Skill docs caused by case variations |
+| `_get_or_create_skill(name)` | Cache-first lookup; temporarily disconnects signals during new Skill creation |
+| `bulk_update_categories()` | Re-categorizes all Skills via token matching against SkillType keywords |
+
+### RoadmapService (`backend/App/services/roadmap_service.py`)
+| Method | Purpose |
+|--------|---------|
+| `calculate_goal_progress(goal_id)` | Token-matches `required_skills` against ProfileSkill names. Averages across required skills scaled to `target_score`. Auto-promotes status to 'Achieved' |
+| `sync_all_goals(profile)` | Runs `calculate_goal_progress` for all goals (scoped to profile) |
+
+### AuthService (`backend/auth/auth_service.py`)
+| Method | Purpose |
+|--------|---------|
+| `login(username, password)` | Validates credentials, enforces lockout (5 attempts/15 min), creates 8h session |
+| `logout()` | Clears session |
+| `is_authenticated()` | Checks session validity |
+| `login_required(f)` | Decorator for admin route protection |
+
+### Triggering
+The 3 main services (**ProfileService**, **SkillService**, **RoadmapService**) are **only triggered by the Signal Pipeline** — no API route calls them directly. `AuthService` is used by `auth/routes.py`.
+
+---
+
+## 24. Backend Wiring — App Factory (`backend/App/__init__.py`)
+
+`create_app()` executes 10 steps:
+
+| Step | Action |
+|------|--------|
+| 1 | Resolve template directory |
+| 2 | Load config (`config.py` — Development/Production) |
+| 3 | Session security (HTTPOnly, SameSite, 8h expiry) |
+| 4 | CORS (`/api/*` all origins) + Flask-Caching (SimpleCache, 5min TTL, 500 items) |
+| 5 | File logging setup |
+| 6 | MongoDB connection via `init_db()` (Atlas/local) |
+| 7 | Register auth blueprints (`auth_bp`, `cli_bp`) |
+| 8 | Flask-Admin setup (17 views across 5 categories) |
+| 9 | Register ALL API blueprints (16 public + 5 charts + 2 admin + 1 dev) |
+| 10 | Register signals via `register_signals(app)` |
+
+### Entry Point: `backend/run.py`
+- Imports `create_app` from `App`
+- Runs `app.run(host='0.0.0.0', port=5000)` with debug mode
+
+### Route ↔ Service ↔ Model Relationship
+- **Public API routes** use `route_helpers.py` helpers directly (no Service layer): `get_profile()`, `build_token_map()`, `resolve_skill_score()`, `build_skill_payload()`
+- **Services are used ONLY by Signal Pipeline** (not by routes directly) — except `AuthService` used by auth routes
+- **16 public API blueprints** + **5 charts blueprints** + **2 admin blueprints** + **1 dev blueprint** = 24 total API blueprints
+
+### Blueprint File Map
+
+| Blueprint File | Routes |
+|---------------|--------|
+| `routes/public/profile_api.py` | `/api/portfolio/profile` |
+| `routes/public/skills_api.py` | `/api/portfolio/skills`, `/api/portfolio/skills/summary` |
+| `routes/public/projects_api.py` | `/api/portfolio/projects`, `/api/portfolio/projects/<id>` |
+| `routes/public/experience_api.py` | `/api/portfolio/experience`, `/api/portfolio/experience/timeline` |
+| `routes/public/education_api.py` | `/api/portfolio/education` |
+| `routes/public/courses_api.py` | `/api/portfolio/courses` |
+| `routes/public/achievements_api.py` | `/api/portfolio/achievements` |
+| `routes/public/self_study_api.py` | `/api/portfolio/self-study` |
+| `routes/public/goals_api.py` | `/api/portfolio/goals`, `/api/portfolio/goals/stats` |
+| `routes/public/languages_api.py` | `/api/portfolio/languages` |
+| `routes/public/feedback_api.py` | `/api/portfolio/feedback`, `/api/portfolio/feedback/featured` |
+| `routes/charts/skills_charts_api.py` | `/api/charts/skills/*` (radar, distribution, top-bars, heatmap, sources) |
+| `routes/charts/career_charts_api.py` | `/api/charts/career/*` (gantt, employment-mix, projects-treemap, projects-heatmap, stack-frequency, achievements-timeline) |
+| `routes/charts/goals_charts_api.py` | `/api/charts/goals/*` (gauge, status-donut, priority-donut, year-progress, skill-gap, roadmap-timeline) |
+| `routes/charts/learning_charts_api.py` | `/api/charts/learning/*` (courses-by-year, providers, skills-word-cloud, self-study-types, self-study-tracks, learning-vs-output) |
+| `routes/public/analytics_api.py` | `/api/portfolio/analytics`, `/api/portfolio/analytics/tech-stack`, `/api/portfolio/analytics/timeline` |
+| `routes/admin/dashboard_api.py` | `/api/profiles`, `/api/profile/<id>`, `/api/profile-skills`, `/api/goals-dashboard` |
+| `routes/admin/languages_feedback_api.py` | `/api/dashboard-languages`, `/api/dashboard-feedback` |
+| `routes/admin/__init__.py` | `/api/dev/cache-status` |
+
+---
+
+*Last updated: June 2, 2026 — Added signals, services, and backend wiring reference*
