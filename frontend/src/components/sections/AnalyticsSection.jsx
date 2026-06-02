@@ -25,7 +25,7 @@
  * ─────────────────────────────────────────────────────────
  */
 
-import { useRef, useEffect }      from 'react';            // Hooks for animation
+import { useRef, useEffect, useState } from 'react';            // Hooks for animation
 import { CHART_COLORS, SKILL_BANDS, ANIMATION } from '../../utils/constants'; // Global tokens
 import { SkeletonKPI }            from '../ui/SkeletonLoader'; // Loading skeleton
 import Badge                       from '../ui/Badge';         // Badge component
@@ -34,7 +34,17 @@ import RadarSkillsChart            from '../charts/RadarSkillsChart';
 import TimelineAreaChart           from '../charts/TimelineAreaChart';
 import GoalsBulletChart            from '../charts/GoalsBulletChart';
 import SourceTreemapChart          from '../charts/SourceTreemapChart';
+import CareerTab                   from './tabs/CareerTab';
 import '../../styles/components/AnalyticsSection.css';
+
+/* ── Analytics tab configuration ────────────────────────────── */
+const ANALYTICS_TABS = [
+  { id: 'overview', label: 'Overview' },
+  { id: 'career',   label: 'Career Journey' },
+  { id: 'skills',   label: 'Skills Deep Dive' },
+  { id: 'learning', label: 'Learning' },
+  { id: 'goals',    label: 'Goals' },
+];
 
 /* ── KPI card configuration ──────────────────────────────────── */
 /* Each entry maps to a count key in the analytics.counts object */
@@ -61,6 +71,9 @@ const KPI_CONFIG = [
  * @returns {JSX.Element}
  */
 export default function AnalyticsSection({ analytics, portfolio, portfolioLoading, portfolioError }) {
+
+  /* ── Active tab — defaults to Overview ──────────────────────── */
+  const [activeTab, setActiveTab] = useState('overview');
 
   /* ── Loading skeleton — mirrors the real layout ─────────────── */
   if (!analytics) {
@@ -108,216 +121,255 @@ export default function AnalyticsSection({ analytics, portfolio, portfolioLoadin
           </p>
         </div>
 
-        {/* ── KPI bento grid — 8 animated count-up cards ── */}
-        <div
-          className="analytics-kpi-grid"
-          role="list"
-          aria-label="Portfolio statistics"
-        >
-          {KPI_CONFIG.map((kpi, i) => (
-            <AnimatedKpiCard
-              key={kpi.key}
-              label={kpi.label}
-              value={counts[kpi.key] || 0}
-              icon={kpi.icon}
-              color={kpi.color}
-              delay={i * 70}                              /* Stagger each card by 70ms */
-            />
+        {/* ── Tab navigation ── */}
+        <div className="analytics-tabs" role="tablist" aria-label="Analytics sections">
+          {ANALYTICS_TABS.map(tab => (
+            <button
+              key={tab.id}
+              className={`analytics-tab ${activeTab === tab.id ? 'analytics-tab--active' : ''}`}
+              onClick={() => setActiveTab(tab.id)}
+              role="tab"
+              aria-selected={activeTab === tab.id}
+              aria-controls={`analytics-panel-${tab.id}`}
+            >
+              {tab.label}
+            </button>
           ))}
         </div>
 
-        {/* ── Bottom two-column: skills + distribution ── */}
-        <div className="analytics-bottom">
-
-          {/* ── LEFT: Top skills bars panel ── */}
-          <div className="analytics-glass-panel analytics-skills">
-
-            {/* Panel title */}
-            <div className="analytics-panel__header">
-              <p className="skill-group__title" style={{ margin: 0 }}>
-                Top Skills
-              </p>
+        {/* ══════════════════════════════════════════════
+            TAB: Overview
+        ══════════════════════════════════════════════ */}
+        {activeTab === 'overview' && (
+          <>
+            {/* ── KPI bento grid — 8 animated count-up cards ── */}
+            <div
+              className="analytics-kpi-grid"
+              role="list"
+              aria-label="Portfolio statistics"
+            >
+              {KPI_CONFIG.map((kpi, i) => (
+                <AnimatedKpiCard
+                  key={kpi.key}
+                  label={kpi.label}
+                  value={counts[kpi.key] || 0}
+                  icon={kpi.icon}
+                  color={kpi.color}
+                  delay={i * 70}                              /* Stagger each card by 70ms */
+                />
+              ))}
             </div>
 
-            {/* Skill bar rows — top 8 */}
-            <SkillBarList
-              skills={topSkills.slice(0, 8)}
-              colors={CHART_COLORS}
-            />
+            {/* ── Bottom two-column: skills + distribution ── */}
+            <div className="analytics-bottom">
 
-            {/* Empty state */}
-            {topSkills.length === 0 && (
-              <p style={{ color: 'var(--text-muted)', fontSize: '0.82rem' }}>
-                No skills data available.
-              </p>
-            )}
-          </div>
+              {/* ── LEFT: Top skills bars panel ── */}
+              <div className="analytics-glass-panel analytics-skills">
 
-          {/* ── RIGHT: Distribution + category averages panel ── */}
-          <div className="analytics-glass-panel analytics-dist">
-
-            {/* Panel title */}
-            <div className="analytics-panel__header">
-              <p className="skill-group__title" style={{ margin: 0 }}>
-                Proficiency Distribution
-              </p>
-            </div>
-
-            {/* Band rows — loop over SKILL_BANDS constant */}
-            {Object.entries(SKILL_BANDS).map(([key, band]) => {
-              const count = dist[key]     || 0;          // Skills in this band
-              const total = counts.skills || 1;          // Avoid division by zero
-              const pct   = Math.round((count / total) * 100); // Percentage
-
-              return (
-                <div key={key} className="dist-row">
-
-                  {/* Band badge label */}
-                  <div className="dist-row__label">
-                    <Badge
-                      label={band.label}
-                      style={{ color: band.color }}
-                      variant="muted"
-                    />
-                  </div>
-
-                  {/* Animated progress track */}
-                  <div className="dist-row__track">
-                    <div
-                      className="dist-row__fill"
-                      style={{
-                        width:      `${pct}%`,           /* Width = percentage */
-                        background: band.color,          /* Band color */
-                      }}
-                    />
-                  </div>
-
-                  {/* Count number */}
-                  <span className="dist-row__count">{count}</span>
-                </div>
-              );
-            })}
-
-            {/* Divider between distribution and category averages */}
-            <div className="analytics-divider" aria-hidden="true" />
-
-            {/* Category averages list — top 5 */}
-            {radar.length > 0 && (
-              <>
-                <p className="skill-group__title" style={{ marginBottom: 'var(--space-4, 1rem)' }}>
-                  Category Averages
-                </p>
-
-                {radar.slice(0, 5).map((cat, i) => (
-                  <div key={cat.category} className="cat-avg-row">
-                    {/* Category name */}
-                    <span className="cat-avg-row__name">
-                      {cat.category}
-                    </span>
-
-                    {/* Average score — colored by chart palette */}
-                    <span
-                      className="cat-avg-row__score"
-                      style={{ color: CHART_COLORS[i % CHART_COLORS.length] }}
-                    >
-                      {cat.avg_score}
-                    </span>
-                  </div>
-                ))}
-              </>
-            )}
-          </div>
-        </div>
-
-        {/* ── PORTFOLIO DASHBOARD ── */}
-        {portfolioLoading && (
-          <div className="portfolio-dashboard">
-            <div className="analytics-glass-panel" style={{ padding: 'var(--s6)', textAlign: 'center' }}>
-              <p style={{ color: 'var(--text-muted)' }}>Loading portfolio data...</p>
-            </div>
-          </div>
-        )}
-        {portfolioError && !portfolioLoading && (
-          <div className="portfolio-dashboard">
-            <div className="analytics-glass-panel" style={{ padding: 'var(--s6)', textAlign: 'center' }}>
-              <p style={{ color: 'var(--text-muted)' }}>
-                Portfolio dashboard unavailable: {portfolioError}
-              </p>
-            </div>
-          </div>
-        )}
-        {portfolio && !portfolioLoading && (
-          <div className="portfolio-dashboard">
-
-            {/* ROW 1: Sankey — Learning → Skills → Goals */}
-            <div className="analytics-glass-panel portfolio-sankey-panel">
-              <div className="analytics-panel__header">
-                <p className="skill-group__title" style={{ margin: 0 }}>
-                  Learning Flow
-                </p>
-                <span className="portfolio-sankey-sub">
-                  Sources → Skills → Goals
-                </span>
-              </div>
-              <SankeyChart
-                skillsWithSources={portfolio.skills_with_sources}
-                goals={portfolio.goals}
-              />
-            </div>
-
-            {/* ROW 2: Radar + Treemap (2-col) */}
-            <div className="portfolio-row-2col">
-              <div className="analytics-glass-panel portfolio-chart-panel">
+                {/* Panel title */}
                 <div className="analytics-panel__header">
                   <p className="skill-group__title" style={{ margin: 0 }}>
-                    Skills Radar
+                    Top Skills
                   </p>
-                  <span className="portfolio-chart-sub">
-                    {portfolio.skills_by_type?.length || 0} categories
-                  </span>
                 </div>
-                <RadarSkillsChart skillsByType={portfolio.skills_by_type} />
+
+                {/* Skill bar rows — top 8 */}
+                <SkillBarList
+                  skills={topSkills.slice(0, 8)}
+                  colors={CHART_COLORS}
+                />
+
+                {/* Empty state */}
+                {topSkills.length === 0 && (
+                  <p style={{ color: 'var(--text-muted)', fontSize: '0.82rem' }}>
+                    No skills data available.
+                  </p>
+                )}
               </div>
-              <div className="analytics-glass-panel portfolio-chart-panel">
+
+              {/* ── RIGHT: Distribution + category averages panel ── */}
+              <div className="analytics-glass-panel analytics-dist">
+
+                {/* Panel title */}
                 <div className="analytics-panel__header">
                   <p className="skill-group__title" style={{ margin: 0 }}>
-                    Source Weight
+                    Proficiency Distribution
                   </p>
-                  <span className="portfolio-chart-sub">
-                    Skills by learning source
-                  </span>
                 </div>
-                <SourceTreemapChart sourceContribution={portfolio.learning_overview?.source_contribution} />
+
+                {/* Band rows — loop over SKILL_BANDS constant */}
+                {Object.entries(SKILL_BANDS).map(([key, band]) => {
+                  const count = dist[key]     || 0;          // Skills in this band
+                  const total = counts.skills || 1;          // Avoid division by zero
+                  const pct   = Math.round((count / total) * 100); // Percentage
+
+                  return (
+                    <div key={key} className="dist-row">
+
+                      {/* Band badge label */}
+                      <div className="dist-row__label">
+                        <Badge
+                          label={band.label}
+                          style={{ color: band.color }}
+                          variant="muted"
+                        />
+                      </div>
+
+                      {/* Animated progress track */}
+                      <div className="dist-row__track">
+                        <div
+                          className="dist-row__fill"
+                          style={{
+                            width:      `${pct}%`,           /* Width = percentage */
+                            background: band.color,          /* Band color */
+                          }}
+                        />
+                      </div>
+
+                      {/* Count number */}
+                      <span className="dist-row__count">{count}</span>
+                    </div>
+                  );
+                })}
+
+                {/* Divider between distribution and category averages */}
+                <div className="analytics-divider" aria-hidden="true" />
+
+                {/* Category averages list — top 5 */}
+                {radar.length > 0 && (
+                  <>
+                    <p className="skill-group__title" style={{ marginBottom: 'var(--space-4, 1rem)' }}>
+                      Category Averages
+                    </p>
+
+                    {radar.slice(0, 5).map((cat, i) => (
+                      <div key={cat.category} className="cat-avg-row">
+                        {/* Category name */}
+                        <span className="cat-avg-row__name">
+                          {cat.category}
+                        </span>
+
+                        {/* Average score — colored by chart palette */}
+                        <span
+                          className="cat-avg-row__score"
+                          style={{ color: CHART_COLORS[i % CHART_COLORS.length] }}
+                        >
+                          {cat.avg_score}
+                        </span>
+                      </div>
+                    ))}
+                  </>
+                )}
               </div>
             </div>
 
-            {/* ROW 3: Learning Timeline — Stacked Area */}
-            <div className="analytics-glass-panel portfolio-chart-panel">
-              <div className="analytics-panel__header">
-                <p className="skill-group__title" style={{ margin: 0 }}>
-                  Learning Timeline
-                </p>
-                <span className="portfolio-chart-sub">
-                  Skills acquired per year by source
-                </span>
+            {/* ── PORTFOLIO DASHBOARD ── */}
+            {portfolioLoading && (
+              <div className="portfolio-dashboard">
+                <div className="analytics-glass-panel" style={{ padding: 'var(--s6)', textAlign: 'center' }}>
+                  <p style={{ color: 'var(--text-muted)' }}>Loading portfolio data...</p>
+                </div>
               </div>
-              <TimelineAreaChart timeline={portfolio.learning_timeline} />
-            </div>
-
-            {/* ROW 4: Goals — Bullet Chart */}
-            <div className="analytics-glass-panel portfolio-chart-panel">
-              <div className="analytics-panel__header">
-                <p className="skill-group__title" style={{ margin: 0 }}>
-                  Goals Progress
-                </p>
-                <span className="portfolio-chart-sub">
-                  Current vs Target
-                </span>
+            )}
+            {portfolioError && !portfolioLoading && (
+              <div className="portfolio-dashboard">
+                <div className="analytics-glass-panel" style={{ padding: 'var(--s6)', textAlign: 'center' }}>
+                  <p style={{ color: 'var(--text-muted)' }}>
+                    Portfolio dashboard unavailable: {portfolioError}
+                  </p>
+                </div>
               </div>
-              <GoalsBulletChart goals={portfolio.goals} />
-            </div>
+            )}
+            {!portfolio && !portfolioLoading && !portfolioError && (
+              <div className="portfolio-dashboard">
+                <div className="analytics-glass-panel" style={{ padding: 'var(--s6)', textAlign: 'center' }}>
+                  <p style={{ color: 'var(--text-muted)' }}>
+                    No portfolio data available. Check that the backend is running.
+                  </p>
+                </div>
+              </div>
+            )}
+            {portfolio && !portfolioLoading && (
+              <div className="portfolio-dashboard">
 
-          </div>
+                {/* ROW 1: Sankey — Learning → Skills → Goals */}
+                <div className="analytics-glass-panel portfolio-sankey-panel">
+                  <div className="analytics-panel__header">
+                    <p className="skill-group__title" style={{ margin: 0 }}>
+                      Learning Flow
+                    </p>
+                    <span className="portfolio-sankey-sub">
+                      Sources → Skills → Goals
+                    </span>
+                  </div>
+                  <SankeyChart
+                    skillsWithSources={portfolio.skills_with_sources}
+                    goals={portfolio.goals}
+                  />
+                </div>
+
+                {/* ROW 2: Radar + Treemap (2-col) */}
+                <div className="portfolio-row-2col">
+                  <div className="analytics-glass-panel portfolio-chart-panel">
+                    <div className="analytics-panel__header">
+                      <p className="skill-group__title" style={{ margin: 0 }}>
+                        Skills Radar
+                      </p>
+                      <span className="portfolio-chart-sub">
+                        {portfolio.skills_by_type?.length || 0} categories
+                      </span>
+                    </div>
+                    <RadarSkillsChart skillsByType={portfolio.skills_by_type} />
+                  </div>
+                  <div className="analytics-glass-panel portfolio-chart-panel">
+                    <div className="analytics-panel__header">
+                      <p className="skill-group__title" style={{ margin: 0 }}>
+                        Source Weight
+                      </p>
+                      <span className="portfolio-chart-sub">
+                        Skills by learning source
+                      </span>
+                    </div>
+                    <SourceTreemapChart sourceContribution={portfolio.learning_overview?.source_contribution} />
+                  </div>
+                </div>
+
+                {/* ROW 3: Learning Timeline — Stacked Area */}
+                <div className="analytics-glass-panel portfolio-chart-panel">
+                  <div className="analytics-panel__header">
+                    <p className="skill-group__title" style={{ margin: 0 }}>
+                      Learning Timeline
+                    </p>
+                    <span className="portfolio-chart-sub">
+                      Skills acquired per year by source
+                    </span>
+                  </div>
+                  <TimelineAreaChart timeline={portfolio.learning_timeline} />
+                </div>
+
+                {/* ROW 4: Goals — Bullet Chart */}
+                <div className="analytics-glass-panel portfolio-chart-panel">
+                  <div className="analytics-panel__header">
+                    <p className="skill-group__title" style={{ margin: 0 }}>
+                      Goals Progress
+                    </p>
+                    <span className="portfolio-chart-sub">
+                      Current vs Target
+                    </span>
+                  </div>
+                  <GoalsBulletChart goals={portfolio.goals} />
+                </div>
+
+              </div>
+            )}
+          </>
+        )}
+
+        {/* ══════════════════════════════════════════════
+            TAB: Career Journey
+        ══════════════════════════════════════════════ */}
+        {activeTab === 'career' && (
+          <CareerTab />
         )}
 
       </div>
