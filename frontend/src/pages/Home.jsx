@@ -1,13 +1,15 @@
 /**
  * Home.jsx — Main Portfolio Dashboard Page
  * ─────────────────────────────────────────────────────────
- * Section visibility is controlled by sidebar nav clicks only.
+ * Section visibility is controlled by sidebar nav clicks + URL hash.
+ * Each section has its own hash (#overview, #analytics, etc.)
+ * so page reload preserves the active section.
  * No scroll between sections — each section shows/hides via CSS.
  * Data loads once on mount and stays alive (keep-alive pattern).
  * ─────────────────────────────────────────────────────────
  */
 
-import { useState }                             from 'react';
+import { useState, useEffect }                  from 'react';
 import { usePortfolioData }                     from '../hooks/usePortfolioData';
 import { usePortfolio }                         from '../hooks/usePortfolio';
 import DashboardLayout                          from '../components/layout/DashboardLayout';
@@ -35,6 +37,12 @@ const SECTION_IDS = [
 /* ── Default active section on first load ───────────────────── */
 const DEFAULT_SECTION = 'overview';
 
+/* ── Read active section from URL hash ──────────────────────── */
+function getSectionFromHash() {
+  const hash = window.location.hash.replace('#', '');
+  return SECTION_IDS.includes(hash) ? hash : DEFAULT_SECTION;
+}
+
 /* ── Offline banner ─────────────────────────────────────────── */
 function OfflineBanner({ message }) {
   return (
@@ -58,8 +66,15 @@ export default function Home() {
   const { data, loading, error, progress } = usePortfolioData();
   const { portfolioData, loading: portfolioLoading, error: portfolioError } = usePortfolio();
 
-  /* ── Active section — driven by sidebar clicks only ────── */
-  const [activeSection, setActiveSection] = useState(DEFAULT_SECTION);
+  /* ── Active section — driven by sidebar clicks + URL hash ─ */
+  const [activeSection, setActiveSection] = useState(getSectionFromHash);
+
+  /* ── Sync activeSection with URL hash changes ────────────── */
+  useEffect(() => {
+    const onHashChange = () => setActiveSection(getSectionFromHash());
+    window.addEventListener('hashchange', onHashChange);
+    return () => window.removeEventListener('hashchange', onHashChange);
+  }, []);
 
   /* ── Show loader while phase 1 data is loading ──────────── */
   if (loading) {

@@ -123,8 +123,7 @@ export default function DashboardLayout({ children, activeSection = '', onSectio
         <a
           href="#overview"
           className="sidebar__logo"
-          onClick={(e) => {
-            e.preventDefault();                                 // Prevent default href
+          onClick={() => {
             closeOnMobile();                                    // Close on mobile
             onSectionChange('overview');                        // Navigate to overview
           }}
@@ -158,8 +157,7 @@ export default function DashboardLayout({ children, activeSection = '', onSectio
                 href={`#${item.id}`}
                 className={`nav-item ${isActive ? 'nav-item--active' : ''}`}
                 aria-current={isActive ? 'page' : undefined}
-                onClick={(e) => {
-                  e.preventDefault();                           // Prevent page jump
+                onClick={() => {
                   onSectionChange(item.id);                    // Update active section
                   closeOnMobile();                             // Close sidebar on mobile
                 }}
