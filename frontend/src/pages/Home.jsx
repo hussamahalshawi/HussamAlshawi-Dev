@@ -9,6 +9,7 @@
 
 import { useState }                             from 'react';
 import { usePortfolioData }                     from '../hooks/usePortfolioData';
+import { usePortfolio }                         from '../hooks/usePortfolio';
 import DashboardLayout                          from '../components/layout/DashboardLayout';
 import OverviewSection                          from '../components/sections/OverviewSection';
 import AnalyticsSection                         from '../components/sections/AnalyticsSection';
@@ -55,6 +56,7 @@ export default function Home() {
 
   /* ── Portfolio data — loads once, stays alive ───────────── */
   const { data, loading, error, progress } = usePortfolioData();
+  const { portfolioData, loading: portfolioLoading, error: portfolioError } = usePortfolio();
 
   /* ── Active section — driven by sidebar clicks only ────── */
   const [activeSection, setActiveSection] = useState(DEFAULT_SECTION);
@@ -160,7 +162,7 @@ export default function Home() {
         aria-label="Analytics"
         style={{ display: activeSection === 'analytics' ? 'block' : 'none' }}
       >
-        <AnalyticsSection analytics={data.analytics} />
+        <AnalyticsSection analytics={data.analytics} portfolio={portfolioData} portfolioLoading={portfolioLoading} portfolioError={portfolioError} />
       </div>
 
       {/* SECTION 9 — Goals */}
