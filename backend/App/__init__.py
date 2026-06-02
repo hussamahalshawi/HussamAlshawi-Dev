@@ -171,6 +171,7 @@ def create_app():
     from App.routes.charts.learning_charts_api import learning_charts_bp  # /api/charts/learning/*
     from App.routes.charts.goals_charts_api import goals_charts_bp  # /api/charts/goals/*
     from App.routes.charts.analytics_api import analytics_public_bp  # /api/portfolio/analytics/*
+    from App.routes.charts.portfolio_charts_api import portfolio_charts_bp  # /api/charts/portfolio/*
 
     # ── Register all blueprints ────────────────────────────────────────────────
     app.register_blueprint(main_bp, url_prefix='/api')  # Dev routes
@@ -191,6 +192,7 @@ def create_app():
     app.register_blueprint(learning_charts_bp, url_prefix='/api')  # Charts: learning
     app.register_blueprint(goals_charts_bp, url_prefix='/api')  # Charts: goals
     app.register_blueprint(analytics_public_bp, url_prefix='/api')  # Charts: analytics
+    app.register_blueprint(portfolio_charts_bp, url_prefix='/api')  # Charts: portfolio
 
     # ── Suppress favicon 404 noise in logs ────────────────────────────────────
     from flask import send_file                                               # File serving utility
