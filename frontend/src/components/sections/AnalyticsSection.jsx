@@ -55,7 +55,7 @@ const KPI_CONFIG = [
  *
  * @returns {JSX.Element}
  */
-export default function AnalyticsSection({ analytics }) {
+export default function AnalyticsSection({ analytics, portfolio, portfolioLoading, portfolioError }) {
 
   /* ── Loading skeleton — mirrors the real layout ─────────────── */
   if (!analytics) {
@@ -223,6 +223,172 @@ export default function AnalyticsSection({ analytics }) {
             )}
           </div>
         </div>
+
+        {/* ── PORTFOLIO DASHBOARD ── */}
+        {portfolioLoading && (
+          <div className="portfolio-dashboard">
+            <div className="analytics-glass-panel" style={{ padding: 'var(--s6)', textAlign: 'center' }}>
+              <p style={{ color: 'var(--text-muted)' }}>Loading portfolio data...</p>
+            </div>
+          </div>
+        )}
+        {portfolioError && !portfolioLoading && (
+          <div className="portfolio-dashboard">
+            <div className="analytics-glass-panel" style={{ padding: 'var(--s6)', textAlign: 'center' }}>
+              <p style={{ color: 'var(--text-muted)' }}>
+                Portfolio dashboard unavailable: {portfolioError}
+              </p>
+            </div>
+          </div>
+        )}
+        {portfolio && !portfolioLoading && (
+          <div className="portfolio-dashboard">
+
+            {/* ROW 1: Skills by Category */}
+            <div className="analytics-glass-panel">
+              <div className="analytics-panel__header">
+                <p className="skill-group__title" style={{ margin: 0 }}>
+                  Skills by Category
+                </p>
+              </div>
+              <div className="portfolio-radar-grid">
+                {portfolio.skills_by_type?.map(cat => (
+                  <div key={cat.type} className="portfolio-cat-card">
+                    <div className="portfolio-cat__header">
+                      <span className="portfolio-cat__name">{cat.type}</span>
+                      <span className="portfolio-cat__avg">{cat.avg_score}</span>
+                      <span className="portfolio-cat__count">{cat.count} skills</span>
+                    </div>
+                    <div className="portfolio-cat__skills">
+                      {cat.skills.slice(0, 6).map(s => (
+                        <div key={s.skill_name} className="portfolio-skill-row">
+                          <span className="portfolio-skill__name">{s.skill_name}</span>
+                          <div className="portfolio-skill__track">
+                            <div
+                              className="portfolio-skill__fill"
+                              style={{ width: `${s.score}%`, background: s.color }}
+                            />
+                          </div>
+                          <span className="portfolio-skill__score">{s.score}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* ROW 2: Source Contribution */}
+            <div className="analytics-glass-panel">
+              <div className="analytics-panel__header">
+                <p className="skill-group__title" style={{ margin: 0 }}>
+                  Learning Source Contribution
+                </p>
+              </div>
+              <div className="portfolio-source-grid">
+                {portfolio.learning_overview?.source_contribution?.map(src => (
+                  <div key={src.source} className="portfolio-source-card">
+                    <div className="portfolio-source__label">
+                      {src.source.replace('_', ' ')}
+                    </div>
+                    <div className="portfolio-source__num">{src.unique_skills}</div>
+                    <div className="portfolio-source__sub">unique skills</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* ROW 3: Learning Timeline */}
+            <div className="analytics-glass-panel">
+              <div className="analytics-panel__header">
+                <p className="skill-group__title" style={{ margin: 0 }}>
+                  Learning Timeline
+                </p>
+              </div>
+              <div className="portfolio-timeline">
+                {portfolio.learning_timeline?.slice().reverse().map(year => (
+                  <div key={year.year} className="portfolio-year-row">
+                    <div className="portfolio-year__label">{year.year}</div>
+                    <div className="portfolio-year__bars">
+                      <div className="portfolio-year__stat"
+                        title={`${year.courses.length} courses`}>
+                        <span>C</span> {year.courses.length}
+                      </div>
+                      <div className="portfolio-year__stat"
+                        title={`${year.self_studies.length} self studies`}>
+                        <span>S</span> {year.self_studies.length}
+                      </div>
+                      <div className="portfolio-year__stat"
+                        title={`${year.educations.length} education`}>
+                        <span>E</span> {year.educations.length}
+                      </div>
+                      <div className="portfolio-year__stat portfolio-year__stat--skills"
+                        title={`${year.new_skills_count} new skills`}>
+                        +{year.new_skills_count} skills
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* ROW 4: Goals Progress */}
+            <div className="analytics-glass-panel">
+              <div className="analytics-panel__header">
+                <p className="skill-group__title" style={{ margin: 0 }}>
+                  Goals Progress
+                </p>
+              </div>
+              <div className="portfolio-goals">
+                {portfolio.goals?.map(g => (
+                  <div key={g.goal_name} className="portfolio-goal-card">
+                    <div className="portfolio-goal__header">
+                      <span className="portfolio-goal__name">{g.goal_name}</span>
+                      <span
+                        className={`portfolio-goal__status portfolio-goal__status--${g.status?.toLowerCase().replace(/\s+/g, '-')}`}
+                      >
+                        {g.status}
+                      </span>
+                    </div>
+                    <div className="portfolio-goal__progress">
+                      <div className="portfolio-goal__track">
+                        <div
+                          className="portfolio-goal__fill"
+                          style={{ width: `${g.progress_pct}%` }}
+                        />
+                      </div>
+                      <span className="portfolio-goal__pct">{g.progress_pct}%</span>
+                    </div>
+                    {g.skills_needed?.length > 0 && (
+                      <div className="portfolio-goal__gaps">
+                        {g.skills_needed.slice(0, 4).map(s => (
+                          <div key={s.name} className="portfolio-gap-row">
+                            <span>{s.name}</span>
+                            <div className="portfolio-gap__track">
+                              <div
+                                className="portfolio-gap__fill"
+                                style={{ width: `${(s.current / Math.max(s.target, 1)) * 100}%` }}
+                              />
+                              <div
+                                className="portfolio-gap__target"
+                                style={{ left: `${(s.target / 100) * 100}%` }}
+                              />
+                            </div>
+                            <span className="portfolio-gap__diff">
+                              {s.gap > 0 ? `-${s.gap}` : '✓'}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+
+          </div>
+        )}
+
       </div>
     </section>
   );
