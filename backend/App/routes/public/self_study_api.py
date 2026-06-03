@@ -64,11 +64,11 @@ def get_self_study():
         if not profile:
             return jsonify({'error': 'Profile not found'}), 404        # Guard: no profile configured
 
-        records     = SelfStudy.objects(profile=profile).order_by('-created_at').select_related().only(
+        records     = SelfStudy.objects(profile=profile).order_by('-created_at').only(
     'title', 'platform_name', 'learning_type', 'track',
     'summary', 'source_url', 'cover_image',
     'start_date', 'end_date', 'skills_learned',
-)
+).select_related()
         type_filter = request.args.get('type', '').strip()             # Optional type filter
 
         result   = []                                                  # Items to return
