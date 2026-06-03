@@ -58,7 +58,7 @@ def skills_radar():
         if not profile:
             return jsonify({'error': 'Profile not found'}), 404
 
-        raw = ProfileSkill.objects(profile=profile).select_related().only('skill', 'score')
+        raw = ProfileSkill.objects(profile=profile).only('skill', 'score').select_related()
 
         # Build category → scores map
         cat_map = {}
@@ -211,7 +211,7 @@ def skills_top_bars():
         # Clamp limit between 1 and 30
         limit = min(max(int(request.args.get('limit', 12)), 1), 30)
 
-        raw     = ProfileSkill.objects(profile=profile).select_related().only('skill', 'score')
+        raw     = ProfileSkill.objects(profile=profile).only('skill', 'score').select_related()
         skills  = [p for p in (build_skill_payload(ps) for ps in raw) if p]
         skills.sort(key=lambda x: -x['score'])                     # Highest score first
         top     = skills[:limit]
@@ -256,7 +256,7 @@ def skills_heatmap():
         if not profile:
             return jsonify({'error': 'Profile not found'}), 404
 
-        raw    = ProfileSkill.objects(profile=profile).select_related().only('skill', 'score')
+        raw    = ProfileSkill.objects(profile=profile).only('skill', 'score').select_related()
         skills = [p for p in (build_skill_payload(ps) for ps in raw) if p]
 
         # Score band definitions
@@ -426,7 +426,7 @@ def skills_domain_coverage():
             return jsonify({'error': 'Profile not found'}), 404
 
         # Step 1: Build skill_name → category lookup from all Skill docs
-        all_skills = Skill.objects().select_related()
+        all_skills = Skill.objects().only('skill_name', 'skill_type', 'skill_icon').select_related()
         skill_to_cat = {}
         for skill in all_skills:
             if skill.skill_name and skill.skill_type:
@@ -490,14 +490,14 @@ def skills_domain_coverage():
             return {cat: round((cats.get(cat, 0) / max_val) * 100) for cat in sorted_categories}
 
         normalized_scores = {}
-        for label, _ in SOURCE_CONFIG:
+        for _, _, label, _ in SOURCE_CONFIG:
             normalized_scores[label] = normalize_counts(source_cat_counts.get(label, {}))
 
         # Step 6: Compute Combined — weighted average of all sources
         combined_scores = {}
         for cat in sorted_categories:
             weighted_sum = 0
-            for label, _ in SOURCE_CONFIG:
+            for _, _, label, _ in SOURCE_CONFIG:
                 score = normalized_scores[label].get(cat, 0)
                 weighted_sum += score * WEIGHTS.get(label, 1)
             combined_scores[cat] = round(weighted_sum / TOTAL_WEIGHT)
