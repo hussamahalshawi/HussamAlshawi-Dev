@@ -249,7 +249,7 @@ def get_portfolio_skills():
         if not profile:
             return jsonify({'error': 'Profile not found'}), 404
 
-        profile_skills = list(ProfileSkill.objects(profile=profile).select_related().only('skill', 'score'))
+        profile_skills = list(ProfileSkill.objects(profile=profile).only('skill', 'score').select_related())
         goals = list(Goal.objects(profile=profile).only('goal_name', 'required_skills'))
         source_map = _build_source_map(profile)
         goal_skill_map = _build_goal_skill_map(goals)
@@ -257,7 +257,7 @@ def get_portfolio_skills():
 
         return jsonify({'skills_by_type': skills_by_type, 'skills_with_sources': skills_with_sources}), 200
     except Exception as e:
-        logging.error(f'[PORTFOLIO CHARTS] /charts/portfolio/skills failed: {str(e)}')
+        logging.error(f'[PORTFOLIO CHARTS] /charts/portfolio/skills failed: {str(e)}', exc_info=True)
         return jsonify({'error': str(e)}), 500
 
 
@@ -273,7 +273,7 @@ def get_portfolio_goals():
         if not profile:
             return jsonify({'error': 'Profile not found'}), 404
 
-        profile_skills = list(ProfileSkill.objects(profile=profile).select_related().only('skill', 'score'))
+        profile_skills = list(ProfileSkill.objects(profile=profile).only('skill', 'score').select_related())
         goals = list(Goal.objects(profile=profile).only(
             'goal_name', 'sub_title', 'status', 'priority', 'target_year',
             'target_score', 'current_score', 'required_skills',
@@ -348,7 +348,7 @@ def get_portfolio_summary():
         if not profile:
             return jsonify({'error': 'Profile not found'}), 404
 
-        profile_skills = list(ProfileSkill.objects(profile=profile).select_related().only('skill', 'score'))
+        profile_skills = list(ProfileSkill.objects(profile=profile).only('skill', 'score').select_related())
         goals = list(Goal.objects(profile=profile).only(
             'goal_name', 'sub_title', 'status', 'priority', 'target_year',
             'target_score', 'current_score', 'required_skills',
