@@ -356,7 +356,7 @@ def self_study_tracks():
 
         track_map = defaultdict(list)                              # {track_name: [items]}
 
-        for item in SelfStudy.objects(profile=profile).select_related().only('track', 'title', 'learning_type'):
+        for item in SelfStudy.objects(profile=profile).only('track', 'title', 'learning_type').select_related():
             # Resolve category/track name safely
             track = 'Uncategorized'
             if item.track:
@@ -429,7 +429,7 @@ def learning_vs_output():
         # Accumulate learning counts per category (from Courses)
         learning_map = defaultdict(int)                            # {cat: learning_count}
 
-        for course in Course.objects(profile=profile).select_related().only('category', 'organization', 'end_date', 'acquired_skills'):
+        for course in Course.objects(profile=profile).only('category', 'organization', 'end_date', 'acquired_skills').select_related():
             cat = 'Uncategorized'
             if course.category:
                 try:
@@ -438,7 +438,7 @@ def learning_vs_output():
                     pass
             learning_map[cat] += 1
 
-        for item in SelfStudy.objects(profile=profile).select_related().only('track'):
+        for item in SelfStudy.objects(profile=profile).only('track').select_related():
             cat = 'Uncategorized'
             if item.track:
                 try:
@@ -450,7 +450,7 @@ def learning_vs_output():
         # Accumulate project counts per category
         project_map = defaultdict(int)                             # {cat: project_count}
 
-        for proj in Project.objects(profile=profile).select_related().only('category', 'project_name', 'project_type'):
+        for proj in Project.objects(profile=profile).only('category', 'project_name', 'project_type').select_related():
             cat = 'Uncategorized'
             if proj.category:
                 try:
