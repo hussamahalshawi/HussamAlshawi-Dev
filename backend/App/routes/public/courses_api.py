@@ -70,11 +70,11 @@ def get_courses():
         if not profile:
             return jsonify({'error': 'Profile not found'}), 404        # Guard: no profile configured
 
-        courses_qs  = Course.objects(profile=profile).order_by('-end_date').select_related().only(
+        courses_qs  = Course.objects(profile=profile).order_by('-end_date').only(
     'course_name', 'organization', 'category', 'project_summary', 'credential_url',
     'start_date', 'end_date', 'acquired_skills',
     'certificate_image', 'course_images', 'course_video',
-)
+).select_related()
         cat_filter  = request.args.get('category', '').strip()         # Optional category filter
         limit       = request.args.get('limit', type=int)              # Optional result limit
 
