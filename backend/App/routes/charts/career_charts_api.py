@@ -276,9 +276,9 @@ def projects_treemap():
         cat_map  = {}                                              # {category: {count, projects}}
         type_map = {}                                              # {type: count}
 
-        for proj in Project.objects(profile=profile).select_related().only(
+        for proj in Project.objects(profile=profile).only(
             'category', 'project_type', 'project_name',
-        ):
+        ).select_related():
             # Resolve category name safely
             cat = 'Uncategorized'
             if proj.category:
