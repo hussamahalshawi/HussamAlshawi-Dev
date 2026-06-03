@@ -82,7 +82,7 @@ export function usePortfolioData() {
   /* ── Load ALL cached data synchronously as initial state ─────── */
   const [data, setData] = useState(() =>
     API_TASKS.reduce((acc, task) => {
-      acc[task.key] = loadFromCacheAny(CACHE_KEYS[task.key]);
+      acc[task.key] = loadFromCacheAny(CACHE_KEYS[task.key]) ?? null;
       return acc;
     }, {})
   );
@@ -90,9 +90,10 @@ export function usePortfolioData() {
   /* ── Show loader only if Phase 1 cache is missing ────────────── */
   const [loading, setLoading] = useState(() => {
     const phase1Tasks = API_TASKS.filter(t => t.phase === 1);
-    const allCached   = phase1Tasks.every(
-      t => localStorage.getItem(CACHE_KEYS[t.key]) !== null
-    );
+    const allCached   = phase1Tasks.every(t => {
+      const cached = loadFromCacheAny(CACHE_KEYS[t.key]);
+      return cached !== null;
+    });
     return !allCached;
   });
 
