@@ -13,7 +13,7 @@ export default function GoalsTab() {
     if (!data?.statusDonut?.series) return [];
     return data.statusDonut.series.map(s => ({
       label: s.label || s.status,
-      value: s.count || s.value,
+      value: Number(s.count ?? s.value) || 0,
       color: s.color || CHART_COLORS[0],
     }));
   }, [data]);
@@ -22,7 +22,7 @@ export default function GoalsTab() {
     if (!data?.priorityDonut?.series) return [];
     return data.priorityDonut.series.map(s => ({
       label: s.label || s.priority,
-      value: s.count || s.value,
+      value: Number(s.count ?? s.value) || 0,
       color: s.color || CHART_COLORS[1],
     }));
   }, [data]);
@@ -31,7 +31,7 @@ export default function GoalsTab() {
     if (!data?.yearProgress?.series) return [];
     return data.yearProgress.series.map(s => ({
       label: String(s.year || s.label),
-      value: s.avg_progress || s.value || 0,
+      value: Number(s.avg_progress ?? s.value) || 0,
       color: CHART_COLORS[data.yearProgress.years.indexOf(s.year) % CHART_COLORS.length],
     }));
   }, [data]);
