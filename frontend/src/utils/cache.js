@@ -6,6 +6,9 @@
  * ─────────────────────────────────────────────────────────
  */
 
+/* ── Current cache schema version ──────────────────────────────── */
+export const CACHE_VERSION = 2;       // Increment when data shape changes
+
 /* ── Cache keys per API ──────────────────────────────────────────── */
 export const CACHE_KEYS = {
   profile:       'ha_cache_profile',
@@ -65,6 +68,7 @@ export function saveToCache(key, data) {
       data,                                                    // Full API response
       savedAt: Date.now(),                                     // When saved
       hash:    hashData(data),                                 // Fingerprint of data
+      version: CACHE_VERSION,                                  // Schema version
     };
     localStorage.setItem(key, JSON.stringify(entry));          // Serialize and store
     console.log(`[Cache] ✓ Saved ${key} | hash: ${entry.hash}`);
@@ -83,9 +87,16 @@ export function loadFromCacheAny(key) {
   try {
     const raw = localStorage.getItem(key);                     // Read raw string
     if (!raw) return null;                                     // Nothing cached yet
-
     const entry = JSON.parse(raw);                             // Parse JSON
-    return entry.data;                                         // Return data only
+
+      /* Version check — ignore caches from older schema formats */
+      if (entry.version !== CACHE_VERSION) {
+        console.log(`[Cache] ↺ ${key} version ${entry.version} → ${CACHE_VERSION}, ignoring`);
+        localStorage.removeItem(key);
+        return null;
+      }
+
+      return entry.data;                                         // Return data only
   } catch (err) {
     console.warn(`[Cache] Failed to read ${key}:`, err);
     localStorage.removeItem(key);                              // Remove corrupted entry
