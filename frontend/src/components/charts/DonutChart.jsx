@@ -142,7 +142,7 @@ export default function DonutChart({
           />
 
           {/* Colored segments — one per data item */}
-          {segments.map((seg, i) => (
+          {segments.length > 0 ? segments.map((seg, i) => (
             <circle
               key={`seg-${i}`}
               cx={cx}
@@ -152,7 +152,7 @@ export default function DonutChart({
               stroke={seg.color}                                     // Segment color from data
               strokeWidth={sizeConf.stroke}
               strokeDasharray={`${visible ? seg.dashArr : 0} ${2 * Math.PI * radius}`} // Animate from 0
-              strokeDashoffset={seg.dashOff}                         // Start position
+              strokeDashoffset={isFinite(seg.dashOff) ? seg.dashOff : 0} // Safe fallback
               strokeLinecap="butt"                                   // Clean segment edges
               style={{
                 transition: visible
@@ -161,7 +161,18 @@ export default function DonutChart({
               }}
               aria-label={`${seg.label}: ${seg.displayPct}%`}
             />
-          ))}
+          )) : (
+            <circle
+              cx={cx}
+              cy={cy}
+              r={radius}
+              fill="none"
+              stroke={theme.track}
+              strokeWidth={sizeConf.stroke}
+              strokeDasharray="0 1000"
+              strokeDashoffset={0}
+            />
+          )}
         </svg>
 
         {/* ── Center overlay — absolute over SVG ── */}
