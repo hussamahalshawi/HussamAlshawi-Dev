@@ -3,7 +3,12 @@ import os                                                             # OS envir
 from datetime import timedelta                                        # Session duration configuration
 from flask import Flask                                               # Core Flask framework
 from flask_cors import CORS                                           # Cross-Origin Resource Sharing
-from flask_admin import Admin           # Admin dashboard framework
+try:
+    from flask_admin import Admin           # Admin dashboard framework
+    _flask_admin_available = True
+except ImportError:
+    _flask_admin_available = False
+    Admin = None
 from flask_caching import Cache  # Server-side RAM cache library
 
 cache = Cache()  # Create instance — attached to app later
@@ -29,24 +34,25 @@ from App.models.goal        import Goal                               # Career r
 from App.models.language import Language                      # Human language proficiency model
 from App.models.feedback import Feedback                      # Visitor feedback and testimonials model
 
-# --- ADMIN VIEW IMPORTS ---
-from admin_views.my_media_view       import MediaVaultAdminView       # Media gallery view
-from admin_views.profile_view        import ProfileAdminView          # Identity hub view
-from admin_views.education_view      import EducationAdminView        # Academic records view
-from admin_views.achievement_view    import AchievementAdminView      # Achievements view
-from admin_views.category_view       import CategoryAdminView         # Category management view
-from admin_views.course_view         import CourseAdminView           # Course records view
-from admin_views.experience_view     import ExperienceAdminView       # Career history view
-from admin_views.self_study_view     import SelfStudyAdminView        # Self-study tracker view
-from admin_views.project_view        import ProjectAdminView          # Project portfolio view
-from admin_views.goal_view           import GoalAdminView             # Career roadmap view
-from admin_views.skill_view          import SkillAdminView, SkillTypeAdminView  # Skill management views
-from admin_views.profile_skill_view  import ProfileSkillAdminView     # Read-only skill scores view
-from admin_views.language_view import LanguageAdminView       # Language management view
-from admin_views.feedback_view import FeedbackAdminView       # Feedback inbox and testimonials view
+# --- ADMIN VIEW IMPORTS (lazy — only if Flask-Admin is available) ---
+if _flask_admin_available:
+    from admin_views.my_media_view       import MediaVaultAdminView       # Media gallery view
+    from admin_views.profile_view        import ProfileAdminView          # Identity hub view
+    from admin_views.education_view      import EducationAdminView        # Academic records view
+    from admin_views.achievement_view    import AchievementAdminView      # Achievements view
+    from admin_views.category_view       import CategoryAdminView         # Category management view
+    from admin_views.course_view         import CourseAdminView           # Course records view
+    from admin_views.experience_view     import ExperienceAdminView       # Career history view
+    from admin_views.self_study_view     import SelfStudyAdminView        # Self-study tracker view
+    from admin_views.project_view        import ProjectAdminView          # Project portfolio view
+    from admin_views.goal_view           import GoalAdminView             # Career roadmap view
+    from admin_views.skill_view          import SkillAdminView, SkillTypeAdminView  # Skill management views
+    from admin_views.profile_skill_view  import ProfileSkillAdminView     # Read-only skill scores view
+    from admin_views.language_view import LanguageAdminView       # Language management view
+    from admin_views.feedback_view import FeedbackAdminView       # Feedback inbox and testimonials view
+    from admin_views.dashboard_view import DashboardIndexView             # New analytics dashboard index
 
 # --- AUTH IMPORTS ---
-from admin_views.dashboard_view import DashboardIndexView             # New analytics dashboard index
 from auth.routes       import auth_bp                                 # Login/logout route blueprint
 from auth.cli          import cli_bp                                  # CLI commands (create-admin)
 
@@ -119,34 +125,37 @@ def create_app():
     # -------------------------------------------------------------------------
     # STEP 8: FLASK-ADMIN (Protected by SecureAdminIndexView)
     # -------------------------------------------------------------------------
-    admin = Admin(
-        app,
-        name='HussamDev Admin',
-        index_view=DashboardIndexView()  # ← Dashboard replaces blank index
-    )
+    if _flask_admin_available:
+        admin = Admin(
+            app,
+            name='HussamDev Admin',
+            index_view=DashboardIndexView()  # ← Dashboard replaces blank index
+        )
 
-    # Identity & Profile
-    admin.add_view(ProfileAdminView(Profile,     name='Personal Profile', category='Identity'))
-    admin.add_view(EducationAdminView(Education, name='Education',        category='Identity'))
-    admin.add_view(SelfStudyAdminView(SelfStudy, name='Self Study',       category='Identity'))
-    admin.add_view(GoalAdminView(Goal,           name='Roadmap',          category='Identity'))
-    admin.add_view(LanguageAdminView(Language, name='Languages', category='Identity'))
-    admin.add_view(FeedbackAdminView(Feedback, name='Feedback Inbox', category='Engagement'))
+        # Identity & Profile
+        admin.add_view(ProfileAdminView(Profile,     name='Personal Profile', category='Identity'))
+        admin.add_view(EducationAdminView(Education, name='Education',        category='Identity'))
+        admin.add_view(SelfStudyAdminView(SelfStudy, name='Self Study',       category='Identity'))
+        admin.add_view(GoalAdminView(Goal,           name='Roadmap',          category='Identity'))
+        admin.add_view(LanguageAdminView(Language, name='Languages', category='Identity'))
+        admin.add_view(FeedbackAdminView(Feedback, name='Feedback Inbox', category='Engagement'))
 
-    # Career & Professional
-    admin.add_view(ExperienceAdminView(Experience,   name='Experience',   category='Professional'))
-    admin.add_view(AchievementAdminView(Achievement, name='Achievements', category='Professional'))
-    admin.add_view(CourseAdminView(Course,           name='Courses',      category='Professional'))
+        # Career & Professional
+        admin.add_view(ExperienceAdminView(Experience,   name='Experience',   category='Professional'))
+        admin.add_view(AchievementAdminView(Achievement, name='Achievements', category='Professional'))
+        admin.add_view(CourseAdminView(Course,           name='Courses',      category='Professional'))
 
-    # Technical Skills
-    admin.add_view(SkillTypeAdminView(SkillType,       name='Skill Types',      category='Skills'))
-    admin.add_view(SkillAdminView(Skill,               name='Skill Dictionary', category='Skills'))
-    admin.add_view(ProfileSkillAdminView(ProfileSkill, name='Skill Scores',     category='Skills'))
+        # Technical Skills
+        admin.add_view(SkillTypeAdminView(SkillType,       name='Skill Types',      category='Skills'))
+        admin.add_view(SkillAdminView(Skill,               name='Skill Dictionary', category='Skills'))
+        admin.add_view(ProfileSkillAdminView(ProfileSkill, name='Skill Scores',     category='Skills'))
 
-    # Content & System
-    admin.add_view(MediaVaultAdminView(MediaVault, name='Media Vault',       category='System'))
-    admin.add_view(CategoryAdminView(Category,     name='Global Categories', category='System'))
-    admin.add_view(ProjectAdminView(Project,       name='Projects',          category='Content'))
+        # Content & System
+        admin.add_view(MediaVaultAdminView(MediaVault, name='Media Vault',       category='System'))
+        admin.add_view(CategoryAdminView(Category,     name='Global Categories', category='System'))
+        admin.add_view(ProjectAdminView(Project,       name='Projects',          category='Content'))
+    else:
+        app.logger.warning('[-] Flask-Admin not installed — admin UI disabled')
 
     # -------------------------------------------------------------------------
     # STEP 9: API ROUTES
@@ -243,6 +252,7 @@ def setup_app_logging(app, config_obj):
     file_handler.setLevel(logging.INFO)                               # File handler logs INFO+
     app.logger.addHandler(file_handler)                               # Attach handler to Flask logger
     app.logger.setLevel(logging.INFO)                                 # Flask app logs INFO+
+    logging.getLogger().addHandler(file_handler)                      # Also add to root logger for route handlers
     app.logger.info('[+] Logging system initialized successfully.')
 
 
