@@ -64,7 +64,7 @@ def get_public_skills():
             return jsonify({'error': 'Profile not found'}), 404
 
         # Fetch all ProfileSkill docs with related Skill and SkillType in one query
-        raw_skills = ProfileSkill.objects(profile=profile).select_related()
+        raw_skills = ProfileSkill.objects(profile=profile).only('skill', 'score').select_related()
 
         # Build serialisable list, dropping broken references
         skills_list = [p for p in (build_skill_payload(ps) for ps in raw_skills) if p]
@@ -125,7 +125,7 @@ def get_skills_summary():
         if not profile:
             return jsonify({'error': 'Profile not found'}), 404
 
-        raw_skills  = ProfileSkill.objects(profile=profile).select_related()
+        raw_skills  = ProfileSkill.objects(profile=profile).only('skill', 'score').select_related()
         skills_list = [p for p in (build_skill_payload(ps) for ps in raw_skills) if p]
         skills_list.sort(key=lambda x: x['score'], reverse=True)
 
