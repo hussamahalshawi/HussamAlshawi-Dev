@@ -10,12 +10,25 @@ import {
 const POLL_INTERVAL_MS = 20_000;
 
 export function usePortfolio() {
-  const [portfolioData, setPortfolioData] = useState(() =>
-    loadFromCacheAny(CACHE_KEYS.portfolio)
-  );
-  const [loading, setLoading] = useState(() =>
-    localStorage.getItem(CACHE_KEYS.portfolio) === null
-  );
+  const [portfolioData, setPortfolioData] = useState(() => {
+    const cached = loadFromCacheAny(CACHE_KEYS.portfolio);
+    const valid = !!(cached && (
+      Array.isArray(cached.skills_with_sources) ||
+      Array.isArray(cached.goals) ||
+      Array.isArray(cached.skills_by_type)
+    ));
+    console.log('[usePortfolio] Init:', { hasCached: !!cached, valid });
+    return valid ? cached : null;
+  });
+  const [loading, setLoading] = useState(() => {
+    const cached = loadFromCacheAny(CACHE_KEYS.portfolio);
+    const valid = !!(cached && (
+      Array.isArray(cached.skills_with_sources) ||
+      Array.isArray(cached.goals) ||
+      Array.isArray(cached.skills_by_type)
+    ));
+    return !valid;
+  });
   const [error, setError] = useState(null);
   const pollTimerRef = useRef(null);
 
