@@ -124,29 +124,32 @@ export const CHART_ANIMATION = {
  * ], 52);
  */
 export function getDonutSegments(items, radius, gapDeg = 2) {
-  const total = items.reduce((sum, item) => sum + (item.value || 0), 0); // Sum all values
-  if (total === 0) return [];                                              // Guard: empty data
+  if (!items || items.length === 0) return [];                              // Guard: no items
+  if (!radius || !isFinite(radius)) return [];                              // Guard: invalid radius
 
-  const circumf  = 2 * Math.PI * radius;                                  // Full circle length
-  const gapFrac  = gapDeg / 360;                                          // Gap as fraction of circle
-  const totalGap = gapFrac * items.length;                                 // Total gap fraction
+  const total = items.reduce((sum, item) => sum + (Number(item.value) || 0), 0);
+  if (total === 0 || !isFinite(total)) return [];                           // Guard: empty or invalid total
 
-  let cumulative = 0;                                                      // Running offset tracker
+  const circumf  = 2 * Math.PI * radius;                                    // Full circle length
+  const gapFrac  = gapDeg / 360;                                            // Gap as fraction of circle
+  const totalGap = gapFrac * items.length;                                   // Total gap fraction
+
+  let cumulative = 0;                                                        // Running offset tracker
 
   return items.map(item => {
-    const rawPct  = item.value / total;                                    // Raw fraction (0–1)
-    const pct     = rawPct * (1 - totalGap);                               // Adjusted for gaps
-    const dashArr = pct * circumf;                                         // Arc length in SVG units
-    const dashOff = circumf - (cumulative * circumf);                      // Start offset from top
-    const midAngle = (cumulative + rawPct / 2) * 360 - 90;                // Midpoint angle in degrees
+    const rawPct  = (Number(item.value) || 0) / total;                      // Raw fraction (0–1)
+    const pct     = rawPct * (1 - totalGap);                                 // Adjusted for gaps
+    const dashArr = pct * circumf;                                           // Arc length in SVG units
+    const dashOff = circumf - (cumulative * circumf);                        // Start offset from top
+    const midAngle = (cumulative + rawPct / 2) * 360 - 90;                  // Midpoint angle in degrees
 
-    cumulative += rawPct + gapFrac;                                        // Advance offset
+    cumulative += rawPct + gapFrac;                                          // Advance offset
 
     return {
       ...item,            // Spread original item fields (label, value, color)
       pct: rawPct,        // Fraction of total (0–1) for legend percentages
-      dashArr,            // SVG strokeDasharray value — the filled arc length
-      dashOff,            // SVG strokeDashoffset — where the arc starts
+      dashArr: isFinite(dashArr) ? dashArr : 0, // SVG strokeDasharray — safe fallback
+      dashOff: isFinite(dashOff) ? dashOff : 0, // SVG strokeDashoffset — safe fallback
       midAngle,           // Midpoint angle — useful for tooltip positioning
       displayPct: Math.round(rawPct * 100), // Integer percentage for display
     };
