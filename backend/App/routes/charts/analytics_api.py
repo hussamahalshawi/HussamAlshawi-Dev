@@ -141,7 +141,7 @@ def _build_progress_data(goals, courses, self_studies, projects):
         type_count[t] = type_count.get(t, 0) + 1
     learning_by_type = sorted(
         [{'type': t, 'count': c} for t, c in type_count.items()],
-        key=lambda x: -x[1]
+        key=lambda x: -x['count']
     )
 
     proj_type_count = {}
@@ -150,7 +150,7 @@ def _build_progress_data(goals, courses, self_studies, projects):
         proj_type_count[t] = proj_type_count.get(t, 0) + 1
     projects_by_type = sorted(
         [{'type': t, 'count': c} for t, c in proj_type_count.items()],
-        key=lambda x: -x[1]
+        key=lambda x: -x['count']
     )
 
     return {
@@ -165,7 +165,7 @@ def _build_progress_data(goals, courses, self_studies, projects):
 
 def _fetch_all_data(profile):
     return (
-        list(ProfileSkill.objects(profile=profile).select_related().only('skill', 'score')),
+        list(ProfileSkill.objects(profile=profile).only('skill', 'score').select_related()),
         list(Goal.objects(profile=profile).only('status', 'priority', 'target_year', 'target_score', 'current_score')),
         list(Course.objects(profile=profile).only('end_date', 'course_name')),
         list(SelfStudy.objects(profile=profile).only('learning_type', 'title')),
@@ -193,7 +193,7 @@ def get_analytics_counts():
         )
         return jsonify({'profile_summary': profile_summary, 'counts': counts}), 200
     except Exception as e:
-        logging.error(f'[ANALYTICS] /portfolio/analytics/counts failed: {str(e)}')
+        logging.error(f'[ANALYTICS] /portfolio/analytics/counts failed: {str(e)}', exc_info=True)
         return jsonify({'error': str(e)}), 500
 
 
@@ -208,7 +208,7 @@ def get_analytics_skills():
         profile = _get_profile_or_404()
         if not profile:
             return jsonify({'error': 'Profile not found'}), 404
-        profile_skills = list(ProfileSkill.objects(profile=profile).select_related().only('skill', 'score'))
+        profile_skills = list(ProfileSkill.objects(profile=profile).only('skill', 'score').select_related())
         skills_radar, skills_distribution, top_skills = _build_skills_data(profile_skills)
         return jsonify({
             'skills_radar'       : skills_radar,
@@ -216,7 +216,7 @@ def get_analytics_skills():
             'top_skills'         : top_skills,
         }), 200
     except Exception as e:
-        logging.error(f'[ANALYTICS] /portfolio/analytics/skills-data failed: {str(e)}')
+        logging.error(f'[ANALYTICS] /portfolio/analytics/skills-data failed: {str(e)}', exc_info=True)
         return jsonify({'error': str(e)}), 500
 
 
@@ -235,7 +235,7 @@ def get_analytics_progress():
         progress_data = _build_progress_data(goals, courses, self_studies, projects)
         return jsonify(progress_data), 200
     except Exception as e:
-        logging.error(f'[ANALYTICS] /portfolio/analytics/progress failed: {str(e)}')
+        logging.error(f'[ANALYTICS] /portfolio/analytics/progress failed: {str(e)}', exc_info=True)
         return jsonify({'error': str(e)}), 500
 
 
@@ -268,7 +268,7 @@ def get_portfolio_analytics():
         }), 200
 
     except Exception as e:
-        logging.error(f'[ANALYTICS API] /portfolio/analytics failed: {str(e)}')
+        logging.error(f'[ANALYTICS API] /portfolio/analytics failed: {str(e)}', exc_info=True)
         return jsonify({'error': str(e)}), 500
 
 
@@ -344,7 +344,7 @@ def get_tech_stack():
         return jsonify({'count': len(tech_stack), 'tech_stack': tech_stack}), 200
 
     except Exception as e:
-        logging.error(f'[ANALYTICS API] /portfolio/analytics/tech-stack failed: {str(e)}')
+        logging.error(f'[ANALYTICS API] /portfolio/analytics/tech-stack failed: {str(e)}', exc_info=True)
         return jsonify({'error': str(e)}), 500
 
 
@@ -422,5 +422,5 @@ def get_career_timeline():
         return jsonify({'timeline': timeline}), 200
 
     except Exception as e:
-        logging.error(f'[ANALYTICS API] /portfolio/analytics/timeline failed: {str(e)}')
+        logging.error(f'[ANALYTICS API] /portfolio/analytics/timeline failed: {str(e)}', exc_info=True)
         return jsonify({'error': str(e)}), 500
