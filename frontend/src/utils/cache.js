@@ -18,6 +18,7 @@ export const CACHE_KEYS = {
   skillsSummary: 'ha_cache_skills_summary',
   languages:     'ha_cache_languages',
   portfolio:     'ha_cache_portfolio',
+  portfolioSummary: 'ha_cache_portfolio_summary',
 
   // Chart groups (composite responses from useCharts)
   careerCharts:  'ha_cache_charts_career',
