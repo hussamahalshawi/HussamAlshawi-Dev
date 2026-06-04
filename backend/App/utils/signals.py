@@ -50,6 +50,11 @@ def _clear_public_cache():
             'public_skills_summary',
             'public_projects',
             'public_experience',
+            'portfolio_summary',
+            'portfolio_skills',
+            'portfolio_goals',
+            'portfolio_timeline',
+            'portfolio_sources',
         ]
 
         for key in keys_to_clear:
