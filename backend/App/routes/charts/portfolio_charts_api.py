@@ -242,7 +242,7 @@ def _build_source_contribution(source_map):
 # Skills grouped by type with source tracking
 # ─────────────────────────────────────────────────────────────────────────────
 @portfolio_charts_bp.route('/charts/portfolio/skills', methods=['GET'])
-@cache.cached(timeout=300)
+@cache.cached(timeout=300, key_prefix='portfolio_skills')
 def get_portfolio_skills():
     try:
         profile = _get_profile()
@@ -266,7 +266,7 @@ def get_portfolio_skills():
 # Goals with skill gap analysis
 # ─────────────────────────────────────────────────────────────────────────────
 @portfolio_charts_bp.route('/charts/portfolio/goals', methods=['GET'])
-@cache.cached(timeout=300)
+@cache.cached(timeout=300, key_prefix='portfolio_goals')
 def get_portfolio_goals():
     try:
         profile = _get_profile()
@@ -291,7 +291,7 @@ def get_portfolio_goals():
 # Learning timeline by year
 # ─────────────────────────────────────────────────────────────────────────────
 @portfolio_charts_bp.route('/charts/portfolio/timeline', methods=['GET'])
-@cache.cached(timeout=300)
+@cache.cached(timeout=300, key_prefix='portfolio_timeline')
 def get_portfolio_timeline():
     try:
         profile = _get_profile()
@@ -320,7 +320,7 @@ def get_portfolio_timeline():
 # Source contribution breakdown
 # ─────────────────────────────────────────────────────────────────────────────
 @portfolio_charts_bp.route('/charts/portfolio/sources', methods=['GET'])
-@cache.cached(timeout=300)
+@cache.cached(timeout=300, key_prefix='portfolio_sources')
 def get_portfolio_sources():
     try:
         profile = _get_profile()
@@ -341,7 +341,7 @@ def get_portfolio_sources():
 # Full dashboard payload — merges all sub-endpoints
 # ─────────────────────────────────────────────────────────────────────────────
 @portfolio_charts_bp.route('/charts/portfolio/summary', methods=['GET'])
-@cache.cached(timeout=300)
+@cache.cached(timeout=300, key_prefix='portfolio_summary')
 def get_portfolio_summary():
     try:
         profile = _get_profile()
