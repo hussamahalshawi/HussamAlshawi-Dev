@@ -28,7 +28,7 @@ import {
 } from '../utils/cache';
 
 /* ── Polling interval — how often to check for changes ──────────── */
-const POLL_INTERVAL_MS = 20_000; // 20 seconds — adjust as needed
+const POLL_INTERVAL_MS = 300_000; // 5 minutes — portfolio data rarely changes
 
 /** API task definitions */
 const API_TASKS = [
@@ -73,6 +73,12 @@ const API_TASKS = [
     key:   'languages',
     label: 'Languages',
     fetch: () => languagesService.getLanguages(),
+    phase: 2,
+  },
+  {
+    key:   'portfolioSummary',
+    label: 'Portfolio Summary',
+    fetch: () => analyticsService.getPortfolioSummary(),
     phase: 2,
   },
 ];
