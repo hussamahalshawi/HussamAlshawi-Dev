@@ -75,7 +75,7 @@ const KPI_CONFIG = [
  *
  * @returns {JSX.Element}
  */
-export default function AnalyticsSection({ analytics, portfolio, portfolioLoading, portfolioError }) {
+export default function AnalyticsSection({ analytics, portfolio }) {
 
   /* ── Domain coverage data ──────────────────────────────────── */
   const [domainCoverage, setDomainCoverage] = useState(null);
@@ -298,32 +298,7 @@ export default function AnalyticsSection({ analytics, portfolio, portfolioLoadin
             </div>
 
             {/* ── PORTFOLIO DASHBOARD ── */}
-            {portfolioLoading && (
-              <div className="portfolio-dashboard">
-                <div className="analytics-glass-panel" style={{ padding: 'var(--s6)', textAlign: 'center' }}>
-                  <p style={{ color: 'var(--text-muted)' }}>Loading portfolio data...</p>
-                </div>
-              </div>
-            )}
-            {portfolioError && !portfolioLoading && (
-              <div className="portfolio-dashboard">
-                <div className="analytics-glass-panel" style={{ padding: 'var(--s6)', textAlign: 'center' }}>
-                  <p style={{ color: 'var(--text-muted)' }}>
-                    Portfolio dashboard unavailable: {portfolioError}
-                  </p>
-                </div>
-              </div>
-            )}
-            {!portfolio && !portfolioLoading && !portfolioError && (
-              <div className="portfolio-dashboard">
-                <div className="analytics-glass-panel" style={{ padding: 'var(--s6)', textAlign: 'center' }}>
-                  <p style={{ color: 'var(--text-muted)' }}>
-                    No portfolio data available. Check that the backend is running.
-                  </p>
-                </div>
-              </div>
-            )}
-            {portfolio && !portfolioLoading && (
+            {portfolio ? (
               <div className="portfolio-dashboard">
 
                 {/* ROW 1: Sankey — Learning → Skills → Goals */}
@@ -399,6 +374,14 @@ export default function AnalyticsSection({ analytics, portfolio, portfolioLoadin
                   <GoalsBulletChart goals={portfolio.goals} />
                 </div>
 
+              </div>
+            ) : (
+              <div className="portfolio-dashboard">
+                <div className="analytics-glass-panel" style={{ padding: 'var(--s6)', textAlign: 'center' }}>
+                  <p style={{ color: 'var(--text-muted)' }}>
+                    Loading portfolio data...
+                  </p>
+                </div>
               </div>
             )}
           </>
