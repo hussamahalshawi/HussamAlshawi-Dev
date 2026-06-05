@@ -39,6 +39,7 @@ import CareerTab                                      from './tabs/CareerTab';
 import SkillsTab                                      from './tabs/SkillsTab';
 import LearningTab                                    from './tabs/LearningTab';
 import GoalsTab                                       from './tabs/GoalsTab';
+import AllChartsDashboard                             from './AllChartsDashboard';
 import chartsService                                  from '../../services/chartsService';
 import '../../styles/components/AnalyticsSection.css';
 
@@ -414,6 +415,11 @@ export default function AnalyticsSection({ analytics, portfolio }) {
         {activeTab === 'goals' && (
           <GoalsTab />
         )}
+
+        {/* ══════════════════════════════════════════════
+            ALL CHARTS DASHBOARD — Visible under all tabs
+        ══════════════════════════════════════════════ */}
+        <AllChartsDashboard analytics={analytics} portfolio={portfolio} />
 
       </div>
     </section>
