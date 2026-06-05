@@ -3,9 +3,12 @@ import { useTheme } from '../../context/ThemeContext';
 import { CHART_ANIMATION, createChartObserver } from '../../utils/chartConfig';
 import '../../styles/charts/SunburstChart.css';
 
-const CAT_COLORS = ['#378ADD', '#1D9E75', '#7F77DD', '#BA7517', '#D4537E', '#F5A623', '#F06292', '#4ECCA3'];
+const DARK_CAT = ['#4FC3F7', '#4ECCA3', '#9B7FEA', '#F5A623', '#F06292', '#FFD700', '#5B8DEF', '#BA7517'];
+const LIGHT_CAT = ['#1a8fc7', '#1a9e6e', '#7c5bd4', '#d07a10', '#d0406a', '#c49b00', '#3a6fd8', '#854F0B'];
 
-const BAND_COLORS = ['#1D9E75', '#378ADD', '#BA7517', '#D85A30'];
+const DARK_BAND = ['#4ECCA3', '#4FC3F7', '#F5A623', '#F06292'];
+const LIGHT_BAND = ['#1a9e6e', '#1a8fc7', '#d07a10', '#d0406a'];
+
 const BAND_LABELS = ['Expert', 'Advanced', 'Intermediate', 'Beginner'];
 
 function getBandIndex(score) {
@@ -44,12 +47,14 @@ export default function SunburstChart({ skillsByType = [] }) {
   const { catSegments, totalSkills } = useMemo(() => {
     if (!skillsByType || skillsByType.length === 0) return { catSegments: [], totalSkills: 0 };
 
+    const catColors = isDark ? DARK_CAT : LIGHT_CAT;
+    const bandColors = isDark ? DARK_BAND : LIGHT_BAND;
     const total = skillsByType.reduce((s, c) => s + (c.skills?.length || 0), 0);
     const segs = [];
     let angle = -Math.PI / 2;
 
     skillsByType.forEach((cat, ci) => {
-      const catColor = CAT_COLORS[ci % CAT_COLORS.length];
+      const catColor = catColors[ci % catColors.length];
       const skills = cat.skills || [];
       const catPct = skills.length / Math.max(total, 1);
       if (catPct < 0.01) return;
@@ -71,7 +76,7 @@ export default function SunburstChart({ skillsByType = [] }) {
           midA: sMid,
           name: sk.skill_name,
           score: sk.score,
-          bandColor: BAND_COLORS[bandIdx],
+          bandColor: bandColors[bandIdx],
           bandIdx,
         });
       });
@@ -89,7 +94,7 @@ export default function SunburstChart({ skillsByType = [] }) {
     });
 
     return { catSegments: segs, totalSkills: total };
-  }, [skillsByType]);
+  }, [skillsByType, isDark]);
 
   const CX = 190;
   const CY = 190;
@@ -108,6 +113,7 @@ export default function SunburstChart({ skillsByType = [] }) {
 
   const textFill = isDark ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.65)';
   const textFillMuted = isDark ? 'rgba(255,255,255,0.35)' : 'rgba(0,0,0,0.35)';
+  const bandColors = isDark ? DARK_BAND : LIGHT_BAND;
 
   return (
     <div
@@ -201,7 +207,7 @@ export default function SunburstChart({ skillsByType = [] }) {
         {/* Band legend */}
         {BAND_LABELS.map((lbl, i) => (
           <g key={`band-${i}`}>
-            <rect x={SVG_SIZE - 105} y={12 + i * 20} width={10} height={10} rx={2} fill={BAND_COLORS[i] + 'BB'} />
+            <rect x={SVG_SIZE - 105} y={12 + i * 20} width={10} height={10} rx={2} fill={bandColors[i] + 'BB'} />
             <text x={SVG_SIZE - 90} y={21 + i * 20} fontSize={10} fill={textFillMuted}>
               {lbl}
             </text>
