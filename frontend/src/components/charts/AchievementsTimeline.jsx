@@ -1,10 +1,14 @@
-import { useRef, useEffect, useState } from 'react';
+import { useRef, useEffect, useState, useMemo } from 'react';
+import { useTheme } from '../../context/ThemeContext';
 import { CHART_ANIMATION, createChartObserver } from '../../utils/chartConfig';
 import '../../styles/charts/AchievementsTimeline.css';
 
-const ACHIEVEMENT_COLORS = ['#1D9E75', '#378ADD', '#7F77DD', '#BA7517', '#D85A30', '#F06292', '#F5A623', '#4ECCA3'];
+const DARK_ACHIEVE = ['#4ECCA3', '#4FC3F7', '#9B7FEA', '#F5A623', '#F06292', '#FFD700', '#5B8DEF', '#BA7517'];
+const LIGHT_ACHIEVE = ['#1a9e6e', '#1a8fc7', '#7c5bd4', '#d07a10', '#d0406a', '#c49b00', '#3a6fd8', '#854F0B'];
 
 export default function AchievementsTimeline({ byYear = [] }) {
+  const { isDark } = useTheme();
+  const ACHIEVEMENT_COLORS = useMemo(() => isDark ? DARK_ACHIEVE : LIGHT_ACHIEVE, [isDark]);
   const wrapRef = useRef(null);
   const [visible, setVisible] = useState(false);
 
