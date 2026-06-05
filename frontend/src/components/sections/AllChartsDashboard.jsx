@@ -1,6 +1,12 @@
-import { useState, useEffect, useMemo } from 'react';
-import chartsService from '../../services/chartsService';
-import { useTheme } from '../../context/ThemeContext';
+import { useState, useMemo } from 'react';
+import {
+  BarChart3,
+  BriefcaseBusiness,
+  Zap,
+  Target,
+  Code2,
+  BookOpen,
+} from 'lucide-react';
 
 import SankeyChart from '../charts/SankeyChart';
 import TimelineAreaChart from '../charts/TimelineAreaChart';
@@ -24,27 +30,23 @@ import '../../styles/sections/AllChartsDashboard.css';
 const SECTIONS = [
   {
     id: 'overview',
-    icon: '📊',
+    Icon: BarChart3,
     label: 'Portfolio Overview',
-    charts: ['kpi', 'sankey', 'timeline-area', 'dual-axis', 'sunburst'],
   },
   {
     id: 'career',
-    icon: '💼',
+    Icon: BriefcaseBusiness,
     label: 'Career Journey',
-    charts: ['kpi-emp', 'gantt', 'treemap', 'heatmap', 'stack-tech', 'achievements'],
   },
   {
     id: 'skills',
-    icon: '🧠',
+    Icon: Zap,
     label: 'Skills & Coverage',
-    charts: ['stacked-sources', 'multi-radar'],
   },
   {
     id: 'goals',
-    icon: '🎯',
+    Icon: Target,
     label: 'Goals & Roadmap',
-    charts: ['kpi-goals', 'gauge-donuts', 'year-bar', 'bullet', 'roadmap'],
   },
 ];
 
@@ -57,10 +59,10 @@ const SOURCE_COLORS = {
 };
 const SOURCE_KEYS = Object.keys(SOURCE_COLORS);
 
-function AnimatedKpiCard({ label, value, color, icon, suffix }) {
+function AnimatedKpiCard({ label, value, color, Icon, suffix }) {
   return (
     <div className="allcharts-kpi-card" style={{ '--kpi-color': color }}>
-      {icon && <div className="allcharts-kpi-card__icon">{icon}</div>}
+      {Icon && <div className="allcharts-kpi-card__icon"><Icon size={18} /></div>}
       <div className="allcharts-kpi-card__num" style={{ color }}>{value}{suffix || ''}</div>
       <div className="allcharts-kpi-card__label">{label}</div>
     </div>
@@ -75,7 +77,7 @@ function CollapsibleSection({ section, open, onToggle, children }) {
         onClick={onToggle}
         aria-expanded={open}
       >
-        <span className="allcharts-section__icon">{section.icon}</span>
+        <section.Icon className="allcharts-section__icon" size={18} />
         <span className="allcharts-section__label">{section.label}</span>
         <span className={`allcharts-section__chevron ${open ? 'allcharts-section__chevron--open' : ''}`}>
           ▼
@@ -90,32 +92,16 @@ function CollapsibleSection({ section, open, onToggle, children }) {
   );
 }
 
-export default function AllChartsDashboard({ analytics, portfolio }) {
-  const { isDark } = useTheme();
+export default function AllChartsDashboard({
+  analytics,
+  portfolio,
+  careerData,
+  goalsData,
+  skillsData,
+  learningData,
+  domainCoverage,
+}) {
   const [openSections, setOpenSections] = useState(new Set());
-  const [careerData, setCareerData] = useState(null);
-  const [goalsData, setGoalsData] = useState(null);
-  const [skillsData, setSkillsData] = useState(null);
-  const [learningData, setLearningData] = useState(null);
-  const [domainCoverage, setDomainCoverage] = useState(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    Promise.allSettled([
-      chartsService.composite.allCareerCharts(),
-      chartsService.composite.allGoalsCharts(),
-      chartsService.composite.allSkillsCharts(),
-      chartsService.composite.allLearningCharts(),
-      chartsService.skills.domainCoverage(),
-    ]).then(([career, goals, skills, learning, dc]) => {
-      setCareerData(career.status === 'fulfilled' ? career.value : null);
-      setGoalsData(goals.status === 'fulfilled' ? goals.value : null);
-      setSkillsData(skills.status === 'fulfilled' ? skills.value : null);
-      setLearningData(learning.status === 'fulfilled' ? learning.value : null);
-      setDomainCoverage(dc.status === 'fulfilled' ? dc.value : null);
-      setLoading(false);
-    });
-  }, []);
 
   const toggleSection = (id) => {
     setOpenSections(prev => {
@@ -185,14 +171,6 @@ export default function AllChartsDashboard({ analytics, portfolio }) {
   const counts = analytics?.counts || {};
   const profSummary = analytics?.profile_summary || {};
 
-  if (loading) {
-    return (
-      <div className="allcharts-dashboard allcharts-dashboard--loading">
-        <div className="allcharts-loading">Loading all charts…</div>
-      </div>
-    );
-  }
-
   const empSeries = careerData?.employmentMix?.series || [];
   const ganttItems = careerData?.gantt?.items || [];
   const ganttMinYear = careerData?.gantt?.min_year;
@@ -203,7 +181,7 @@ export default function AllChartsDashboard({ analytics, portfolio }) {
   return (
     <div className="allcharts-dashboard">
       <div className="allcharts-dashboard__title">
-        <span className="allcharts-dashboard__icon">◆</span>
+        <BarChart3 className="allcharts-dashboard__icon" size={20} />
         All Charts Dashboard
       </div>
 
@@ -222,10 +200,10 @@ export default function AllChartsDashboard({ analytics, portfolio }) {
 
                 {/* KPI Row */}
                 <div className="allcharts-kpi-row">
-                  <AnimatedKpiCard label="Skills" value={counts.skills || 34} color="#378ADD" icon="⚙" />
-                  <AnimatedKpiCard label="Experience yrs" value={profSummary.experience_years ?? counts.experience_years ?? 5.2} color="#1D9E75" icon="💼" />
-                  <AnimatedKpiCard label="Goals completion" value={goalsData?.gauge?.overall_pct ?? 68} color="#BA7517" icon="🎯" />
-                  <AnimatedKpiCard label="Courses done" value={counts.courses || 36} color="#7F77DD" icon="📚" />
+                  <AnimatedKpiCard label="Skills" value={counts.skills || 34} color="#378ADD" Icon={Code2} />
+                  <AnimatedKpiCard label="Experience yrs" value={profSummary.experience_years ?? counts.experience_years ?? 5.2} color="#1D9E75" Icon={BriefcaseBusiness} />
+                  <AnimatedKpiCard label="Goals completion" value={goalsData?.gauge?.overall_pct ?? 68} color="#BA7517" Icon={Target} />
+                  <AnimatedKpiCard label="Courses done" value={counts.courses || 36} color="#7F77DD" Icon={BookOpen} />
                 </div>
 
                 {/* Sankey */}
@@ -289,7 +267,6 @@ export default function AllChartsDashboard({ analytics, portfolio }) {
                         label={s.type}
                         value={s.months || s.count || 0}
                         color={s.color || CHART_COLORS[i]}
-                        icon=""
                       />
                     ))}
                   </div>
@@ -397,10 +374,10 @@ export default function AllChartsDashboard({ analytics, portfolio }) {
                 {/* KPI Row */}
                 {goalsData?.gauge && (
                   <div className="allcharts-kpi-row">
-                    <AnimatedKpiCard label="Overall progress" value={goalsData.gauge.overall_pct || 0} color="#1D9E75" icon="" />
-                    <AnimatedKpiCard label="Achieved" value={goalsData.gauge.achieved_count || 0} color="#1D9E75" icon="" />
-                    <AnimatedKpiCard label="In Progress" value={goalsData.gauge.in_progress_count || 0} color="#378ADD" icon="" />
-                    <AnimatedKpiCard label="Total goals" value={goalsData.gauge.total || 0} color="" icon="" />
+                    <AnimatedKpiCard label="Overall progress" value={goalsData.gauge.overall_pct || 0} color="#1D9E75" />
+                    <AnimatedKpiCard label="Achieved" value={goalsData.gauge.achieved_count || 0} color="#1D9E75" />
+                    <AnimatedKpiCard label="In Progress" value={goalsData.gauge.in_progress_count || 0} color="#378ADD" />
+                    <AnimatedKpiCard label="Total goals" value={goalsData.gauge.total || 0} />
                   </div>
                 )}
 
