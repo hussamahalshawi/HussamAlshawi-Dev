@@ -1,17 +1,22 @@
 import { useRef, useEffect, useState, useMemo } from 'react';
+import { useTheme } from '../../context/ThemeContext';
 import { CHART_ANIMATION, createChartObserver } from '../../utils/chartConfig';
 import '../../styles/charts/SkillBulletChart.css';
 
-const GAP_COLORS = ['#1D9E75', '#378ADD', '#BA7517', '#D85A30'];
-
-function getSkillColor(gap) {
-  if (gap <= 10) return GAP_COLORS[0];
-  if (gap <= 25) return GAP_COLORS[1];
-  if (gap <= 45) return GAP_COLORS[2];
-  return GAP_COLORS[3];
-}
+const DARK_GAP = ['#4ECCA3', '#4FC3F7', '#F5A623', '#F06292'];
+const LIGHT_GAP = ['#1a9e6e', '#1a8fc7', '#d07a10', '#d0406a'];
 
 export default function SkillBulletChart({ goals = [] }) {
+  const { isDark } = useTheme();
+  const gapColors = useMemo(() => isDark ? DARK_GAP : LIGHT_GAP, [isDark]);
+
+  function getSkillColor(gap) {
+    if (gap <= 10) return gapColors[0];
+    if (gap <= 25) return gapColors[1];
+    if (gap <= 45) return gapColors[2];
+    return gapColors[3];
+  }
+
   const wrapRef = useRef(null);
   const [visible, setVisible] = useState(false);
 
