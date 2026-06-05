@@ -78,14 +78,33 @@ const KPI_CONFIG = [
  */
 export default function AnalyticsSection({ analytics, portfolio }) {
 
-  /* ── Domain coverage data ──────────────────────────────────── */
-  const [domainCoverage, setDomainCoverage] = useState(null);
+  /* ── Chart composite data (shared with AllChartsDashboard) ── */
+  const [chartData, setChartData] = useState({
+    careerData: null,
+    goalsData: null,
+    skillsData: null,
+    learningData: null,
+    domainCoverage: null,
+  });
 
   useEffect(() => {
     let cancelled = false;
-    chartsService.skills.domainCoverage()
-      .then(res => { if (!cancelled) setDomainCoverage(res.data); })
-      .catch(() => { if (!cancelled) setDomainCoverage(null); });
+    Promise.allSettled([
+      chartsService.composite.allCareerCharts(),
+      chartsService.composite.allGoalsCharts(),
+      chartsService.composite.allSkillsCharts(),
+      chartsService.composite.allLearningCharts(),
+      chartsService.skills.domainCoverage(),
+    ]).then(([career, goals, skills, learning, dc]) => {
+      if (cancelled) return;
+      setChartData({
+        careerData:   career.status === 'fulfilled'   ? career.value   : null,
+        goalsData:    goals.status === 'fulfilled'    ? goals.value    : null,
+        skillsData:   skills.status === 'fulfilled'   ? skills.value   : null,
+        learningData: learning.status === 'fulfilled' ? learning.value : null,
+        domainCoverage: dc.status === 'fulfilled'     ? dc.data        : null,
+      });
+    });
     return () => { cancelled = true; };
   }, []);
 
@@ -320,7 +339,7 @@ export default function AnalyticsSection({ analytics, portfolio }) {
 
                   {/* ROW 2: Domain Coverage — Multi-series Radar */}
                   <div className="analytics-glass-panel portfolio-chart-panel">
-                    <MultiRadarChart data={domainCoverage} />
+                    <MultiRadarChart data={chartData.domainCoverage} />
                   </div>
 
                   {/* ROW 3: Radar + Treemap (2-col) */}
@@ -419,7 +438,15 @@ export default function AnalyticsSection({ analytics, portfolio }) {
         {/* ══════════════════════════════════════════════
             ALL CHARTS DASHBOARD — Visible under all tabs
         ══════════════════════════════════════════════ */}
-        <AllChartsDashboard analytics={analytics} portfolio={portfolio} />
+        <AllChartsDashboard
+          analytics={analytics}
+          portfolio={portfolio}
+          careerData={chartData.careerData}
+          goalsData={chartData.goalsData}
+          skillsData={chartData.skillsData}
+          learningData={chartData.learningData}
+          domainCoverage={chartData.domainCoverage}
+        />
 
       </div>
     </section>
