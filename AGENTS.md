@@ -22,24 +22,24 @@ main.jsx
           └─ App.jsx (Routes: / → Home, * → NotFound)
               └─ Home.jsx (data loading + section show/hide)
                   └─ DashboardLayout (sidebar + topbar + page-content)
-                      ├─ OverviewSection    ✅ Built
-                      ├─ Experience         ❌ Placeholder
-                      ├─ Projects           ❌ Placeholder
-                      ├─ SkillsSection      ✅ Built
-                      ├─ Education          ❌ Placeholder
-                      ├─ Self Study         ❌ Placeholder
-                      ├─ AnalyticsSection   ✅ Built
-                      ├─ Goals              ❌ Placeholder
-                      ├─ Feedback           ❌ Placeholder
-                      ├─ About              ❌ Placeholder
-                      └─ Contact            ❌ Placeholder
+                  ├─ OverviewSection    ✅ Built
+                  ├─ Experience         ❌ Placeholder
+                  ├─ Projects           ❌ Placeholder
+                  ├─ SkillsSection      ✅ Built
+                  ├─ Education          ❌ Placeholder
+                  ├─ Self Study         ❌ Placeholder
+                  ├─ AnalyticsSection   ✅ Built (5 tabs + AllChartsDashboard)
+                  ├─ Goals              ❌ Placeholder
+                  ├─ Feedback           ❌ Placeholder
+                  ├─ About              ❌ Placeholder
+                  └─ Contact            ❌ Placeholder
 ```
 
 ### Component Ownership
 - `DashboardLayout` owns the persistent shell (sidebar + topbar + page-content)
 - `Home` owns section visibility (`display: block/none` based on `activeSection` state)
 - Sections are **always mounted** but **only visible when active** — no remount, no data refetch
-- Data loaded once via `usePortfolioData`, polled every 20s in background
+- Data loaded once via `usePortfolioData`, polled every 5min in background
 
 ---
 
@@ -216,12 +216,14 @@ box-shadow:              0 4px 24px rgba(0,0,0,0.35),
 | `/api/portfolio/skills` | `skillsService` | 2 | Skills list with categories and scores |
 | `/api/portfolio/skills/summary` | `skillsService` | 2 | Skills summary/overview |
 | `/api/portfolio/projects` | `projectsService` | 2 | Projects list |
+| `/api/portfolio/languages` | `languagesService` | 2 | Languages list |
+| `/api/charts/portfolio/summary` | `analyticsService.getPortfolioSummary` | 2 | Composite portfolio chart data |
 
 ### Cache Strategy (`usePortfolioData`)
 1. Show cached data from `localStorage` instantly (on mount)
-2. Fetch Phase 1 (Profile + Analytics) — await, hide loader when done
-3. Fetch Phase 2 (Skills + Projects + Summary) — background, no loader
-4. Poll every **20s** — silently check all APIs for hash changes, auto-update UI
+2. Fetch Phase 1 (Profile) — await, hide loader when done
+3. Fetch Phase 2 (Analytics + Skills + Projects + Skills Summary + Languages + Portfolio Summary) — background, no loader
+4. Poll every **5min** — silently check all APIs for hash changes, auto-update UI
 
 ### Offline handling
 - If Phase 1 fails entirely: orange `OfflineBanner` "Backend is offline"
@@ -244,13 +246,18 @@ vite.config.*
 | `layout/DashboardLayout.jsx` | 355 | App shell — sidebar + topbar + responsive hamburger |
 | `sections/OverviewSection.jsx` | ~922 | Complex overview dashboard (profile + 3-col grid + records + languages) |
 | `sections/SkillsSection.jsx` | Built | Grouped skills |
-| `sections/AnalyticsSection.jsx` | Built | Charts/analytics |
+| `sections/AnalyticsSection.jsx` | Built | Charts/analytics (5 tabs + AllChartsDashboard) |
+| `sections/AllChartsDashboard.jsx` | ~481 | All-charts collapsible dashboard (4 sections) |
 | `charts/BarChart.jsx` | — | Bar chart component |
 | `charts/DonutChart.jsx` | — | Donut chart component |
 | `charts/ProgressBar.jsx` | — | Animated progress bar |
 | `charts/RadarChart.jsx` | — | Radar chart |
 | `charts/StatCard.jsx` | — | Stat display card |
 | `charts/PerformanceChart.jsx` | — | Performance line chart |
+| `charts/DualAxisChart.jsx` | — | Composed bar + line dual-axis chart |
+| `charts/SunburstChart.jsx` | — | SVG skills hierarchy sunburst |
+| `charts/SkillBulletChart.jsx` | — | Goal skill gap bullet chart |
+| `charts/AchievementsTimeline.jsx` | — | Achievement timeline list |
 | `ui/ParticleBackground.jsx` | — | Canvas particle background |
 | `ui/AnimatedSection.jsx` | — | Scroll animation wrapper |
 | `ui/PageLoader.jsx` | — | Loading spinner overlay |
@@ -488,12 +495,22 @@ After the redesign to match the sidebar, all cards now use the **same opacity** 
 ---
 
 ## 18. Recent Changes (this session)
-- All panel glass unified to match sidebar: `rgba(13,17,38,0.82)` + `blur(20px)` + `inset 0 1px 0 rgba(79,195,247,0.06)`
-- All sub-elements (stats, records, lang cards, support items, bento cards) use the same 82% opacity glass
-- Light mode unified to 55% white glass with `blur(32px) saturate(1.8)` — matches sidebar/topbar
-- Hover states: `rgba(79,195,247,0.06)` bg + `0.22` border + lift -2px
-- Fixed `page-content` padding: replaced undefined `--s7` with `--s5`
-- Updated AGENTS.md (this file) with detailed project reference
+
+### Session 2: Polling optimization + UI polish
+- Polling interval increased 20s → 5min in `usePortfolioData.js`
+- Added `portfolioSummary` task to `usePortfolioData.js` (replaces 4 separate portfolio chart calls)
+- Deleted `usePortfolio.js` (redundant — merged into `usePortfolioData`)
+- Updated `Home.jsx` to use `data.portfolioSummary` instead of `usePortfolio`
+- Simplified `AnalyticsSection` props: removed `portfolioLoading`/`portfolioError`
+- Added `key_prefix` to all 5 portfolio chart route cache decorators (backend)
+- Added 5 `portfolio_*` keys to signal-based cache invalidation (backend)
+- Added `portfolioSummary` entry to `CACHE_KEYS` in `cache.js`
+
+### Session 3: Chart improvements
+- Replaced emojis with Lucide icons in `AllChartsDashboard` and KPI cards
+- Removed duplicate API fetching: lifted chart composite data to `AnalyticsSection`, passed as props
+- Added dark/light theme-aware color palettes to `SunburstChart`, `SkillBulletChart`, `AchievementsTimeline`
+- Unified glass opacity in `AllChartsDashboard.css`: all panels now use 82% (dark) / 55% (light) formula matching sidebar
 
 ---
 
@@ -725,4 +742,4 @@ The 3 main services (**ProfileService**, **SkillService**, **RoadmapService**) a
 
 ---
 
-*Last updated: June 2, 2026 — Added signals, services, and backend wiring reference*
+*Last updated: June 5, 2026 — Chart improvements, Lucide icons, theme-aware colors, glass unification*
