@@ -26,7 +26,7 @@ analytics_public_bp = Blueprint('analytics_public', __name__)
 
 
 # ── Helpers ────────────────────────────────────────────────────────────────
-def _get_profile_or_404():
+def _get_profile_or_none():
     profile = Profile.objects.first()
     if not profile:
         return None
@@ -184,7 +184,7 @@ def _fetch_all_data(profile):
 @cache.cached(timeout=300, key_prefix='public_analytics_counts')
 def get_analytics_counts():
     try:
-        profile = _get_profile_or_404()
+        profile = _get_profile_or_none()
         if not profile:
             return jsonify({'error': 'Profile not found'}), 404
         profile_skills, goals, courses, self_studies, educations, experiences, projects, achievements = _fetch_all_data(profile)
@@ -205,7 +205,7 @@ def get_analytics_counts():
 @cache.cached(timeout=300, key_prefix='public_analytics_skills')
 def get_analytics_skills():
     try:
-        profile = _get_profile_or_404()
+        profile = _get_profile_or_none()
         if not profile:
             return jsonify({'error': 'Profile not found'}), 404
         profile_skills = list(ProfileSkill.objects(profile=profile).only('skill', 'score').select_related())
@@ -228,7 +228,7 @@ def get_analytics_skills():
 @cache.cached(timeout=300, key_prefix='public_analytics_progress')
 def get_analytics_progress():
     try:
-        profile = _get_profile_or_404()
+        profile = _get_profile_or_none()
         if not profile:
             return jsonify({'error': 'Profile not found'}), 404
         _, goals, courses, self_studies, _, _, projects, _ = _fetch_all_data(profile)
@@ -247,7 +247,7 @@ def get_analytics_progress():
 @cache.cached(timeout=300, key_prefix='public_analytics')
 def get_portfolio_analytics():
     try:
-        profile = _get_profile_or_404()
+        profile = _get_profile_or_none()
         if not profile:
             return jsonify({'error': 'Profile not found'}), 404
 
