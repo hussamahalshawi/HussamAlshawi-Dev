@@ -292,7 +292,7 @@ export default function AnalyticsSection({ analytics, portfolio }) {
                 {/* Category averages list — top 5 */}
                 {radar.length > 0 && (
                   <>
-                    <p className="skill-group__title" style={{ marginBottom: 'var(--space-4, 1rem)' }}>
+                    <p className="skill-group__title" style={{ marginBottom: 'var(--s4)' }}>
                       Category Averages
                     </p>
 
