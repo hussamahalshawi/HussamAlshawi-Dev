@@ -374,13 +374,11 @@ class SkillService:
                 last_updated = datetime.now(timezone.utc)
             )
 
-            # Disconnect signal to prevent recursive pipeline trigger
             from mongoengine import signals as me_signals
             from App.utils.signals import master_sync_signal
 
-            me_signals.post_save.disconnect(master_sync_signal, sender=Skill)
-
             try:
+                me_signals.post_save.disconnect(master_sync_signal, sender=Skill)
                 new_skill.save()
                 SkillService._skill_cache[key] = new_skill             # ✅ Add to cache after creation
             finally:
