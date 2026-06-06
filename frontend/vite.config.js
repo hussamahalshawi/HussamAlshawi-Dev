@@ -21,14 +21,10 @@ export default defineConfig({
   },
 
   server: {
-    port: 3000,                                  // Frontend port
-    watch: {
-      usePolling: true,                          // Force file watch — detects all changes
-      interval:   50,                            // Check every 50ms for instant updates
-    },
+    port: 3000,
     proxy: {
       '/api': {
-        target:       'http://localhost:5000',   // Flask backend
+        target:       'http://localhost:5000',
         changeOrigin: true,
         secure:       false,
       },
@@ -36,11 +32,7 @@ export default defineConfig({
   },
 
   css: {
-    devSourcemap: false,                         // Disable CSS sourcemap — prevents cache issues
-  },
-
-  optimizeDeps: {
-    force: true,                                 // Always re-bundle deps — no stale cache
+    devSourcemap: false,
   },
 
   build: {
