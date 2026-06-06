@@ -1,0 +1,77 @@
+{
+  "version": 1,
+  "skills": {
+    "backend-development": {
+      "source": "mrgoonie/claudekit-skills",
+      "sourceType": "github",
+      "skillPath": ".claude/skills/backend-development/SKILL.md",
+      "computedHash": "19a6a72ddb96062c3edef801451bd721726dd571f7db221f0b4d83ad70aad114"
+    },
+    "better-auth": {
+      "source": "mrgoonie/claudekit-skills",
+      "sourceType": "github",
+      "skillPath": ".claude/skills/better-auth/SKILL.md",
+      "computedHash": "ebc51f6a9515911f0eb31e8aa256aa53ed295d4b5d9e6538d210dfe202c9e3a1"
+    },
+    "code-review": {
+      "source": "getsentry/skills",
+      "sourceType": "github",
+      "skillPath": "skills/code-review/SKILL.md",
+      "computedHash": "f0604d278cfd4eac4dac29eb297a5c6b6ebfb9f020235e8aafbe2eff0e42a147"
+    },
+    "databases": {
+      "source": "mrgoonie/claudekit-skills",
+      "sourceType": "github",
+      "skillPath": ".claude/skills/databases/SKILL.md",
+      "computedHash": "f1fb40f0592e98856109d0ff3cdeef76173804668ef13575ce0f689d6787fd32"
+    },
+    "devops": {
+      "source": "mrgoonie/claudekit-skills",
+      "sourceType": "github",
+      "skillPath": ".claude/skills/devops/SKILL.md",
+      "computedHash": "2ed56674249d57ac49c3f2d6edf63cf10fc4d63aa5dbe3ff05e74cbd4a9fccca"
+    },
+    "frontend-design": {
+      "source": "mrgoonie/claudekit-skills",
+      "sourceType": "github",
+      "skillPath": ".claude/skills/frontend-design/SKILL.md",
+      "computedHash": "8a5bbb9447436ed8110edc54d8543e6e44e3ccf45fcca037b063d5001b145b42"
+    },
+    "frontend-dev-guidelines": {
+      "source": "mrgoonie/claudekit-skills",
+      "sourceType": "github",
+      "skillPath": ".claude/skills/frontend-development/SKILL.md",
+      "computedHash": "581441afedd9b2094314a3876f734fa54351c5c9c0aa65c6c135819c6f311164"
+    },
+    "security-review": {
+      "source": "getsentry/skills",
+      "sourceType": "github",
+      "skillPath": "skills/security-review/SKILL.md",
+      "computedHash": "ec9792f5fd065e020c48ab5a57707c83435c286c449ba98dfa726d7b1842c868"
+    },
+    "sequential-thinking": {
+      "source": "mrgoonie/claudekit-skills",
+      "sourceType": "github",
+      "skillPath": ".claude/skills/sequential-thinking/SKILL.md",
+      "computedHash": "2d772aca1eab9aa266fb1ab50455febb571fb2a409ad6be90302a345da40a880"
+    },
+    "ui-styling": {
+      "source": "mrgoonie/claudekit-skills",
+      "sourceType": "github",
+      "skillPath": ".claude/skills/ui-styling/SKILL.md",
+      "computedHash": "9a53132372424cfd8b40a1ba43bf36f5cb4403850e9556a8b34e53713dd829a1"
+    },
+    "web-frameworks": {
+      "source": "mrgoonie/claudekit-skills",
+      "sourceType": "github",
+      "skillPath": ".claude/skills/web-frameworks/SKILL.md",
+      "computedHash": "5b08f50d4dd1e3a3d0adcf6b80af8586e48e2ab4d04408dac4e89efe7a3d367e"
+    },
+    "web-testing": {
+      "source": "mrgoonie/claudekit-skills",
+      "sourceType": "github",
+      "skillPath": ".claude/skills/web-testing/SKILL.md",
+      "computedHash": "d659544b8a7325352b994e21c749503910d02631e2d031d2dfd073d7d2bbd0c0"
+    }
+  }
+}

@@ -742,4 +742,42 @@ The 3 main services (**ProfileService**, **SkillService**, **RoadmapService**) a
 
 ---
 
-*Last updated: June 5, 2026 — Chart improvements, Lucide icons, theme-aware colors, glass unification*
+## 25. Installed Skills — Workflow & Usage
+
+Global skills at `~/.config/opencode/skills/`. **Always load the relevant skill(s) via the `skill` tool before starting work on the matching area.**
+
+### Priority Order (load in this sequence)
+
+| Priority | Skill | When to load | How to apply |
+|----------|-------|-------------|--------------|
+| 1️⃣ | `problem-solving` | Any complex task, bug, or architectural decision | Use collision-zone, inversion, or simplification cascades to explore solutions |
+| 2️⃣ | `sequential-thinking` | Multi-step features, debugging across stack | Break into steps, iterate, branch alternatives |
+| 3️⃣ | `code-review` | Before committing any code change | Run runtime/security/performance review per Sentry standards |
+| 4️⃣ | `security-review` | Any backend auth, API, or data handling code | OWASP-guided review — only report HIGH confidence findings |
+
+### Area → Skill Mapping
+
+#### Frontend (React + CSS)
+| Area | Load These Skills |
+|------|------------------|
+| Building new sections (Experience, Projects, Education, etc.) | `frontend-design` + `frontend-dev-guidelines` + `motion-design` |
+| UI polishing, color, layout, responsive | `frontend-ui-ux` + `ui-styling` + `ui-ux-pro-max` |
+| Animations, transitions, micro-interactions | `motion-design` + `frontend-design` |
+| React component architecture, hooks, data flow | `frontend-dev-guidelines` + `web-frameworks` |
+| Chart implementation or improvement | `ui-ux-pro-max` (25 chart types reference) |
+| Cross-browser, performance, a11y, visual regression | `web-testing` |
+
+#### Backend (Flask + Python)
+| Area | Load These Skills |
+|------|------------------|
+| API routes, services, app factory | `backend-development` + `code-review` |
+| MongoDB models, queries, aggregation | `databases` + `backend-development` |
+| Auth, sessions, admin routes | `better-auth` + `security-review` |
+| Config, deployment, Docker, CI/CD | `devops` + `backend-development` |
+
+### Workflow Rule
+When the user says "حسن الموقع" (improve the site) or starts a new section, **load `problem-solving` + `sequential-thinking` + `frontend-design` + `frontend-ui-ux`** together to approach from multiple angles before writing code.
+
+---
+
+*Last updated: June 6, 2026 — Added 16 installed skills with workflow mappings*
