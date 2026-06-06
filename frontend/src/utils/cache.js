@@ -9,6 +9,8 @@
 /* ── Current cache schema version ──────────────────────────────── */
 export const CACHE_VERSION = 2;       // Increment when data shape changes
 
+const IS_DEV = import.meta.env.DEV;  // Only log in development
+
 /* ── Cache keys per API ──────────────────────────────────────────── */
 export const CACHE_KEYS = {
   profile:       'ha_cache_profile',
@@ -53,7 +55,7 @@ function hashData(data) {
 
     return String(Math.abs(hash));                             // Always positive string
   } catch (err) {
-    console.warn('[Cache] Hash failed:', err);
+    if (IS_DEV) console.warn('[Cache] Hash failed:', err);
     return String(Date.now());                                 // Fallback: always different
   }
 }
@@ -72,9 +74,9 @@ export function saveToCache(key, data) {
       version: CACHE_VERSION,                                  // Schema version
     };
     localStorage.setItem(key, JSON.stringify(entry));          // Serialize and store
-    console.log(`[Cache] ✓ Saved ${key} | hash: ${entry.hash}`);
+    if (IS_DEV) console.log(`[Cache] ✓ Saved ${key} | hash: ${entry.hash}`);
   } catch (err) {
-    console.warn(`[Cache] Failed to save ${key}:`, err);
+    if (IS_DEV) console.warn(`[Cache] Failed to save ${key}:`, err);
   }
 }
 
@@ -90,16 +92,15 @@ export function loadFromCacheAny(key) {
     if (!raw) return null;                                     // Nothing cached yet
     const entry = JSON.parse(raw);                             // Parse JSON
 
-      /* Version check — ignore caches from older schema formats */
       if (entry.version !== CACHE_VERSION) {
-        console.log(`[Cache] ↺ ${key} version ${entry.version} → ${CACHE_VERSION}, ignoring`);
+        if (IS_DEV) console.log(`[Cache] ↺ ${key} version ${entry.version} → ${CACHE_VERSION}, ignoring`);
         localStorage.removeItem(key);
         return null;
       }
 
-      return entry.data;                                         // Return data only
+      return entry.data;
   } catch (err) {
-    console.warn(`[Cache] Failed to read ${key}:`, err);
+    if (IS_DEV) console.warn(`[Cache] Failed to read ${key}:`, err);
     localStorage.removeItem(key);                              // Remove corrupted entry
     return null;
   }
@@ -123,15 +124,15 @@ export function isCacheStale(key, freshData) {
 
     const isStale = cachedHash !== freshHash;                  // Different = stale
 
-    console.log(
-      `[Cache] ${isStale ? '🔄 STALE' : '✓ FRESH'} ${key}`,
+    if (IS_DEV) console.log(
+      `[Cache] ${isStale ? 'STALE' : 'FRESH'} ${key}`,
       `| cached: ${cachedHash}`,
       `| fresh:  ${freshHash}`
     );
 
     return isStale;
   } catch (err) {
-    console.warn(`[Cache] Stale check failed for ${key}:`, err);
+    if (IS_DEV) console.warn(`[Cache] Stale check failed for ${key}:`, err);
     return true;                                               // Treat as stale on error
   }
 }
@@ -143,5 +144,5 @@ export function clearAllCache() {
   Object.values(CACHE_KEYS).forEach(key => {
     localStorage.removeItem(key);                              // Remove each key
   });
-  console.log('[Cache] All portfolio cache cleared');
+  if (IS_DEV) console.log('[Cache] All portfolio cache cleared');
 }

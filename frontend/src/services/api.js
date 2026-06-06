@@ -36,7 +36,7 @@ const responseHandler = [
     const message = error.response?.data?.message      // Server error message
       || error.message;                                 // Fallback to axios message
 
-    console.error(`[API Error] ${status || 'NETWORK'}: ${message}`); // Dev log
+    if (import.meta.env.DEV) console.error(`[API Error] ${status || 'NETWORK'}: ${message}`);
 
     return Promise.reject({
       status,                                           // e.g. 404, 500

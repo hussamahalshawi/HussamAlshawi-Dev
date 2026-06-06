@@ -27,6 +27,8 @@ import {
   isCacheStale,
 } from '../utils/cache';
 
+const IS_DEV = import.meta.env.DEV;
+
 /* ── Polling interval — how often to check for changes ──────────── */
 const POLL_INTERVAL_MS = 300_000; // 5 minutes — portfolio data rarely changes
 
@@ -126,13 +128,13 @@ export function usePortfolioData() {
       if (stale) {
         saveToCache(CACHE_KEYS[task.key], freshData);            // Update cache
         setData(prev => ({ ...prev, [task.key]: freshData }));   // Update UI
-        console.log(`[Data] 🔄 ${task.label} changed — UI updated`);
+        if (IS_DEV) console.log(`[Data] ${task.label} changed — UI updated`);
       } else {
-        console.log(`[Data] ✓ ${task.label} unchanged`);
+        if (IS_DEV) console.log(`[Data] ${task.label} unchanged`);
       }
 
     } catch (err) {
-      console.warn(`[Data] ✗ ${task.label} failed:`, err.message);
+      if (IS_DEV) console.warn(`[Data] ${task.label} failed:`, err.message);
     } finally {
       if (showProgress) setProgress(prev => prev + 1);           // Advance loader dot
     }
@@ -147,7 +149,7 @@ export function usePortfolioData() {
     if (isPollingRef.current) return;                            // Skip overlapping polls
     isPollingRef.current = true;                                 // Lock
 
-    console.log('[Poll] 🔍 Checking for data changes...');
+    if (IS_DEV) console.log('[Poll] Checking for data changes...');
 
     /* Check all APIs silently — one timeout won't block future polls */
     await Promise.allSettled(
@@ -209,14 +211,13 @@ export function usePortfolioData() {
         pollForChanges();                                        // Silent background check
       }, POLL_INTERVAL_MS);
 
-      console.log(`[Poll] ✓ Started — checking every ${POLL_INTERVAL_MS / 1000}s`);
+      if (IS_DEV) console.log(`[Poll] Started — checking every ${POLL_INTERVAL_MS / 1000}s`);
     });
 
-    /* Cleanup: stop polling when component unmounts */
     return () => {
       if (pollTimerRef.current) {
-        clearInterval(pollTimerRef.current);                     // Stop the interval
-        console.log('[Poll] ✗ Stopped — component unmounted');
+        clearInterval(pollTimerRef.current);
+        if (IS_DEV) console.log('[Poll] Stopped — component unmounted');
       }
     };
   }, [fetchAll, pollForChanges]);

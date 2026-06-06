@@ -19,7 +19,7 @@ const CHART_CACHE_KEYS = {
 
 export function useCharts(group, externalRef = null) {
   if (!CHART_LOADERS[group]) {
-    console.warn(`[useCharts] Unknown group: "${group}". Use: skills | career | learning | goals`);
+    if (import.meta.env.DEV) console.warn(`[useCharts] Unknown group: "${group}". Use: skills | career | learning | goals`);
   }
 
   const internalRef = useRef(null);
