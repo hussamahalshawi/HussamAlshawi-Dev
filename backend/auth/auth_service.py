@@ -92,13 +92,13 @@ class AuthService:
                     }
                 else:
                     # Lockout expired — reset and allow attempt
-                    admin.failed_attempts = '0'                        # Reset counter after lockout expires
+                    admin.failed_attempts = 0                          # Reset counter after lockout expires
                     admin.save()
 
         # Step 7: Verify password
         if not admin.check_password(password):
             admin.increment_failed_attempts()                          # Record failed attempt
-            remaining_attempts = MAX_FAILED - int(admin.failed_attempts)
+            remaining_attempts = MAX_FAILED - admin.failed_attempts
             logging.warning(
                 f"[AUTH] Wrong password for '{username}' — "
                 f"attempt {admin.failed_attempts}/{MAX_FAILED} from {request.remote_addr}"

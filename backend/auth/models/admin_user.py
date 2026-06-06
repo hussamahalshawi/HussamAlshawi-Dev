@@ -1,4 +1,4 @@
-from mongoengine import Document, StringField, BooleanField, DateTimeField  # MongoDB field types
+from mongoengine import Document, StringField, BooleanField, DateTimeField, IntField  # MongoDB field types
 from datetime import datetime, timezone                                       # Timezone-aware timestamps
 from werkzeug.security import generate_password_hash, check_password_hash    # Secure password hashing
 
@@ -27,7 +27,7 @@ class AdminUser(Document):
     last_failed = DateTimeField()                                            # Last failed attempt timestamp
 
     # --- BRUTE FORCE PROTECTION ---
-    failed_attempts = StringField(default='0')                         # Count of consecutive failed logins
+    failed_attempts = IntField(default=0)                              # Count of consecutive failed logins
 
     meta = {
         'collection': 'admin_users',                                   # MongoDB collection name
@@ -66,14 +66,13 @@ class AdminUser(Document):
 
     def increment_failed_attempts(self) -> None:
         """Increments the failed login counter and records the timestamp."""
-        current = int(self.failed_attempts or '0')                     # Parse current count safely
-        self.failed_attempts = str(current + 1)                        # Increment as string field
+        self.failed_attempts += 1                                      # Increment as int field
         self.last_failed     = datetime.now(timezone.utc)              # Record failure timestamp
         self.save()                                                     # Persist immediately
 
     def reset_failed_attempts(self) -> None:
         """Resets the failed counter on successful login."""
-        self.failed_attempts = '0'                                     # Reset counter to zero
+        self.failed_attempts = 0                                       # Reset counter to zero
         self.last_login      = datetime.now(timezone.utc)              # Record successful login time
         self.save()                                                     # Persist immediately
 
@@ -85,7 +84,7 @@ class AdminUser(Document):
         Returns:
             bool: True if the account is locked.
         """
-        return int(self.failed_attempts or '0') >= 5                   # Lock after 5 failed attempts
+        return self.failed_attempts >= 5                               # Lock after 5 failed attempts
 
     def __str__(self):
         """Returns username for admin dropdowns and log output."""
