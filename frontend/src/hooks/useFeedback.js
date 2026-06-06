@@ -13,7 +13,7 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react';      // React primitives
 import feedbackService                              from '../services/feedbackService'; // Feedback API
-import { useIntersectionLoader }                    from './useIntersectionLoader';     // Shared observer
+import { useIntersectionLoader }                    from '../services/useIntersectionLoader';     // Shared observer
 
 /**
  * useFeedback — loads testimonials on intersection + handles form submission.

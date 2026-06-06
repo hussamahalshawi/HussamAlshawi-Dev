@@ -13,7 +13,7 @@
 
 import { useState, useEffect, useRef }  from 'react';                        // React primitives
 import experienceService                from '../services/experienceService'; // Experience API calls
-import { useIntersectionLoader }        from './useIntersectionLoader';       // Shared observer hook
+import { useIntersectionLoader }        from '../services/useIntersectionLoader';       // Shared observer hook
 
 /**
  * useExperience — fetches experience data when section enters the viewport.

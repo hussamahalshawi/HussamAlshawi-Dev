@@ -14,7 +14,7 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react';       // React primitives
 import educationService                              from '../services/educationService'; // Education API
-import { useIntersectionLoader }                     from './useIntersectionLoader';      // Shared observer
+import { useIntersectionLoader }                     from '../services/useIntersectionLoader';      // Shared observer
 
 /**
  * useCourses — lazy loads courses with live category filter support.

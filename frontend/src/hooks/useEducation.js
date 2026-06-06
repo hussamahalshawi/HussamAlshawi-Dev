@@ -14,7 +14,7 @@
 
 import { useState, useEffect, useRef } from 'react';                     // React primitives
 import educationService                from '../services/educationService'; // Education API calls
-import { useIntersectionLoader }       from './useIntersectionLoader';     // Shared observer hook
+import { useIntersectionLoader }       from '../services/useIntersectionLoader';     // Shared observer hook
 
 /**
  * useEducation — fetches all learning data when section enters the viewport.

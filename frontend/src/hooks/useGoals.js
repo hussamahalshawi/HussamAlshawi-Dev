@@ -13,7 +13,7 @@
 
 import { useState, useEffect, useRef } from 'react';                  // React primitives
 import goalsService                    from '../services/goalsService'; // Goals API calls
-import { useIntersectionLoader }       from './useIntersectionLoader';  // Shared observer hook
+import { useIntersectionLoader }       from '../services/useIntersectionLoader';  // Shared observer hook
 
 /**
  * useGoals — fetches goals and stats when section enters the viewport.
