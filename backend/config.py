@@ -32,47 +32,43 @@ class Config:
     # Ensure logs directory exists locally
     LOG_DIR.mkdir(parents=True, exist_ok=True)
 
-    @staticmethod
-    def validate():
+    @classmethod
+    def validate(cls):
         """
         Ensures all critical environment variables are loaded.
         """
-        critical_vars = [
-            'SECRET_KEY',
-            'MONGO_URI',
-            'CLOUDINARY_CLOUD_NAME',
-            'CLOUDINARY_API_KEY',
-            'CLOUDINARY_API_SECRET'
-        ]
-
-        missing = [var for var in critical_vars if not os.getenv(var)]
+        critical_vars = ['SECRET_KEY', 'MONGO_URI', 'CLOUDINARY_CLOUD_NAME', 'CLOUDINARY_API_KEY', 'CLOUDINARY_API_SECRET']
+        missing = [var for var in critical_vars if not getattr(cls, var)]
 
         if missing:
             raise ValueError(f"[-] Critical Error: Missing environment variables: {', '.join(missing)}")
 
-    @staticmethod
-    def init_cloudinary():
+    _cloudinary_initialized = False
+
+    @classmethod
+    def init_cloudinary(cls):
         """
-        Initializes the Cloudinary SDK for global use.
+        Initializes the Cloudinary SDK for global use (once).
         """
+        if cls._cloudinary_initialized:
+            return
         cloudinary.config(
-            cloud_name=Config.CLOUDINARY_CLOUD_NAME,
-            api_key=Config.CLOUDINARY_API_KEY,
-            api_secret=Config.CLOUDINARY_API_SECRET,
+            cloud_name=cls.CLOUDINARY_CLOUD_NAME,
+            api_key=cls.CLOUDINARY_API_KEY,
+            api_secret=cls.CLOUDINARY_API_SECRET,
             secure=True
         )
+        cls._cloudinary_initialized = True
 
 
 class DevelopmentConfig(Config):
     """Configuration for local development."""
     DEBUG = True
-    ENV = 'development'
 
 
 class ProductionConfig(Config):
     """Configuration for production deployment."""
     DEBUG = False
-    ENV = 'production'
 
 
 # Mapping configurations
@@ -87,10 +83,9 @@ def get_config():
     """
     Factory function to return the validated configuration class.
     """
-    env = os.getenv('FLASK_ENV', 'development').lower()
+    env = 'development' if os.getenv('FLASK_DEBUG', '0').lower() in ('1', 'true') else 'production'
     selected_config = config_map.get(env, config_map['default'])
 
-    # Validation and Service Initialization
     selected_config.validate()
     selected_config.init_cloudinary()
 
