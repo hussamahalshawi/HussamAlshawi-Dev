@@ -93,7 +93,7 @@ def create_app():
     # -------------------------------------------------------------------------
     # STEP 4: CORS
     # -------------------------------------------------------------------------
-    CORS(app, resources={r'/api/*': {'origins': '*'}})
+    CORS(app, resources={r'/api/*': {'origins': ['http://localhost:3000', 'http://localhost:5000']}})
     # ── Server-side RAM Cache ─────────────────────────────────
     app.config['CACHE_TYPE'] = 'SimpleCache'  # Store in server RAM
     app.config['CACHE_DEFAULT_TIMEOUT'] = 300  # Expire after 5 minutes
