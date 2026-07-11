@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, lazy, Suspense } from 'react';
 import {
   BarChart3,
   BriefcaseBusiness,
@@ -8,56 +8,41 @@ import {
   BookOpen,
 } from 'lucide-react';
 
-import SankeyChart from '../charts/SankeyChart';
-import TimelineAreaChart from '../charts/TimelineAreaChart';
-import DualAxisChart from '../charts/DualAxisChart';
-import SunburstChart from '../charts/SunburstChart';
-import GanttChart from '../charts/GanttChart';
-import ProjectsTreemapChart from '../charts/ProjectsTreemapChart';
-import CalendarHeatmap from '../charts/CalendarHeatmap';
-import BarChart from '../charts/BarChart';
-import AchievementsTimeline from '../charts/AchievementsTimeline';
-import StackedBarChart from '../charts/StackedBarChart';
-import MultiRadarChart from '../charts/MultiRadarChart';
-import GaugeChart from '../charts/GaugeChart';
-import DonutChart from '../charts/DonutChart';
-import SkillBulletChart from '../charts/SkillBulletChart';
-import BubbleTimelineChart from '../charts/BubbleTimelineChart';
+/* ── Lazy-loaded chart components ──────────────────────────── */
+const SankeyChart           = lazy(() => import('../charts/SankeyChart'));
+const TimelineAreaChart     = lazy(() => import('../charts/TimelineAreaChart'));
+const DualAxisChart         = lazy(() => import('../charts/DualAxisChart'));
+const SunburstChart         = lazy(() => import('../charts/SunburstChart'));
+const GanttChart            = lazy(() => import('../charts/GanttChart'));
+const ProjectsTreemapChart  = lazy(() => import('../charts/ProjectsTreemapChart'));
+const CalendarHeatmap       = lazy(() => import('../charts/CalendarHeatmap'));
+const BarChart              = lazy(() => import('../charts/BarChart'));
+const AchievementsTimeline  = lazy(() => import('../charts/AchievementsTimeline'));
+const StackedBarChart       = lazy(() => import('../charts/StackedBarChart'));
+const MultiRadarChart       = lazy(() => import('../charts/MultiRadarChart'));
+const GaugeChart            = lazy(() => import('../charts/GaugeChart'));
+const DonutChart            = lazy(() => import('../charts/DonutChart'));
+const SkillBulletChart      = lazy(() => import('../charts/SkillBulletChart'));
+const BubbleTimelineChart   = lazy(() => import('../charts/BubbleTimelineChart'));
 
-import { CHART_COLORS } from '../../utils/constants';
+import { CHART_COLORS, SOURCE_COLORS, SOURCE_KEYS } from '../../utils/constants';
 import '../../styles/sections/AllChartsDashboard.css';
 
 const SECTIONS = [
-  {
-    id: 'overview',
-    Icon: BarChart3,
-    label: 'Portfolio Overview',
-  },
-  {
-    id: 'career',
-    Icon: BriefcaseBusiness,
-    label: 'Career Journey',
-  },
-  {
-    id: 'skills',
-    Icon: Zap,
-    label: 'Skills & Coverage',
-  },
-  {
-    id: 'goals',
-    Icon: Target,
-    label: 'Goals & Roadmap',
-  },
+  { id: 'overview', Icon: BarChart3,          label: 'Portfolio Overview' },
+  { id: 'career',   Icon: BriefcaseBusiness,  label: 'Career Journey'     },
+  { id: 'skills',   Icon: Zap,                label: 'Skills & Coverage'  },
+  { id: 'goals',    Icon: Target,             label: 'Goals & Roadmap'    },
 ];
 
-const SOURCE_COLORS = {
-  Experience: '#1D9E75',
-  Projects: '#378ADD',
-  Courses: '#BA7517',
-  'Self Study': '#7F77DD',
-  Education: '#D85A30',
-};
-const SOURCE_KEYS = Object.keys(SOURCE_COLORS);
+/* ── Suspense fallback for chart panels ────────────────────── */
+function ChartFallback({ label = 'Loading chart...' }) {
+  return (
+    <div className="allcharts-panel" style={{ padding: 'var(--s6)', textAlign: 'center' }}>
+      <p style={{ color: 'var(--text-muted)', fontSize: '0.82rem' }}>{label}</p>
+    </div>
+  );
+}
 
 function AnimatedKpiCard({ label, value, color, Icon, suffix }) {
   return (
@@ -213,10 +198,12 @@ export default function AllChartsDashboard({
                       <span className="allcharts-panel__title">Learning Flow</span>
                       <span className="allcharts-panel__sub">Sources → Skills → Goals</span>
                     </div>
-                    <SankeyChart
-                      skillsWithSources={portfolio.skills_with_sources}
-                      goals={portfolio.goals}
-                    />
+                    <Suspense fallback={<ChartFallback label="Loading Sankey..." />}>
+                      <SankeyChart
+                        skillsWithSources={portfolio.skills_with_sources}
+                        goals={portfolio.goals}
+                      />
+                    </Suspense>
                   </div>
                 )}
 
@@ -227,7 +214,9 @@ export default function AllChartsDashboard({
                       <span className="allcharts-panel__title">Learning Timeline</span>
                       <span className="allcharts-panel__sub">Skills acquired per year by source</span>
                     </div>
-                    <TimelineAreaChart timeline={portfolio.learning_timeline} />
+                    <Suspense fallback={<ChartFallback label="Loading timeline..." />}>
+                      <TimelineAreaChart timeline={portfolio.learning_timeline} />
+                    </Suspense>
                   </div>
                 )}
 
@@ -237,7 +226,9 @@ export default function AllChartsDashboard({
                     <span className="allcharts-panel__title">Experience vs Learning</span>
                     <span className="allcharts-panel__sub">Employment months + Courses per year</span>
                   </div>
-                  <DualAxisChart ganttItems={ganttItems} coursesSeries={coursesSeries} />
+                  <Suspense fallback={<ChartFallback label="Loading dual axis..." />}>
+                    <DualAxisChart ganttItems={ganttItems} coursesSeries={coursesSeries} />
+                  </Suspense>
                 </div>
 
                 {/* Sunburst */}
@@ -247,7 +238,9 @@ export default function AllChartsDashboard({
                       <span className="allcharts-panel__title">Skills Hierarchy</span>
                       <span className="allcharts-panel__sub">Category → Skill → Proficiency Band</span>
                     </div>
-                    <SunburstChart skillsByType={portfolio.skills_by_type} />
+                    <Suspense fallback={<ChartFallback label="Loading sunburst..." />}>
+                      <SunburstChart skillsByType={portfolio.skills_by_type} />
+                    </Suspense>
                   </div>
                 )}
 
@@ -279,7 +272,9 @@ export default function AllChartsDashboard({
                       <span className="allcharts-panel__title">Career Timeline</span>
                       <span className="allcharts-panel__sub">Education + Experience</span>
                     </div>
-                    <GanttChart items={ganttItems} minYear={ganttMinYear} maxYear={ganttMaxYear} />
+                    <Suspense fallback={<ChartFallback label="Loading Gantt..." />}>
+                      <GanttChart items={ganttItems} minYear={ganttMinYear} maxYear={ganttMaxYear} />
+                    </Suspense>
                   </div>
                 )}
 
@@ -290,7 +285,9 @@ export default function AllChartsDashboard({
                       <div className="allcharts-panel__header">
                         <span className="allcharts-panel__title">Projects by Type</span>
                       </div>
-                      <ProjectsTreemapChart data={careerData.projectsTreemap} />
+                      <Suspense fallback={<ChartFallback label="Loading treemap..." />}>
+                        <ProjectsTreemapChart data={careerData.projectsTreemap} />
+                      </Suspense>
                     </div>
                   )}
                   {careerData?.projectsHeatmap && (
@@ -298,11 +295,13 @@ export default function AllChartsDashboard({
                       <div className="allcharts-panel__header">
                         <span className="allcharts-panel__title">Monthly Activity</span>
                       </div>
-                      <CalendarHeatmap
-                        byMonth={careerData.projectsHeatmap.by_month}
-                        minDate={careerData.projectsHeatmap.min_date}
-                        maxDate={careerData.projectsHeatmap.max_date}
-                      />
+                      <Suspense fallback={<ChartFallback label="Loading heatmap..." />}>
+                        <CalendarHeatmap
+                          byMonth={careerData.projectsHeatmap.by_month}
+                          minDate={careerData.projectsHeatmap.min_date}
+                          maxDate={careerData.projectsHeatmap.max_date}
+                        />
+                      </Suspense>
                     </div>
                   )}
                 </div>
@@ -314,7 +313,9 @@ export default function AllChartsDashboard({
                       <span className="allcharts-panel__title">Tech Frequency</span>
                       <span className="allcharts-panel__sub">All technologies across projects & experience</span>
                     </div>
-                    <BarChart data={kpiBarData} size="sm" showValues />
+                    <Suspense fallback={<ChartFallback label="Loading bars..." />}>
+                      <BarChart data={kpiBarData} size="sm" showValues />
+                    </Suspense>
                   </div>
                 )}
 
@@ -325,7 +326,9 @@ export default function AllChartsDashboard({
                       <span className="allcharts-panel__title">Achievements</span>
                       <span className="allcharts-panel__sub">Awards & recognitions</span>
                     </div>
-                    <AchievementsTimeline byYear={achievementsByYear} />
+                    <Suspense fallback={<ChartFallback label="Loading achievements..." />}>
+                      <AchievementsTimeline byYear={achievementsByYear} />
+                    </Suspense>
                   </div>
                 )}
 
@@ -343,13 +346,15 @@ export default function AllChartsDashboard({
                       <span className="allcharts-panel__title">Skills by Source</span>
                       <span className="allcharts-panel__sub">Top 8 skills — frequency per learning source</span>
                     </div>
-                    <StackedBarChart
-                      data={sourcesData.topSkills}
-                      barKey="skill"
-                      stackKeys={SOURCE_KEYS}
-                      stackColors={SOURCE_COLORS}
-                      showLegend
-                    />
+                    <Suspense fallback={<ChartFallback label="Loading stacked bars..." />}>
+                      <StackedBarChart
+                        data={sourcesData.topSkills}
+                        barKey="skill"
+                        stackKeys={SOURCE_KEYS}
+                        stackColors={SOURCE_COLORS}
+                        showLegend
+                      />
+                    </Suspense>
                   </div>
                 )}
 
@@ -360,7 +365,9 @@ export default function AllChartsDashboard({
                       <span className="allcharts-panel__title">Domain Coverage</span>
                       <span className="allcharts-panel__sub">Combined vs each source</span>
                     </div>
-                    <MultiRadarChart data={domainCoverage} />
+                    <Suspense fallback={<ChartFallback label="Loading radar..." />}>
+                      <MultiRadarChart data={domainCoverage} />
+                    </Suspense>
                   </div>
                 )}
 
@@ -389,12 +396,14 @@ export default function AllChartsDashboard({
                         <span className="allcharts-panel__title">Overall Progress</span>
                         <span className="allcharts-panel__sub">{goalsData.gauge.achieved_count}/{goalsData.gauge.total} achieved</span>
                       </div>
-                      <GaugeChart
-                        value={goalsData.gauge.overall_pct || 0}
-                        maxValue={100}
-                        label="Goals Complete"
-                        subLabel={`${goalsData.gauge.achieved_count || 0} of ${goalsData.gauge.total || 0}`}
-                      />
+                      <Suspense fallback={<ChartFallback label="Loading gauge..." />}>
+                        <GaugeChart
+                          value={goalsData.gauge.overall_pct || 0}
+                          maxValue={100}
+                          label="Goals Complete"
+                          subLabel={`${goalsData.gauge.achieved_count || 0} of ${goalsData.gauge.total || 0}`}
+                        />
+                      </Suspense>
                     </div>
                   )}
                   {gaugeDonutData.length > 0 && (
@@ -402,13 +411,15 @@ export default function AllChartsDashboard({
                       <div className="allcharts-panel__header">
                         <span className="allcharts-panel__title">By Status</span>
                       </div>
-                      <DonutChart
-                        data={gaugeDonutData}
-                        size="sm"
-                        showLegend
-                        centerLabel="Goals"
-                        title="Goals by status"
-                      />
+                      <Suspense fallback={<ChartFallback label="Loading donut..." />}>
+                        <DonutChart
+                          data={gaugeDonutData}
+                          size="sm"
+                          showLegend
+                          centerLabel="Goals"
+                          title="Goals by status"
+                        />
+                      </Suspense>
                     </div>
                   )}
                   {priorityDonutData.length > 0 && (
@@ -416,13 +427,15 @@ export default function AllChartsDashboard({
                       <div className="allcharts-panel__header">
                         <span className="allcharts-panel__title">By Priority</span>
                       </div>
-                      <DonutChart
-                        data={priorityDonutData}
-                        size="sm"
-                        showLegend
-                        centerLabel="Goals"
-                        title="Goals by priority"
-                      />
+                      <Suspense fallback={<ChartFallback label="Loading donut..." />}>
+                        <DonutChart
+                          data={priorityDonutData}
+                          size="sm"
+                          showLegend
+                          centerLabel="Goals"
+                          title="Goals by priority"
+                        />
+                      </Suspense>
                     </div>
                   )}
                 </div>
@@ -434,7 +447,9 @@ export default function AllChartsDashboard({
                       <span className="allcharts-panel__title">Progress by Year</span>
                       <span className="allcharts-panel__sub">Average completion %</span>
                     </div>
-                    <BarChart data={yearProgData} size="sm" showValues />
+                    <Suspense fallback={<ChartFallback label="Loading bars..." />}>
+                      <BarChart data={yearProgData} size="sm" showValues />
+                    </Suspense>
                   </div>
                 )}
 
@@ -445,7 +460,9 @@ export default function AllChartsDashboard({
                       <span className="allcharts-panel__title">Skill Gap Analysis</span>
                       <span className="allcharts-panel__sub">Current vs Target — red line = target</span>
                     </div>
-                    <SkillBulletChart goals={goalsData.skillGap.goals} />
+                    <Suspense fallback={<ChartFallback label="Loading bullet chart..." />}>
+                      <SkillBulletChart goals={goalsData.skillGap.goals} />
+                    </Suspense>
                   </div>
                 )}
 
@@ -456,11 +473,13 @@ export default function AllChartsDashboard({
                       <span className="allcharts-panel__title">Goals Roadmap</span>
                       <span className="allcharts-panel__sub">{goalsData.roadmap.count || goalsData.roadmap.goals.length} goals</span>
                     </div>
-                    <BubbleTimelineChart
-                      goals={goalsData.roadmap.goals}
-                      minYear={goalsData.roadmap.min_year}
-                      maxYear={goalsData.roadmap.max_year}
-                    />
+                    <Suspense fallback={<ChartFallback label="Loading roadmap..." />}>
+                      <BubbleTimelineChart
+                        goals={goalsData.roadmap.goals}
+                        minYear={goalsData.roadmap.min_year}
+                        maxYear={goalsData.roadmap.max_year}
+                      />
+                    </Suspense>
                   </div>
                 )}
 
