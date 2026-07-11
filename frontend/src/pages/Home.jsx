@@ -6,17 +6,24 @@
  * so page reload preserves the active section.
  * No scroll between sections — each section shows/hides via CSS.
  * Data loads once on mount and stays alive (keep-alive pattern).
+ *
+ * Future:  3 built sections (Overview, Skills, Analytics) use eager
+ * imports for keep-alive animation state. Placeholder sections use
+ * React.lazy to defer code loading.
  * ─────────────────────────────────────────────────────────
  */
 
-import { useState, useEffect }                  from 'react';
-import { usePortfolioData }                     from '../hooks/usePortfolioData';
-import DashboardLayout                          from '../components/layout/DashboardLayout';
-import OverviewSection                          from '../components/sections/OverviewSection';
-import AnalyticsSection                         from '../components/sections/AnalyticsSection';
-import SkillsSection                            from '../components/sections/SkillsSection';
-import PageLoader                               from '../components/ui/PageLoader';
+import { useState, useEffect, lazy, Suspense }      from 'react';
+import { usePortfolioData }                         from '../hooks/usePortfolioData';
+import DashboardLayout                              from '../components/layout/DashboardLayout';
+import OverviewSection                              from '../components/sections/OverviewSection';
+import AnalyticsSection                             from '../components/sections/AnalyticsSection';
+import SkillsSection                                from '../components/sections/SkillsSection';
+import PageLoader                                   from '../components/ui/PageLoader';
 import '../styles/layout/Sections.css';
+
+/* ── Lazy-loaded placeholder sections (deferred code) ───────── */
+const PlaceholderSection = lazy(() => import('../components/sections/PlaceholderSection'));
 
 /* ── Section IDs — must match NAV_ITEMS order ───────────────── */
 const SECTION_IDS = [
@@ -57,6 +64,26 @@ function OfflineBanner({ message }) {
   );
 }
 
+/* ── Section wrapper — controls visibility + Suspense boundary ── */
+function SectionWrapper({ id, activeSection, children, lazy }) {
+  const isVisible = activeSection === id;
+  return (
+    <div
+      role="region"
+      aria-label={id}
+      style={{ display: isVisible ? 'block' : 'none' }}
+    >
+      {lazy ? (
+        <Suspense fallback={<div className="section-placeholder">Loading...</div>}>
+          {isVisible && children}
+        </Suspense>
+      ) : (
+        children   // Eager-loaded sections render children unconditionally (keep-alive)
+      )}
+    </div>
+  );
+}
+
 /* ════════════════════════════════════════════════════════════════
    MAIN COMPONENT
 ════════════════════════════════════════════════════════════════ */
@@ -75,6 +102,18 @@ export default function Home() {
     return () => window.removeEventListener('hashchange', onHashChange);
   }, []);
 
+  /* ── Section labels for lazy placeholders ────────────────── */
+  const sectionLabels = {
+    experience: 'Experience & Achievements',
+    projects:   'Projects',
+    education:  'Education & Courses',
+    selfstudy:  'Self Study',
+    goals:      'Goals',
+    feedback:   'Feedback',
+    about:      'About',
+    contact:    'Contact',
+  };
+
   /* ── Show loader while phase 1 data is loading ──────────── */
   if (loading) {
     return <PageLoader visible progress={progress} />;
@@ -89,143 +128,71 @@ export default function Home() {
 
       {error && <OfflineBanner message={error} />}
 
-      {/* ── Each section is always mounted but only visible when active ── */}
-      {/* CSS handles show/hide — no remount, no data refetch             */}
+      {/* ── Each section is visible when active, hidden otherwise ── */}
+      {/* NOTE: id attributes live on the section components themselves, */}
+      {/* not on these wrapper divs — avoids duplicate DOM ids.        */}
 
-      {/* SECTION 1 — Overview */}
-      <div
-        id="overview"
-        role="region"
-        aria-label="Overview"
-        style={{ display: activeSection === 'overview' ? 'block' : 'none' }}
-      >
+      {/* SECTION 1 — Overview (eager, always mounted) */}
+      <SectionWrapper id="overview" activeSection={activeSection}>
         <OverviewSection
           profile={data.profile}
           analytics={data.analytics}
           languages={data.languages?.languages || []}
         />
-      </div>
+      </SectionWrapper>
 
       {/* SECTION 2 — Experience & Achievements */}
-        <div
-          id="experience"
-          role="region"
-          aria-label="Experience and Achievements"
-          style={{ display: activeSection === 'experience' ? 'block' : 'none' }}
-        >
-          <div className="section-placeholder">
-            Experience &amp; Achievements Section — Coming Soon
-          </div>
-        </div>
+      <SectionWrapper id="experience" activeSection={activeSection} lazy>
+        <PlaceholderSection title={sectionLabels.experience} />
+      </SectionWrapper>
 
       {/* SECTION 3 — Projects */}
-      <div
-        id="projects"
-        role="region"
-        aria-label="Projects"
-        style={{ display: activeSection === 'projects' ? 'block' : 'none' }}
-      >
-        <div className="section-placeholder">
-          Projects Section — Coming Soon
-        </div>
-      </div>
+      <SectionWrapper id="projects" activeSection={activeSection} lazy>
+        <PlaceholderSection title={sectionLabels.projects} />
+      </SectionWrapper>
 
-      {/* SECTION 4 — Skills */}
-      <div
-        id="skills"
-        role="region"
-        aria-label="Skills"
-        style={{ display: activeSection === 'skills' ? 'block' : 'none' }}
-      >
+      {/* SECTION 4 — Skills (eager, always mounted) */}
+      <SectionWrapper id="skills" activeSection={activeSection}>
         <SkillsSection
           skills={data.skills}
           summary={data.skillsSummary}
         />
-      </div>
+      </SectionWrapper>
 
       {/* SECTION 5 — Education & Courses */}
-        <div
-          id="education"
-          role="region"
-          aria-label="Education and Courses"
-          style={{ display: activeSection === 'education' ? 'block' : 'none' }}
-        >
-          <div className="section-placeholder">
-            Education &amp; Courses Section — Coming Soon
-          </div>
-        </div>
-
-
+      <SectionWrapper id="education" activeSection={activeSection} lazy>
+        <PlaceholderSection title={sectionLabels.education} />
+      </SectionWrapper>
 
       {/* SECTION 7 — Self Study */}
-      <div
-        id="selfstudy"
-        role="region"
-        aria-label="Self Study"
-        style={{ display: activeSection === 'selfstudy' ? 'block' : 'none' }}
-      >
-        <div className="section-placeholder">
-          Self Study Section — Coming Soon
-        </div>
-      </div>
+      <SectionWrapper id="selfstudy" activeSection={activeSection} lazy>
+        <PlaceholderSection title={sectionLabels.selfstudy} />
+      </SectionWrapper>
 
-      {/* SECTION 8 — Analytics */}
-      <div
-        id="analytics"
-        role="region"
-        aria-label="Analytics"
-        style={{ display: activeSection === 'analytics' ? 'block' : 'none' }}
-      >
+      {/* SECTION 8 — Analytics (eager, always mounted) */}
+      <SectionWrapper id="analytics" activeSection={activeSection}>
         <AnalyticsSection analytics={data.analytics} portfolio={data.portfolioSummary} />
-      </div>
+      </SectionWrapper>
 
       {/* SECTION 9 — Goals */}
-      <div
-        id="goals"
-        role="region"
-        aria-label="Goals"
-        style={{ display: activeSection === 'goals' ? 'block' : 'none' }}
-      >
-        <div className="section-placeholder">
-          Goals Section — Coming Soon
-        </div>
-      </div>
+      <SectionWrapper id="goals" activeSection={activeSection} lazy>
+        <PlaceholderSection title={sectionLabels.goals} />
+      </SectionWrapper>
 
       {/* SECTION 10 — Feedback */}
-      <div
-        id="feedback"
-        role="region"
-        aria-label="Feedback"
-        style={{ display: activeSection === 'feedback' ? 'block' : 'none' }}
-      >
-        <div className="section-placeholder">
-          Feedback Section — Coming Soon
-        </div>
-      </div>
+      <SectionWrapper id="feedback" activeSection={activeSection} lazy>
+        <PlaceholderSection title={sectionLabels.feedback} />
+      </SectionWrapper>
 
       {/* SECTION 11 — About */}
-      <div
-        id="about"
-        role="region"
-        aria-label="About"
-        style={{ display: activeSection === 'about' ? 'block' : 'none' }}
-      >
-        <div className="section-placeholder">
-          About Section — Coming Soon
-        </div>
-      </div>
+      <SectionWrapper id="about" activeSection={activeSection} lazy>
+        <PlaceholderSection title={sectionLabels.about} />
+      </SectionWrapper>
 
       {/* SECTION 12 — Contact */}
-      <div
-        id="contact"
-        role="region"
-        aria-label="Contact"
-        style={{ display: activeSection === 'contact' ? 'block' : 'none' }}
-      >
-        <div className="section-placeholder">
-          Contact Section — Coming Soon
-        </div>
-      </div>
+      <SectionWrapper id="contact" activeSection={activeSection} lazy>
+        <PlaceholderSection title={sectionLabels.contact} />
+      </SectionWrapper>
 
     </DashboardLayout>
   );
