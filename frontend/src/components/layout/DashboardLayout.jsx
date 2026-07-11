@@ -11,6 +11,7 @@
 import { useState, useEffect }   from 'react';
 import { useTheme }              from '../../context/ThemeContext';  // Dark/light mode context
 import { getInitials }           from '../../utils/formatters';      // Name → "HA"
+import { NAV_ITEMS, BOTTOM_NAV_ITEMS, PAGE_TITLES } from '../../utils/constants'; // Centralized nav data
 import '../../styles/layout/DashboardLayout.css';                    // Layout styles
 import ParticleBackground        from '../ui/ParticleBackground';    // Canvas particle bg
 
@@ -26,40 +27,21 @@ import {
   MessageSquareQuote,
   UserRound,
   Send,
-} from 'lucide-react';                                               // Icon library                                               // Icon library
+} from 'lucide-react';                                               // Icon library
 
-/* ── Main navigation items ─────────────────────────────────── */
-const NAV_ITEMS = [
-  { label: 'Overview',                  href: '#overview',   id: 'overview',   Icon: LayoutDashboard    },
-  { label: 'Experience & Achievements', href: '#experience', id: 'experience', Icon: BriefcaseBusiness  },
-  { label: 'Projects',                  href: '#projects',   id: 'projects',   Icon: Rocket             },
-  { label: 'Skills',                    href: '#skills',     id: 'skills',     Icon: Zap                },
-  { label: 'Education & Courses',       href: '#education',  id: 'education',  Icon: GraduationCap      },
-  { label: 'Self Study',                href: '#selfstudy',  id: 'selfstudy',  Icon: FlaskConical       },
-  { label: 'Analytics',                 href: '#analytics',  id: 'analytics',  Icon: BarChart3          },
-  { label: 'Goals',                     href: '#goals',      id: 'goals',      Icon: Target             },
-  { label: 'Feedback',                  href: '#feedback',   id: 'feedback',   Icon: MessageSquareQuote },
-];
-
-/* ── Bottom pinned nav items ───────────────────────────────── */
-const BOTTOM_NAV_ITEMS = [
-  { label: 'About',   href: '#about',   id: 'about',   Icon: UserRound },
-  { label: 'Contact', href: '#contact', id: 'contact', Icon: Send      },
-];
-
-/* ── Section label → page title map ───────────────────────── */
-const PAGE_TITLES = {
-  overview:   'Overview',
-  experience: 'Experience',
-  projects:   'Projects',
-  skills:     'Skills',
-  education:  'Education',
-  selfstudy:  'Self Study',
-  analytics:  'Analytics',
-  goals:      'Goals',
-  feedback:   'Feedback',
-  about:      'About',
-  contact:    'Contact',
+/* ── Map nav item IDs to Lucide icons ────────────────────────── */
+const ICON_MAP = {
+  overview:   LayoutDashboard,
+  experience: BriefcaseBusiness,
+  projects:   Rocket,
+  skills:     Zap,
+  education:  GraduationCap,
+  selfstudy:  FlaskConical,
+  analytics:  BarChart3,
+  goals:      Target,
+  feedback:   MessageSquareQuote,
+  about:      UserRound,
+  contact:    Send,
 };
 
 /**
@@ -151,6 +133,7 @@ export default function DashboardLayout({ children, activeSection = '', onSectio
         >
           {NAV_ITEMS.map(item => {
             const isActive = activeSection === item.id;        // Check if this item is active
+            const IconComponent = ICON_MAP[item.id];           // Look up Lucide icon
             return (
               <a
                 key={item.id}
@@ -164,7 +147,7 @@ export default function DashboardLayout({ children, activeSection = '', onSectio
               >
                 {/* Lucide icon */}
                 <span className="nav-item__icon" aria-hidden="true">
-                  <item.Icon size={17} strokeWidth={1.6} />
+                  {IconComponent && <IconComponent size={17} strokeWidth={1.6} />}
                 </span>
                 {/* Label text */}
                 <span className="nav-item__label">{item.label}</span>
@@ -182,6 +165,7 @@ export default function DashboardLayout({ children, activeSection = '', onSectio
           <nav className="sidebar__bottom-nav" role="navigation" aria-label="About and contact">
             {BOTTOM_NAV_ITEMS.map(item => {
               const isActive = activeSection === item.id;
+              const IconComponent = ICON_MAP[item.id];
               return (
                 <a
                   key={item.id}
@@ -195,7 +179,7 @@ export default function DashboardLayout({ children, activeSection = '', onSectio
                   }}
                 >
                   <span className="nav-item__icon" aria-hidden="true">
-                    <item.Icon size={17} strokeWidth={1.6} />
+                    {IconComponent && <IconComponent size={17} strokeWidth={1.6} />}
                   </span>
                   <span className="nav-item__label">{item.label}</span>
                 </a>
