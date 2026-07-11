@@ -25,45 +25,36 @@
  * ─────────────────────────────────────────────────────────
  */
 
-import { useRef, useEffect, useState, useCallback } from 'react';
-import { CHART_COLORS, SKILL_BANDS, ANIMATION }       from '../../utils/constants'; // Global tokens
-import { SkeletonKPI }                               from '../ui/SkeletonLoader'; // Loading skeleton
-import Badge                                          from '../ui/Badge';         // Badge component
-import SankeyChart                                    from '../charts/SankeyChart';
-import RadarSkillsChart                               from '../charts/RadarSkillsChart';
-import MultiRadarChart                                from '../charts/MultiRadarChart';
-import TimelineAreaChart                              from '../charts/TimelineAreaChart';
-import GoalsBulletChart                               from '../charts/GoalsBulletChart';
-import SourceTreemapChart                             from '../charts/SourceTreemapChart';
-import CareerTab                                      from './tabs/CareerTab';
-import SkillsTab                                      from './tabs/SkillsTab';
-import LearningTab                                    from './tabs/LearningTab';
-import GoalsTab                                       from './tabs/GoalsTab';
-import AllChartsDashboard                             from './AllChartsDashboard';
-import chartsService                                  from '../../services/chartsService';
+import { useRef, useEffect, useState, useCallback, lazy, Suspense } from 'react';
+import { CHART_COLORS, SKILL_BANDS, ANIMATION, ANALYTICS_TABS, KPI_CONFIG }       from '../../utils/constants'; // Global tokens + centralized config
+import { SkeletonKPI }                                                from '../ui/SkeletonLoader'; // Loading skeleton
+import Badge                                                          from '../ui/Badge';         // Badge component
+import AllChartsDashboard                                             from './AllChartsDashboard';
+import chartsService                                                  from '../../services/chartsService';
 import '../../styles/components/AnalyticsSection.css';
 
-/* ── Analytics tab configuration ────────────────────────────── */
-const ANALYTICS_TABS = [
-  { id: 'overview', label: 'Overview' },
-  { id: 'career',   label: 'Career Journey' },
-  { id: 'skills',   label: 'Skills Deep Dive' },
-  { id: 'learning', label: 'Learning' },
-  { id: 'goals',    label: 'Goals' },
-];
+/* ── Lazy-loaded chart components (deferred until tab is active) ── */
+const SankeyChart         = lazy(() => import('../charts/SankeyChart'));
+const RadarSkillsChart    = lazy(() => import('../charts/RadarSkillsChart'));
+const MultiRadarChart     = lazy(() => import('../charts/MultiRadarChart'));
+const TimelineAreaChart   = lazy(() => import('../charts/TimelineAreaChart'));
+const GoalsBulletChart    = lazy(() => import('../charts/GoalsBulletChart'));
+const SourceTreemapChart  = lazy(() => import('../charts/SourceTreemapChart'));
 
-/* ── KPI card configuration ──────────────────────────────────── */
-/* Each entry maps to a count key in the analytics.counts object */
-const KPI_CONFIG = [
-  { key: 'skills',       label: 'Skills',       icon: '⚙',  color: CHART_COLORS[0] }, // Lime
-  { key: 'projects',     label: 'Projects',     icon: '⊡',  color: CHART_COLORS[1] }, // Cyan
-  { key: 'courses',      label: 'Courses',      icon: '📚', color: CHART_COLORS[2] }, // Violet
-  { key: 'experience',   label: 'Roles',        icon: '💼', color: CHART_COLORS[3] }, // Gold
-  { key: 'education',    label: 'Degrees',      icon: '🎓', color: CHART_COLORS[4] }, // Coral
-  { key: 'achievements', label: 'Achievements', icon: '🏆', color: CHART_COLORS[5] }, // Green
-  { key: 'self_study',   label: 'Self Study',   icon: '✍',  color: CHART_COLORS[6] }, // Blue
-  { key: 'goals',        label: 'Goals',        icon: '◈',  color: CHART_COLORS[7] }, // Amber
-];
+/* ── Lazy-loaded tab content components ───────────────────────── */
+const CareerTab   = lazy(() => import('./tabs/CareerTab'));
+const SkillsTab   = lazy(() => import('./tabs/SkillsTab'));
+const LearningTab = lazy(() => import('./tabs/LearningTab'));
+const GoalsTab    = lazy(() => import('./tabs/GoalsTab'));
+
+/* ── Suspense fallback for lazy tabs ──────────────────────────── */
+function TabFallback() {
+  return (
+    <div className="analytics-glass-panel" style={{ padding: 'var(--s6)', textAlign: 'center' }}>
+      <p style={{ color: 'var(--text-muted)', fontSize: '0.82rem' }}>Loading...</p>
+    </div>
+  );
+}
 
 /* ════════════════════════════════════════════════════════════════
    MAIN COMPONENT: AnalyticsSection
@@ -208,8 +199,8 @@ export default function AnalyticsSection({ analytics, portfolio }) {
                   label={kpi.label}
                   value={counts[kpi.key] || 0}
                   icon={kpi.icon}
-                  color={kpi.color}
-                  delay={i * 70}                              /* Stagger each card by 70ms */
+                  color={CHART_COLORS[i % CHART_COLORS.length]}
+                  delay={i * 70}
                 />
               ))}
             </div>
@@ -331,18 +322,22 @@ export default function AnalyticsSection({ analytics, portfolio }) {
                       Sources → Skills → Goals
                     </span>
                   </div>
-                  <SankeyChart
-                    skillsWithSources={portfolio.skills_with_sources}
-                    goals={portfolio.goals}
-                  />
+                  <Suspense fallback={<p style={{ color: 'var(--text-muted)', textAlign: 'center', padding: 'var(--s4)' }}>Loading...</p>}>
+                    <SankeyChart
+                      skillsWithSources={portfolio.skills_with_sources}
+                      goals={portfolio.goals}
+                    />
+                  </Suspense>
                 </div>
 
-                  {/* ROW 2: Domain Coverage — Multi-series Radar */}
-                  <div className="analytics-glass-panel portfolio-chart-panel">
+                {/* ROW 2: Domain Coverage — Multi-series Radar */}
+                <div className="analytics-glass-panel portfolio-chart-panel">
+                  <Suspense fallback={<p style={{ color: 'var(--text-muted)', textAlign: 'center', padding: 'var(--s4)' }}>Loading...</p>}>
                     <MultiRadarChart data={chartData.domainCoverage} />
-                  </div>
+                  </Suspense>
+                </div>
 
-                  {/* ROW 3: Radar + Treemap (2-col) */}
+                {/* ROW 3: Radar + Treemap (2-col) */}
                 <div className="portfolio-row-2col">
                   <div className="analytics-glass-panel portfolio-chart-panel">
                     <div className="analytics-panel__header">
@@ -353,7 +348,9 @@ export default function AnalyticsSection({ analytics, portfolio }) {
                         {portfolio.skills_by_type?.length || 0} categories
                       </span>
                     </div>
-                    <RadarSkillsChart skillsByType={portfolio.skills_by_type} />
+                    <Suspense fallback={<p style={{ color: 'var(--text-muted)', textAlign: 'center', padding: 'var(--s4)' }}>Loading...</p>}>
+                      <RadarSkillsChart skillsByType={portfolio.skills_by_type} />
+                    </Suspense>
                   </div>
                   <div className="analytics-glass-panel portfolio-chart-panel">
                     <div className="analytics-panel__header">
@@ -364,7 +361,9 @@ export default function AnalyticsSection({ analytics, portfolio }) {
                         Skills by learning source
                       </span>
                     </div>
-                    <SourceTreemapChart sourceContribution={portfolio.learning_overview?.source_contribution} />
+                    <Suspense fallback={<p style={{ color: 'var(--text-muted)', textAlign: 'center', padding: 'var(--s4)' }}>Loading...</p>}>
+                      <SourceTreemapChart sourceContribution={portfolio.learning_overview?.source_contribution} />
+                    </Suspense>
                   </div>
                 </div>
 
@@ -378,7 +377,9 @@ export default function AnalyticsSection({ analytics, portfolio }) {
                       Skills acquired per year by source
                     </span>
                   </div>
-                  <TimelineAreaChart timeline={portfolio.learning_timeline} />
+                  <Suspense fallback={<p style={{ color: 'var(--text-muted)', textAlign: 'center', padding: 'var(--s4)' }}>Loading...</p>}>
+                    <TimelineAreaChart timeline={portfolio.learning_timeline} />
+                  </Suspense>
                 </div>
 
                 {/* ROW 5: Goals — Bullet Chart */}
@@ -391,7 +392,9 @@ export default function AnalyticsSection({ analytics, portfolio }) {
                       Current vs Target
                     </span>
                   </div>
-                  <GoalsBulletChart goals={portfolio.goals} />
+                  <Suspense fallback={<p style={{ color: 'var(--text-muted)', textAlign: 'center', padding: 'var(--s4)' }}>Loading...</p>}>
+                    <GoalsBulletChart goals={portfolio.goals} />
+                  </Suspense>
                 </div>
 
               </div>
@@ -408,31 +411,39 @@ export default function AnalyticsSection({ analytics, portfolio }) {
         )}
 
         {/* ══════════════════════════════════════════════
-            TAB: Career Journey
+            TAB: Career Journey (lazy-loaded)
         ══════════════════════════════════════════════ */}
         {activeTab === 'career' && (
-          <CareerTab />
+          <Suspense fallback={<TabFallback />}>
+            <CareerTab />
+          </Suspense>
         )}
 
         {/* ══════════════════════════════════════════════
-            TAB: Skills Deep Dive
+            TAB: Skills Deep Dive (lazy-loaded)
         ══════════════════════════════════════════════ */}
         {activeTab === 'skills' && (
-          <SkillsTab />
+          <Suspense fallback={<TabFallback />}>
+            <SkillsTab />
+          </Suspense>
         )}
 
         {/* ══════════════════════════════════════════════
-            TAB: Learning
+            TAB: Learning (lazy-loaded)
         ══════════════════════════════════════════════ */}
         {activeTab === 'learning' && (
-          <LearningTab />
+          <Suspense fallback={<TabFallback />}>
+            <LearningTab />
+          </Suspense>
         )}
 
         {/* ══════════════════════════════════════════════
-            TAB: Goals
+            TAB: Goals (lazy-loaded)
         ══════════════════════════════════════════════ */}
         {activeTab === 'goals' && (
-          <GoalsTab />
+          <Suspense fallback={<TabFallback />}>
+            <GoalsTab />
+          </Suspense>
         )}
 
         {/* ══════════════════════════════════════════════
