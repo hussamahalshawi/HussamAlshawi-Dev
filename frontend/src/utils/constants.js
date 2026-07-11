@@ -10,7 +10,7 @@
  *   1.  API base URL
  *   2.  API endpoint paths — Portfolio (existing)
  *   3.  API endpoint paths — Charts (new dedicated endpoints)
- *   4.  Navigation links
+ *   4.  Navigation — sidebar items + page titles
  *   5.  Social platform config
  *   6.  Skill proficiency bands
  *   7.  Chart color palette
@@ -184,19 +184,45 @@ export const ENDPOINTS = {
 };
 
 /* ══════════════════════════════════════════════════════════
-   4. NAVIGATION LINKS
+   4. NAVIGATION — Sidebar items + page titles
    Used by DashboardLayout sidebar nav items.
    id must match the corresponding <section id="..."> element.
+   Icon components are imported by DashboardLayout.
 ══════════════════════════════════════════════════════════ */
-export const NAV_LINKS = [
-  { id: 'overview',   label: 'Dashboard',  href: '#overview',   icon: '⊞' },
-  { id: 'analytics',  label: 'Analytics',  href: '#analytics',  icon: '↗' },
-  { id: 'skills',     label: 'Skills',     href: '#skills',     icon: '◎' },
-  { id: 'projects',   label: 'Projects',   href: '#projects',   icon: '⊡' },
-  { id: 'experience', label: 'Experience', href: '#experience', icon: '⊛' },
-  { id: 'goals',      label: 'Goals',      href: '#goals',      icon: '◈' },
-  { id: 'contact',    label: 'Contact',    href: '#contact',    icon: '✉' },
+
+/** Main navigation items (top section of sidebar) */
+export const NAV_ITEMS = [
+  { label: 'Overview',                  href: '#overview',   id: 'overview'   },
+  { label: 'Experience & Achievements', href: '#experience', id: 'experience' },
+  { label: 'Projects',                  href: '#projects',   id: 'projects'   },
+  { label: 'Skills',                    href: '#skills',     id: 'skills'     },
+  { label: 'Education & Courses',       href: '#education',  id: 'education'  },
+  { label: 'Self Study',                href: '#selfstudy',  id: 'selfstudy'  },
+  { label: 'Analytics',                 href: '#analytics',  id: 'analytics'  },
+  { label: 'Goals',                     href: '#goals',      id: 'goals'      },
+  { label: 'Feedback',                  href: '#feedback',   id: 'feedback'   },
 ];
+
+/** Bottom pinned navigation items */
+export const BOTTOM_NAV_ITEMS = [
+  { label: 'About',   href: '#about',   id: 'about'   },
+  { label: 'Contact', href: '#contact', id: 'contact' },
+];
+
+/** Section ID → human-readable page title for the topbar */
+export const PAGE_TITLES = {
+  overview:   'Overview',
+  experience: 'Experience',
+  projects:   'Projects',
+  skills:     'Skills',
+  education:  'Education',
+  selfstudy:  'Self Study',
+  analytics:  'Analytics',
+  goals:      'Goals',
+  feedback:   'Feedback',
+  about:      'About',
+  contact:    'Contact',
+};
 
 /* ══════════════════════════════════════════════════════════
    5. SOCIAL PLATFORM CONFIG
@@ -204,11 +230,11 @@ export const NAV_LINKS = [
    key must match the field name in the profile API response.
 ══════════════════════════════════════════════════════════ */
 export const SOCIAL_PLATFORMS = [
-  { key: 'github',    icon: '⚙',  label: 'GitHub'    }, // GitHub profile URL
-  { key: 'linkedin',  icon: '💼', label: 'LinkedIn'  }, // LinkedIn profile URL
-  { key: 'medium',    icon: '✍',  label: 'Medium'    }, // Medium blog URL
-  { key: 'instagram', icon: '📸', label: 'Instagram' }, // Instagram profile URL
-  { key: 'facebook',  icon: '🔗', label: 'Facebook'  }, // Facebook profile URL
+  { key: 'github',    label: 'GitHub',    color: '#ffffff'  },
+  { key: 'linkedin',  label: 'LinkedIn',  color: '#0A66C2'  },
+  { key: 'medium',    label: 'Medium',    color: '#00ab6c'  },
+  { key: 'instagram', label: 'Instagram', color: '#E1306C'  },
+  { key: 'facebook',  label: 'Facebook',  color: '#1877F2'  },
 ];
 
 /* ══════════════════════════════════════════════════════════
@@ -320,3 +346,72 @@ export const QUERY_DEFAULTS = {
   COURSES_GRANULARITY: 'year',   // /charts/learning/courses-by-year → group by year
   WORD_CLOUD_SOURCE:   'all',    // /charts/learning/skills-word-cloud → all sources
 };
+
+/* ══════════════════════════════════════════════════════════
+   13. SOCIAL PLATFORMS FOR LUXURY ICONS (OverviewSection)
+   Full config with brand colors and SVG icons built in.
+══════════════════════════════════════════════════════════ */
+export const SOCIAL_PLATFORMS_CONFIG = [
+  { key: 'github',    label: 'GitHub',    color: '#ffffff' },
+  { key: 'linkedin',  label: 'LinkedIn',  color: '#0A66C2' },
+  { key: 'twitter',   label: 'X',         color: '#ffffff' },
+  { key: 'instagram', label: 'Instagram', color: '#E1306C' },
+  { key: 'youtube',   label: 'YouTube',   color: '#FF0000' },
+  { key: 'medium',    label: 'Medium',    color: '#00ab6c' },
+  { key: 'facebook',  label: 'Facebook',  color: '#1877F2' },
+  { key: 'telegram',  label: 'Telegram',  color: '#26A5E4' },
+];
+
+/* ══════════════════════════════════════════════════════════
+   14. ANALYTICS TAB CONFIGURATION
+══════════════════════════════════════════════════════════ */
+export const ANALYTICS_TABS = [
+  { id: 'overview', label: 'Overview' },
+  { id: 'career',   label: 'Career Journey' },
+  { id: 'skills',   label: 'Skills Deep Dive' },
+  { id: 'learning', label: 'Learning' },
+  { id: 'goals',    label: 'Goals' },
+];
+
+/* ══════════════════════════════════════════════════════════
+   15. KPI CONFIG — AnalyticsSection and OverviewSection share this
+══════════════════════════════════════════════════════════ */
+export const KPI_CONFIG = [
+  { key: 'skills',       label: 'Skills',       icon: '⚙'  },
+  { key: 'projects',     label: 'Projects',     icon: '⊡'  },
+  { key: 'courses',      label: 'Courses',      icon: '📚' },
+  { key: 'experience',   label: 'Roles',        icon: '💼' },
+  { key: 'education',    label: 'Degrees',      icon: '🎓' },
+  { key: 'achievements', label: 'Achievements', icon: '🏆' },
+  { key: 'self_study',   label: 'Self Study',   icon: '✍'  },
+  { key: 'goals',        label: 'Goals',        icon: '◈'  },
+];
+
+/* ══════════════════════════════════════════════════════════
+   16. RECORD ITEMS — OverviewSection records strip
+══════════════════════════════════════════════════════════ */
+export const RECORD_ITEMS = [
+  { key: 'skills',       label: 'Skills'       },
+  { key: 'projects',     label: 'Projects'     },
+  { key: 'courses',      label: 'Courses'      },
+  { key: 'experience',   label: 'Experience'   },
+  { key: 'education',    label: 'Education'    },
+  { key: 'achievements', label: 'Achievements' },
+  { key: 'self_study',   label: 'Self Study'   },
+  { key: 'goals',        label: 'Goals'        },
+  { key: 'languages',    label: 'Languages'    },
+  { key: 'feedback',     label: 'Feedback'     },
+];
+
+/* ══════════════════════════════════════════════════════════
+   17. SOURCE COLORS — shared by SankeyChart, SourceTreemapChart, AllChartsDashboard
+══════════════════════════════════════════════════════════ */
+export const SOURCE_COLORS = {
+  Experience: '#1D9E75',
+  Projects:   '#378ADD',
+  Courses:    '#BA7517',
+  'Self Study': '#7F77DD',
+  Education:  '#D85A30',
+};
+
+export const SOURCE_KEYS = Object.keys(SOURCE_COLORS);
