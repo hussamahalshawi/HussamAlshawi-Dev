@@ -2,6 +2,7 @@
  * App.jsx — Root application component.
  * ─────────────────────────────────────────────────────────
  * Defines all client-side routes using React Router v6.
+ * Wrapped in ErrorBoundary to prevent white-screen crashes.
  *
  * Architecture note:
  *   There is NO Navbar or Footer at this level.
@@ -16,20 +17,23 @@
 import { Routes, Route } from 'react-router-dom'; // React Router v6 declarative routing
 import Home              from '@/pages/Home';      // Main portfolio dashboard page
 import NotFound          from '@/pages/NotFound';  // 404 fallback page
+import ErrorBoundary     from '@/components/ui/ErrorBoundary'; // Catch render errors gracefully
 
 /**
- * App — routing shell.
+ * App — routing shell with error boundary.
  * Renders the correct page component based on the current URL.
  * @returns {JSX.Element}
  */
 export default function App() {
   return (
-    <Routes>
-      {/* ── Main portfolio dashboard ── */}
-      <Route path="/"  element={<Home />} />
+    <ErrorBoundary>
+      <Routes>
+        {/* ── Main portfolio dashboard ── */}
+        <Route path="/"  element={<Home />} />
 
-      {/* ── Catch-all 404 — matches any unrecognized path ── */}
-      <Route path="*"  element={<NotFound />} />
-    </Routes>
+        {/* ── Catch-all 404 — matches any unrecognized path ── */}
+        <Route path="*"  element={<NotFound />} />
+      </Routes>
+    </ErrorBoundary>
   );
 }
