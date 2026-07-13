@@ -30,11 +30,11 @@ import '../../styles/components/SkillsSection.css';                             
 const ALL_FILTER = 'All';
 
 /* ── Radar chart layout constants ────────────────────────────── */
-const RADAR_CENTER_X  = 110;                    // SVG center X coordinate
-const RADAR_CENTER_Y  = 110;                    // SVG center Y coordinate
-const RADAR_MAX_R     = 85;                     // Max radius of the radar polygon
+const RADAR_CENTER_X  = 150;                    // SVG center X coordinate
+const RADAR_CENTER_Y  = 150;                    // SVG center Y coordinate
+const RADAR_MAX_R     = 100;                    // Max radius of the radar polygon
 const RADAR_RINGS     = 4;                      // Number of concentric grid rings
-const RADAR_VIEWBOX   = '0 0 220 220';          // SVG viewBox for the radar chart
+const RADAR_VIEWBOX   = '0 0 300 300';          // SVG viewBox for the radar chart
 
 /* ── Cloud sort options ──────────────────────────────────────── */
 const SORT_OPTIONS = [
@@ -89,7 +89,20 @@ export default function SkillsSection({ skills, summary }) {
 
   /* ── Category averages from summary or computed ──────────────── */
   const categoryAverages = useMemo(() => {
-    if (summary?.category_averages) return summary.category_averages; // Prefer API data
+    // Backend returns category_averages as an ARRAY: [{ category, avg_score, count }]
+    // Frontend radar expects a flat OBJECT: { "Backend Development": 85 }
+    if (summary?.category_averages) {
+      const raw = summary.category_averages;
+      if (Array.isArray(raw)) {
+        const avgs = {};
+        raw.forEach(item => {
+          const cat = item.category || 'Other';
+          avgs[cat] = item.avg_score ?? 0;
+        });
+        return avgs;
+      }
+      return raw; // Already an object — use as-is
+    }
 
     // Fallback: compute averages from grouped skills
     const avgs = {};
@@ -299,7 +312,7 @@ function RadarPanel({ categories, categoryAverages }) {
     if (N < 3) return [];
     return categories.map((cat, i) => {
       const angle    = (2 * Math.PI * i) / N;
-      const labelR   = RADAR_MAX_R + 18;          // Label radius (outside ring)
+      const labelR   = RADAR_MAX_R + 25;          // Label radius (outside ring)
       const { x, y } = polarToXY(angle, labelR);  // Label position
       return { x, y, cat, score: categoryAverages[cat] || 0 };
     });
@@ -393,11 +406,11 @@ function RadarPanel({ categories, categoryAverages }) {
               y={lbl.y}
               className="sk-radar-label"
               fill="var(--text-secondary)"
-              fontSize="6.5"
+              fontSize="7.5"
               textAnchor="middle"
               dominantBaseline="middle"
             >
-              {lbl.cat.length > 10 ? `${lbl.cat.slice(0, 10)}…` : lbl.cat}
+              {lbl.cat.length > 16 ? `${lbl.cat.slice(0, 16)}…` : lbl.cat}
             </text>
           ))}
 

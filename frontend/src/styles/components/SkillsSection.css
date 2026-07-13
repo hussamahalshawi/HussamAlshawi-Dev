@@ -218,7 +218,7 @@
   position: relative;
   width:    100%;
   aspect-ratio: 1 / 1;                          /* Square container                    */
-  max-width: 280px;                             /* Max width on large screens          */
+  max-width: 340px;                             /* Max width on large screens          */
   margin:   0 auto var(--s4);                   /* Centered with bottom space          */
 }
 
