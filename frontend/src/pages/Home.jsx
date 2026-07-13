@@ -138,6 +138,9 @@ export default function Home() {
           profile={data.profile}
           analytics={data.analytics}
           languages={data.languages?.languages || []}
+          portfolio={data.portfolioSummary}
+          skillsCharts={data.skillsCharts}
+          goalsCharts={data.goalsCharts}
         />
       </SectionWrapper>
 

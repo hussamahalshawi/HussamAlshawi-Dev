@@ -19,7 +19,8 @@ import profileService                        from '../services/profileService';
 import analyticsService                      from '../services/analyticsService';
 import skillsService                         from '../services/skillsService';
 import projectsService                       from '../services/projectsService';
-import languagesService                      from '../services/languagesService'; // Languages API
+import languagesService                      from '../services/languagesService';
+import chartsService                         from '../services/chartsService';
 import {
   CACHE_KEYS,
   saveToCache,
@@ -81,6 +82,18 @@ const API_TASKS = [
     key:   'portfolioSummary',
     label: 'Portfolio Summary',
     fetch: () => analyticsService.getPortfolioSummary(),
+    phase: 2,
+  },
+  {
+    key:   'skillsCharts',
+    label: 'Skills Charts',
+    fetch: () => chartsService.composite.allSkillsCharts(),
+    phase: 2,
+  },
+  {
+    key:   'goalsCharts',
+    label: 'Goals Charts',
+    fetch: () => chartsService.composite.allGoalsCharts(),
     phase: 2,
   },
 ];

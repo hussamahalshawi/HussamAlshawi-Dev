@@ -14,8 +14,78 @@
    SECTION ROOT
 ══════════════════════════════════════════════════════ */
 .overview-section {
-  padding:    0;                                /* Page content already has padding */
-  animation:  fadeIn 0.4s ease both;           /* Fade in whole section on mount   */
+  padding:    0;
+  animation:  fadeIn 0.4s ease both;
+}
+
+/* ══════════════════════════════════════════════════════
+   OVERVIEW GRID — 2-column: profile (left) + charts (right)
+   ══════════════════════════════════════════════════════ */
+.ov-overview-grid {
+  display:              grid;
+  grid-template-columns: 340px 1fr;
+  gap:                  var(--s5);
+  align-items:          start;
+}
+
+.ov-overview-charts {
+  display:              flex;
+  flex-direction:       column;
+  gap:                  var(--s5);
+}
+
+/* ── Chart panel variant (inside overview) ── */
+.ov-panel--chart {
+  padding:              var(--s5);
+  display:              flex;
+  flex-direction:       column;
+  height:               420px;
+}
+
+/* ── Chart fill wrapper — gives Recharts/Nivo a sized container ── */
+.ov-panel--chart .portfolio-sankey-wrapper,
+.ov-panel--chart .portfolio-chart-fill,
+.ov-panel--chart .portfolio-chart-empty,
+.ov-panel--chart .stacked-bar,
+.ov-panel--chart .sunburst-chart,
+.ov-panel--chart .bubble-timeline,
+.ov-panel--chart .bubble-timeline--empty {
+  flex:                 1;
+  min-height:           0;
+  width:                100%;
+}
+
+/* Sankey needs more height */
+.ov-panel--chart:last-of-type {
+  height:               480px;
+}
+
+.ov-panel__chart-header {
+  display:              flex;
+  flex-direction:       column;
+  gap:                  var(--s1);
+  margin-bottom:        var(--s4);
+}
+
+.ov-panel__chart-title {
+  font-family:          var(--font-display);
+  font-size:            1.05rem;
+  font-weight:          700;
+  color:                var(--text-white);
+}
+
+.ov-panel__chart-sub {
+  font-family:          var(--font-mono);
+  font-size:            0.72rem;
+  color:                var(--text-muted);
+  letter-spacing:       0.03em;
+}
+
+.ov-panel__chart-loading {
+  text-align:           center;
+  padding:              var(--s6);
+  color:                var(--text-muted);
+  font-size:            0.82rem;
 }
 
 /* ══════════════════════════════════════════════════════
@@ -1050,6 +1120,10 @@
 /* Panel subtitle */
 [data-theme="light"] .ov-panel__subtitle { color: #5a7499; }
 
+/* Chart panel title + subtitle */
+[data-theme="light"] .ov-panel__chart-title { color: #1a2332; }
+[data-theme="light"] .ov-panel__chart-sub   { color: #5a7499; }
+
 /* Profile name */
 [data-theme="light"] .ov-profile__name  { color: #1a2332; }
 
@@ -1421,6 +1495,28 @@
 .ov-stat__divider { display: none; }
 .ov-stat__icon    { display: none; }
 .ov-stat__text    { display: none; }
+
+/* ══════════════════════════════════════════════════════
+   RESPONSIVE — Overview Grid
+   ══════════════════════════════════════════════════════ */
+@media (max-width: 1024px) {
+  .ov-overview-grid {
+    grid-template-columns: 280px 1fr;
+    gap: var(--s4);
+  }
+}
+
+@media (max-width: 860px) {
+  .ov-overview-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 700px) {
+  .ov-overview-grid {
+    grid-template-columns: 1fr;
+  }
+}
 
 
 
