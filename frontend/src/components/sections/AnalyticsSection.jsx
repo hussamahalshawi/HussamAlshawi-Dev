@@ -26,7 +26,7 @@
  */
 
 import { useRef, useEffect, useState, useCallback, lazy, Suspense } from 'react';
-import { CHART_COLORS, SKILL_BANDS, ANIMATION, ANALYTICS_TABS, KPI_CONFIG }       from '../../utils/constants'; // Global tokens + centralized config
+import { CHART_COLORS, SKILL_BANDS, ANIMATION, ANALYTICS_TABS, KPI_CONFIG, SOURCE_KEYS, SOURCE_COLORS } from '../../utils/constants';
 import { SkeletonKPI }                                                from '../ui/SkeletonLoader'; // Loading skeleton
 import Badge                                                          from '../ui/Badge';         // Badge component
 import AllChartsDashboard                                             from './AllChartsDashboard';
@@ -34,12 +34,11 @@ import chartsService                                                  from '../.
 import '../../styles/components/AnalyticsSection.css';
 
 /* ── Lazy-loaded chart components (deferred until tab is active) ── */
-const SankeyChart         = lazy(() => import('../charts/SankeyChart'));
-const RadarSkillsChart    = lazy(() => import('../charts/RadarSkillsChart'));
-const MultiRadarChart     = lazy(() => import('../charts/MultiRadarChart'));
-const TimelineAreaChart   = lazy(() => import('../charts/TimelineAreaChart'));
-const GoalsBulletChart    = lazy(() => import('../charts/GoalsBulletChart'));
-const SourceTreemapChart  = lazy(() => import('../charts/SourceTreemapChart'));
+const SankeyChart           = lazy(() => import('../charts/SankeyChart'));
+const RadarSkillsChart      = lazy(() => import('../charts/RadarSkillsChart'));
+const StackedBarChart       = lazy(() => import('../charts/StackedBarChart'));
+const SunburstChart         = lazy(() => import('../charts/SunburstChart'));
+const BubbleTimelineChart   = lazy(() => import('../charts/BubbleTimelineChart'));
 
 /* ── Lazy-loaded tab content components ───────────────────────── */
 const CareerTab   = lazy(() => import('./tabs/CareerTab'));
@@ -312,90 +311,108 @@ export default function AnalyticsSection({ analytics, portfolio }) {
             {portfolio ? (
               <div className="portfolio-dashboard">
 
-                {/* ROW 1: Sankey — Learning → Skills → Goals */}
-                <div className="analytics-glass-panel portfolio-sankey-panel">
-                  <div className="analytics-panel__header">
-                    <p className="skill-group__title" style={{ margin: 0 }}>
-                      Learning Flow
-                    </p>
-                    <span className="portfolio-sankey-sub">
-                      Sources → Skills → Goals
-                    </span>
-                  </div>
-                  <Suspense fallback={<p style={{ color: 'var(--text-muted)', textAlign: 'center', padding: 'var(--s4)' }}>Loading...</p>}>
-                    <SankeyChart
-                      skillsWithSources={portfolio.skills_with_sources}
-                      goals={portfolio.goals}
-                    />
-                  </Suspense>
-                </div>
-
-                {/* ROW 2: Domain Coverage — Multi-series Radar */}
-                <div className="analytics-glass-panel portfolio-chart-panel">
-                  <Suspense fallback={<p style={{ color: 'var(--text-muted)', textAlign: 'center', padding: 'var(--s4)' }}>Loading...</p>}>
-                    <MultiRadarChart data={chartData.domainCoverage} />
-                  </Suspense>
-                </div>
-
-                {/* ROW 3: Radar + Treemap (2-col) */}
-                <div className="portfolio-row-2col">
+                {/* ROW 1: Skills by Source — Stacked Bar */}
+                {chartData.skillsData?.sources && (
                   <div className="analytics-glass-panel portfolio-chart-panel">
                     <div className="analytics-panel__header">
                       <p className="skill-group__title" style={{ margin: 0 }}>
-                        Skills Radar
+                        Skills by Source
                       </p>
                       <span className="portfolio-chart-sub">
-                        {portfolio.skills_by_type?.length || 0} categories
+                        Top 8 skills — frequency per learning source
+                      </span>
+                    </div>
+                    <Suspense fallback={<p style={{ color: 'var(--text-muted)', textAlign: 'center', padding: 'var(--s4)' }}>Loading...</p>}>
+                      <StackedBarChart
+                        data={(chartData.skillsData.sources.top_skills || []).slice(0, 8).map(item => {
+                          const flat = { skill: item.skill || item.skill_name };
+                          const srcObj = item.sources || item.source_counts || {};
+                          Object.keys(srcObj).forEach(key => { flat[key] = srcObj[key]; });
+                          return flat;
+                        })}
+                        barKey="skill"
+                        stackKeys={SOURCE_KEYS}
+                        stackColors={SOURCE_COLORS}
+                        showLegend
+                      />
+                    </Suspense>
+                  </div>
+                )}
+
+                {/* ROW 2: Skills Hierarchy — Sunburst */}
+                {portfolio.skills_by_type && (
+                  <div className="analytics-glass-panel portfolio-chart-panel">
+                    <div className="analytics-panel__header">
+                      <p className="skill-group__title" style={{ margin: 0 }}>
+                        Skills Hierarchy
+                      </p>
+                      <span className="portfolio-chart-sub">
+                        Category → Skill → Proficiency Band
+                      </span>
+                    </div>
+                    <Suspense fallback={<p style={{ color: 'var(--text-muted)', textAlign: 'center', padding: 'var(--s4)' }}>Loading...</p>}>
+                      <SunburstChart skillsByType={portfolio.skills_by_type} />
+                    </Suspense>
+                  </div>
+                )}
+
+                {/* ROW 3: Goals Roadmap — Bubble Timeline */}
+                {chartData.goalsData?.roadmap?.goals && chartData.goalsData.roadmap.goals.length > 0 && (
+                  <div className="analytics-glass-panel portfolio-chart-panel">
+                    <div className="analytics-panel__header">
+                      <p className="skill-group__title" style={{ margin: 0 }}>
+                        Goals Roadmap
+                      </p>
+                      <span className="portfolio-chart-sub">
+                        {chartData.goalsData.roadmap.count || chartData.goalsData.roadmap.goals.length} goals
+                      </span>
+                    </div>
+                    <Suspense fallback={<p style={{ color: 'var(--text-muted)', textAlign: 'center', padding: 'var(--s4)' }}>Loading...</p>}>
+                      <BubbleTimelineChart
+                        goals={chartData.goalsData.roadmap.goals}
+                        minYear={chartData.goalsData.roadmap.min_year}
+                        maxYear={chartData.goalsData.roadmap.max_year}
+                      />
+                    </Suspense>
+                  </div>
+                )}
+
+                {/* ROW 4: Learning Flow — Sankey */}
+                {portfolio.skills_with_sources && portfolio.goals && (
+                  <div className="analytics-glass-panel portfolio-sankey-panel">
+                    <div className="analytics-panel__header">
+                      <p className="skill-group__title" style={{ margin: 0 }}>
+                        Learning Flow
+                      </p>
+                      <span className="portfolio-sankey-sub">
+                        Sources → Skills → Goals
+                      </span>
+                    </div>
+                    <Suspense fallback={<p style={{ color: 'var(--text-muted)', textAlign: 'center', padding: 'var(--s4)' }}>Loading...</p>}>
+                      <SankeyChart
+                        skillsWithSources={portfolio.skills_with_sources}
+                        goals={portfolio.goals}
+                      />
+                    </Suspense>
+                  </div>
+                )}
+
+                {/* ROW 5: Skill Radar */}
+                {portfolio.skills_by_type && (
+                  <div className="analytics-glass-panel portfolio-chart-panel">
+                    <div className="analytics-panel__header">
+                      <p className="skill-group__title" style={{ margin: 0 }}>
+                        Skill Radar
+                      </p>
+                      <span className="portfolio-chart-sub">
+                        {portfolio.skills_by_type.length} categories
                       </span>
                     </div>
                     <Suspense fallback={<p style={{ color: 'var(--text-muted)', textAlign: 'center', padding: 'var(--s4)' }}>Loading...</p>}>
                       <RadarSkillsChart skillsByType={portfolio.skills_by_type} />
                     </Suspense>
                   </div>
-                  <div className="analytics-glass-panel portfolio-chart-panel">
-                    <div className="analytics-panel__header">
-                      <p className="skill-group__title" style={{ margin: 0 }}>
-                        Source Weight
-                      </p>
-                      <span className="portfolio-chart-sub">
-                        Skills by learning source
-                      </span>
-                    </div>
-                    <Suspense fallback={<p style={{ color: 'var(--text-muted)', textAlign: 'center', padding: 'var(--s4)' }}>Loading...</p>}>
-                      <SourceTreemapChart sourceContribution={portfolio.learning_overview?.source_contribution} />
-                    </Suspense>
-                  </div>
-                </div>
-
-                {/* ROW 4: Learning Timeline — Stacked Area */}
-                <div className="analytics-glass-panel portfolio-chart-panel">
-                  <div className="analytics-panel__header">
-                    <p className="skill-group__title" style={{ margin: 0 }}>
-                      Learning Timeline
-                    </p>
-                    <span className="portfolio-chart-sub">
-                      Skills acquired per year by source
-                    </span>
-                  </div>
-                  <Suspense fallback={<p style={{ color: 'var(--text-muted)', textAlign: 'center', padding: 'var(--s4)' }}>Loading...</p>}>
-                    <TimelineAreaChart timeline={portfolio.learning_timeline} />
-                  </Suspense>
-                </div>
-
-                {/* ROW 5: Goals — Bullet Chart */}
-                <div className="analytics-glass-panel portfolio-chart-panel">
-                  <div className="analytics-panel__header">
-                    <p className="skill-group__title" style={{ margin: 0 }}>
-                      Goals Progress
-                    </p>
-                    <span className="portfolio-chart-sub">
-                      Current vs Target
-                    </span>
-                  </div>
-                  <Suspense fallback={<p style={{ color: 'var(--text-muted)', textAlign: 'center', padding: 'var(--s4)' }}>Loading...</p>}>
-                    <GoalsBulletChart goals={portfolio.goals} />
-                  </Suspense>
-                </div>
+                )}
 
               </div>
             ) : (
