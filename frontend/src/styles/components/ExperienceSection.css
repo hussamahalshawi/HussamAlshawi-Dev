@@ -1,0 +1,564 @@
+/* ═══════════════════════════════════════════════════════════════
+   ExperienceSection.css
+   Experience & Achievements dashboard section.
+   Layout:
+     Row 1: 3-column grid (Stats | Employment Mix | Tech Stack)
+     Row 2: Career Gantt Timeline (full width)
+     Row 3: Achievement Cards Grid (full width)
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ── Section root ── */
+.experience-section {
+  padding: 0;
+  animation: fadeIn 0.4s ease both;
+}
+
+/* ── Main grid ── */
+.exp-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-rows: auto auto auto;
+  gap: var(--s4);
+  align-items: stretch;
+}
+
+/* ── Panel base — glass card ── */
+.exp-panel {
+  background:              rgba(13,17,38,0.82);
+  backdrop-filter:         blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border:                  1px solid rgba(79,195,247,0.12);
+  border-radius:           var(--r-md);
+  box-shadow:              0 4px 24px rgba(0,0,0,0.35),
+                           inset 0 1px 0 rgba(79,195,247,0.06);
+  transition:              background var(--t-base),
+                           border-color var(--t-base),
+                           transform var(--t-base);
+  min-height:              0;
+  overflow:                hidden;
+}
+
+.exp-panel:hover {
+  background:              rgba(79,195,247,0.06);
+  border-color:            rgba(79,195,247,0.22);
+  transform:               translateY(-2px);
+}
+
+/* ── Panel header ── */
+.exp-panel__header {
+  display:              flex;
+  flex-direction:       column;
+  gap:                  var(--s1);
+  margin-bottom:        var(--s4);
+}
+
+.exp-panel__title {
+  font-family:          var(--font-display);
+  font-size:            1.05rem;
+  font-weight:          700;
+  color:                var(--text-white);
+}
+
+.exp-panel__sub {
+  font-family:          var(--font-mono);
+  font-size:            0.72rem;
+  color:                var(--text-muted);
+  letter-spacing:       0.03em;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   STATS CARD — Row 1, Col 1
+   ═══════════════════════════════════════════════════════════════ */
+.exp-stats {
+  padding: var(--s5);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: var(--s4);
+}
+
+.exp-stats__grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--s3);
+}
+
+.exp-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: var(--s3);
+  background: rgba(255,255,255,0.03);
+  border-radius: var(--r-sm);
+  border: 1px solid rgba(79,195,247,0.06);
+  transition: border-color var(--t-base);
+}
+
+.exp-stat:hover {
+  border-color: rgba(79,195,247,0.18);
+}
+
+.exp-stat__num {
+  font-family: var(--font-mono);
+  font-size: 1.8rem;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--text-white);
+}
+
+.exp-stat__label {
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   EMPLOYMENT MIX — Row 1, Col 2
+   ═══════════════════════════════════════════════════════════════ */
+.exp-employment {
+  padding: var(--s4);
+  display: flex;
+  flex-direction: column;
+}
+
+.exp-donut-wrap {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 0;
+}
+
+.exp-donut-wrap svg {
+  max-width: 100%;
+  max-height: 100%;
+}
+
+.exp-donut-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s2) var(--s4);
+  justify-content: center;
+  padding-top: var(--s3);
+}
+
+.exp-donut-legend__item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.exp-donut-legend__dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+  flex-shrink: 0;
+}
+
+.exp-donut-legend__label {
+  font-family: var(--font-mono);
+  font-size: 0.70rem;
+  color: var(--text-secondary);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   TECH STACK — Row 1, Col 3
+   ═══════════════════════════════════════════════════════════════ */
+.exp-tech {
+  padding: var(--s4);
+  display: flex;
+  flex-direction: column;
+}
+
+.exp-tech__bars {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--s2);
+  min-height: 0;
+}
+
+.exp-tech__row {
+  display: flex;
+  align-items: center;
+  gap: var(--s3);
+}
+
+.exp-tech__label {
+  min-width: 80px;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.exp-tech__track {
+  flex: 1;
+  height: 14px;
+  background: rgba(255,255,255,0.04);
+  border-radius: var(--r-sm);
+  overflow: hidden;
+}
+
+.exp-tech__bar {
+  height: 100%;
+  border-radius: var(--r-sm);
+  transition: width 0.8s ease;
+}
+
+.exp-tech__count {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  color: var(--text-muted);
+  min-width: 20px;
+  text-align: right;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   GANTT TIMELINE — Row 2, full width
+   ═══════════════════════════════════════════════════════════════ */
+.exp-gantt {
+  grid-column: 1 / -1;
+  padding: var(--s4) var(--s5);
+  overflow-x: auto;
+}
+
+.exp-gantt__scroll {
+  min-width: 600px;
+  position: relative;
+}
+
+.exp-gantt__row {
+  display: flex;
+  align-items: center;
+  gap: var(--s3);
+  padding: var(--s2) 0;
+  border-bottom: 1px solid rgba(255,255,255,0.03);
+}
+
+.exp-gantt__row:last-child {
+  border-bottom: none;
+}
+
+.exp-gantt__label {
+  min-width: 160px;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex-shrink: 0;
+}
+
+.exp-gantt__track {
+  flex: 1;
+  height: 28px;
+  position: relative;
+  background: rgba(255,255,255,0.02);
+  border-radius: var(--r-sm);
+}
+
+.exp-gantt__bar {
+  position: absolute;
+  top: 4px;
+  height: 20px;
+  border-radius: var(--r-xs);
+  display: flex;
+  align-items: center;
+  padding: 0 8px;
+  font-family: var(--font-mono);
+  font-size: 0.60rem;
+  color: #fff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: opacity var(--t-base);
+}
+
+.exp-gantt__bar--current {
+  box-shadow: 0 0 12px rgba(79,195,247,0.4);
+}
+
+.exp-gantt__years {
+  display: flex;
+  justify-content: space-between;
+  padding-top: var(--s2);
+  border-top: 1px solid rgba(255,255,255,0.04);
+}
+
+.exp-gantt__year {
+  font-family: var(--font-mono);
+  font-size: 0.60rem;
+  color: var(--text-muted);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   ACHIEVEMENT CARDS — Row 3, full width
+   ═══════════════════════════════════════════════════════════════ */
+.exp-achievements {
+  grid-column: 1 / -1;
+}
+
+.exp-achievements__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: var(--s4);
+}
+
+.exp-achieve-card {
+  background:              rgba(13,17,38,0.82);
+  backdrop-filter:         blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border:                  1px solid rgba(79,195,247,0.12);
+  border-radius:           var(--r-md);
+  box-shadow:              0 4px 24px rgba(0,0,0,0.35),
+                           inset 0 1px 0 rgba(79,195,247,0.06);
+  padding:                 var(--s4);
+  transition:              background var(--t-base),
+                           border-color var(--t-base),
+                           transform var(--t-base);
+  display:                 flex;
+  flex-direction:          column;
+  gap:                     var(--s3);
+}
+
+.exp-achieve-card:hover {
+  background:              rgba(79,195,247,0.06);
+  border-color:            rgba(79,195,247,0.22);
+  transform:               translateY(-2px);
+}
+
+.exp-achieve-card__icon {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--r-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  flex-shrink: 0;
+}
+
+.exp-achieve-card__title {
+  font-family: var(--font-display);
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: var(--text-white);
+  line-height: 1.3;
+}
+
+.exp-achieve-card__org {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: var(--text-secondary);
+}
+
+.exp-achieve-card__date {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  color: var(--text-muted);
+}
+
+.exp-achieve-card__skills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s1);
+}
+
+.exp-achieve-card__skill-tag {
+  font-family: var(--font-mono);
+  font-size: 0.58rem;
+  padding: 2px 8px;
+  background: rgba(79,195,247,0.08);
+  border: 1px solid rgba(79,195,247,0.15);
+  border-radius: var(--r-full);
+  color: var(--text-accent);
+  white-space: nowrap;
+}
+
+.exp-achieve-card__link {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  color: var(--text-accent);
+  text-decoration: none;
+  transition: color var(--t-fast);
+}
+
+.exp-achieve-card__link:hover {
+  color: var(--text-white);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   EMPTY STATE
+   ═══════════════════════════════════════════════════════════════ */
+.exp-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 200px;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   LIGHT MODE
+   ═══════════════════════════════════════════════════════════════ */
+[data-theme="light"] .exp-panel,
+[data-theme="light"] .exp-achieve-card {
+  background:              rgba(255,255,255,0.55);
+  backdrop-filter:         blur(32px) saturate(1.8);
+  -webkit-backdrop-filter: blur(32px) saturate(1.8);
+  border:                  1px solid rgba(79,143,199,0.20);
+  box-shadow:              0 4px 24px rgba(0,0,0,0.08);
+}
+
+[data-theme="light"] .exp-panel:hover,
+[data-theme="light"] .exp-achieve-card:hover {
+  background:              rgba(79,143,199,0.08);
+  border-color:            rgba(79,143,199,0.30);
+}
+
+[data-theme="light"] .exp-panel__title,
+[data-theme="light"] .exp-achieve-card__title {
+  color: #1a2332;
+}
+
+[data-theme="light"] .exp-panel__sub,
+[data-theme="light"] .exp-stat__label,
+[data-theme="light"] .exp-tech__label,
+[data-theme="light"] .exp-tech__count,
+[data-theme="light"] .exp-achieve-card__date {
+  color: #6b8aaa;
+}
+
+[data-theme="light"] .exp-stat__num {
+  color: #1a2332;
+}
+
+[data-theme="light"] .exp-achieve-card__org {
+  color: #3d5a80;
+}
+
+[data-theme="light"] .exp-achieve-card__skill-tag {
+  background: rgba(79,143,199,0.10);
+  border-color: rgba(79,143,199,0.20);
+  color: #1a8fc7;
+}
+
+[data-theme="light"] .exp-tech__track {
+  background: rgba(79,100,145,0.08);
+}
+
+[data-theme="light"] .exp-stat {
+  background: rgba(79,100,145,0.05);
+  border-color: rgba(79,100,145,0.12);
+}
+
+[data-theme="light"] .exp-gantt__track {
+  background: rgba(79,100,145,0.05);
+}
+
+[data-theme="light"] .exp-gantt__label,
+[data-theme="light"] .exp-donut-legend__label {
+  color: #3d5a80;
+}
+
+[data-theme="light"] .exp-gantt__year {
+  color: #6b8aaa;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   RESPONSIVE
+   ═══════════════════════════════════════════════════════════════ */
+@media (max-width: 1024px) {
+  .exp-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: var(--s3);
+  }
+
+  .exp-stats {
+    grid-column: 1 / -1;
+    grid-row: 1;
+  }
+
+  .exp-employment {
+    grid-column: 1;
+    grid-row: 2;
+  }
+
+  .exp-tech {
+    grid-column: 2;
+    grid-row: 2;
+  }
+}
+
+@media (max-width: 750px) {
+  .exp-grid {
+    grid-template-columns: 1fr;
+    gap: var(--s3);
+  }
+
+  .exp-stats,
+  .exp-employment,
+  .exp-tech,
+  .exp-gantt,
+  .exp-achievements {
+    grid-column: 1;
+    grid-row: auto;
+  }
+
+  .exp-stats__grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .exp-achievements__grid {
+    grid-template-columns: 1fr;
+  }
+
+  .exp-gantt__label {
+    min-width: 120px;
+  }
+}
+
+@media (max-width: 599px) {
+  .exp-panel {
+    border-radius: var(--r-sm);
+  }
+
+  .exp-stats {
+    padding: var(--s3);
+  }
+
+  .exp-panel__title {
+    font-size: 0.92rem;
+  }
+
+  .exp-panel__sub {
+    font-size: 0.66rem;
+  }
+
+  .exp-tech__label {
+    min-width: 60px;
+    font-size: 0.65rem;
+  }
+
+  .exp-gantt__label {
+    min-width: 100px;
+    font-size: 0.65rem;
+  }
+
+  .exp-achieve-card {
+    padding: var(--s3);
+  }
+
+  .exp-achieve-card__title {
+    font-size: 0.85rem;
+  }
+}

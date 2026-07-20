@@ -1,6 +1,7 @@
 .bubble-timeline {
   position: relative;
   width: 100%;
+  height: 100%;
 }
 
 .bubble-timeline--empty {
@@ -18,6 +19,8 @@
   overflow-y: hidden;
   scrollbar-width: thin;
   scrollbar-color: rgba(255,255,255,0.08) transparent;
+  width: 100%;
+  height: 100%;
 }
 
 .bubble-timeline__scroll::-webkit-scrollbar {
@@ -48,4 +51,12 @@
 @keyframes bubble-pulse {
   0%, 100% { fill-opacity: 0.15; stroke-opacity: 0.6; }
   50% { fill-opacity: 0.25; stroke-opacity: 1; }
+}
+
+/* ── Responsive ── */
+@media (max-width: 600px) {
+  .bubble-timeline--empty {
+    min-height: 100px;
+    font-size: 0.75rem;
+  }
 }

@@ -27,6 +27,16 @@ export const CACHE_KEYS = {
   skillsCharts:  'ha_cache_charts_skills',
   learningCharts:'ha_cache_charts_learning',
   goalsCharts:   'ha_cache_charts_goals',
+
+  // Section data
+  experience:    'ha_cache_experience',
+  achievements:  'ha_cache_achievements',
+  education:     'ha_cache_education',
+  courses:       'ha_cache_courses',
+  selfStudy:     'ha_cache_self_study',
+  goals:         'ha_cache_goals',
+  goalsStats:    'ha_cache_goals_stats',
+  feedback:      'ha_cache_feedback',
 };
 
 /* ═══════════════════════════════════════════════════════

@@ -1,0 +1,352 @@
+/* ═══════════════════════════════════════════════════════════════
+   GoalsSection.css
+   Goals & Roadmap section.
+   Layout: Stats bar + goal cards grid
+   ═══════════════════════════════════════════════════════════════ */
+
+.goals-section {
+  padding: 0;
+  animation: fadeIn 0.4s ease both;
+  display: flex;
+  flex-direction: column;
+  gap: var(--s4);
+}
+
+/* ── Panel base ── */
+.goals-panel {
+  background:              rgba(13,17,38,0.82);
+  backdrop-filter:         blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border:                  1px solid rgba(79,195,247,0.12);
+  border-radius:           var(--r-md);
+  box-shadow:              0 4px 24px rgba(0,0,0,0.35),
+                           inset 0 1px 0 rgba(79,195,247,0.06);
+  transition:              background var(--t-base),
+                           border-color var(--t-base),
+                           transform var(--t-base);
+}
+
+.goals-panel:hover {
+  background:              rgba(79,195,247,0.06);
+  border-color:            rgba(79,195,247,0.22);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   STATS BAR
+   ═══════════════════════════════════════════════════════════════ */
+.goals-stats {
+  display: flex;
+  align-items: center;
+  gap: var(--s5);
+  padding: var(--s4) var(--s5);
+  flex-wrap: wrap;
+}
+
+.goals-stats__item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.goals-stats__num {
+  font-family: var(--font-mono);
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: var(--text-white);
+  line-height: 1;
+}
+
+.goals-stats__num--accent {
+  color: var(--cyan);
+}
+
+.goals-stats__num--green {
+  color: var(--green);
+}
+
+.goals-stats__label {
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.goals-stats__divider {
+  width: 1px;
+  height: 32px;
+  background: rgba(79,195,247,0.12);
+}
+
+.goals-stats__breakdown {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s2);
+  margin-left: auto;
+}
+
+.goals-stats__badge {
+  font-family: var(--font-mono);
+  font-size: 0.60rem;
+  font-weight: 500;
+  padding: 3px 10px;
+  border-radius: var(--r-full);
+  border: 1px solid;
+  white-space: nowrap;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   GOAL CARDS GRID
+   ═══════════════════════════════════════════════════════════════ */
+.goals-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: var(--s4);
+}
+
+.goals-card {
+  background:              rgba(13,17,38,0.82);
+  backdrop-filter:         blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border:                  1px solid rgba(79,195,247,0.12);
+  border-radius:           var(--r-md);
+  box-shadow:              0 4px 24px rgba(0,0,0,0.35),
+                           inset 0 1px 0 rgba(79,195,247,0.06);
+  padding:                 var(--s5);
+  transition:              background var(--t-base),
+                           border-color var(--t-base),
+                           transform var(--t-base);
+  display:                 flex;
+  flex-direction:          column;
+  gap:                     var(--s3);
+}
+
+.goals-card:hover {
+  background:              rgba(79,195,247,0.06);
+  border-color:            rgba(79,195,247,0.22);
+  transform:               translateY(-2px);
+}
+
+.goals-card__top {
+  display: flex;
+  align-items: center;
+  gap: var(--s2);
+}
+
+.goals-card__priority,
+.goals-card__status {
+  font-family: var(--font-mono);
+  font-size: 0.55rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 2px 8px;
+  border-radius: var(--r-full);
+  border: 1px solid;
+}
+
+.goals-card__year {
+  margin-left: auto;
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  color: var(--text-muted);
+}
+
+.goals-card__name {
+  font-family: var(--font-display);
+  font-size: 1.0rem;
+  font-weight: 700;
+  color: var(--text-white);
+  line-height: 1.3;
+  margin: 0;
+}
+
+.goals-card__sub {
+  font-family: var(--font-body);
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+  line-height: 1.4;
+}
+
+/* ── Progress bar ── */
+.goals-card__progress-wrap {
+  display: flex;
+  align-items: center;
+  gap: var(--s3);
+}
+
+.goals-card__progress-bar {
+  flex: 1;
+  height: 8px;
+  background: rgba(255,255,255,0.04);
+  border-radius: var(--r-full);
+  overflow: hidden;
+}
+
+.goals-card__progress-fill {
+  height: 100%;
+  border-radius: var(--r-full);
+  transition: width 0.8s ease;
+}
+
+.goals-card__progress-pct {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--text-white);
+  min-width: 36px;
+  text-align: right;
+}
+
+/* ── Score ── */
+.goals-card__scores {
+  display: flex;
+  align-items: center;
+  gap: var(--s2);
+}
+
+.goals-card__score-label {
+  font-family: var(--font-mono);
+  font-size: 0.58rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.goals-card__score-value {
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.goals-card__score-sep {
+  margin: 0 2px;
+  color: var(--text-muted);
+}
+
+/* ── Skills match ── */
+.goals-card__skills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s1);
+  margin-top: auto;
+}
+
+.goals-card__skill-tag {
+  font-family: var(--font-mono);
+  font-size: 0.52rem;
+  padding: 2px 7px;
+  border-radius: var(--r-full);
+  border: 1px solid;
+}
+
+.goals-card__skill-tag--matched {
+  background: rgba(78,204,163,0.10);
+  border-color: rgba(78,204,163,0.25);
+  color: var(--green);
+}
+
+.goals-card__skill-tag--unmatched {
+  background: rgba(255,255,255,0.03);
+  border-color: rgba(255,255,255,0.08);
+  color: var(--text-muted);
+}
+
+.goals-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 300px;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   LIGHT MODE
+   ═══════════════════════════════════════════════════════════════ */
+[data-theme="light"] .goals-panel,
+[data-theme="light"] .goals-card {
+  background:              rgba(255,255,255,0.55);
+  backdrop-filter:         blur(32px) saturate(1.8);
+  -webkit-backdrop-filter: blur(32px) saturate(1.8);
+  border:                  1px solid rgba(79,143,199,0.20);
+  box-shadow:              0 4px 24px rgba(0,0,0,0.08);
+}
+
+[data-theme="light"] .goals-panel:hover,
+[data-theme="light"] .goals-card:hover {
+  background:              rgba(79,143,199,0.08);
+  border-color:            rgba(79,143,199,0.30);
+}
+
+[data-theme="light"] .goals-stats__num,
+[data-theme="light"] .goals-card__name,
+[data-theme="light"] .goals-card__progress-pct {
+  color: #1a2332;
+}
+
+[data-theme="light"] .goals-stats__label,
+[data-theme="light"] .goals-card__year {
+  color: #6b8aaa;
+}
+
+[data-theme="light"] .goals-card__sub,
+[data-theme="light"] .goals-card__score-value {
+  color: #3d5a80;
+}
+
+[data-theme="light"] .goals-card__skill-tag--unmatched {
+  background: rgba(79,100,145,0.05);
+  border-color: rgba(79,100,145,0.12);
+  color: #6b8aaa;
+}
+
+[data-theme="light"] .goals-card__skill-tag--matched {
+  background: rgba(26,158,110,0.10);
+  border-color: rgba(26,158,110,0.20);
+  color: #1a9e6e;
+}
+
+[data-theme="light"] .goals-card__progress-bar {
+  background: rgba(79,100,145,0.08);
+}
+
+[data-theme="light"] .goals-stats__divider {
+  background: rgba(79,143,199,0.15);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   RESPONSIVE
+   ═══════════════════════════════════════════════════════════════ */
+@media (max-width: 750px) {
+  .goals-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .goals-stats {
+    gap: var(--s3);
+    padding: var(--s4);
+  }
+
+  .goals-stats__breakdown {
+    margin-left: 0;
+    width: 100%;
+  }
+}
+
+@media (max-width: 599px) {
+  .goals-card {
+    padding: var(--s3);
+  }
+
+  .goals-card__name {
+    font-size: 0.92rem;
+  }
+
+  .goals-stats__num {
+    font-size: 1.3rem;
+  }
+}

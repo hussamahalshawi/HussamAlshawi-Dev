@@ -15,8 +15,12 @@
    SECTION ROOT
 ══════════════════════════════════════════════════════ */
 .skills-section {
-  padding:   0;                                 /* Parent page-content handles padding */
-  animation: fadeIn 0.4s ease both;             /* Fade in whole section on mount      */
+  padding:   0;
+  animation: fadeIn 0.4s ease both;
+  display:   flex;
+  flex-direction: column;
+  max-height: calc(100vh - 64px);
+  overflow:  hidden;
 }
 
 /* ══════════════════════════════════════════════════════
@@ -24,13 +28,14 @@
    Scrollable horizontal row of category filter buttons
 ══════════════════════════════════════════════════════ */
 .skills-filters {
-  display:         flex;                        /* Horizontal row                      */
-  align-items:     center;                      /* Vertically center buttons           */
-  gap:             var(--s2);                   /* Small gap between buttons           */
-  margin-bottom:   var(--s8);                   /* Space below filters before grid     */
-  overflow-x:      auto;                        /* Allow horizontal scroll on mobile   */
-  padding-bottom:  var(--s1);                   /* Space for scrollbar                 */
-  scrollbar-width: none;                        /* Hide scrollbar Firefox              */
+  display:         flex;
+  align-items:     center;
+  gap:             var(--s2);
+  margin-bottom:   var(--s4);
+  overflow-x:      auto;
+  padding-bottom:  var(--s1);
+  scrollbar-width: none;
+  flex-shrink:     0;
 }
 
 /* Hide WebKit scrollbar on filter row */
@@ -107,22 +112,27 @@
 ══════════════════════════════════════════════════════ */
 .skills-bento {
   display:               grid;
-  grid-template-columns: 1fr 1.2fr 1fr;         /* Three columns — middle slightly wider */
-  gap:                   var(--s5);             /* Gap between panels                  */
-  margin-bottom:         var(--s5);             /* Space below bento grid              */
-  align-items:           start;                 /* Panels align to their content top   */
+  grid-template-columns: 1fr 1.2fr 1fr;
+  gap:                   var(--s4);
+  margin-bottom:         var(--s3);
+  align-items:           start;
+  flex:                  1;
+  min-height:            0;
+  overflow:              hidden;
 }
 
 /* ══════════════════════════════════════════════════════
    SHARED GLASS PANEL — used by all bento cells
 ══════════════════════════════════════════════════════ */
 .sk-panel {
-  position:      relative;                      /* For absolute decorations            */
-  overflow:      hidden;                        /* Clip drops to border-radius         */
-  border-radius: var(--r-xl);                   /* Rounded panel corners               */
-  padding:       var(--s6);                     /* Inner breathing room                */
+  position:      relative;
+  overflow:      hidden;
+  border-radius: var(--r-xl);
+  padding:       var(--s5);
   transition:    border-color 0.25s ease,
-                 background   0.35s ease;       /* Smooth theme transitions            */
+                 background   0.35s ease;
+  display:       flex;
+  flex-direction: column;
 
   /* Glassmorphism */
   background:              rgba(14, 20, 40, 0.78);
@@ -170,10 +180,11 @@
 
 /* ── Panel header ──────────────────────────────────── */
 .sk-panel__header {
-  display:         flex;                        /* Row: title + optional menu button   */
+  display:         flex;
   align-items:     center;
   justify-content: space-between;
-  margin-bottom:   var(--s4);                   /* Space below header                  */
+  margin-bottom:   var(--s3);
+  flex-shrink:     0;
 }
 
 /* Panel title */
@@ -210,16 +221,17 @@
    SVG spider/radar chart showing category averages
 ══════════════════════════════════════════════════════ */
 .sk-panel--radar {
-  grid-column: 1;                               /* First column                        */
+  grid-column: 1;
 }
 
-/* SVG radar chart container */
 .sk-radar-wrap {
   position: relative;
   width:    100%;
-  aspect-ratio: 1 / 1;                          /* Square container                    */
-  max-width: 340px;                             /* Max width on large screens          */
-  margin:   0 auto var(--s4);                   /* Centered with bottom space          */
+  aspect-ratio: 1 / 1;
+  max-width: 280px;
+  margin:   0 auto var(--s3);
+  flex:     1;
+  min-height: 0;
 }
 
 /* SVG element */
@@ -285,43 +297,39 @@
   text-anchor: middle;
 }
 
-/* Radar legend below chart */
 .sk-radar-legend {
-  display:        flex;                         /* Flex row for legend items           */
-  flex-wrap:      wrap;                         /* Wrap to second line if needed       */
-  gap:            var(--s2) var(--s4);          /* Row and column gaps                 */
-  justify-content:center;                       /* Center legend items                 */
+  display:        flex;
+  flex-wrap:      wrap;
+  gap:            var(--s1) var(--s3);
+  justify-content:center;
+  flex-shrink:    0;
 }
 
-/* Individual radar legend item */
 .sk-radar-legend-item {
   display:     flex;
   align-items: center;
-  gap:         var(--s2);
+  gap:         4px;
 }
 
-/* Legend color dot */
 .sk-radar-legend-dot {
-  width:         8px;
-  height:        8px;
+  width:         6px;
+  height:        6px;
   border-radius: 50%;
   flex-shrink:   0;
 }
 
-/* Legend label */
 .sk-radar-legend-label {
   font-family:    var(--font-mono);
-  font-size:      0.58rem;
+  font-size:      0.52rem;
   color:          var(--text-secondary);
   letter-spacing: 0.04em;
   white-space:    nowrap;
   transition:     color 0.35s ease;
 }
 
-/* Legend value */
 .sk-radar-legend-val {
   font-family: var(--font-mono);
-  font-size:   0.58rem;
+  font-size:   0.52rem;
   font-weight: 600;
   transition:  color 0.35s ease;
 }
@@ -336,9 +344,9 @@
 
 /* Scrollable container for skill bar groups */
 .sk-bars-scroll {
-  overflow-y:    auto;                          /* Scroll if content overflows         */
-  max-height:    460px;                         /* Cap height for consistency          */
-  padding-right: var(--s1);                     /* Space for scrollbar                 */
+  overflow-y:    auto;
+  max-height:    320px;
+  padding-right: var(--s1);
 }
 
 /* Custom scrollbar */
@@ -351,17 +359,17 @@
 
 /* Category group section */
 .sk-group {
-  margin-bottom: var(--s5);                     /* Space between category groups       */
+  margin-bottom: var(--s3);
 }
 
 .sk-group:last-child { margin-bottom: 0; }
 
 /* Category group header — label + count + avg pill */
 .sk-group__header {
-  display:       flex;                          /* Flex row                            */
+  display:       flex;
   align-items:   center;
   gap:           var(--s2);
-  margin-bottom: var(--s3);                     /* Space before skill rows             */
+  margin-bottom: var(--s2);
 }
 
 /* Color bar accent — left edge of group title */
@@ -399,8 +407,8 @@
 .sk-row {
   display:       flex;
   align-items:   center;
-  gap:           var(--s3);
-  margin-bottom: var(--s3);
+  gap:           var(--s2);
+  margin-bottom: var(--s2);
 }
 
 .sk-row:last-child { margin-bottom: 0; }
@@ -562,7 +570,7 @@
   display:   flex;
   flex-wrap: wrap;
   gap:       var(--s2);
-  max-height: 420px;                            /* Scrollable if many skills           */
+  max-height: 300px;
   overflow-y: auto;
   padding-right: var(--s1);
 }
@@ -616,27 +624,25 @@
    Shows count + avg score for each category
 ══════════════════════════════════════════════════════ */
 .sk-summary {
-  /* Inherits .sk-panel glass base                  */
+  flex-shrink: 0;
 }
 
-/* Summary grid — one cell per category */
 .sk-summary-grid {
   display:               grid;
-  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); /* Fluid columns     */
-  gap:                   1px;                  /* 1px creates visual grid lines       */
-  background:            rgba(255,255,255,0.06);/* Grid line color                    */
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap:                   1px;
+  background:            rgba(255,255,255,0.06);
   border:                1px solid rgba(255,255,255,0.06);
   border-radius:         var(--r-lg);
   overflow:              hidden;
-  margin-top:            var(--s3);
+  margin-top:            var(--s2);
 }
 
-/* Individual category cell */
 .sk-summary-cell {
-  background:     rgba(14,20,40,0.78);         /* Panel bg per cell                   */
+  background:     rgba(14,20,40,0.78);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  padding:        1.2rem var(--s4);            /* Inner padding                       */
+  padding:        var(--s3) var(--s3) 0.6rem;
   display:        flex;
   flex-direction: column;
   gap:            var(--s1);
@@ -647,7 +653,6 @@
 
 .sk-summary-cell:hover { background: rgba(20,28,55,0.92); }
 
-/* Color accent line at top of cell */
 .sk-summary-cell__accent {
   position: absolute;
   top:      0;
@@ -656,67 +661,66 @@
   height:   2px;
 }
 
-/* Category name */
-.sk-summary-cell__cat {
-  font-family:    var(--font-mono);
-  font-size:      0.56rem;
-  font-weight:    500;
-  letter-spacing: 0.10em;
-  text-transform: uppercase;
-  color:          var(--text-muted);
-  margin-top:     var(--s2);                   /* Push below accent line              */
-  transition:     color 0.35s ease;
-}
-
-/* Skill count */
 .sk-summary-cell__count {
   font-family:    var(--font-display);
-  font-size:      1.8rem;
+  font-size:      1.5rem;
   font-weight:    800;
-  line-height:    1;
+  line-height:    1.1;
   letter-spacing: -0.02em;
   transition:     color 0.35s ease;
+  margin-top:     var(--s1);
 }
 
-/* Avg score row */
-.sk-summary-cell__avg {
-  display:     flex;
-  align-items: center;
-  gap:         var(--s1);
-}
-
-/* Avg label */
-.sk-summary-cell__avg-label {
+.sk-summary-cell__cat {
   font-family:    var(--font-mono);
-  font-size:      0.52rem;
-  color:          var(--text-muted);
-  letter-spacing: 0.06em;
+  font-size:      0.62rem;
+  font-weight:    600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color:          var(--text-secondary);
+  white-space:    nowrap;
+  overflow:       hidden;
+  text-overflow:  ellipsis;
   transition:     color 0.35s ease;
 }
 
-/* Avg value */
-.sk-summary-cell__avg-val {
-  font-family: var(--font-mono);
-  font-size:   0.60rem;
-  font-weight: 600;
-  transition:  color 0.35s ease;
-}
-
-/* Mini bar under count for avg visualization */
 .sk-summary-cell__bar-track {
   height:        3px;
   background:    rgba(255,255,255,0.07);
   border-radius: var(--r-full);
   overflow:      hidden;
-  margin-top:    var(--s2);
+  margin-top:    auto;
 }
 
 .sk-summary-cell__bar-fill {
   height:        100%;
   border-radius: var(--r-full);
-  transform:     scaleX(0);                   /* Animated by JS IntersectionObserver  */
+  transform:     scaleX(0);
   transform-origin: left;
   transition:    transform 1s cubic-bezier(0.16,1,0.3,1) 0.3s;
+}
+
+.sk-summary-cell__avg {
+  display:     flex;
+  align-items: center;
+  gap:         4px;
+  padding-top: 4px;
+  padding-bottom: 2px;
+}
+
+.sk-summary-cell__avg-label {
+  font-family:    var(--font-mono);
+  font-size:      0.55rem;
+  color:          var(--text-muted);
+  letter-spacing: 0.04em;
+  transition:     color 0.35s ease;
+}
+
+.sk-summary-cell__avg-val {
+  font-family: var(--font-mono);
+  font-size:   0.65rem;
+  font-weight: 700;
+  transition:  color 0.35s ease;
 }
 
 /* ══════════════════════════════════════════════════════
@@ -735,6 +739,10 @@
 
 [data-theme="light"] .sk-summary-cell:hover {
   background: rgba(255,255,255,0.72);
+}
+
+[data-theme="light"] .sk-summary-cell__cat {
+  color: #3d5a80;
 }
 
 [data-theme="light"] .sk-summary-grid {
@@ -767,30 +775,41 @@
 /* Tablet: collapse to 2 columns */
 @media (max-width: 1100px) {
   .skills-bento {
-    grid-template-columns: 1fr 1fr;            /* Two columns                         */
+    grid-template-columns: 1fr 1fr;
   }
 
-  .sk-panel--radar { grid-column: 1 / 3; }    /* Radar spans full width on tablet     */
-  .sk-panel--bars  { grid-column: 1; }        /* Bars in left column                  */
-  .sk-panel--cloud { grid-column: 2; }        /* Cloud in right column                */
+  .sk-panel--radar { grid-column: 1 / 3; }
+  .sk-panel--bars  { grid-column: 1; }
+  .sk-panel--cloud { grid-column: 2; }
+
+  .sk-radar-wrap { max-width: 220px; }
+  .sk-bars-scroll { max-height: 260px; }
+  .sk-cloud { max-height: 240px; }
 }
 
 /* Mobile: single column */
 @media (max-width: 700px) {
+  .skills-section {
+    max-height: none;
+    overflow: visible;
+  }
+
   .skills-bento {
-    grid-template-columns: 1fr;               /* Single column                        */
+    grid-template-columns: 1fr;
   }
 
   .sk-panel--radar,
   .sk-panel--bars,
   .sk-panel--cloud {
-    grid-column: 1;                           /* All stacked                          */
+    grid-column: 1;
   }
 
+  .sk-radar-wrap { max-width: 200px; }
+
   .sk-summary-grid {
-    grid-template-columns: repeat(2, 1fr);    /* 2 across on mobile                   */
+    grid-template-columns: repeat(2, 1fr);
   }
 
   .sk-bars-scroll,
-  .sk-cloud         { max-height: none; }     /* Remove scroll limit on mobile        */
+  .sk-cloud { max-height: none; }
 }

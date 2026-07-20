@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { ResponsiveSankey } from '@nivo/sankey';
 
 const SOURCE_COLORS = {
@@ -119,6 +119,18 @@ export default function SankeyChart({ skillsWithSources, goals }) {
     [skillsWithSources, goals]
   );
 
+  const [isMobile, setIsMobile] = useState(() =>
+    typeof window !== 'undefined' ? window.innerWidth <= 860 : false
+  );
+
+  useEffect(() => {
+    const onResize = () => setIsMobile(window.innerWidth <= 860);
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, []);
+
+  const sideMargin = isMobile ? 80 : 160;
+
   if (!data || data.nodes.length === 0 || data.links.length === 0) {
     return (
       <div className="portfolio-sankey-empty">
@@ -131,14 +143,14 @@ export default function SankeyChart({ skillsWithSources, goals }) {
     <div className="portfolio-sankey-wrapper">
       <ResponsiveSankey
         data={data}
-        margin={{ top: 24, right: 160, bottom: 24, left: 160 }}
+        margin={{ top: 24, right: sideMargin, bottom: 24, left: sideMargin }}
         align="justify"
         colors={node => node.color || '#4FC3F7'}
         nodeOpacity={0.85}
         nodeHoverOpacity={1}
         nodeHoverOthersOpacity={0.25}
-        nodeThickness={18}
-        nodeSpacing={24}
+        nodeThickness={isMobile ? 12 : 18}
+        nodeSpacing={isMobile ? 12 : 24}
         nodeBorderWidth={0}
         nodeBorderColor={{
           from: 'color',
@@ -150,20 +162,20 @@ export default function SankeyChart({ skillsWithSources, goals }) {
         linkContract={3}
         enableLinkGradient
         labelPosition="outside"
-        labelOrientation="horizontal"
-        labelPadding={20}
+        labelOrientation={isMobile ? 'vertical' : 'horizontal'}
+        labelPadding={isMobile ? 10 : 20}
         labelTextColor="#ffffff"
         animate
         motionConfig="gentle"
         theme={{
           text: {
-            fontSize: 13,
+            fontSize: isMobile ? 11 : 13,
             fontFamily: "'DM Sans', sans-serif",
             fontWeight: 600,
           },
           labels: {
             text: {
-              fontSize: 13,
+              fontSize: isMobile ? 10 : 13,
               fontFamily: "'DM Sans', sans-serif",
               fontWeight: 600,
               textShadow: '0 1px 6px rgba(0,0,0,0.7), 0 0 12px rgba(0,0,0,0.4)',

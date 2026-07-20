@@ -121,6 +121,7 @@ export default function SunburstChart({ skillsByType = [] }) {
       ref={wrapRef}
       style={{ opacity: visible ? 1 : 0, transition: `opacity ${CHART_ANIMATION.duration}ms ${CHART_ANIMATION.easing}` }}
     >
+      <div className="sunburst-body">
       <svg viewBox={`0 0 ${SVG_SIZE} ${SVG_SIZE}`} role="img" aria-label="Skills hierarchy sunburst chart">
         {/* Ring 1: Categories */}
         {catSegments.map((cat, ci) => (
@@ -204,16 +205,17 @@ export default function SunburstChart({ skillsByType = [] }) {
           skills
         </text>
 
-        {/* Band legend */}
-        {BAND_LABELS.map((lbl, i) => (
-          <g key={`band-${i}`}>
-            <rect x={SVG_SIZE - 105} y={12 + i * 20} width={10} height={10} rx={2} fill={bandColors[i] + 'BB'} />
-            <text x={SVG_SIZE - 90} y={21 + i * 20} fontSize={10} fill={textFillMuted}>
-              {lbl}
-            </text>
-          </g>
-        ))}
       </svg>
+
+      <div className="sunburst-legend">
+        {BAND_LABELS.map((lbl, i) => (
+          <div className="sunburst-legend__item" key={`band-${i}`}>
+            <span className="sunburst-legend__dot" style={{ background: bandColors[i] }} />
+            <span className="sunburst-legend__label">{lbl}</span>
+          </div>
+        ))}
+      </div>
+    </div>
     </div>
   );
 }

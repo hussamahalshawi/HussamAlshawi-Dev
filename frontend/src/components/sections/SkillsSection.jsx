@@ -118,18 +118,6 @@ export default function SkillsSection({ skills, summary }) {
     <section id="skills" className="skills-section" aria-label="Skills Dashboard">
 
       {/* ══════════════════════════════════════
-          SECTION HEADER
-      ══════════════════════════════════════ */}
-      <div className="s-head">
-        <span className="s-tag" aria-hidden="true">◎ Skills</span>
-        <h2 className="s-title">Technical Skills</h2>
-        <p className="s-sub">
-          A comprehensive breakdown of my technical proficiency across
-          all disciplines — from frontend to backend, DevOps, and beyond.
-        </p>
-      </div>
-
-      {/* ══════════════════════════════════════
           FILTER TABS
       ══════════════════════════════════════ */}
       <div
@@ -781,10 +769,10 @@ function SummaryStrip({ categories, grouped, categoryAverages }) {
       {/* Summary grid — one cell per category */}
       <div className="sk-summary-grid" ref={stripRef} role="list">
         {categories.map((cat, i) => {
-          const skillList = grouped[cat] || [];  // Skills in this category
-          const count     = skillList.length;    // Count of skills
-          const avg       = categoryAverages[cat] || 0; // Average score
-          const color     = CHART_COLORS[i % CHART_COLORS.length]; // Category color
+          const skillList = grouped[cat] || [];
+          const count     = skillList.length;
+          const avg       = categoryAverages[cat] || 0;
+          const color     = CHART_COLORS[i % CHART_COLORS.length];
 
           return (
             <div
@@ -792,18 +780,13 @@ function SummaryStrip({ categories, grouped, categoryAverages }) {
               className="sk-summary-cell"
               role="listitem"
               aria-label={`${cat}: ${count} skills, avg ${avg}%`}
-              style={{ '--cat-color': color }}   // CSS custom prop for potential use
+              style={{ '--cat-color': color }}
             >
-              {/* Accent line at top of cell */}
               <div
                 className="sk-summary-cell__accent"
                 style={{ background: `linear-gradient(90deg, ${color}, transparent)` }}
               />
 
-              {/* Category name */}
-              <div className="sk-summary-cell__cat">{cat}</div>
-
-              {/* Skill count — the big number */}
               <div
                 className="sk-summary-cell__count"
                 style={{ color }}
@@ -811,7 +794,19 @@ function SummaryStrip({ categories, grouped, categoryAverages }) {
                 {count}
               </div>
 
-              {/* Avg score row */}
+              <div className="sk-summary-cell__cat">{cat}</div>
+
+              <div className="sk-summary-cell__bar-track">
+                <div
+                  className="sk-summary-cell__bar-fill"
+                  style={{
+                    width:      `${avg}%`,
+                    background: color,
+                    transform:  'scaleX(0)',
+                  }}
+                />
+              </div>
+
               <div className="sk-summary-cell__avg">
                 <span className="sk-summary-cell__avg-label">avg</span>
                 <span
@@ -820,18 +815,6 @@ function SummaryStrip({ categories, grouped, categoryAverages }) {
                 >
                   {avg}%
                 </span>
-              </div>
-
-              {/* Mini bar visualizing average */}
-              <div className="sk-summary-cell__bar-track">
-                <div
-                  className="sk-summary-cell__bar-fill"
-                  style={{
-                    width:      `${avg}%`,        // Fill = average score
-                    background: color,
-                    transform:  'scaleX(0)',      // Animated by observer
-                  }}
-                />
               </div>
             </div>
           );

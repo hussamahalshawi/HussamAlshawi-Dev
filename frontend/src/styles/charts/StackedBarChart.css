@@ -101,3 +101,28 @@
 [data-theme="light"] .stacked-bar__label {
   color: #1a2332;
 }
+
+/* ── Responsive ── */
+@media (max-width: 600px) {
+  .stacked-bar__label {
+    min-width: 70px;
+    font-size: 0.68rem;
+  }
+
+  .stacked-bar__track {
+    height: 16px;
+  }
+
+  .stacked-bar__total {
+    font-size: 0.62rem;
+    min-width: 24px;
+  }
+
+  .stacked-bar__legend {
+    gap: var(--s2);
+  }
+
+  .stacked-bar__legend-label {
+    font-size: 0.58rem;
+  }
+}

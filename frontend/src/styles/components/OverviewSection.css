@@ -16,48 +16,190 @@
 .overview-section {
   padding:    0;
   animation:  fadeIn 0.4s ease both;
+  height:     calc(100vh - 64px);
+  display:    flex;
+  flex-direction: column;
+  overflow:   hidden;
+}
+
+.overview-section .ov-overview-grid {
+  flex: 1;
+  min-height: 0;
 }
 
 /* ══════════════════════════════════════════════════════
-   OVERVIEW GRID — 2-column: profile (left) + charts (right)
+   OVERVIEW SECTION — 3-column grid layout
+   Profile: Col 1, Rows 1-2 (tall left)
+   Skill Radar: Cols 2-3, Row 1 (wide top right)
+   Skills by Source: Col 2, Row 2
+   Learning Flow: Col 3, Row 2
+   Goals Roadmap: Cols 1-3, Row 3 (full width bottom)
    ══════════════════════════════════════════════════════ */
 .ov-overview-grid {
   display:              grid;
-  grid-template-columns: 340px 1fr;
-  gap:                  var(--s5);
-  align-items:          start;
+  grid-template-columns: 340px 1fr 1fr;
+  grid-template-rows:    1fr 1fr;
+  gap:                  var(--s4);
+  align-items:          stretch;
 }
 
-.ov-overview-charts {
+/* ── Profile: Col 1, Rows 1-2 ── */
+.ov-panel--profile {
+  grid-column:    1;
+  grid-row:       1 / 3;
+  min-height:     0;
+  overflow-y:     auto;
+  overflow-x:     hidden;
+}
+
+/* ── Skills by Source: Col 2, Row 1 (2nd grid child) ── */
+.ov-overview-grid > .ov-panel--chart:nth-child(2) {
+  grid-column:    2;
+  grid-row:       1;
+}
+
+/* ── Learning Flow: Col 3, Row 1 (3rd grid child) ── */
+.ov-overview-grid > .ov-panel--chart:nth-child(3) {
+  grid-column:    3;
+  grid-row:       1;
+}
+
+/* ── Skill Radar: Col 2, Row 2 (4th grid child) ── */
+.ov-overview-grid > .ov-panel--chart:nth-child(4) {
+  grid-column:    2;
+  grid-row:       2;
+}
+
+/* ── Activity Overview: Col 3, Row 2 (5th grid child) ── */
+.ov-overview-grid > .ov-panel--chart:nth-child(5) {
+  grid-column:    3;
+  grid-row:       2;
+}
+
+/* ── Inline SVG radar (compact overview version) ── */
+.ov-radar {
+  flex:                 1;
   display:              flex;
   flex-direction:       column;
-  gap:                  var(--s5);
+  align-items:          center;
+  justify-content:      center;
+  gap:                  var(--s2);
+  min-height:           0;
+  min-width:            0;
+  width:                100%;
+  overflow:             hidden;
+}
+
+.ov-radar-svg {
+  width:                100%;
+  height:               auto;
+  display:              block;
+}
+
+.ov-radar-ring {
+  fill:                 none;
+  stroke:               rgba(255,255,255,0.07);
+  stroke-width:         0.8;
+}
+
+.ov-radar-axis {
+  stroke:               rgba(255,255,255,0.05);
+  stroke-width:         0.5;
+}
+
+.ov-radar-area {
+  fill:                 url(#ovRadarGrad);
+  stroke:               var(--cyan);
+  stroke-width:         1.5;
+  stroke-opacity:       0;
+  opacity:              0;
+  transition:           opacity 0.8s ease, stroke-opacity 0.8s ease;
+}
+
+.ov-radar-area--v {
+  opacity:              1;
+  stroke-opacity:       0.5;
+}
+
+.ov-radar-dot {
+  opacity:              0;
+  transition:           opacity 0.5s ease, r 0.3s ease;
+}
+
+.ov-radar-dot--v {
+  opacity:              1;
+}
+
+.ov-radar-dot:hover {
+  r:                    5;
+}
+
+.ov-radar-label {
+  font-family:          var(--font-mono);
+  font-size:            7px;
+}
+
+.ov-radar-score {
+  font-family:          var(--font-mono);
+  font-weight:          600;
+}
+
+/* ── Radar legend below SVG ── */
+.ov-radar-legend {
+  display:              flex;
+  flex-wrap:            wrap;
+  gap:                  var(--s1) var(--s3);
+  justify-content:      center;
+  width:                100%;
+}
+
+.ov-radar-legend-item {
+  display:              flex;
+  align-items:          center;
+  gap:                  var(--s1);
+  font-family:          var(--font-mono);
+  font-size:            0.68rem;
+  color:                var(--text-secondary);
+}
+
+.ov-radar-legend-dot {
+  width:                8px;
+  height:               8px;
+  border-radius:        50%;
+  flex-shrink:          0;
+}
+
+.ov-radar-legend-label {
+  white-space:          nowrap;
+}
+
+.ov-radar-legend-val {
+  font-weight:          600;
 }
 
 /* ── Chart panel variant (inside overview) ── */
 .ov-panel--chart {
-  padding:              var(--s5);
+  padding:              var(--s3) var(--s4);
   display:              flex;
   flex-direction:       column;
-  height:               420px;
+  min-height:           0;
+  overflow:             hidden;
 }
 
 /* ── Chart fill wrapper — gives Recharts/Nivo a sized container ── */
 .ov-panel--chart .portfolio-sankey-wrapper,
 .ov-panel--chart .portfolio-chart-fill,
 .ov-panel--chart .portfolio-chart-empty,
+.ov-panel--chart .portfolio-sankey-empty,
 .ov-panel--chart .stacked-bar,
 .ov-panel--chart .sunburst-chart,
 .ov-panel--chart .bubble-timeline,
-.ov-panel--chart .bubble-timeline--empty {
+.ov-panel--chart .bubble-timeline--empty,
+.ov-panel--chart .sankey-chart,
+.ov-panel--chart .sankey-wrapper {
   flex:                 1;
   min-height:           0;
   width:                100%;
-}
-
-/* Sankey needs more height */
-.ov-panel--chart:last-of-type {
-  height:               480px;
 }
 
 .ov-panel__chart-header {
@@ -79,6 +221,35 @@
   font-size:            0.72rem;
   color:                var(--text-muted);
   letter-spacing:       0.03em;
+}
+
+@media (max-width: 860px) {
+  .ov-panel__chart-header {
+    margin-bottom: var(--s2);
+  }
+
+  .ov-panel__chart-title {
+    font-size: 0.92rem;
+  }
+
+  .ov-panel__chart-sub {
+    font-size: 0.66rem;
+  }
+}
+
+@media (max-width: 599px) {
+  .ov-panel__chart-header {
+    margin-bottom: var(--s2);
+    gap: 2px;
+  }
+
+  .ov-panel__chart-title {
+    font-size: 0.85rem;
+  }
+
+  .ov-panel__chart-sub {
+    font-size: 0.62rem;
+  }
 }
 
 .ov-panel__chart-loading {
@@ -392,13 +563,10 @@
   box-shadow:    0 0 8px var(--green);
   animation:     pulseDot 2.5s ease infinite;   /* Continuous pulse from index.css  */
 }
-/* ── Col 1: Profile card — spans both rows but aligned to content ── */
+/* ── Col 1: Profile card — in 2-col row next to radar ── */
 .ov-panel--profile {
-  grid-column:    1;                            /* First column in main grid          */
-  grid-row:       1 / 3;                        /* Spans both rows visually           */
-  align-self:     start;                        /* Align to content top               */
-  display:        flex;                         /* Flex column layout inside          */
-  flex-direction: column;                       /* Stack children vertically          */
+  display:        flex;
+  flex-direction: column;
 
   /* Match glass-profile-card glass quality */
   background:              rgba(13, 17, 38, 0.90);
@@ -1239,6 +1407,38 @@
   transform:    scale(1.02);
   box-shadow:   0 8px 32px rgba(0,0,0,0.12);
 }
+
+[data-theme="light"] .ov-panel--chart {
+  background:              rgba(255,255,255,0.55);
+  backdrop-filter:         blur(32px) saturate(1.8);
+  -webkit-backdrop-filter: blur(32px) saturate(1.8);
+  border:                  1px solid rgba(79,143,199,0.20);
+  box-shadow:              0 4px 24px rgba(0,0,0,0.08),
+                           inset 0 1px 0 rgba(255,255,255,0.6);
+}
+
+[data-theme="light"] .ov-panel--chart:hover {
+  background:   rgba(255,255,255,0.70) !important;
+  border-color: rgba(79,143,199,0.30);
+  transform:    scale(1.02);
+  box-shadow:   0 8px 32px rgba(0,0,0,0.10);
+}
+
+[data-theme="light"] .ov-panel__chart-title {
+  color: #1a2332;
+}
+
+[data-theme="light"] .ov-panel__chart-sub {
+  color: #6b8aaa;
+}
+
+[data-theme="light"] .ov-radar-ring {
+  stroke: rgba(26,35,50,0.08);
+}
+
+[data-theme="light"] .ov-radar-axis {
+  stroke: rgba(26,35,50,0.05);
+}
 /* Donut track ring */
 [data-theme="light"] .ov-donut-track {
   stroke: rgba(26,143,199,0.14);                   /* Blue-tinted track              */
@@ -1372,7 +1572,7 @@
   .ov-profile__title { text-align: center; }
 
   .ov-profile__social--luxury {
-    justify-content: center;
+  justify-content:      flex-start;
   }
 
   .ov-social-link--luxury {
@@ -1499,22 +1699,149 @@
 /* ══════════════════════════════════════════════════════
    RESPONSIVE — Overview Grid
    ══════════════════════════════════════════════════════ */
+
+/* ── Large laptops (≤1199px) ── */
+@media (max-width: 1199px) {
+  .ov-overview-grid {
+    grid-template-columns: 300px 1fr 1fr;
+    gap: var(--s3);
+  }
+}
+
+/* ── Medium laptops (≤1024px) ── */
 @media (max-width: 1024px) {
   .ov-overview-grid {
-    grid-template-columns: 280px 1fr;
-    gap: var(--s4);
+    grid-template-columns: 270px 1fr 1fr;
+    gap: var(--s3);
   }
 }
 
+/* ── Tablet / small laptop (≤860px) — profile top, charts below ── */
 @media (max-width: 860px) {
+  .overview-section {
+    height: auto;
+    overflow: visible;
+  }
+
   .ov-overview-grid {
     grid-template-columns: 1fr;
+    grid-template-rows: auto;
+    gap: var(--s3);
+  }
+
+  .ov-panel--profile,
+  .ov-overview-grid > .ov-panel--chart:nth-child(2),
+  .ov-overview-grid > .ov-panel--chart:nth-child(3),
+  .ov-overview-grid > .ov-panel--chart:nth-child(4),
+  .ov-overview-grid > .ov-panel--chart:nth-child(5) {
+    grid-column: 1;
+    grid-row: auto;
+  }
+
+  .ov-panel--profile {
+    max-height: none;
+    overflow-y: visible;
+  }
+
+  .ov-panel--chart {
+    min-height: 280px;
+  }
+
+  .ov-panel--chart .portfolio-chart-fill,
+  .ov-panel--chart .portfolio-chart-empty,
+  .ov-panel--chart .portfolio-sankey-empty,
+  .ov-panel--chart .stacked-bar,
+  .ov-panel--chart .sunburst-chart,
+  .ov-panel--chart .bubble-timeline,
+  .ov-panel--chart .bubble-timeline--empty,
+  .ov-panel--chart .sankey-chart {
+    min-height: 240px;
+  }
+
+  .ov-panel--chart .sunburst-chart svg {
+    max-height: 260px;
+  }
+
+  .ov-panel--chart .stacked-bar__label {
+    min-width: 90px;
+    font-size: 0.75rem;
+  }
+
+  .ov-panel--chart .stacked-bar__track {
+    height: 18px;
+  }
+
+  .ov-panel__chart-title {
+    font-size: 0.95rem;
+  }
+
+  .ov-panel__chart-sub {
+    font-size: 0.68rem;
   }
 }
 
-@media (max-width: 700px) {
+/* ── Mobile (≤599px) ── */
+@media (max-width: 599px) {
   .ov-overview-grid {
-    grid-template-columns: 1fr;
+    gap: var(--s2);
+  }
+
+  .ov-panel--chart {
+    padding: var(--s2) var(--s3);
+    min-height: 240px;
+  }
+
+  .ov-panel--chart .portfolio-chart-fill,
+  .ov-panel--chart .portfolio-chart-empty,
+  .ov-panel--chart .portfolio-sankey-empty,
+  .ov-panel--chart .stacked-bar,
+  .ov-panel--chart .sunburst-chart,
+  .ov-panel--chart .bubble-timeline,
+  .ov-panel--chart .bubble-timeline--empty,
+  .ov-panel--chart .sankey-chart {
+    min-height: 200px;
+  }
+
+  .ov-panel--chart .sunburst-chart svg {
+    max-height: 220px;
+  }
+
+  .ov-panel--chart .stacked-bar__label {
+    min-width: 60px;
+    font-size: 0.65rem;
+  }
+
+  .ov-panel--chart .stacked-bar__track {
+    height: 14px;
+  }
+
+  .ov-panel--chart .stacked-bar__total {
+    font-size: 0.58rem;
+  }
+
+  .ov-panel__chart-title {
+    font-size: 0.85rem;
+  }
+
+  .ov-panel__chart-sub {
+    font-size: 0.62rem;
+  }
+}
+
+/* ── Small mobile (≤400px) ── */
+@media (max-width: 400px) {
+  .ov-panel--chart {
+    min-height: 220px;
+    padding: var(--s2);
+  }
+
+  .ov-panel--chart .sunburst-chart svg {
+    max-height: 190px;
+  }
+
+  .ov-panel--chart .stacked-bar__label {
+    min-width: 50px;
+    font-size: 0.60rem;
   }
 }
 

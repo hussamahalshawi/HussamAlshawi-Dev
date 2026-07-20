@@ -1,17 +1,18 @@
 /**
  * OverviewSection.jsx
  * ─────────────────────────────────────────────────────────
- * Profile card + 5 key charts overview.
- * Left column: Profile card (avatar, name, title, bio, social, stats)
- * Right column: Skills by Source → Skills Hierarchy → Goals Roadmap → Learning Flow → Skill Radar
+ * Profile card (full width) + 5 key charts in a grid below.
+ * Row 1: Sunburst + Radar (compact SVG matching SkillsSection)
+ * Row 2: StackedBar + BubbleTimeline
+ * Row 3: Sankey (full width)
  * All charts always render (show empty states if data not yet available).
  * ─────────────────────────────────────────────────────────
  */
 
-import { lazy, Suspense }   from 'react';
+import { lazy, Suspense, useRef, useEffect, useState, useMemo, useCallback } from 'react';
 import { motion }                                from 'framer-motion';
 import { getInitials }                           from '../../utils/formatters';
-import { CHART_COLORS, SOURCE_KEYS, SOURCE_COLORS } from '../../utils/constants';
+import { CHART_COLORS, SOURCE_KEYS, SOURCE_COLORS, ANIMATION } from '../../utils/constants';
 
 import '../../styles/components/OverviewSection.css';
 import '../../styles/components/OverviewBento.css';
@@ -21,24 +22,15 @@ const StackedBarChart     = lazy(() => import('../charts/StackedBarChart'));
 const SunburstChart       = lazy(() => import('../charts/SunburstChart'));
 const BubbleTimelineChart = lazy(() => import('../charts/BubbleTimelineChart'));
 const SankeyChart         = lazy(() => import('../charts/SankeyChart'));
-const RadarSkillsChart    = lazy(() => import('../charts/RadarSkillsChart'));
 
-/* ════════════════════════════════════════════════════════════════
-   CONSTANTS
-════════════════════════════════════════════════════════════════ */
-/* ── Languages state — fetched directly on mount ── */
-// const [languages, setLanguages] = useState([]);  // Languages array from API
+/* ── Radar geometry ───────────────────────────────────────────── */
+const RC_X  = 150;
+const RC_Y  = 150;
+const RC_R  = 105;
+const RC_RINGS = 4;
+const RC_VB = '0 0 300 300';
 
-// useEffect(() => {
-//   let cancelled = false;                         // Prevent stale state on unmount
-//   languagesService.getLanguages()                // Call API directly
-//     .then(data => {
-//       if (!cancelled) setLanguages(data?.languages || []); // Update state safely
-//     })
-//     .catch(() => {});                            // Silently fail — languages optional
-//   return () => { cancelled = true; };           // Cleanup on unmount
-// }, []);                                          // Run once on mount                                         // Run once on mount
-/* ── SVG Social Icons map ─────────────────────────────────────── */
+/* ── SVG Social Icons ─────────────────────────────────────────── */
 const SOCIAL_ICONS = {
   github: (
     <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor">
@@ -82,16 +74,16 @@ const SOCIAL_ICONS = {
   ),
 };
 
-/* ── Social platform colors for luxury hover effect ──────────── */
+/* ── Social platform config ───────────────────────────────────── */
 const SOCIAL_PLATFORMS_CONFIG = [
-  { key: 'github',    label: 'GitHub',    color: '#ffffff' }, // Dark mode hover = white; light mode override in CSS
-  { key: 'linkedin',  label: 'LinkedIn',  color: '#0A66C2' }, // Set color token to blue for LinkedIn brand identity
-  { key: 'twitter',   label: 'X',         color: '#ffffff' }, // Set color token to white for modern X platform branding
-  { key: 'instagram', label: 'Instagram', color: '#E1306C' }, // Set color token to gradient pink for Instagram identity
-  { key: 'youtube',   label: 'YouTube',   color: '#FF0000' }, // Set color token to deep red for YouTube brand guidelines
-  { key: 'medium',    label: 'Medium',    color: '#00ab6c' }, // Set color token to sleek green for Medium publishing brand
-  { key: 'facebook',  label: 'Facebook',  color: '#1877F2' }, // Set color token to classical blue for Facebook identity
-  { key: 'telegram',  label: 'Telegram',  color: '#26A5E4' }, // Set color token to standard light blue for Telegram channel
+  { key: 'github',    label: 'GitHub',    color: '#ffffff' },
+  { key: 'linkedin',  label: 'LinkedIn',  color: '#0A66C2' },
+  { key: 'twitter',   label: 'X',         color: '#ffffff' },
+  { key: 'instagram', label: 'Instagram', color: '#E1306C' },
+  { key: 'youtube',   label: 'YouTube',   color: '#FF0000' },
+  { key: 'medium',    label: 'Medium',    color: '#00ab6c' },
+  { key: 'facebook',  label: 'Facebook',  color: '#1877F2' },
+  { key: 'telegram',  label: 'Telegram',  color: '#26A5E4' },
 ];
 
 /* ── Language level → color ───────────────────────────────────── */
@@ -103,34 +95,23 @@ const LANG_LEVEL_COLORS = {
   beginner:     '#4FC3F7',
 };
 
-/* ── Framer Motion variants for staggered entrance ───────────── */
+/* ── Framer Motion variants ───────────────────────────────────── */
 const CARD_VARIANTS = {
-  hidden:  { opacity: 0, y: 24, scale: 0.97 },                   // Define hidden initial state variables for entrance smooth motion transition
-  visible: { opacity: 1, y: 0,  scale: 1    },                   // Define full visibility layout state parameters after components enter screen viewport
+  hidden:  { opacity: 0, y: 24, scale: 0.97 },
+  visible: { opacity: 1, y: 0,  scale: 1    },
 };
 
-/* ── Shared transition config ────────────────────────────────── */
 const CARD_TRANSITION = {
   duration: 0.55,
-  ease: [0.16, 1, 0.3, 1],                                       // Supply high premium cubic bezier spring simulation ease vectors for bento components
+  ease: [0.16, 1, 0.3, 1],
 };
 
 /* ════════════════════════════════════════════════════════════════
    MAIN COMPONENT: OverviewSection
-════════════════════════════════════════════════════════════════ */
-/**
- * OverviewSection — Full Bento Grid portfolio dashboard overview.
- * Displays all models in a single comprehensive grid layout [cite: 2026-01-26].
- *
- * @param {object}      props
- * @param {object|null} props.profile   - Profile data from API
- * @param {object|null} props.analytics - Analytics mega-payload from API
- *
- * @returns {JSX.Element}
- */
+   Profile card full-width on top, charts grid below
+   ════════════════════════════════════════════════════════════════ */
 export default function OverviewSection({ profile, analytics, languages = [], portfolio, skillsCharts, goalsCharts }) {
 
-  /* ── Safe data extraction with fallbacks ──────────────────── */
   const fullName  = profile?.full_name             || 'Hussam Alshawi';
   const title     = profile?.title                 || 'Full Stack Developer';
   const bio       = profile?.bio                   || '';
@@ -140,10 +121,8 @@ export default function OverviewSection({ profile, analytics, languages = [], po
     || null;
   const available = profile?.is_available_for_hire || false;
   const social    = profile?.social                || {};
-  const email     = profile?.email                 || '';
   const counts    = analytics?.counts               || {};
 
-  /* ── Precompute sources data for StackedBarChart ── */
   const sourcesTopSkills = (skillsCharts?.sources?.top_skills || []).slice(0, 8).map(item => {
     const flat = { skill: item.skill || item.skill_name };
     const srcObj = item.sources || item.source_counts || {};
@@ -151,15 +130,42 @@ export default function OverviewSection({ profile, analytics, languages = [], po
     return flat;
   });
 
+  /* ── Radar data from portfolio.skills_by_type ── */
+  const radarCategories = useMemo(() =>
+    (portfolio?.skills_by_type || []).map(c => c.type), [portfolio]);
+  const radarAvgs = useMemo(() => {
+    const avgs = {};
+    (portfolio?.skills_by_type || []).forEach(c => { avgs[c.type] = c.avg_score || 0; });
+    return avgs;
+  }, [portfolio]);
+
+  /* ── Activity Radar data from analytics counts ── */
+  const activityCategories = ['Projects', 'Courses', 'Experience', 'Education', 'Self Study', 'Achievements'];
+  const activityMax = useMemo(() => {
+    const vals = [
+      counts?.projects || 0,
+      counts?.courses || 0,
+      counts?.experience || 0,
+      counts?.education || 0,
+      counts?.self_study || 0,
+      counts?.achievements || 0,
+    ];
+    return Math.max(...vals, 1);
+  }, [counts]);
+  const activityAvgs = useMemo(() => ({
+    Projects:     counts?.projects     || 0,
+    Courses:      counts?.courses      || 0,
+    Experience:   counts?.experience   || 0,
+    Education:    counts?.education    || 0,
+    'Self Study': counts?.self_study   || 0,
+    Achievements: counts?.achievements || 0,
+  }), [counts]);
+
   return (
-    <section
-      id="overview"
-      className="overview-section"
-      aria-label="Dashboard Overview"
-    >
+    <section id="overview" className="overview-section" aria-label="Dashboard Overview">
       <div className="ov-overview-grid">
 
-        {/* ═══════ LEFT COLUMN: Profile Card ═══════ */}
+        {/* ═══════ PROFILE CARD — Col 1, spans Rows 1-2 ═══════ */}
         <motion.div
           className="ov-panel ov-panel--profile"
           variants={CARD_VARIANTS}
@@ -172,32 +178,21 @@ export default function OverviewSection({ profile, analytics, languages = [], po
           <div className="ov-profile__particles">
             <ParticleBackground />
           </div>
-
           <div className="ov-drops" aria-hidden="true">
             <div className="ov-drop ov-drop--a" />
             <div className="ov-drop ov-drop--b" />
           </div>
 
           <div className="ov-profile__header">
-            <div
-              className="ov-profile__avatar"
-              aria-label={`${fullName} photo`}
-            >
+            <div className="ov-profile__avatar" aria-label={`${fullName} photo`}>
               {avatar
                 ? <img src={avatar} alt={fullName} />
                 : <span>{getInitials(fullName)}</span>
               }
             </div>
-
             <div className="ov-profile__info">
-              <div className="ov-profile__name">
-                {fullName}
-              </div>
-
-              <div className="ov-profile__title">
-                {title}
-              </div>
-
+              <div className="ov-profile__name">{fullName}</div>
+              <div className="ov-profile__title">{title}</div>
               <div
                 className={`availability-pill ${available ? 'availability-pill--open' : ''}`}
                 role="status"
@@ -206,12 +201,7 @@ export default function OverviewSection({ profile, analytics, languages = [], po
                 <span className="availability-pill__dot" aria-hidden="true" />
                 {available ? 'Available for Hire' : 'Currently Employed'}
               </div>
-
-              <div
-                className="ov-profile__social--luxury"
-                role="list"
-                aria-label="Social links"
-              >
+              <div className="ov-profile__social--luxury" role="list" aria-label="Social links">
                 {SOCIAL_PLATFORMS_CONFIG.map(platform => {
                   const val = social[platform.key] || social[platform.key.toLowerCase()];
                   const url = !val ? null
@@ -220,19 +210,11 @@ export default function OverviewSection({ profile, analytics, languages = [], po
                   const icon = SOCIAL_ICONS[platform.key];
                   if (!url || !icon) return null;
                   return (
-                      <a
-                      key={platform.key}
-                      href={url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="ov-social-link--luxury"
-                      role="listitem"
+                    <a key={platform.key} href={url} target="_blank" rel="noopener noreferrer"
+                      className="ov-social-link--luxury" role="listitem"
                       aria-label={`${platform.label} profile`}
-                      style={{ '--social-color': platform.color }}
-                    >
-                      <span className="ov-social-link__icon--luxury" aria-hidden="true">
-                        {icon}
-                      </span>
+                      style={{ '--social-color': platform.color }}>
+                      <span className="ov-social-link__icon--luxury" aria-hidden="true">{icon}</span>
                     </a>
                   );
                 })}
@@ -240,19 +222,13 @@ export default function OverviewSection({ profile, analytics, languages = [], po
             </div>
           </div>
 
-          {bio && (
-            <p className="ov-profile__bio">
-              {bio}
-            </p>
-          )}
+          {bio && <p className="ov-profile__bio">{bio}</p>}
 
           {languages?.length > 0 && (
             <div className="ov-profile__lang-section">
-              <div className="ov-profile__section-label">
-                Languages
-              </div>
+              <div className="ov-profile__section-label">Languages</div>
               <div className="ov-bento-lang-strip" style={{ marginTop: 0, paddingTop: 0, borderTop: 'none' }} role="list" aria-label="Languages">
-                {languages.slice(0, 4).map((lang, i) => {
+                {languages.slice(0, 6).map((lang, i) => {
                   const levelKey  = (lang.proficiency || '').toLowerCase();
                   const langColor = LANG_LEVEL_COLORS[levelKey] || CHART_COLORS[i % CHART_COLORS.length];
                   return (
@@ -267,154 +243,197 @@ export default function OverviewSection({ profile, analytics, languages = [], po
             </div>
           )}
 
-          <div>
-            <div className="ov-profile__section-label">
-              Analytics
+          <div className="ov-profile__stats" role="list" aria-label="Quick stats">
+            <div className="ov-stat" role="listitem" style={{ '--stat-color': '#4FC3F7' }}>
+              <span className="ov-stat__tag">Exp</span>
+              <div className="ov-stat__num">{profile?.experience_years ? `${profile.experience_years}+` : '—'}</div>
+              <span className="ov-stat__label">Years</span>
             </div>
-            <div className="ov-profile__stats" role="list" aria-label="Quick stats">
-              <div className="ov-stat" role="listitem"
-                style={{ '--stat-color': '#4FC3F7' }}>
-                <span className="ov-stat__tag">Exp</span>
-                <div className="ov-stat__num">
-                  {profile?.experience_years ? `${profile.experience_years}+` : '—'}
-                </div>
-                <span className="ov-stat__label">Years</span>
-              </div>
-
-              <div className="ov-stat" role="listitem"
-                style={{ '--stat-color': '#4ECCA3' }}>
-                <span className="ov-stat__tag">Score</span>
-                <div className="ov-stat__num">
-                  {profile?.overall_score ? `${Math.round(profile.overall_score)}%` : '—'}
-                </div>
-                <span className="ov-stat__label">Overall</span>
-              </div>
-
-              <div className="ov-stat" role="listitem"
-                style={{ '--stat-color': '#9B7FEA' }}>
-                <span className="ov-stat__tag">Work</span>
-                <div className="ov-stat__num">{counts?.experience || '0'}</div>
-                <span className="ov-stat__label">Roles</span>
-              </div>
-
-              <div className="ov-stat" role="listitem"
-                style={{ '--stat-color': '#F5A623' }}>
-                <span className="ov-stat__tag">Built</span>
-                <div className="ov-stat__num">{counts?.projects || '0'}</div>
-                <span className="ov-stat__label">Projects</span>
-              </div>
+            <div className="ov-stat" role="listitem" style={{ '--stat-color': '#4ECCA3' }}>
+              <span className="ov-stat__tag">Score</span>
+              <div className="ov-stat__num">{profile?.overall_score ? `${Math.round(profile.overall_score)}%` : '—'}</div>
+              <span className="ov-stat__label">Overall</span>
+            </div>
+            <div className="ov-stat" role="listitem" style={{ '--stat-color': '#9B7FEA' }}>
+              <span className="ov-stat__tag">Work</span>
+              <div className="ov-stat__num">{counts?.experience || '0'}</div>
+              <span className="ov-stat__label">Roles</span>
+            </div>
+            <div className="ov-stat" role="listitem" style={{ '--stat-color': '#F5A623' }}>
+              <span className="ov-stat__tag">Built</span>
+              <div className="ov-stat__num">{counts?.projects || '0'}</div>
+              <span className="ov-stat__label">Projects</span>
             </div>
           </div>
         </motion.div>
 
-        {/* ═══════ RIGHT COLUMN: Charts (always rendered) ═══════ */}
-        <div className="ov-overview-charts">
+        {/* ═══════ ROW 1: Skills by Source — Col 2 ═══════ */}
+        <motion.div className="ov-panel ov-panel--chart" variants={CARD_VARIANTS} initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.1 }} transition={{ ...CARD_TRANSITION, delay: 0.1 }}>
+          <div className="ov-panel__chart-header">
+            <span className="ov-panel__chart-title">Skills by Source</span>
+            <span className="ov-panel__chart-sub">Top 8 — frequency per source</span>
+          </div>
+          <Suspense fallback={<div className="ov-panel__chart-loading">Loading...</div>}>
+            <StackedBarChart data={sourcesTopSkills} barKey="skill" stackKeys={SOURCE_KEYS} stackColors={SOURCE_COLORS} showLegend />
+          </Suspense>
+        </motion.div>
 
-          {/* 1. Skills by Source — Stacked Bar */}
-          <motion.div
-            className="ov-panel ov-panel--chart"
-            variants={CARD_VARIANTS}
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, amount: 0.1 }}
-            transition={{ ...CARD_TRANSITION, delay: 0.1 }}
-          >
-            <div className="ov-panel__chart-header">
-              <span className="ov-panel__chart-title">Skills by Source</span>
-              <span className="ov-panel__chart-sub">Top 8 — frequency per learning source</span>
-            </div>
-            <Suspense fallback={<div className="ov-panel__chart-loading">Loading...</div>}>
-              <StackedBarChart
-                data={sourcesTopSkills}
-                barKey="skill"
-                stackKeys={SOURCE_KEYS}
-                stackColors={SOURCE_COLORS}
-                showLegend
-              />
-            </Suspense>
-          </motion.div>
+        {/* ═══════ ROW 1: Learning Flow — Col 3 ═══════ */}
+        <motion.div className="ov-panel ov-panel--chart" variants={CARD_VARIANTS} initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.1 }} transition={{ ...CARD_TRANSITION, delay: 0.12 }}>
+          <div className="ov-panel__chart-header">
+            <span className="ov-panel__chart-title">Learning Flow</span>
+            <span className="ov-panel__chart-sub">Sources → Skills → Goals</span>
+          </div>
+          <Suspense fallback={<div className="ov-panel__chart-loading">Loading...</div>}>
+            <SankeyChart skillsWithSources={portfolio?.skills_with_sources} goals={portfolio?.goals} />
+          </Suspense>
+        </motion.div>
 
-          {/* 2. Skills Hierarchy — Sunburst */}
-          <motion.div
-            className="ov-panel ov-panel--chart"
-            variants={CARD_VARIANTS}
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, amount: 0.1 }}
-            transition={{ ...CARD_TRANSITION, delay: 0.15 }}
-          >
-            <div className="ov-panel__chart-header">
-              <span className="ov-panel__chart-title">Skills Hierarchy</span>
-              <span className="ov-panel__chart-sub">Category → Skill → Proficiency Band</span>
-            </div>
-            <Suspense fallback={<div className="ov-panel__chart-loading">Loading...</div>}>
-              <SunburstChart skillsByType={portfolio?.skills_by_type} />
-            </Suspense>
-          </motion.div>
+        {/* ═══════ ROW 2: Skills Hierarchy — Col 2 ═══════ */}
+        <motion.div className="ov-panel ov-panel--chart" variants={CARD_VARIANTS} initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.1 }} transition={{ ...CARD_TRANSITION, delay: 0.15 }}>
+          <div className="ov-panel__chart-header">
+            <span className="ov-panel__chart-title">Skills Hierarchy</span>
+            <span className="ov-panel__chart-sub">Category → Skill → Proficiency</span>
+          </div>
+          <Suspense fallback={<div className="ov-panel__chart-loading">Loading...</div>}>
+            <SunburstChart skillsByType={portfolio?.skills_by_type} />
+          </Suspense>
+        </motion.div>
 
-          {/* 3. Goals Roadmap — Bubble Timeline */}
-          <motion.div
-            className="ov-panel ov-panel--chart"
-            variants={CARD_VARIANTS}
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, amount: 0.1 }}
-            transition={{ ...CARD_TRANSITION, delay: 0.2 }}
-          >
-            <div className="ov-panel__chart-header">
-              <span className="ov-panel__chart-title">Goals Roadmap</span>
-              <span className="ov-panel__chart-sub">{goalsCharts?.roadmap?.count || goalsCharts?.roadmap?.goals?.length || 0} goals</span>
-            </div>
-            <Suspense fallback={<div className="ov-panel__chart-loading">Loading...</div>}>
-              <BubbleTimelineChart
-                goals={goalsCharts?.roadmap?.goals}
-                minYear={goalsCharts?.roadmap?.min_year}
-                maxYear={goalsCharts?.roadmap?.max_year}
-              />
-            </Suspense>
-          </motion.div>
+        {/* ═══════ ROW 2: Goals Roadmap — Col 3 ═══════ */}
+        <motion.div className="ov-panel ov-panel--chart" variants={CARD_VARIANTS} initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.1 }} transition={{ ...CARD_TRANSITION, delay: 0.18 }}>
+          <div className="ov-panel__chart-header">
+            <span className="ov-panel__chart-title">Goals Roadmap</span>
+            <span className="ov-panel__chart-sub">{goalsCharts?.roadmap?.goals?.length || 0} goals</span>
+          </div>
+          <Suspense fallback={<div className="ov-panel__chart-loading">Loading...</div>}>
+            <BubbleTimelineChart goals={goalsCharts?.roadmap?.goals} minYear={goalsCharts?.roadmap?.min_year} maxYear={goalsCharts?.roadmap?.max_year} />
+          </Suspense>
+        </motion.div>
 
-          {/* 4. Learning Flow — Sankey */}
-          <motion.div
-            className="ov-panel ov-panel--chart"
-            variants={CARD_VARIANTS}
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, amount: 0.1 }}
-            transition={{ ...CARD_TRANSITION, delay: 0.25 }}
-          >
-            <div className="ov-panel__chart-header">
-              <span className="ov-panel__chart-title">Learning Flow</span>
-              <span className="ov-panel__chart-sub">Sources → Skills → Goals</span>
-            </div>
-            <Suspense fallback={<div className="ov-panel__chart-loading">Loading...</div>}>
-              <SankeyChart
-                skillsWithSources={portfolio?.skills_with_sources}
-                goals={portfolio?.goals}
-              />
-            </Suspense>
-          </motion.div>
-
-          {/* 5. Skill Radar */}
-          <motion.div
-            className="ov-panel ov-panel--chart"
-            variants={CARD_VARIANTS}
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, amount: 0.1 }}
-            transition={{ ...CARD_TRANSITION, delay: 0.3 }}
-          >
-            <div className="ov-panel__chart-header">
-              <span className="ov-panel__chart-title">Skill Radar</span>
-              <span className="ov-panel__chart-sub">{portfolio?.skills_by_type?.length || 0} categories</span>
-            </div>
-            <Suspense fallback={<div className="ov-panel__chart-loading">Loading...</div>}>
-              <RadarSkillsChart skillsByType={portfolio?.skills_by_type} />
-            </Suspense>
-          </motion.div>
-
-        </div>
       </div>
     </section>
+  );
+}
+
+/* ════════════════════════════════════════════════════════════════
+   OverviewRadar — SVG radar matching SkillsSection RadarPanel
+   Pure SVG, compact version for overview (no recharts)
+   ════════════════════════════════════════════════════════════════ */
+function OverviewRadar({ categories = [], avgs = {}, maxVal = 100, compact = false }) {
+  const [visible, setVisible] = useState(false);
+  const ref = useRef(null);
+
+  const CX = compact ? 110 : RC_X;
+  const CY = compact ? 110 : RC_Y;
+  const CR = compact ? 75  : RC_R;
+  const VB = compact ? '0 0 220 220' : RC_VB;
+
+  useEffect(() => {
+    if (!ref.current) return;
+    const obs = new IntersectionObserver(entries => {
+      if (entries[0].isIntersecting) { setVisible(true); obs.disconnect(); }
+    }, { threshold: ANIMATION.REVEAL_THRESHOLD });
+    obs.observe(ref.current);
+    return () => obs.disconnect();
+  }, []);
+
+  const N = categories.length;
+  const p2xy = useCallback((a, r) => ({ x: CX + r * Math.sin(a), y: CY - r * Math.cos(a) }), [CX, CY]);
+
+  const rings = useMemo(() => {
+    if (N < 3) return [];
+    return Array.from({ length: RC_RINGS }, (_, ri) => {
+      const r = (CR / RC_RINGS) * (ri + 1);
+      return Array.from({ length: N }, (_, i) => {
+        const { x, y } = p2xy((2 * Math.PI * i) / N, r);
+        return `${x},${y}`;
+      }).join(' ');
+    });
+  }, [N, p2xy]);
+
+  const dataPolygon = useMemo(() => {
+    if (N < 3) return '';
+    return categories.map((cat, i) => {
+      const r = ((avgs[cat] || 0) / maxVal) * CR;
+      const { x, y } = p2xy((2 * Math.PI * i) / N, r);
+      return `${x},${y}`;
+    }).join(' ');
+  }, [categories, avgs, N, p2xy, maxVal, CR]);
+
+  const dots = useMemo(() => {
+    if (N < 3) return [];
+    return categories.map((cat, i) => {
+      const r = ((avgs[cat] || 0) / maxVal) * CR;
+      return { ...p2xy((2 * Math.PI * i) / N, r), score: avgs[cat] || 0, cat };
+    });
+  }, [categories, avgs, N, p2xy, maxVal]);
+
+  const axes = useMemo(() => {
+    if (N < 3) return [];
+    return categories.map((_, i) => {
+      const { x, y } = p2xy((2 * Math.PI * i) / N, CR);
+      return { x1: CX, y1: CY, x2: x, y2: y };
+    });
+  }, [N, p2xy, categories]);
+
+  const labels = useMemo(() => {
+    if (N < 3) return [];
+    return categories.map((cat, i) => {
+      const { x, y } = p2xy((2 * Math.PI * i) / N, CR + 22);
+      return { x, y, cat, score: avgs[cat] || 0 };
+    });
+  }, [categories, avgs, N, p2xy]);
+
+  if (N < 3) {
+    return (
+      <div style={{ textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.78rem', padding: '2rem 0' }}>
+        Radar requires 3+ categories
+      </div>
+    );
+  }
+
+  return (
+    <div className="ov-radar" ref={ref}>
+      <svg className="ov-radar-svg" viewBox={VB} role="img" aria-label="Skill radar chart">
+        <defs>
+          <radialGradient id="ovRadarGrad" cx="50%" cy="50%" r="50%">
+            <stop offset="0%"   stopColor="var(--cyan)" stopOpacity="0.30" />
+            <stop offset="100%" stopColor="var(--cyan)" stopOpacity="0.05" />
+          </radialGradient>
+        </defs>
+        {rings.map((pts, i) => (
+          <polygon key={i} className="ov-radar-ring" points={pts} />
+        ))}
+        {axes.map((a, i) => (
+          <line key={i} className="ov-radar-axis" x1={a.x1} y1={a.y1} x2={a.x2} y2={a.y2} />
+        ))}
+        {dataPolygon && (
+          <polygon className={`ov-radar-area ${visible ? 'ov-radar-area--v' : ''}`} points={dataPolygon} fill="url(#ovRadarGrad)" />
+        )}
+        {dots.map((dot, i) => (
+          <circle
+            key={i}
+            className={`ov-radar-dot ${visible ? 'ov-radar-dot--v' : ''}`}
+            cx={dot.x} cy={dot.y} r="3.5"
+            fill="var(--cyan)"
+            style={{ transitionDelay: `${0.5 + i * 0.08}s` }}
+          />
+        ))}
+        {labels.map((l, i) => (
+          <text key={i} x={l.x} y={l.y} className="ov-radar-label" fill="var(--text-secondary)" fontSize="15" textAnchor="middle" dominantBaseline="middle">
+            {l.cat.length > 14 ? `${l.cat.slice(0, 14)}…` : l.cat}
+          </text>
+        ))}
+        {categories.map((cat, i) => {
+          const { x, y } = p2xy((2 * Math.PI * i) / N, CR * 0.55);
+          return (
+            <text key={i} x={x} y={y} className="ov-radar-score" fill="var(--text-muted)" fontSize="13" textAnchor="middle" dominantBaseline="middle">
+              {avgs[cat] || 0}
+            </text>
+          );
+        })}
+      </svg>
+    </div>
   );
 }

@@ -20,7 +20,12 @@ import analyticsService                      from '../services/analyticsService'
 import skillsService                         from '../services/skillsService';
 import projectsService                       from '../services/projectsService';
 import languagesService                      from '../services/languagesService';
+import experienceService                     from '../services/experienceService';
+import achievementsService                   from '../services/achievementsService';
 import chartsService                         from '../services/chartsService';
+import educationService                      from '../services/educationService';
+import goalsService                          from '../services/goalsService';
+import feedbackService                       from '../services/feedbackService';
 import {
   CACHE_KEYS,
   saveToCache,
@@ -94,6 +99,60 @@ const API_TASKS = [
     key:   'goalsCharts',
     label: 'Goals Charts',
     fetch: () => chartsService.composite.allGoalsCharts(),
+    phase: 2,
+  },
+  {
+    key:   'experience',
+    label: 'Experience',
+    fetch: () => experienceService.getExperience(),
+    phase: 2,
+  },
+  {
+    key:   'achievements',
+    label: 'Achievements',
+    fetch: () => achievementsService.getAchievements(),
+    phase: 2,
+  },
+  {
+    key:   'careerCharts',
+    label: 'Career Charts',
+    fetch: () => chartsService.composite.allCareerCharts(),
+    phase: 2,
+  },
+  {
+    key:   'education',
+    label: 'Education',
+    fetch: () => educationService.getEducation(),
+    phase: 2,
+  },
+  {
+    key:   'courses',
+    label: 'Courses',
+    fetch: () => educationService.getCourses(),
+    phase: 2,
+  },
+  {
+    key:   'selfStudy',
+    label: 'Self Study',
+    fetch: () => educationService.getSelfStudy(),
+    phase: 2,
+  },
+  {
+    key:   'goals',
+    label: 'Goals',
+    fetch: () => goalsService.getPublicGoals(),
+    phase: 2,
+  },
+  {
+    key:   'goalsStats',
+    label: 'Goals Stats',
+    fetch: () => goalsService.getGoalsStats(),
+    phase: 2,
+  },
+  {
+    key:   'feedback',
+    label: 'Feedback',
+    fetch: () => feedbackService.getFeaturedTestimonials(),
     phase: 2,
   },
 ];

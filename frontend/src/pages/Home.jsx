@@ -7,23 +7,25 @@
  * No scroll between sections — each section shows/hides via CSS.
  * Data loads once on mount and stays alive (keep-alive pattern).
  *
- * Future:  3 built sections (Overview, Skills, Analytics) use eager
- * imports for keep-alive animation state. Placeholder sections use
- * React.lazy to defer code loading.
+ * All sections use eager imports for keep-alive animation state.
+ * About and Contact sections are still placeholders.
  * ─────────────────────────────────────────────────────────
  */
 
-import { useState, useEffect, lazy, Suspense }      from 'react';
-import { usePortfolioData }                         from '../hooks/usePortfolioData';
-import DashboardLayout                              from '../components/layout/DashboardLayout';
-import OverviewSection                              from '../components/sections/OverviewSection';
-import AnalyticsSection                             from '../components/sections/AnalyticsSection';
-import SkillsSection                                from '../components/sections/SkillsSection';
-import PageLoader                                   from '../components/ui/PageLoader';
+import { useState, useEffect }                            from 'react';
+import { usePortfolioData }                                 from '../hooks/usePortfolioData';
+import DashboardLayout                                      from '../components/layout/DashboardLayout';
+import OverviewSection                                      from '../components/sections/OverviewSection';
+import AnalyticsSection                                     from '../components/sections/AnalyticsSection';
+import SkillsSection                                        from '../components/sections/SkillsSection';
+import ExperienceSection                                    from '../components/sections/ExperienceSection';
+import ProjectsSection                                      from '../components/sections/ProjectsSection';
+import EducationSection                                     from '../components/sections/EducationSection';
+import SelfStudySection                                     from '../components/sections/SelfStudySection';
+import GoalsSection                                         from '../components/sections/GoalsSection';
+import FeedbackSection                                      from '../components/sections/FeedbackSection';
+import PageLoader                                           from '../components/ui/PageLoader';
 import '../styles/layout/Sections.css';
-
-/* ── Lazy-loaded placeholder sections (deferred code) ───────── */
-const PlaceholderSection = lazy(() => import('../components/sections/PlaceholderSection'));
 
 /* ── Section IDs — must match NAV_ITEMS order ───────────────── */
 const SECTION_IDS = [
@@ -64,8 +66,8 @@ function OfflineBanner({ message }) {
   );
 }
 
-/* ── Section wrapper — controls visibility + Suspense boundary ── */
-function SectionWrapper({ id, activeSection, children, lazy }) {
+/* ── Section wrapper — controls visibility ──────────────────── */
+function SectionWrapper({ id, activeSection, children }) {
   const isVisible = activeSection === id;
   return (
     <div
@@ -73,13 +75,7 @@ function SectionWrapper({ id, activeSection, children, lazy }) {
       aria-label={id}
       style={{ display: isVisible ? 'block' : 'none' }}
     >
-      {lazy ? (
-        <Suspense fallback={<div className="section-placeholder">Loading...</div>}>
-          {isVisible && children}
-        </Suspense>
-      ) : (
-        children   // Eager-loaded sections render children unconditionally (keep-alive)
-      )}
+      {children}
     </div>
   );
 }
@@ -101,18 +97,6 @@ export default function Home() {
     window.addEventListener('hashchange', onHashChange);
     return () => window.removeEventListener('hashchange', onHashChange);
   }, []);
-
-  /* ── Section labels for lazy placeholders ────────────────── */
-  const sectionLabels = {
-    experience: 'Experience & Achievements',
-    projects:   'Projects',
-    education:  'Education & Courses',
-    selfstudy:  'Self Study',
-    goals:      'Goals',
-    feedback:   'Feedback',
-    about:      'About',
-    contact:    'Contact',
-  };
 
   /* ── Show loader while phase 1 data is loading ──────────── */
   if (loading) {
@@ -145,13 +129,17 @@ export default function Home() {
       </SectionWrapper>
 
       {/* SECTION 2 — Experience & Achievements */}
-      <SectionWrapper id="experience" activeSection={activeSection} lazy>
-        <PlaceholderSection title={sectionLabels.experience} />
+      <SectionWrapper id="experience" activeSection={activeSection}>
+        <ExperienceSection
+          experience={data.experience}
+          achievements={data.achievements}
+          careerCharts={data.careerCharts}
+        />
       </SectionWrapper>
 
       {/* SECTION 3 — Projects */}
-      <SectionWrapper id="projects" activeSection={activeSection} lazy>
-        <PlaceholderSection title={sectionLabels.projects} />
+      <SectionWrapper id="projects" activeSection={activeSection}>
+        <ProjectsSection projects={data.projects} />
       </SectionWrapper>
 
       {/* SECTION 4 — Skills (eager, always mounted) */}
@@ -163,13 +151,13 @@ export default function Home() {
       </SectionWrapper>
 
       {/* SECTION 5 — Education & Courses */}
-      <SectionWrapper id="education" activeSection={activeSection} lazy>
-        <PlaceholderSection title={sectionLabels.education} />
+      <SectionWrapper id="education" activeSection={activeSection}>
+        <EducationSection education={data.education} courses={data.courses} />
       </SectionWrapper>
 
       {/* SECTION 7 — Self Study */}
-      <SectionWrapper id="selfstudy" activeSection={activeSection} lazy>
-        <PlaceholderSection title={sectionLabels.selfstudy} />
+      <SectionWrapper id="selfstudy" activeSection={activeSection}>
+        <SelfStudySection selfStudy={data.selfStudy} />
       </SectionWrapper>
 
       {/* SECTION 8 — Analytics (eager, always mounted) */}
@@ -178,23 +166,27 @@ export default function Home() {
       </SectionWrapper>
 
       {/* SECTION 9 — Goals */}
-      <SectionWrapper id="goals" activeSection={activeSection} lazy>
-        <PlaceholderSection title={sectionLabels.goals} />
+      <SectionWrapper id="goals" activeSection={activeSection}>
+        <GoalsSection goals={data.goals} goalsStats={data.goalsStats} />
       </SectionWrapper>
 
       {/* SECTION 10 — Feedback */}
-      <SectionWrapper id="feedback" activeSection={activeSection} lazy>
-        <PlaceholderSection title={sectionLabels.feedback} />
+      <SectionWrapper id="feedback" activeSection={activeSection}>
+        <FeedbackSection feedback={data.feedback} />
       </SectionWrapper>
 
       {/* SECTION 11 — About */}
-      <SectionWrapper id="about" activeSection={activeSection} lazy>
-        <PlaceholderSection title={sectionLabels.about} />
+      <SectionWrapper id="about" activeSection={activeSection}>
+        <div className="section-placeholder" style={{ minHeight: '300px', borderRadius: 'var(--r-lg)', background: 'var(--glass-medium)' }}>
+          About
+        </div>
       </SectionWrapper>
 
       {/* SECTION 12 — Contact */}
-      <SectionWrapper id="contact" activeSection={activeSection} lazy>
-        <PlaceholderSection title={sectionLabels.contact} />
+      <SectionWrapper id="contact" activeSection={activeSection}>
+        <div className="section-placeholder" style={{ minHeight: '300px', borderRadius: 'var(--r-lg)', background: 'var(--glass-medium)' }}>
+          Contact
+        </div>
       </SectionWrapper>
 
     </DashboardLayout>

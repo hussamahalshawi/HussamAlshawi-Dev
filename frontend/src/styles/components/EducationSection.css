@@ -1,0 +1,420 @@
+/* ═══════════════════════════════════════════════════════════════
+   EducationSection.css
+   Education & Courses dashboard section.
+   Layout: 2-column grid (Education left | Courses right)
+   ═══════════════════════════════════════════════════════════════ */
+
+.education-section {
+  padding: 0;
+  animation: fadeIn 0.4s ease both;
+}
+
+/* ── Main grid ── */
+.edu-grid {
+  display: grid;
+  grid-template-columns: 1fr 1.4fr;
+  gap: var(--s4);
+  align-items: start;
+}
+
+/* ── Panel base ── */
+.edu-panel {
+  background:              rgba(13,17,38,0.82);
+  backdrop-filter:         blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border:                  1px solid rgba(79,195,247,0.12);
+  border-radius:           var(--r-md);
+  box-shadow:              0 4px 24px rgba(0,0,0,0.35),
+                           inset 0 1px 0 rgba(79,195,247,0.06);
+  padding:                 var(--s5);
+  transition:              background var(--t-base),
+                           border-color var(--t-base),
+                           transform var(--t-base);
+}
+
+.edu-panel:hover {
+  background:              rgba(79,195,247,0.06);
+  border-color:            rgba(79,195,247,0.22);
+  transform:               translateY(-2px);
+}
+
+.edu-panel__header {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s1);
+  margin-bottom: var(--s4);
+}
+
+.edu-panel__title {
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--text-white);
+}
+
+.edu-panel__sub {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  letter-spacing: 0.03em;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   EDUCATION DEGREE CARDS
+   ═══════════════════════════════════════════════════════════════ */
+.edu-degree__list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s4);
+}
+
+.edu-degree-card {
+  display: flex;
+  gap: var(--s3);
+  padding: var(--s4);
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(79,195,247,0.06);
+  border-radius: var(--r-sm);
+  transition: border-color var(--t-base);
+}
+
+.edu-degree-card:hover {
+  border-color: rgba(79,195,247,0.18);
+}
+
+.edu-degree-card__accent {
+  width: 4px;
+  border-radius: var(--r-full);
+  flex-shrink: 0;
+}
+
+.edu-degree-card__body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s2);
+}
+
+.edu-degree-card__name {
+  font-family: var(--font-display);
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: var(--text-white);
+  margin: 0;
+}
+
+.edu-degree-card__inst {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: var(--text-secondary);
+}
+
+.edu-degree-card__grade {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  color: var(--green);
+}
+
+.edu-degree-card__desc {
+  font-family: var(--font-body);
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
+  margin: 0;
+}
+
+.edu-degree-card__skills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s1);
+}
+
+.edu-degree-card__skill-tag {
+  font-family: var(--font-mono);
+  font-size: 0.55rem;
+  padding: 2px 7px;
+  background: rgba(79,195,247,0.08);
+  border: 1px solid rgba(79,195,247,0.15);
+  border-radius: var(--r-full);
+  color: var(--text-accent);
+}
+
+.edu-degree-card__skill-more {
+  font-family: var(--font-mono);
+  font-size: 0.55rem;
+  padding: 2px 6px;
+  color: var(--text-muted);
+}
+
+.edu-degree-card__date {
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  color: var(--text-muted);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   COURSES GRID
+   ═══════════════════════════════════════════════════════════════ */
+.edu-courses__filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s2);
+  margin-bottom: var(--s4);
+}
+
+.edu-filter-btn {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  font-weight: 500;
+  letter-spacing: 0.03em;
+  padding: var(--s1) var(--s3);
+  border-radius: var(--r-full);
+  border: 1px solid rgba(79,195,247,0.12);
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all var(--t-base);
+  white-space: nowrap;
+}
+
+.edu-filter-btn:hover {
+  border-color: rgba(79,195,247,0.3);
+  color: var(--text-white);
+}
+
+.edu-filter-btn--active {
+  background: rgba(79,195,247,0.15);
+  border-color: rgba(79,195,247,0.4);
+  color: var(--cyan);
+}
+
+.edu-courses__grid {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s3);
+  max-height: 500px;
+  overflow-y: auto;
+  padding-right: var(--s2);
+}
+
+.edu-courses__grid::-webkit-scrollbar {
+  width: 4px;
+}
+
+.edu-courses__grid::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.edu-courses__grid::-webkit-scrollbar-thumb {
+  background: rgba(79,195,247,0.15);
+  border-radius: var(--r-full);
+}
+
+.edu-course-card {
+  display: flex;
+  gap: var(--s3);
+  padding: var(--s3);
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(79,195,247,0.06);
+  border-radius: var(--r-sm);
+  transition: border-color var(--t-base), background var(--t-base);
+}
+
+.edu-course-card:hover {
+  border-color: rgba(79,195,247,0.18);
+  background: rgba(79,195,247,0.04);
+}
+
+.edu-course-card__icon {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--r-xs);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.edu-course-card__body {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.edu-course-card__name {
+  font-family: var(--font-display);
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text-white);
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.edu-course-card__org {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  color: var(--text-secondary);
+}
+
+.edu-course-card__cat {
+  font-family: var(--font-mono);
+  font-size: 0.58rem;
+  padding: 1px 7px;
+  background: rgba(155,127,234,0.12);
+  border: 1px solid rgba(155,127,234,0.2);
+  border-radius: var(--r-full);
+  color: var(--violet);
+  align-self: flex-start;
+}
+
+.edu-course-card__skills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s1);
+}
+
+.edu-course-card__skill-tag {
+  font-family: var(--font-mono);
+  font-size: 0.52rem;
+  padding: 1px 6px;
+  background: rgba(79,195,247,0.08);
+  border: 1px solid rgba(79,195,247,0.12);
+  border-radius: var(--r-full);
+  color: var(--text-accent);
+}
+
+.edu-course-card__skill-more {
+  font-family: var(--font-mono);
+  font-size: 0.52rem;
+  color: var(--text-muted);
+}
+
+.edu-course-card__link {
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  color: var(--text-accent);
+  text-decoration: none;
+  transition: color var(--t-fast);
+}
+
+.edu-course-card__link:hover {
+  color: var(--text-white);
+}
+
+.edu-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 120px;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   LIGHT MODE
+   ═══════════════════════════════════════════════════════════════ */
+[data-theme="light"] .edu-panel {
+  background:              rgba(255,255,255,0.55);
+  backdrop-filter:         blur(32px) saturate(1.8);
+  -webkit-backdrop-filter: blur(32px) saturate(1.8);
+  border:                  1px solid rgba(79,143,199,0.20);
+  box-shadow:              0 4px 24px rgba(0,0,0,0.08);
+}
+
+[data-theme="light"] .edu-panel:hover {
+  background:              rgba(79,143,199,0.08);
+  border-color:            rgba(79,143,199,0.30);
+}
+
+[data-theme="light"] .edu-panel__title,
+[data-theme="light"] .edu-degree-card__name,
+[data-theme="light"] .edu-course-card__name {
+  color: #1a2332;
+}
+
+[data-theme="light"] .edu-panel__sub,
+[data-theme="light"] .edu-degree-card__date,
+[data-theme="light"] .edu-course-card__org {
+  color: #6b8aaa;
+}
+
+[data-theme="light"] .edu-degree-card__desc,
+[data-theme="light"] .edu-course-card__body {
+  color: #3d5a80;
+}
+
+[data-theme="light"] .edu-degree-card {
+  background: rgba(79,100,145,0.05);
+  border-color: rgba(79,100,145,0.12);
+}
+
+[data-theme="light"] .edu-course-card {
+  background: rgba(79,100,145,0.05);
+  border-color: rgba(79,100,145,0.10);
+}
+
+[data-theme="light"] .edu-course-card:hover {
+  background: rgba(79,143,199,0.08);
+}
+
+[data-theme="light"] .edu-degree-card__skill-tag,
+[data-theme="light"] .edu-course-card__skill-tag {
+  background: rgba(79,143,199,0.10);
+  border-color: rgba(79,143,199,0.20);
+  color: #1a8fc7;
+}
+
+[data-theme="light"] .edu-degree-card__grade {
+  color: #1a9e6e;
+}
+
+[data-theme="light"] .edu-course-card__cat {
+  background: rgba(124,91,212,0.10);
+  border-color: rgba(124,91,212,0.20);
+  color: #7c5bd4;
+}
+
+[data-theme="light"] .edu-filter-btn {
+  border-color: rgba(79,143,199,0.15);
+  color: #3d5a80;
+}
+
+[data-theme="light"] .edu-filter-btn--active {
+  background: rgba(79,143,199,0.12);
+  border-color: rgba(79,143,199,0.30);
+  color: #1a8fc7;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   RESPONSIVE
+   ═══════════════════════════════════════════════════════════════ */
+@media (max-width: 860px) {
+  .edu-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 599px) {
+  .edu-panel {
+    padding: var(--s3);
+  }
+
+  .edu-panel__title {
+    font-size: 0.92rem;
+  }
+
+  .edu-degree-card {
+    padding: var(--s3);
+  }
+
+  .edu-course-card__name {
+    font-size: 0.78rem;
+  }
+
+  .edu-courses__grid {
+    max-height: 400px;
+  }
+}
