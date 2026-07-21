@@ -11,9 +11,10 @@
  * ─────────────────────────────────────────────────────────
  */
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { useTheme } from '../../context/ThemeContext';
+import ProjectDetailModal from '../ui/ProjectDetailModal';
 import '../../styles/components/ProjectsSection.css';
 
 /* ── Animation variants ─────────────────────────────────────── */
@@ -52,6 +53,8 @@ function ProjectIcon({ type, color }) {
   );
 }
 
+const ITEMS_PER_PAGE = 6;
+
 /* ══════════════════════════════════════════════════════════════
    MAIN COMPONENT
    ══════════════════════════════════════════════════════════════ */
@@ -65,10 +68,34 @@ export default function ProjectsSection({ projects }) {
   /* ── Active type filter ───────────────────────────────────── */
   const [activeType, setActiveType] = useState('All');
 
+  /* ── Pagination ───────────────────────────────────────────── */
+  const [currentPage, setCurrentPage] = useState(1);
+
+  /* ── Selected project for detail modal ────────────────────── */
+  const [selectedProject, setSelectedProject] = useState(null);
+  const openDetail = useCallback((project) => setSelectedProject(project), []);
+  const closeDetail = useCallback(() => setSelectedProject(null), []);
+
   const filteredProjects = useMemo(() => {
     if (activeType === 'All') return projectsList;
     return projectsList.filter(p => p.project_type === activeType);
   }, [projectsList, activeType]);
+
+  /* ── Reset page on filter change ──────────────────────────── */
+  const handleFilterChange = useCallback((type) => {
+    setActiveType(type);
+    setCurrentPage(1);
+  }, []);
+
+  /* ── Pagination math ──────────────────────────────────────── */
+  const totalPages = Math.ceil(filteredProjects.length / ITEMS_PER_PAGE);
+  const paginatedProjects = useMemo(() => {
+    const start = (currentPage - 1) * ITEMS_PER_PAGE;
+    return filteredProjects.slice(start, start + ITEMS_PER_PAGE);
+  }, [filteredProjects, currentPage]);
+
+  const pageStart = (currentPage - 1) * ITEMS_PER_PAGE + 1;
+  const pageEnd = Math.min(currentPage * ITEMS_PER_PAGE, filteredProjects.length);
 
   /* ── Stats ────────────────────────────────────────────────── */
   const activeCount = projectsList.filter(p => !p.end_date).length;
@@ -99,23 +126,39 @@ export default function ProjectsSection({ projects }) {
         <span className="proj-stats__num proj-stats__num--accent">{activeCount}</span>
         <span className="proj-stats__label">Active</span>
       </div>
-      <div className="proj-stats__filters">
-        <button
-          className={`proj-filter-btn ${activeType === 'All' ? 'proj-filter-btn--active' : ''}`}
-          onClick={() => setActiveType('All')}
-        >
-          All
-        </button>
-        {types.map(t => (
+    </motion.div>
+  );
+
+  /* ════════════════════════════════════════════════════════════
+     FILTER BAR
+     ════════════════════════════════════════════════════════════ */
+  const FilterBar = () => (
+    <motion.div
+      className="proj-panel proj-filters"
+      variants={CARD_VARIANTS}
+      initial="hidden"
+      whileInView="visible"
+      viewport={{ once: true, amount: 0.1 }}
+      transition={{ ...CARD_TRANSITION, delay: 0.05 }}
+    >
+      <button
+        className={`proj-filter-btn ${activeType === 'All' ? 'proj-filter-btn--active' : ''}`}
+        onClick={() => handleFilterChange('All')}
+      >
+        All ({projectsList.length})
+      </button>
+      {types.map(t => {
+        const count = projectsList.filter(p => p.project_type === t).length;
+        return (
           <button
             key={t}
             className={`proj-filter-btn ${activeType === t ? 'proj-filter-btn--active' : ''}`}
-            onClick={() => setActiveType(t)}
+            onClick={() => handleFilterChange(t)}
           >
-            {t}
+            {t} ({count})
           </button>
-        ))}
-      </div>
+        );
+      })}
     </motion.div>
   );
 
@@ -124,6 +167,9 @@ export default function ProjectsSection({ projects }) {
      ════════════════════════════════════════════════════════════ */
   const ProjectCard = ({ project, index }) => {
     const accentColor = colors[index % colors.length];
+    const skillCount = project.skills_used?.length || 0;
+    const hasImages = (project.media?.project_images?.length || 0) > 0;
+    const score = Math.min(100, skillCount * 12 + (hasImages ? 15 : 0) + (project.github_url ? 10 : 0) + (project.live_url ? 10 : 0) + (project.my_role ? 5 : 0));
 
     return (
       <motion.div
@@ -133,6 +179,10 @@ export default function ProjectsSection({ projects }) {
         whileInView="visible"
         viewport={{ once: true, amount: 0.1 }}
         transition={{ ...CARD_TRANSITION, delay: Math.min(index * 0.04, 0.2) }}
+        onClick={() => openDetail(project)}
+        role="button"
+        tabIndex={0}
+        onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openDetail(project); } }}
       >
         <div className="proj-card__top">
           <div className="proj-card__icon" style={{ background: accentColor + '18' }}>
@@ -140,6 +190,14 @@ export default function ProjectsSection({ projects }) {
           </div>
           <span className="proj-card__type">{project.project_type}</span>
           {project.end_date === null && <span className="proj-card__badge">Active</span>}
+          {skillCount > 0 && (
+            <div className="proj-card__score" title={`Complexity score: ${score}/100`}>
+              <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+              </svg>
+              <span>{score}</span>
+            </div>
+          )}
         </div>
 
         <h3 className="proj-card__name">{project.project_name}</h3>
@@ -182,7 +240,7 @@ export default function ProjectsSection({ projects }) {
 
         <div className="proj-card__links">
           {project.github_url && (
-            <a className="proj-card__link" href={project.github_url} target="_blank" rel="noopener noreferrer">
+            <a className="proj-card__link" href={project.github_url} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()}>
               <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22" />
               </svg>
@@ -190,13 +248,19 @@ export default function ProjectsSection({ projects }) {
             </a>
           )}
           {project.live_url && (
-            <a className="proj-card__link" href={project.live_url} target="_blank" rel="noopener noreferrer">
+            <a className="proj-card__link" href={project.live_url} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()}>
               <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6M15 3h6v6M10 14L21 3" />
               </svg>
               Live Demo
             </a>
           )}
+          <button className="proj-card__details-btn" onClick={(e) => { e.stopPropagation(); openDetail(project); }}>
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
+            </svg>
+            View Details
+          </button>
         </div>
       </motion.div>
     );
@@ -216,11 +280,60 @@ export default function ProjectsSection({ projects }) {
   return (
     <section id="projects" className="projects-section" aria-label="Projects">
       <StatsBar />
+      <FilterBar />
       <div className="proj-grid">
-        {filteredProjects.map((project, i) => (
+        {paginatedProjects.map((project, i) => (
           <ProjectCard key={project.id || i} project={project} index={i} />
         ))}
       </div>
+      {totalPages > 1 && (
+        <motion.div
+          className="proj-pagination"
+          variants={CARD_VARIANTS}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, amount: 0.1 }}
+          transition={{ ...CARD_TRANSITION, delay: 0.15 }}
+        >
+          <span className="proj-pagination__info">
+            Showing {pageStart}–{pageEnd} of {filteredProjects.length}
+          </span>
+          <div className="proj-pagination__controls">
+            <button
+              className="proj-pagination__btn"
+              disabled={currentPage === 1}
+              onClick={() => setCurrentPage((p) => p - 1)}
+            >
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="15 18 9 12 15 6" />
+              </svg>
+            </button>
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+              <button
+                key={page}
+                className={`proj-pagination__btn ${page === currentPage ? 'proj-pagination__btn--active' : ''}`}
+                onClick={() => setCurrentPage(page)}
+              >
+                {page}
+              </button>
+            ))}
+            <button
+              className="proj-pagination__btn"
+              disabled={currentPage === totalPages}
+              onClick={() => setCurrentPage((p) => p + 1)}
+            >
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="9 18 15 12 9 6" />
+              </svg>
+            </button>
+          </div>
+        </motion.div>
+      )}
+      <ProjectDetailModal
+        project={selectedProject}
+        isOpen={!!selectedProject}
+        onClose={closeDetail}
+      />
     </section>
   );
 }
