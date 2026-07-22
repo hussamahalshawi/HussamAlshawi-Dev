@@ -162,7 +162,7 @@ export default function Home() {
 
       {/* SECTION 8 — Analytics (eager, always mounted) */}
       <SectionWrapper id="analytics" activeSection={activeSection}>
-        <AnalyticsSection analytics={data.analytics} portfolio={data.portfolioSummary} />
+        <AnalyticsSection analytics={data.analytics} />
       </SectionWrapper>
 
       {/* SECTION 9 — Goals */}

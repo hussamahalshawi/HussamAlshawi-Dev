@@ -1,102 +1,40 @@
 /**
  * AnalyticsSection.jsx
  * ─────────────────────────────────────────────────────────
- * Devoryn-style analytics dashboard section.
+ * Analytics dashboard with tab-based navigation.
  *
  * Layout:
  *   ┌──────────────────────────────────────────────────┐
  *   │  Section Header: "By the Numbers"                │
  *   ├──────────────────────────────────────────────────┤
- *   │  KPI Bento Grid (8 animated count-up cards)      │
- *   ├────────────────────────┬─────────────────────────┤
- *   │  Top Skills (bars)     │  Distribution Bands     │
- *   │                        │  ─────────────────────  │
- *   │                        │  Category Averages      │
- *   └────────────────────────┴─────────────────────────┘
+ *   │  Tab Bar: Overview | Career | Skills | Learning | Goals │
+ *   ├──────────────────────────────────────────────────┤
+ *   │  Tab Content (each tab has its own charts)       │
+ *   └──────────────────────────────────────────────────┘
  *
- * Props:
- *   analytics — from /api/portfolio/analytics
- *     .counts              — entity counts object
- *     .top_skills          — [{ skill_name, score, color }]
- *     .skills_radar        — [{ category, avg_score }]
- *     .skills_distribution — { expert, advanced, intermediate, beginner }
- *
- * All animations are triggered by IntersectionObserver (scroll-based).
+ * Tabs:
+ *   Overview  — KPI bento grid + summary stats
+ *   Career    — Gantt, Employment Mix, Treemap, Heatmap, Achievements
+ *   Skills    — Heatmap, Distribution, Top Skills, Sources, Domain Coverage
+ *   Learning  — Courses, Providers, Word Cloud, Study Types, Tracks
+ *   Goals     — Gauge, Status/Priority Donuts, Year Progress, Skill Gap
  * ─────────────────────────────────────────────────────────
  */
 
-import { useRef, useEffect, useState, useCallback, lazy, Suspense } from 'react';
-import { CHART_COLORS, SKILL_BANDS, ANIMATION, ANALYTICS_TABS, KPI_CONFIG, SOURCE_KEYS, SOURCE_COLORS } from '../../utils/constants';
-import { SkeletonKPI }                                                from '../ui/SkeletonLoader'; // Loading skeleton
-import Badge                                                          from '../ui/Badge';         // Badge component
-import AllChartsDashboard                                             from './AllChartsDashboard';
-import chartsService                                                  from '../../services/chartsService';
+import { useRef, useEffect, useState, useCallback } from 'react';
+import { CHART_COLORS, SKILL_BANDS, ANIMATION, ANALYTICS_TABS, KPI_CONFIG } from '../../utils/constants';
+import { SkeletonKPI }                                                from '../ui/SkeletonLoader';
+import Badge                                                          from '../ui/Badge';
+import CareerTab                                                      from './tabs/CareerTab';
+import SkillsTab                                                      from './tabs/SkillsTab';
+import LearningTab                                                    from './tabs/LearningTab';
+import GoalsTab                                                       from './tabs/GoalsTab';
 import '../../styles/components/AnalyticsSection.css';
-
-/* ── Lazy-loaded chart components (deferred until tab is active) ── */
-const SankeyChart           = lazy(() => import('../charts/SankeyChart'));
-const RadarSkillsChart      = lazy(() => import('../charts/RadarSkillsChart'));
-const StackedBarChart       = lazy(() => import('../charts/StackedBarChart'));
-const SunburstChart         = lazy(() => import('../charts/SunburstChart'));
-const BubbleTimelineChart   = lazy(() => import('../charts/BubbleTimelineChart'));
-
-/* ── Lazy-loaded tab content components ───────────────────────── */
-const CareerTab   = lazy(() => import('./tabs/CareerTab'));
-const SkillsTab   = lazy(() => import('./tabs/SkillsTab'));
-const LearningTab = lazy(() => import('./tabs/LearningTab'));
-const GoalsTab    = lazy(() => import('./tabs/GoalsTab'));
-
-/* ── Suspense fallback for lazy tabs ──────────────────────────── */
-function TabFallback() {
-  return (
-    <div className="analytics-glass-panel" style={{ padding: 'var(--s6)', textAlign: 'center' }}>
-      <p style={{ color: 'var(--text-muted)', fontSize: '0.82rem' }}>Loading...</p>
-    </div>
-  );
-}
 
 /* ════════════════════════════════════════════════════════════════
    MAIN COMPONENT: AnalyticsSection
 ════════════════════════════════════════════════════════════════ */
-/**
- * AnalyticsSection — Renders the full analytics dashboard section.
- *
- * @param {object}      props
- * @param {object|null} props.analytics - Analytics data from API
- *
- * @returns {JSX.Element}
- */
-export default function AnalyticsSection({ analytics, portfolio }) {
-
-  /* ── Chart composite data (shared with AllChartsDashboard) ── */
-  const [chartData, setChartData] = useState({
-    careerData: null,
-    goalsData: null,
-    skillsData: null,
-    learningData: null,
-    domainCoverage: null,
-  });
-
-  useEffect(() => {
-    let cancelled = false;
-    Promise.allSettled([
-      chartsService.composite.allCareerCharts(),
-      chartsService.composite.allGoalsCharts(),
-      chartsService.composite.allSkillsCharts(),
-      chartsService.composite.allLearningCharts(),
-      chartsService.skills.domainCoverage(),
-    ]).then(([career, goals, skills, learning, dc]) => {
-      if (cancelled) return;
-      setChartData({
-        careerData:   career.status === 'fulfilled'   ? career.value   : null,
-        goalsData:    goals.status === 'fulfilled'    ? goals.value    : null,
-        skillsData:   skills.status === 'fulfilled'   ? skills.value   : null,
-        learningData: learning.status === 'fulfilled' ? learning.value : null,
-        domainCoverage: dc.status === 'fulfilled'     ? dc.data        : null,
-      });
-    });
-    return () => { cancelled = true; };
-  }, []);
+export default function AnalyticsSection({ analytics }) {
 
   /* ── Hash-based tab routing ─────────────────────────────────── */
   const getTabFromHash = useCallback(() => {
@@ -119,19 +57,15 @@ export default function AnalyticsSection({ analytics, portfolio }) {
     return () => window.removeEventListener('hashchange', onHashChange);
   }, [getTabFromHash]);
 
-  /* ── Loading skeleton — mirrors the real layout ─────────────── */
+  /* ── Loading skeleton ─────────────────────────────────────── */
   if (!analytics) {
     return (
       <section id="analytics" className="section section--alt">
         <div className="container">
-
-          {/* Section header skeleton */}
           <div className="s-head">
             <span className="s-tag">Analytics</span>
             <h2 className="s-title">By the Numbers</h2>
           </div>
-
-          {/* KPI grid skeleton — 8 cards */}
           <div className="analytics-kpi-grid">
             {Array.from({ length: 8 }, (_, i) => (
               <SkeletonKPI key={i} />
@@ -142,11 +76,11 @@ export default function AnalyticsSection({ analytics, portfolio }) {
     );
   }
 
-  /* ── Safe data extraction with fallbacks ────────────────────── */
-  const counts    = analytics.counts              || {}; // Entity counts object
-  const topSkills = analytics.top_skills          || []; // Top skills array
-  const radar     = analytics.skills_radar        || []; // Category radar data
-  const dist      = analytics.skills_distribution || {}; // Distribution bands
+  /* ── Safe data extraction ────────────────────────────────── */
+  const counts    = analytics.counts              || {};
+  const topSkills = analytics.top_skills          || [];
+  const radar     = analytics.skills_radar        || [];
+  const dist      = analytics.skills_distribution || {};
 
   return (
     <section
@@ -182,11 +116,11 @@ export default function AnalyticsSection({ analytics, portfolio }) {
         </div>
 
         {/* ══════════════════════════════════════════════
-            TAB: Overview
+            TAB: Overview — KPI cards + summary stats
         ══════════════════════════════════════════════ */}
         {activeTab === 'overview' && (
           <>
-            {/* ── KPI bento grid — 8 animated count-up cards ── */}
+            {/* ── KPI bento grid ── */}
             <div
               className="analytics-kpi-grid"
               role="list"
@@ -204,26 +138,20 @@ export default function AnalyticsSection({ analytics, portfolio }) {
               ))}
             </div>
 
-            {/* ── Bottom two-column: skills + distribution ── */}
+            {/* ── Summary panels: skills + distribution ── */}
             <div className="analytics-bottom">
 
-              {/* ── LEFT: Top skills bars panel ── */}
+              {/* LEFT: Top skills bars */}
               <div className="analytics-glass-panel analytics-skills">
-
-                {/* Panel title */}
                 <div className="analytics-panel__header">
                   <p className="skill-group__title" style={{ margin: 0 }}>
                     Top Skills
                   </p>
                 </div>
-
-                {/* Skill bar rows — top 8 */}
                 <SkillBarList
                   skills={topSkills.slice(0, 8)}
                   colors={CHART_COLORS}
                 />
-
-                {/* Empty state */}
                 {topSkills.length === 0 && (
                   <p style={{ color: 'var(--text-muted)', fontSize: '0.82rem' }}>
                     No skills data available.
@@ -231,26 +159,21 @@ export default function AnalyticsSection({ analytics, portfolio }) {
                 )}
               </div>
 
-              {/* ── RIGHT: Distribution + category averages panel ── */}
+              {/* RIGHT: Distribution + category averages */}
               <div className="analytics-glass-panel analytics-dist">
-
-                {/* Panel title */}
                 <div className="analytics-panel__header">
                   <p className="skill-group__title" style={{ margin: 0 }}>
                     Proficiency Distribution
                   </p>
                 </div>
 
-                {/* Band rows — loop over SKILL_BANDS constant */}
                 {Object.entries(SKILL_BANDS).map(([key, band]) => {
-                  const count = dist[key]     || 0;          // Skills in this band
-                  const total = counts.skills || 1;          // Avoid division by zero
-                  const pct   = Math.round((count / total) * 100); // Percentage
+                  const count = dist[key]     || 0;
+                  const total = counts.skills || 1;
+                  const pct   = Math.round((count / total) * 100);
 
                   return (
                     <div key={key} className="dist-row">
-
-                      {/* Band badge label */}
                       <div className="dist-row__label">
                         <Badge
                           label={band.label}
@@ -258,28 +181,22 @@ export default function AnalyticsSection({ analytics, portfolio }) {
                           variant="muted"
                         />
                       </div>
-
-                      {/* Animated progress track */}
                       <div className="dist-row__track">
                         <div
                           className="dist-row__fill"
                           style={{
-                            width:      `${pct}%`,           /* Width = percentage */
-                            background: band.color,          /* Band color */
+                            width:      `${pct}%`,
+                            background: band.color,
                           }}
                         />
                       </div>
-
-                      {/* Count number */}
                       <span className="dist-row__count">{count}</span>
                     </div>
                   );
                 })}
 
-                {/* Divider between distribution and category averages */}
                 <div className="analytics-divider" aria-hidden="true" />
 
-                {/* Category averages list — top 5 */}
                 {radar.length > 0 && (
                   <>
                     <p className="skill-group__title" style={{ marginBottom: 'var(--s4)' }}>
@@ -288,12 +205,9 @@ export default function AnalyticsSection({ analytics, portfolio }) {
 
                     {radar.slice(0, 5).map((cat, i) => (
                       <div key={cat.category} className="cat-avg-row">
-                        {/* Category name */}
                         <span className="cat-avg-row__name">
                           {cat.category}
                         </span>
-
-                        {/* Average score — colored by chart palette */}
                         <span
                           className="cat-avg-row__score"
                           style={{ color: CHART_COLORS[i % CHART_COLORS.length] }}
@@ -306,175 +220,28 @@ export default function AnalyticsSection({ analytics, portfolio }) {
                 )}
               </div>
             </div>
-
-            {/* ── PORTFOLIO DASHBOARD ── */}
-            {portfolio ? (
-              <div className="portfolio-dashboard">
-
-                {/* ROW 1: Skills by Source — Stacked Bar */}
-                {chartData.skillsData?.sources && (
-                  <div className="analytics-glass-panel portfolio-chart-panel">
-                    <div className="analytics-panel__header">
-                      <p className="skill-group__title" style={{ margin: 0 }}>
-                        Skills by Source
-                      </p>
-                      <span className="portfolio-chart-sub">
-                        Top 8 skills — frequency per learning source
-                      </span>
-                    </div>
-                    <Suspense fallback={<p style={{ color: 'var(--text-muted)', textAlign: 'center', padding: 'var(--s4)' }}>Loading...</p>}>
-                      <StackedBarChart
-                        data={(chartData.skillsData.sources.top_skills || []).slice(0, 8).map(item => {
-                          const flat = { skill: item.skill || item.skill_name };
-                          const srcObj = item.sources || item.source_counts || {};
-                          Object.keys(srcObj).forEach(key => { flat[key] = srcObj[key]; });
-                          return flat;
-                        })}
-                        barKey="skill"
-                        stackKeys={SOURCE_KEYS}
-                        stackColors={SOURCE_COLORS}
-                        showLegend
-                      />
-                    </Suspense>
-                  </div>
-                )}
-
-                {/* ROW 2: Skills Hierarchy — Sunburst */}
-                {portfolio.skills_by_type && (
-                  <div className="analytics-glass-panel portfolio-chart-panel">
-                    <div className="analytics-panel__header">
-                      <p className="skill-group__title" style={{ margin: 0 }}>
-                        Skills Hierarchy
-                      </p>
-                      <span className="portfolio-chart-sub">
-                        Category → Skill → Proficiency Band
-                      </span>
-                    </div>
-                    <Suspense fallback={<p style={{ color: 'var(--text-muted)', textAlign: 'center', padding: 'var(--s4)' }}>Loading...</p>}>
-                      <SunburstChart skillsByType={portfolio.skills_by_type} />
-                    </Suspense>
-                  </div>
-                )}
-
-                {/* ROW 3: Goals Roadmap — Bubble Timeline */}
-                {chartData.goalsData?.roadmap?.goals && chartData.goalsData.roadmap.goals.length > 0 && (
-                  <div className="analytics-glass-panel portfolio-chart-panel">
-                    <div className="analytics-panel__header">
-                      <p className="skill-group__title" style={{ margin: 0 }}>
-                        Goals Roadmap
-                      </p>
-                      <span className="portfolio-chart-sub">
-                        {chartData.goalsData.roadmap.count || chartData.goalsData.roadmap.goals.length} goals
-                      </span>
-                    </div>
-                    <Suspense fallback={<p style={{ color: 'var(--text-muted)', textAlign: 'center', padding: 'var(--s4)' }}>Loading...</p>}>
-                      <BubbleTimelineChart
-                        goals={chartData.goalsData.roadmap.goals}
-                        minYear={chartData.goalsData.roadmap.min_year}
-                        maxYear={chartData.goalsData.roadmap.max_year}
-                      />
-                    </Suspense>
-                  </div>
-                )}
-
-                {/* ROW 4: Learning Flow — Sankey */}
-                {portfolio.skills_with_sources && portfolio.goals && (
-                  <div className="analytics-glass-panel portfolio-sankey-panel">
-                    <div className="analytics-panel__header">
-                      <p className="skill-group__title" style={{ margin: 0 }}>
-                        Learning Flow
-                      </p>
-                      <span className="portfolio-sankey-sub">
-                        Sources → Skills → Goals
-                      </span>
-                    </div>
-                    <Suspense fallback={<p style={{ color: 'var(--text-muted)', textAlign: 'center', padding: 'var(--s4)' }}>Loading...</p>}>
-                      <SankeyChart
-                        skillsWithSources={portfolio.skills_with_sources}
-                        goals={portfolio.goals}
-                      />
-                    </Suspense>
-                  </div>
-                )}
-
-                {/* ROW 5: Skill Radar */}
-                {portfolio.skills_by_type && (
-                  <div className="analytics-glass-panel portfolio-chart-panel">
-                    <div className="analytics-panel__header">
-                      <p className="skill-group__title" style={{ margin: 0 }}>
-                        Skill Radar
-                      </p>
-                      <span className="portfolio-chart-sub">
-                        {portfolio.skills_by_type.length} categories
-                      </span>
-                    </div>
-                    <Suspense fallback={<p style={{ color: 'var(--text-muted)', textAlign: 'center', padding: 'var(--s4)' }}>Loading...</p>}>
-                      <RadarSkillsChart skillsByType={portfolio.skills_by_type} />
-                    </Suspense>
-                  </div>
-                )}
-
-              </div>
-            ) : (
-              <div className="portfolio-dashboard">
-                <div className="analytics-glass-panel" style={{ padding: 'var(--s6)', textAlign: 'center' }}>
-                  <p style={{ color: 'var(--text-muted)' }}>
-                    Loading portfolio data...
-                  </p>
-                </div>
-              </div>
-            )}
           </>
         )}
 
         {/* ══════════════════════════════════════════════
-            TAB: Career Journey (lazy-loaded)
+            TAB: Career Journey
         ══════════════════════════════════════════════ */}
-        {activeTab === 'career' && (
-          <Suspense fallback={<TabFallback />}>
-            <CareerTab />
-          </Suspense>
-        )}
+        {activeTab === 'career' && <CareerTab />}
 
         {/* ══════════════════════════════════════════════
-            TAB: Skills Deep Dive (lazy-loaded)
+            TAB: Skills Deep Dive
         ══════════════════════════════════════════════ */}
-        {activeTab === 'skills' && (
-          <Suspense fallback={<TabFallback />}>
-            <SkillsTab />
-          </Suspense>
-        )}
+        {activeTab === 'skills' && <SkillsTab />}
 
         {/* ══════════════════════════════════════════════
-            TAB: Learning (lazy-loaded)
+            TAB: Learning
         ══════════════════════════════════════════════ */}
-        {activeTab === 'learning' && (
-          <Suspense fallback={<TabFallback />}>
-            <LearningTab />
-          </Suspense>
-        )}
+        {activeTab === 'learning' && <LearningTab />}
 
         {/* ══════════════════════════════════════════════
-            TAB: Goals (lazy-loaded)
+            TAB: Goals
         ══════════════════════════════════════════════ */}
-        {activeTab === 'goals' && (
-          <Suspense fallback={<TabFallback />}>
-            <GoalsTab />
-          </Suspense>
-        )}
-
-        {/* ══════════════════════════════════════════════
-            ALL CHARTS DASHBOARD — Visible under all tabs
-        ══════════════════════════════════════════════ */}
-        <AllChartsDashboard
-          analytics={analytics}
-          portfolio={portfolio}
-          careerData={chartData.careerData}
-          goalsData={chartData.goalsData}
-          skillsData={chartData.skillsData}
-          learningData={chartData.learningData}
-          domainCoverage={chartData.domainCoverage}
-        />
+        {activeTab === 'goals' && <GoalsTab />}
 
       </div>
     </section>
@@ -483,56 +250,41 @@ export default function AnalyticsSection({ analytics, portfolio }) {
 
 /* ════════════════════════════════════════════════════════════════
    SUB-COMPONENT: SkillBarList
-   Animated horizontal skill bars — triggered by scroll
 ════════════════════════════════════════════════════════════════ */
-/**
- * SkillBarList — Renders a list of animated skill bar rows.
- * Uses IntersectionObserver to trigger bar fill animations.
- *
- * @param {object} props
- * @param {Array}  props.skills - Array of skill objects { skill_name, score, color }
- * @param {Array}  props.colors - Fallback color palette from CHART_COLORS
- *
- * @returns {JSX.Element}
- */
 function SkillBarList({ skills, colors }) {
 
-  const listRef = useRef(null);                            // Ref to the skill list container
+  const listRef = useRef(null);
 
-  /* ── Trigger fill animation when list enters viewport ─────── */
   useEffect(() => {
-    if (!listRef.current) return;                          // Guard: element not mounted
+    if (!listRef.current) return;
 
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach(entry => {
-          if (!entry.isIntersecting) return;               // Skip if not visible
+          if (!entry.isIntersecting) return;
 
-          /* Select all fill bars inside this list */
           const fills = entry.target.querySelectorAll('.analytics-skill-row__fill');
 
           fills.forEach((fill, i) => {
-            /* Stagger each bar by BAR_DELAY ms */
             setTimeout(() => {
-              fill.style.width = fill.dataset.pct;         /* Animate to data-pct width */
+              fill.style.width = fill.dataset.pct;
             }, i * ANIMATION.BAR_DELAY);
           });
 
-          observer.unobserve(entry.target);                /* Animate once only */
+          observer.unobserve(entry.target);
         });
       },
-      { threshold: ANIMATION.REVEAL_THRESHOLD }            /* Trigger at 12% visible */
+      { threshold: ANIMATION.REVEAL_THRESHOLD }
     );
 
     observer.observe(listRef.current);
-    return () => observer.disconnect();                    /* Cleanup on unmount */
-  }, [skills]);                                            /* Re-run if skills change */
+    return () => observer.disconnect();
+  }, [skills]);
 
   return (
     <div ref={listRef} role="list" aria-label="Top skills">
       {skills.map((skill, i) => {
 
-        /* Build gradient from skill color or fallback chart palette */
         const gradient = skill.color
           ? `linear-gradient(90deg, ${skill.color}, var(--cyan))`
           : `linear-gradient(90deg, ${colors[i % colors.length]}, var(--cyan))`;
@@ -543,7 +295,6 @@ function SkillBarList({ skills, colors }) {
             className="analytics-skill-row"
             role="listitem"
           >
-            {/* Skill name */}
             <span
               className="analytics-skill-row__name"
               title={skill.skill_name}
@@ -551,15 +302,14 @@ function SkillBarList({ skills, colors }) {
               {skill.skill_name}
             </span>
 
-            {/* Progress track */}
             <div className="analytics-skill-row__track">
               <div
                 className="analytics-skill-row__fill"
-                data-pct={`${skill.score}%`}               /* Target width for observer */
+                data-pct={`${skill.score}%`}
                 style={{
-                  width:      '0%',                        /* Start at 0 */
-                  background: gradient,                    /* Gradient fill */
-                  transition: `width 1.3s cubic-bezier(0.16, 1, 0.3, 1) ${i * 80}ms`, /* Stagger */
+                  width:      '0%',
+                  background: gradient,
+                  transition: `width 1.3s cubic-bezier(0.16, 1, 0.3, 1) ${i * 80}ms`,
                 }}
                 role="progressbar"
                 aria-valuenow={skill.score}
@@ -569,7 +319,6 @@ function SkillBarList({ skills, colors }) {
               />
             </div>
 
-            {/* Score percentage */}
             <span className="analytics-skill-row__pct">
               {skill.score}%
             </span>
@@ -582,45 +331,28 @@ function SkillBarList({ skills, colors }) {
 
 /* ════════════════════════════════════════════════════════════════
    SUB-COMPONENT: AnimatedKpiCard
-   Count-up animation from 0 → value with staggered delay
 ════════════════════════════════════════════════════════════════ */
-/**
- * AnimatedKpiCard — KPI card with animated count-up number.
- * Uses requestAnimationFrame for smooth GPU-accelerated counting.
- *
- * @param {object} props
- * @param {string} props.label  - Display label (e.g., "Skills")
- * @param {number} props.value  - Target number to count up to
- * @param {string} props.icon   - Emoji or symbol for the card
- * @param {string} props.color  - CSS color for the number and glow
- * @param {number} props.delay  - Milliseconds to delay start (stagger)
- *
- * @returns {JSX.Element}
- */
 function AnimatedKpiCard({ label, value, icon, color, delay = 0 }) {
 
-  const numRef = useRef(null);                             // Direct DOM ref for performance
+  const numRef = useRef(null);
 
-  /* ── Count-up animation on mount ───────────────────────────── */
   useEffect(() => {
-    if (!numRef.current || value === 0) return;            // Skip if no element or zero
+    if (!numRef.current || value === 0) return;
 
-    const duration = 1300;                                 // Animation duration in ms
-    const start    = performance.now();                    // High-res timestamp
+    const duration = 1300;
+    const start    = performance.now();
 
-    /** RAF tick — updates counter each frame */
     const tick = (now) => {
-      const progress = Math.min((now - start) / duration, 1); // 0 → 1
-      const eased    = 1 - Math.pow(1 - progress, 3);         // Cubic ease-out
-      const current  = Math.round(eased * value);             // Current displayed value
+      const progress = Math.min((now - start) / duration, 1);
+      const eased    = 1 - Math.pow(1 - progress, 3);
+      const current  = Math.round(eased * value);
 
-      if (numRef.current) numRef.current.textContent = current; // Update DOM directly
-      if (progress < 1)   requestAnimationFrame(tick);          // Continue until done
+      if (numRef.current) numRef.current.textContent = current;
+      if (progress < 1)   requestAnimationFrame(tick);
     };
 
-    /* Delay start for stagger effect */
     const timer = setTimeout(() => requestAnimationFrame(tick), delay);
-    return () => clearTimeout(timer);                      /* Cleanup on unmount */
+    return () => clearTimeout(timer);
   }, [value, delay]);
 
   return (
@@ -628,17 +360,15 @@ function AnimatedKpiCard({ label, value, icon, color, delay = 0 }) {
       className="analytics-kpi-card"
       role="listitem"
       style={{
-        '--kpi-color': color,                              /* Custom prop for glow color */
-        animation:     `fadeUp 0.45s ease ${delay}ms both`, /* Staggered entrance */
+        '--kpi-color': color,
+        animation:     `fadeUp 0.45s ease ${delay}ms both`,
       }}
       aria-label={`${label}: ${value}`}
     >
-      {/* Icon */}
       <div className="analytics-kpi-card__icon" aria-hidden="true">
         {icon}
       </div>
 
-      {/* Animated count-up number */}
       <div
         ref={numRef}
         className="analytics-kpi-card__num"
@@ -648,7 +378,6 @@ function AnimatedKpiCard({ label, value, icon, color, delay = 0 }) {
         {value}
       </div>
 
-      {/* Label */}
       <div className="analytics-kpi-card__label">
         {label}
       </div>

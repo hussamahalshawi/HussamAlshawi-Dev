@@ -413,6 +413,7 @@ export const SOURCE_COLORS = {
   Courses:    '#BA7517',
   'Self Study': '#7F77DD',
   Education:  '#D85A30',
+  Achievements: '#D4537E',
 };
 
 export const SOURCE_KEYS = Object.keys(SOURCE_COLORS);

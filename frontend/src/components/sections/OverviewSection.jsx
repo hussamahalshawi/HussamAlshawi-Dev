@@ -13,13 +13,14 @@ import { lazy, Suspense, useRef, useEffect, useState, useMemo, useCallback } fro
 import { motion }                                from 'framer-motion';
 import { getInitials }                           from '../../utils/formatters';
 import { CHART_COLORS, SOURCE_KEYS, SOURCE_COLORS, ANIMATION } from '../../utils/constants';
+import chartsService                             from '../../services/chartsService';
 
 import '../../styles/components/OverviewSection.css';
 import '../../styles/components/OverviewBento.css';
 import ParticleBackground from '../ui/ParticleBackground';
 
 const StackedBarChart     = lazy(() => import('../charts/StackedBarChart'));
-const SunburstChart       = lazy(() => import('../charts/SunburstChart'));
+const MultiRadarChart     = lazy(() => import('../charts/MultiRadarChart'));
 const BubbleTimelineChart = lazy(() => import('../charts/BubbleTimelineChart'));
 const SankeyChart         = lazy(() => import('../charts/SankeyChart'));
 
@@ -138,6 +139,17 @@ export default function OverviewSection({ profile, analytics, languages = [], po
     (portfolio?.skills_by_type || []).forEach(c => { avgs[c.type] = c.avg_score || 0; });
     return avgs;
   }, [portfolio]);
+
+  /* ── Domain Coverage radar ── */
+  const [domainCoverage, setDomainCoverage] = useState(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    chartsService.skills.domainCoverage()
+      .then(res => { if (!cancelled) setDomainCoverage(res); })
+      .catch(() => {});
+    return () => { cancelled = true; };
+  }, []);
 
   /* ── Activity Radar data from analytics counts ── */
   const activityCategories = ['Projects', 'Courses', 'Experience', 'Education', 'Self Study', 'Achievements'];
@@ -289,14 +301,14 @@ export default function OverviewSection({ profile, analytics, languages = [], po
           </Suspense>
         </motion.div>
 
-        {/* ═══════ ROW 2: Skills Hierarchy — Col 2 ═══════ */}
+        {/* ═══════ ROW 2: Domain Coverage — Col 2 ═══════ */}
         <motion.div className="ov-panel ov-panel--chart" variants={CARD_VARIANTS} initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.1 }} transition={{ ...CARD_TRANSITION, delay: 0.15 }}>
           <div className="ov-panel__chart-header">
-            <span className="ov-panel__chart-title">Skills Hierarchy</span>
-            <span className="ov-panel__chart-sub">Category → Skill → Proficiency</span>
+            <span className="ov-panel__chart-title">Domain Coverage</span>
+            <span className="ov-panel__chart-sub">Combined vs each source</span>
           </div>
           <Suspense fallback={<div className="ov-panel__chart-loading">Loading...</div>}>
-            <SunburstChart skillsByType={portfolio?.skills_by_type} />
+            <MultiRadarChart data={domainCoverage} />
           </Suspense>
         </motion.div>
 

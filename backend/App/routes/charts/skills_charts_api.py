@@ -22,8 +22,8 @@ from App.models.course      import Course                          # For skill s
 from App.models.project     import Project                         # For skill source tracking
 from App.models.experience  import Experience                      # For skill source tracking
 from App.models.self_study  import SelfStudy                       # For skill source tracking
-from App.models.achievement import Achievement                     # For skill source tracking
 from App.models.education   import Education                       # For skill source tracking
+from App.models.achievement import Achievement                     # For skill source tracking
 from App.routes.helpers.route_helpers import get_profile, build_skill_payload  # Shared helpers — no duplication
 
 # ── Blueprint registration ────────────────────────────────────────────────────

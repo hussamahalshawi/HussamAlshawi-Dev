@@ -193,6 +193,8 @@
 .ov-panel--chart .portfolio-sankey-empty,
 .ov-panel--chart .stacked-bar,
 .ov-panel--chart .sunburst-chart,
+.ov-panel--chart .multi-radar,
+.ov-panel--chart .multi-radar-empty,
 .ov-panel--chart .bubble-timeline,
 .ov-panel--chart .bubble-timeline--empty,
 .ov-panel--chart .sankey-chart,
@@ -200,6 +202,16 @@
   flex:                 1;
   min-height:           0;
   width:                100%;
+}
+
+/* ── Strip double-glass when MultiRadar is nested inside ov-panel ── */
+.ov-panel--chart .multi-radar {
+  background:           transparent;
+  border:               none;
+  border-radius:        0;
+  backdrop-filter:      none;
+  -webkit-backdrop-filter: none;
+  padding:              0;
 }
 
 .ov-panel__chart-header {
@@ -1752,13 +1764,15 @@
   .ov-panel--chart .portfolio-sankey-empty,
   .ov-panel--chart .stacked-bar,
   .ov-panel--chart .sunburst-chart,
+  .ov-panel--chart .multi-radar,
   .ov-panel--chart .bubble-timeline,
   .ov-panel--chart .bubble-timeline--empty,
   .ov-panel--chart .sankey-chart {
     min-height: 240px;
   }
 
-  .ov-panel--chart .sunburst-chart svg {
+  .ov-panel--chart .sunburst-chart svg,
+  .ov-panel--chart .multi-radar {
     max-height: 260px;
   }
 
@@ -1796,13 +1810,15 @@
   .ov-panel--chart .portfolio-sankey-empty,
   .ov-panel--chart .stacked-bar,
   .ov-panel--chart .sunburst-chart,
+  .ov-panel--chart .multi-radar,
   .ov-panel--chart .bubble-timeline,
   .ov-panel--chart .bubble-timeline--empty,
   .ov-panel--chart .sankey-chart {
     min-height: 200px;
   }
 
-  .ov-panel--chart .sunburst-chart svg {
+  .ov-panel--chart .sunburst-chart svg,
+  .ov-panel--chart .multi-radar {
     max-height: 220px;
   }
 
@@ -1835,7 +1851,8 @@
     padding: var(--s2);
   }
 
-  .ov-panel--chart .sunburst-chart svg {
+  .ov-panel--chart .sunburst-chart svg,
+  .ov-panel--chart .multi-radar {
     max-height: 190px;
   }
 
