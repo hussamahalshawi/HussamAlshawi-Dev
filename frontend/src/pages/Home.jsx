@@ -125,7 +125,6 @@ export default function Home() {
           portfolio={data.portfolioSummary}
           skillsCharts={data.skillsCharts}
           goalsCharts={data.goalsCharts}
-          chartsLoading={!data.analytics || !data.portfolioSummary || !data.skillsCharts || !data.goalsCharts}
         />
       </SectionWrapper>
 

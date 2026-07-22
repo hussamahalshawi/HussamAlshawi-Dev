@@ -1,5 +1,6 @@
 import { useMemo, useState, useEffect } from 'react';
 import { ResponsiveSankey } from '@nivo/sankey';
+import { useTheme } from '@/context/ThemeContext';
 
 const SOURCE_COLORS = {
   courses: '#F5A623',
@@ -114,6 +115,8 @@ function buildSankeyData(skillsWithSources = [], goals = []) {
 }
 
 export default function SankeyChart({ skillsWithSources, goals }) {
+  const { theme } = useTheme();
+  const isDark = theme === 'dark';
   const data = useMemo(
     () => buildSankeyData(skillsWithSources, goals),
     [skillsWithSources, goals]
@@ -164,7 +167,7 @@ export default function SankeyChart({ skillsWithSources, goals }) {
         labelPosition="outside"
         labelOrientation={isMobile ? 'vertical' : 'horizontal'}
         labelPadding={isMobile ? 10 : 20}
-        labelTextColor="#ffffff"
+        labelTextColor={isDark ? '#ffffff' : '#1a2332'}
         animate
         motionConfig="gentle"
         theme={{
@@ -172,26 +175,28 @@ export default function SankeyChart({ skillsWithSources, goals }) {
             fontSize: isMobile ? 11 : 13,
             fontFamily: "'DM Sans', sans-serif",
             fontWeight: 600,
+            fill: isDark ? '#ffffff' : '#1a2332',
           },
           labels: {
             text: {
               fontSize: isMobile ? 10 : 13,
               fontFamily: "'DM Sans', sans-serif",
               fontWeight: 600,
-              textShadow: '0 1px 6px rgba(0,0,0,0.7), 0 0 12px rgba(0,0,0,0.4)',
+              fill: isDark ? '#ffffff' : '#1a2332',
+              textShadow: isDark ? '0 1px 6px rgba(0,0,0,0.7), 0 0 12px rgba(0,0,0,0.4)' : 'none',
             },
           },
           tooltip: {
             container: {
-              background: 'rgba(13, 17, 38, 0.92)',
+              background: isDark ? 'rgba(13, 17, 38, 0.92)' : 'rgba(255, 255, 255, 0.95)',
               backdropFilter: 'blur(12px)',
-              border: '1px solid rgba(79, 195, 247, 0.2)',
+              border: isDark ? '1px solid rgba(79, 195, 247, 0.2)' : '1px solid rgba(79, 143, 199, 0.2)',
               borderRadius: '10px',
               fontSize: '13px',
               fontFamily: "'DM Sans', sans-serif",
-              color: '#E8EEF8',
+              color: isDark ? '#E8EEF8' : '#1a2332',
               padding: '10px 14px',
-              boxShadow: '0 8px 32px rgba(0,0,0,0.5)',
+              boxShadow: isDark ? '0 8px 32px rgba(0,0,0,0.5)' : '0 8px 32px rgba(0,0,0,0.12)',
             },
           },
         }}

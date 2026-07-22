@@ -110,7 +110,7 @@ const CARD_TRANSITION = {
    MAIN COMPONENT: OverviewSection
    Profile card full-width on top, charts grid below
    ════════════════════════════════════════════════════════════════ */
-export default function OverviewSection({ profile, analytics, languages = [], portfolio, skillsCharts, goalsCharts, chartsLoading = false }) {
+export default function OverviewSection({ profile, analytics, languages = [], portfolio, skillsCharts, goalsCharts }) {
 
   const fullName  = profile?.full_name             || 'Hussam Alshawi';
   const title     = profile?.title                 || 'Full Stack Developer';
@@ -267,94 +267,49 @@ export default function OverviewSection({ profile, analytics, languages = [], po
           </div>
         </motion.div>
 
-        {/* ═══════ CHARTS SECTION — shows skeleton while overviewData loads ═══════ */}
-        {chartsLoading ? (
-          <>
-            <div className="ov-panel ov-panel--chart ov-panel--skeleton">
-              <div className="ov-panel__chart-header">
-                <span className="ov-panel__chart-title">Skills by Source</span>
-                <span className="ov-panel__chart-sub">Loading...</span>
-              </div>
-              <div className="ov-chart-skeleton" aria-hidden="true">
-                <div className="ov-skeleton-bar" /><div className="ov-skeleton-bar" /><div className="ov-skeleton-bar" />
-                <div className="ov-skeleton-bar" /><div className="ov-skeleton-bar" />
-              </div>
-            </div>
-            <div className="ov-panel ov-panel--chart ov-panel--skeleton">
-              <div className="ov-panel__chart-header">
-                <span className="ov-panel__chart-title">Learning Flow</span>
-                <span className="ov-panel__chart-sub">Loading...</span>
-              </div>
-              <div className="ov-chart-skeleton" aria-hidden="true">
-                <div className="ov-skeleton-circle" />
-              </div>
-            </div>
-            <div className="ov-panel ov-panel--chart ov-panel--skeleton">
-              <div className="ov-panel__chart-header">
-                <span className="ov-panel__chart-title">Skills Hierarchy</span>
-                <span className="ov-panel__chart-sub">Loading...</span>
-              </div>
-              <div className="ov-chart-skeleton" aria-hidden="true">
-                <div className="ov-skeleton-circle" />
-              </div>
-            </div>
-            <div className="ov-panel ov-panel--chart ov-panel--skeleton">
-              <div className="ov-panel__chart-header">
-                <span className="ov-panel__chart-title">Goals Roadmap</span>
-                <span className="ov-panel__chart-sub">Loading...</span>
-              </div>
-              <div className="ov-chart-skeleton" aria-hidden="true">
-                <div className="ov-skeleton-bar" /><div className="ov-skeleton-bar" /><div className="ov-skeleton-bar" />
-              </div>
-            </div>
-          </>
-        ) : (
-          <>
-            {/* ═══════ ROW 1: Skills by Source — Col 2 ═══════ */}
-            <motion.div className="ov-panel ov-panel--chart" variants={CARD_VARIANTS} initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.1 }} transition={{ ...CARD_TRANSITION, delay: 0.1 }}>
-              <div className="ov-panel__chart-header">
-                <span className="ov-panel__chart-title">Skills by Source</span>
-                <span className="ov-panel__chart-sub">Top 8 — frequency per source</span>
-              </div>
-              <Suspense fallback={<div className="ov-panel__chart-loading">Loading...</div>}>
-                <StackedBarChart data={sourcesTopSkills} barKey="skill" stackKeys={SOURCE_KEYS} stackColors={SOURCE_COLORS} showLegend />
-              </Suspense>
-            </motion.div>
+        {/* ═══════ ROW 1: Skills by Source — Col 2 ═══════ */}
+        <motion.div className="ov-panel ov-panel--chart" variants={CARD_VARIANTS} initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.1 }} transition={{ ...CARD_TRANSITION, delay: 0.1 }}>
+          <div className="ov-panel__chart-header">
+            <span className="ov-panel__chart-title">Skills by Source</span>
+            <span className="ov-panel__chart-sub">Top 8 — frequency per source</span>
+          </div>
+          <Suspense fallback={<div className="ov-panel__chart-loading">Loading...</div>}>
+            <StackedBarChart data={sourcesTopSkills} barKey="skill" stackKeys={SOURCE_KEYS} stackColors={SOURCE_COLORS} showLegend />
+          </Suspense>
+        </motion.div>
 
-            {/* ═══════ ROW 1: Learning Flow — Col 3 ═══════ */}
-            <motion.div className="ov-panel ov-panel--chart" variants={CARD_VARIANTS} initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.1 }} transition={{ ...CARD_TRANSITION, delay: 0.12 }}>
-              <div className="ov-panel__chart-header">
-                <span className="ov-panel__chart-title">Learning Flow</span>
-                <span className="ov-panel__chart-sub">Sources → Skills → Goals</span>
-              </div>
-              <Suspense fallback={<div className="ov-panel__chart-loading">Loading...</div>}>
-                <SankeyChart skillsWithSources={portfolio?.skills_with_sources} goals={portfolio?.goals} />
-              </Suspense>
-            </motion.div>
+        {/* ═══════ ROW 1: Learning Flow — Col 3 ═══════ */}
+        <motion.div className="ov-panel ov-panel--chart" variants={CARD_VARIANTS} initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.1 }} transition={{ ...CARD_TRANSITION, delay: 0.12 }}>
+          <div className="ov-panel__chart-header">
+            <span className="ov-panel__chart-title">Learning Flow</span>
+            <span className="ov-panel__chart-sub">Sources → Skills → Goals</span>
+          </div>
+          <Suspense fallback={<div className="ov-panel__chart-loading">Loading...</div>}>
+            <SankeyChart skillsWithSources={portfolio?.skills_with_sources} goals={portfolio?.goals} />
+          </Suspense>
+        </motion.div>
 
-            {/* ═══════ ROW 2: Skills Hierarchy — Col 2 ═══════ */}
-            <motion.div className="ov-panel ov-panel--chart" variants={CARD_VARIANTS} initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.1 }} transition={{ ...CARD_TRANSITION, delay: 0.15 }}>
-              <div className="ov-panel__chart-header">
-                <span className="ov-panel__chart-title">Skills Hierarchy</span>
-                <span className="ov-panel__chart-sub">Category → Skill → Proficiency</span>
-              </div>
-              <Suspense fallback={<div className="ov-panel__chart-loading">Loading...</div>}>
-                <SunburstChart skillsByType={portfolio?.skills_by_type} />
-              </Suspense>
-            </motion.div>
+        {/* ═══════ ROW 2: Skills Hierarchy — Col 2 ═══════ */}
+        <motion.div className="ov-panel ov-panel--chart" variants={CARD_VARIANTS} initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.1 }} transition={{ ...CARD_TRANSITION, delay: 0.15 }}>
+          <div className="ov-panel__chart-header">
+            <span className="ov-panel__chart-title">Skills Hierarchy</span>
+            <span className="ov-panel__chart-sub">Category → Skill → Proficiency</span>
+          </div>
+          <Suspense fallback={<div className="ov-panel__chart-loading">Loading...</div>}>
+            <SunburstChart skillsByType={portfolio?.skills_by_type} />
+          </Suspense>
+        </motion.div>
 
-            {/* ═══════ ROW 2: Goals Roadmap — Col 3 ═══════ */}
-            <motion.div className="ov-panel ov-panel--chart" variants={CARD_VARIANTS} initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.1 }} transition={{ ...CARD_TRANSITION, delay: 0.18 }}>
-              <div className="ov-panel__chart-header">
-                <span className="ov-panel__chart-title">Goals Roadmap</span>
-                <span className="ov-panel__chart-sub">{goalsCharts?.roadmap?.goals?.length || 0} goals</span>
-              </div>
-              <Suspense fallback={<div className="ov-panel__chart-loading">Loading...</div>}>
-                <BubbleTimelineChart goals={goalsCharts?.roadmap?.goals} minYear={goalsCharts?.roadmap?.min_year} maxYear={goalsCharts?.roadmap?.max_year} />
-              </Suspense>
-            </motion.div>
-          </>
-        )}
+        {/* ═══════ ROW 2: Goals Roadmap — Col 3 ═══════ */}
+        <motion.div className="ov-panel ov-panel--chart" variants={CARD_VARIANTS} initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.1 }} transition={{ ...CARD_TRANSITION, delay: 0.18 }}>
+          <div className="ov-panel__chart-header">
+            <span className="ov-panel__chart-title">Goals Roadmap</span>
+            <span className="ov-panel__chart-sub">{goalsCharts?.roadmap?.goals?.length || 0} goals</span>
+          </div>
+          <Suspense fallback={<div className="ov-panel__chart-loading">Loading...</div>}>
+            <BubbleTimelineChart goals={goalsCharts?.roadmap?.goals} minYear={goalsCharts?.roadmap?.min_year} maxYear={goalsCharts?.roadmap?.max_year} />
+          </Suspense>
+        </motion.div>
 
       </div>
     </section>
