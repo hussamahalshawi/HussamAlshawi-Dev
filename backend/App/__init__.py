@@ -181,6 +181,7 @@ def create_app():
     from App.routes.charts.goals_charts_api import goals_charts_bp  # /api/charts/goals/*
     from App.routes.charts.analytics_api import analytics_public_bp  # /api/portfolio/analytics/*
     from App.routes.charts.portfolio_charts_api import portfolio_charts_bp  # /api/charts/portfolio/*
+    from App.routes.charts.overview_data_api import overview_data_bp  # /api/portfolio/overview-data
 
     # ── Register all blueprints ────────────────────────────────────────────────
     app.register_blueprint(main_bp, url_prefix='/api')  # Dev routes
@@ -202,6 +203,7 @@ def create_app():
     app.register_blueprint(goals_charts_bp, url_prefix='/api')  # Charts: goals
     app.register_blueprint(analytics_public_bp, url_prefix='/api')  # Charts: analytics
     app.register_blueprint(portfolio_charts_bp, url_prefix='/api')  # Charts: portfolio
+    app.register_blueprint(overview_data_bp, url_prefix='/api')  # Overview: composite data
 
     # ── Suppress favicon 404 noise in logs ────────────────────────────────────
     from flask import send_file                                               # File serving utility
@@ -226,6 +228,11 @@ def create_app():
     # STEP 10: SIGNALS (MongoEngine automation)
     # -------------------------------------------------------------------------
     register_signals(app)                                             # Connect all post_save signals
+
+    # -------------------------------------------------------------------------
+    # STEP 11: CACHE WARMING — preload composite endpoints on startup
+    # -------------------------------------------------------------------------
+    _start_cache_warming(app)
 
     app.logger.info(f'🚀 {current_config.PROJECT_NAME} is fully operational.')
     return app
@@ -271,3 +278,56 @@ def register_signals(app):
             app.logger.info('[+] System signals synchronized and listeners active.')
         except Exception as e:
             app.logger.error(f'[-] Signal Sync Failed: {e}')
+
+
+def _start_cache_warming(app):
+    """
+    Preloads critical composite endpoints into server RAM cache on startup.
+    Runs in a background daemon thread so the first visitor gets instant responses.
+    """
+    import threading
+
+    WARMUP_ROUTES = [
+        '/api/portfolio/overview-data',
+        '/api/charts/portfolio/summary',
+        '/api/charts/career/gantt',
+        '/api/charts/career/employment-mix',
+        '/api/charts/career/projects-treemap',
+        '/api/charts/career/projects-heatmap',
+        '/api/charts/career/stack-frequency',
+        '/api/charts/career/achievements-timeline',
+        '/api/charts/skills/radar',
+        '/api/charts/skills/distribution',
+        '/api/charts/skills/top-bars',
+        '/api/charts/skills/heatmap',
+        '/api/charts/skills/sources',
+        '/api/charts/skills/domain-coverage',
+        '/api/charts/goals/gauge',
+        '/api/charts/goals/status-donut',
+        '/api/charts/goals/priority-donut',
+        '/api/charts/goals/year-progress',
+        '/api/charts/goals/skill-gap',
+        '/api/charts/goals/roadmap-timeline',
+        '/api/charts/learning/courses-by-year',
+        '/api/charts/learning/providers',
+        '/api/charts/learning/skills-word-cloud',
+        '/api/charts/learning/self-study-types',
+        '/api/charts/learning/self-study-tracks',
+        '/api/charts/learning/learning-vs-output',
+    ]
+
+    def _warm():
+        with app.app_context():
+            from flask import Flask
+            with app.test_client() as client:
+                warmed = 0
+                for route in WARMUP_ROUTES:
+                    try:
+                        resp = client.get(route)
+                        if resp.status_code == 200:
+                            warmed += 1
+                    except Exception:
+                        pass
+                app.logger.info(f'[Cache Warming] {warmed}/{len(WARMUP_ROUTES)} endpoints preloaded.')
+
+    threading.Thread(target=_warm, daemon=True).start()

@@ -303,9 +303,10 @@ export const ANIMATION = {
    Cycled through by the PageLoader component.
 ══════════════════════════════════════════════════════════ */
 export const LOADER_MESSAGES = [
-  'Connecting to server...',  // Step 0 — before any response
-  'Loading your profile...',  // Step 1 — profile done
-  'Almost ready...',          // Step 2 — analytics done → loader hides next
+  'Connecting to server...',       // Step 0 — before any response
+  'Loading your profile...',       // Step 1 — profile done
+  'Loading charts & analytics...', // Step 2 — overview data loading
+  'Almost ready...',               // Step 3 — everything done → loader hides next
 ];
 
 /* ══════════════════════════════════════════════════════════

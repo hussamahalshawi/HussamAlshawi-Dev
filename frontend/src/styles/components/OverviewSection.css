@@ -1845,5 +1845,57 @@
   }
 }
 
+/* ══════════════════════════════════════════════════════
+   CHART SKELETON LOADING
+   Shows placeholder bars/circles while overviewData loads
+══════════════════════════════════════════════════════ */
+.ov-panel--skeleton {
+  pointer-events: none;
+}
 
+.ov-chart-skeleton {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--s3);
+  min-height: 180px;
+  padding: var(--s4);
+}
 
+.ov-skeleton-bar {
+  width: 100%;
+  height: 12px;
+  border-radius: var(--r-sm);
+  background: linear-gradient(90deg, rgba(79,195,247,0.08) 25%, rgba(79,195,247,0.16) 50%, rgba(79,195,247,0.08) 75%);
+  background-size: 200% 100%;
+  animation: ov-skeleton-shimmer 1.5s ease-in-out infinite;
+}
+
+.ov-skeleton-bar:nth-child(1) { width: 85%; }
+.ov-skeleton-bar:nth-child(2) { width: 65%; }
+.ov-skeleton-bar:nth-child(3) { width: 75%; }
+.ov-skeleton-bar:nth-child(4) { width: 55%; }
+.ov-skeleton-bar:nth-child(5) { width: 70%; }
+
+.ov-skeleton-circle {
+  width: 160px;
+  height: 160px;
+  border-radius: 50%;
+  background: linear-gradient(90deg, rgba(79,195,247,0.08) 25%, rgba(79,195,247,0.16) 50%, rgba(79,195,247,0.08) 75%);
+  background-size: 200% 100%;
+  animation: ov-skeleton-shimmer 1.5s ease-in-out infinite;
+}
+
+@keyframes ov-skeleton-shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* Light mode skeleton */
+[data-theme="light"] .ov-skeleton-bar,
+[data-theme="light"] .ov-skeleton-circle {
+  background: linear-gradient(90deg, rgba(79,143,199,0.10) 25%, rgba(79,143,199,0.20) 50%, rgba(79,143,199,0.10) 75%);
+  background-size: 200% 100%;
+  animation: ov-skeleton-shimmer 1.5s ease-in-out infinite;
+}

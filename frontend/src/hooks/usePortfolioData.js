@@ -5,11 +5,11 @@
  *
  *   On load:
  *     1. Show cache instantly
- *     2. Phase 1 await → hide loader
- *     3. Phase 2 background fetch
+ *     2. Phase 1 await (profile only) → hide loader
+ *     3. Phase 2 background fetch (all other sections in parallel)
  *
  *   After load (polling):
- *     Every 20s → fetch all APIs silently
+ *     Every 5min → fetch all APIs silently
  *     If hash changed → bust cache → update UI automatically
  * ─────────────────────────────────────────────────────────
  */
@@ -38,14 +38,21 @@ const IS_DEV = import.meta.env.DEV;
 /* ── Polling interval — how often to check for changes ──────────── */
 const POLL_INTERVAL_MS = 300_000; // 5 minutes — portfolio data rarely changes
 
-/** API task definitions */
+/**
+ * API task definitions.
+ * Phase 1 = loaded BEFORE the page opens (blocking).
+ * Phase 2 = loaded in background AFTER the page opens (non-blocking).
+ */
 const API_TASKS = [
+  /* ═══════ PHASE 1 — Critical: page won't open until these are ready ═══════ */
   {
     key:   'profile',
     label: 'Profile',
     fetch: () => profileService.getPublicProfile(),
     phase: 1,
   },
+
+  /* ═══════ PHASE 2 — Background: loads after page opens ═══════ */
   {
     key:   'analytics',
     label: 'Analytics',
@@ -181,10 +188,10 @@ export function usePortfolioData() {
   const [progress, setProgress] = useState(0);
 
   /* ── Ref to hold the polling timer ──────────────────────────── */
-  const pollTimerRef = useRef(null);                             // Stores setInterval ID
+  const pollTimerRef = useRef(null);
 
   /* ── Ref to prevent overlapping poll calls ───────────────────── */
-  const isPollingRef = useRef(false);                            // True while poll runs
+  const isPollingRef = useRef(false);
 
   /**
    * processSingleTask — fetches one API and updates UI if data changed.
@@ -193,13 +200,13 @@ export function usePortfolioData() {
    */
   const processSingleTask = useCallback(async (task, showProgress = false) => {
     try {
-      const freshData = await task.fetch();                      // Call the API
+      const freshData = await task.fetch();
 
-      const stale = isCacheStale(CACHE_KEYS[task.key], freshData); // Compare hash
+      const stale = isCacheStale(CACHE_KEYS[task.key], freshData);
 
       if (stale) {
-        saveToCache(CACHE_KEYS[task.key], freshData);            // Update cache
-        setData(prev => ({ ...prev, [task.key]: freshData }));   // Update UI
+        saveToCache(CACHE_KEYS[task.key], freshData);
+        setData(prev => ({ ...prev, [task.key]: freshData }));
         if (IS_DEV) console.log(`[Data] ${task.label} changed — UI updated`);
       } else {
         if (IS_DEV) console.log(`[Data] ${task.label} unchanged`);
@@ -208,27 +215,25 @@ export function usePortfolioData() {
     } catch (err) {
       if (IS_DEV) console.warn(`[Data] ${task.label} failed:`, err.message);
     } finally {
-      if (showProgress) setProgress(prev => prev + 1);           // Advance loader dot
+      if (showProgress) setProgress(prev => prev + 1);
     }
   }, []);
 
   /**
    * pollForChanges — silently checks all APIs for changes.
    * Runs on interval after initial load completes.
-   * Skips if a poll is already in progress.
    */
   const pollForChanges = useCallback(async () => {
-    if (isPollingRef.current) return;                            // Skip overlapping polls
-    isPollingRef.current = true;                                 // Lock
+    if (isPollingRef.current) return;
+    isPollingRef.current = true;
 
     if (IS_DEV) console.log('[Poll] Checking for data changes...');
 
-    /* Check all APIs silently — one timeout won't block future polls */
     await Promise.allSettled(
-      API_TASKS.map(task => processSingleTask(task, false))      // Silent for all
+      API_TASKS.map(task => processSingleTask(task, false))
     );
 
-    isPollingRef.current = false;                                // Unlock
+    isPollingRef.current = false;
   }, [processSingleTask]);
 
   /**
@@ -250,7 +255,7 @@ export function usePortfolioData() {
 
     setError(null);
 
-    /* ── PHASE 1: await both critical APIs ── */
+    /* ── PHASE 1: await profile only — page opens fast ── */
     await Promise.all(
       phase1Tasks.map(task => processSingleTask(task, !hasPhase1Cache))
     );
@@ -264,9 +269,9 @@ export function usePortfolioData() {
       setError('Backend is offline');
     }
 
-    setLoading(false);                                           // Page opens here
+    setLoading(false);  // ← Page opens here — profile ready, charts load in parallel
 
-    /* ── PHASE 2: background, no await ── */
+    /* ── PHASE 2: ALL data in parallel — no await ── */
     phase2Tasks.forEach(task => processSingleTask(task, false));
 
   }, [processSingleTask]);
@@ -274,13 +279,10 @@ export function usePortfolioData() {
   /* ── Start polling after initial load ───────────────────────── */
   useEffect(() => {
     fetchAll().then(() => {
-
-      /* Clear any existing timer before starting new one */
       if (pollTimerRef.current) clearInterval(pollTimerRef.current);
 
-      /* Start polling every POLL_INTERVAL_MS */
       pollTimerRef.current = setInterval(() => {
-        pollForChanges();                                        // Silent background check
+        pollForChanges();
       }, POLL_INTERVAL_MS);
 
       if (IS_DEV) console.log(`[Poll] Started — checking every ${POLL_INTERVAL_MS / 1000}s`);
